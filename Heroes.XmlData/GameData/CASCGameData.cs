@@ -8,6 +8,5 @@ namespace Heroes.XmlData.GameData
 {
     public class CASCGameData
     {
-        public
     }
 }
