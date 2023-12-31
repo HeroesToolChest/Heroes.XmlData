@@ -12,7 +12,7 @@ internal abstract class FileStormMod : StormMod<IHeroesSource>
         if (!ValidateXmlFile(xmlFilePath, out XDocument? document))
             return;
 
-        HeroesData.AddXmlFile(document, xmlFilePath);
+        HeroesData.AddMainXmlFile(document, xmlFilePath);
     }
 
     protected override bool ValidateXmlFile(string xmlFilePath, [NotNullWhen(true)] out XDocument? document, bool isRequired = true)

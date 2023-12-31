@@ -2,15 +2,16 @@
 
 public class HeroesData : IHeroesData
 {
-    private const string _selfName = "HXD";
+    private readonly XmlGameData _xmlGameData = new();
+    //private const string _selfName = "HXD";
 
-    private readonly HashSet<string> _addedXmlFilePathsList = [];
-    private readonly Dictionary<string, List<(string GameString, string FilePath)>> _gameStringsById = [];
+    //private readonly HashSet<string> _addedXmlFilePathsList = [];
+    //private readonly Dictionary<string, List<(string GameString, string FilePath)>> _gameStringsById = [];
 
     private readonly HashSet<string> _notFoundDirectoriesList = [];
     private readonly HashSet<string> _notFoundFilesList = [];
 
-    private XDocument _xmlGameData = new();
+    //private XDocument _xmlGameData = new();
 
     public HeroesData(int? hotsBuild = null)
     {
@@ -21,61 +22,24 @@ public class HeroesData : IHeroesData
 
     public HeroesLocalization? HeroesLocalization { get; private set; }
 
-    public void AddXmlFile(XDocument document, string filePath)
+    public void AddMainXmlFile(XDocument document, string filePath)
     {
-        if (document.Root is null)
-            return;
-
-        document.Root.SetAttributeValue($"{_selfName}-FilePath", filePath);
-
-        if (_addedXmlFilePathsList.Contains(filePath))
-            return;
-
-        if (_xmlGameData.Root is null)
-        {
-            _xmlGameData.Declaration = document.Declaration;
-            _xmlGameData.Add(new XElement(_selfName));
-
-            _xmlGameData.Root!.Add(document.Root);
-        }
-        else
-        {
-            _xmlGameData.Root.Add(document.Root);
-        }
-
-        _addedXmlFilePathsList.Add(filePath);
+        _xmlGameData.XmlMainData.AddXmlFile(document, filePath);
     }
 
-    public void AddGameStringFile(Stream stream, string filePath)
+    public void AddMainGameStringFile(Stream stream, string filePath)
     {
-        using StreamReader reader = new(stream);
+        _xmlGameData.XmlMainData.AddGameStringFile(stream, filePath);
+    }
 
-        while (!reader.EndOfStream)
-        {
-            string line = reader.ReadLine() ?? string.Empty;
+    public void AddMapXmlFile(XDocument document, string filePath)
+    {
+        _xmlGameData.XmlMapData.AddXmlFile(document, filePath);
+    }
 
-            if (string.IsNullOrWhiteSpace(line))
-                continue;
-
-            string[] splitLine = line.Split('=', 2, StringSplitOptions.None);
-
-            if (splitLine.Length != 2)
-                continue;
-
-            var item = (splitLine[1], filePath);
-
-            if (_gameStringsById.TryGetValue(splitLine[0], out var gameStrings))
-            {
-                gameStrings.Add(item);
-            }
-            else
-            {
-                _gameStringsById.Add(splitLine[0],
-                [
-                    item,
-                ]);
-            }
-        }
+    public void AddMapGameStringFile(Stream stream, string filePath)
+    {
+        _xmlGameData.XmlMapData.AddGameStringFile(stream, filePath);
     }
 
     void IHeroesData.AddDirectoryNotFound(string directoryPath)
@@ -90,7 +54,8 @@ public class HeroesData : IHeroesData
 
     void IHeroesData.ClearGamestrings()
     {
-        _gameStringsById.Clear();
+        _xmlGameData.XmlMainData.ClearGameStrings();
+        _xmlGameData.XmlMapData.ClearGameStrings();
     }
 
     internal void SetHeroesLocalization(HeroesLocalization localization)

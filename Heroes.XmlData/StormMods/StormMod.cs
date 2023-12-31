@@ -106,17 +106,18 @@ internal abstract class StormMod<T> : IStormMod
 
         foreach (XElement catalogElement in catalogElements)
         {
-            string? catalogPathValue = catalogElement.Attribute("path")?.Value?.ToLowerInvariant();
-            if (!string.IsNullOrWhiteSpace(catalogPathValue))
+            ReadOnlySpan<char> catalogPathValue = catalogElement.Attribute("path")?.Value;
+
+            if (catalogPathValue.IsEmpty || catalogPathValue.IsWhiteSpace())
+                continue;
+
+            string path = PathHelper.NormalizePath(catalogPathValue, HeroesSource.DefaultModsDirectory);
+
+            if (path.StartsWith(HeroesSource.GameDataDirectory, StringComparison.OrdinalIgnoreCase))
             {
-                catalogPathValue = PathHelper.GetFilePath(catalogPathValue);
+                string xmlFilePath = Path.Join(HeroesSource.ModsDirectoryPath, DirectoryPath, HeroesSource.BaseStormDataDirectory, catalogPathValue);
 
-                if (catalogPathValue.StartsWith(HeroesSource.GameDataDirectory, StringComparison.OrdinalIgnoreCase))
-                {
-                    string xmlFilePath = Path.Join(HeroesSource.ModsDirectoryPath, DirectoryPath, HeroesSource.BaseStormDataDirectory, catalogPathValue);
-
-                    AddXmlFile(xmlFilePath);
-                }
+                AddXmlFile(xmlFilePath);
             }
         }
     }
@@ -138,19 +139,17 @@ internal abstract class StormMod<T> : IStormMod
 
         foreach (XElement pathElement in pathElements)
         {
-            string? pathValuePath = pathElement.Attribute("value")?.Value?.ToLowerInvariant();
+            ReadOnlySpan<char> pathValuePath = pathElement.Attribute("value")?.Value;
 
-            if (!string.IsNullOrWhiteSpace(pathValuePath))
-            {
-                // removing the "mods" part of the path
-                pathValuePath = PathHelper.GetFilePath(pathValuePath)[(pathValuePath.IndexOf(HeroesSource.DefaultModsDirectory, StringComparison.OrdinalIgnoreCase) + HeroesSource.DefaultModsDirectory.Length)..];
+            if (pathValuePath.IsEmpty || pathValuePath.IsWhiteSpace())
+                continue;
 
-                IStormMod stormMod = HeroesSource.CreateStormModInstance<FileStormModPathStormMod>(HeroesSource, pathValuePath);
+            string path = PathHelper.NormalizePath(pathValuePath, HeroesSource.DefaultModsDirectory);
 
-                stormModsCache.Add(stormMod);
+            IStormMod stormMod = HeroesSource.CreateStormModInstance<FileStormModPathStormMod>(HeroesSource, path);
 
-                stormMod.LoadStormData();
-            }
+            stormModsCache.Add(stormMod);
+            stormMod.LoadStormData();
         }
     }
 
@@ -163,6 +162,6 @@ internal abstract class StormMod<T> : IStormMod
         if (!ValidateGameStringFile(localization, out Stream? stream, out string path))
             return;
 
-        HeroesData.AddGameStringFile(stream, path);
+        HeroesData.AddMainGameStringFile(stream, path);
     }
 }

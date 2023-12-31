@@ -14,7 +14,7 @@ internal abstract class CASCStormMod : StormMod<ICASCHeroesSource>, IStormMod
         if (!ValidateXmlFile(xmlFilePath, out XDocument? document))
             return;
 
-        HeroesData.AddXmlFile(document, xmlFilePath);
+        HeroesData.AddMainXmlFile(document, xmlFilePath);
     }
 
     protected override bool ValidateXmlFile(string xmlFilePath, [NotNullWhen(true)] out XDocument? document, bool isRequired = true)

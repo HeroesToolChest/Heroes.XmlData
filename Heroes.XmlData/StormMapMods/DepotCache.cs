@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Text.Json;
+﻿using System.Text.Json;
 
 namespace Heroes.XmlData.StormMapMods;
 
@@ -24,6 +21,7 @@ internal abstract class DepotCache<T> : IDepotCache
     public void LoadDepotCache()
     {
         LoadMapDependencyData();
+
     }
 
     protected static bool IsS2mvFile(string xmlFilePath) => Path.GetExtension(xmlFilePath).Equals(".s2mv", StringComparison.OrdinalIgnoreCase);
@@ -83,16 +81,16 @@ internal abstract class DepotCache<T> : IDepotCache
                 BnetVersionMajor = dependencyElement.GetProperty("BnetVersionMajor").GetInt32(),
                 BnetVersionMinor = dependencyElement.GetProperty("BnetVersionMinor").GetInt32(),
                 BnetNamespace = dependencyElement.GetProperty("BnetNamespace").GetInt32(),
-                LocalFile = PathHelper.GetFilePath(dependencyElement.GetProperty("LocalFile").GetString() ?? string.Empty),
+                LocalFile = PathHelper.NormalizePath(dependencyElement.GetProperty("LocalFile").GetString(), HeroesSource.DefaultModsDirectory),
             });
         }
 
         foreach (JsonElement dependencyElement in modifiableDependenciesElement.EnumerateArray())
         {
-            s2mvProperties.ModifiableDependencies.Add(PathHelper.GetFilePath(dependencyElement.GetString() ?? string.Empty));
+            s2mvProperties.ModifiableDependencies.Add(PathHelper.NormalizePath(dependencyElement.GetString(), HeroesSource.DefaultModsDirectory));
         }
 
-        s2mvProperties.DocInfoIconFile = PathHelper.GetFilePath(infoElement.GetProperty("IconFile").GetString() ?? string.Empty);
+        s2mvProperties.DocInfoIconFile = PathHelper.NormalizePath(infoElement.GetProperty("IconFile").GetString(), HeroesSource.DefaultModsDirectory);
 
         HeroesSource.S2MVPropertiesByHashCode.Add(s2mvProperties.GetHashCode(), s2mvProperties);
 
@@ -121,7 +119,7 @@ internal abstract class DepotCache<T> : IDepotCache
 
         S2MAProperties s2maProperties = new()
         {
-            DocInfoIconFile = PathHelper.GetFilePath(rootElement.Element("Icon")?.Value ?? string.Empty),
+            DocInfoIconFile = PathHelper.NormalizePath(rootElement.Element("Icon")?.Value, HeroesSource.DefaultModsDirectory),
         };
 
         IEnumerable<XElement> dependencies = rootElement.Element("Dependencies")!.Elements();
@@ -139,7 +137,7 @@ internal abstract class DepotCache<T> : IDepotCache
         return true;
     }
 
-    private static void AddMapDependencies(S2MAProperties s2maProperties, IEnumerable<XElement> dependencies)
+    private void AddMapDependencies(S2MAProperties s2maProperties, IEnumerable<XElement> dependencies)
     {
         Span<Range> valueParts = stackalloc Range[2];
         Span<Range> bnetParts = stackalloc Range[3];
@@ -174,16 +172,16 @@ internal abstract class DepotCache<T> : IDepotCache
                 BnetVersionMajor = int.Parse(bnetSpan[bnetParts[1]][..indexOfBnetVersion]),
                 BnetVersionMinor = int.Parse(bnetSpan[bnetParts[1]][(indexOfBnetVersion + 1)..]),
                 BnetNamespace = int.Parse(bnetSpan[bnetParts[2]]),
-                LocalFile = PathHelper.GetFilePath(filePathSpan[(indexOfFilePath + 1)..].ToString()),
+                LocalFile = PathHelper.NormalizePath(filePathSpan[(indexOfFilePath + 1)..], HeroesSource.DefaultModsDirectory),
             });
         }
     }
 
-    private static void AddMapModifiableDependencies(S2MAProperties s2maProperties, IEnumerable<XElement> modifiableDependencies)
+    private void AddMapModifiableDependencies(S2MAProperties s2maProperties, IEnumerable<XElement> modifiableDependencies)
     {
         foreach (XElement valueElement in modifiableDependencies)
         {
-            s2maProperties.ModifiableDependencies.Add(PathHelper.GetFilePath(valueElement.Value));
+            s2maProperties.ModifiableDependencies.Add(PathHelper.NormalizePath(valueElement.Value, HeroesSource.DefaultModsDirectory));
         }
     }
 }
