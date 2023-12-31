@@ -1,8 +1,12 @@
 ﻿namespace Heroes.XmlData.StormMods;
 
-internal abstract class FileStormMod(IHeroesSource heroesSource)
-    : StormModBase<IHeroesSource>(heroesSource)
+internal abstract class FileStormMod : StormMod<IHeroesSource>
 {
+    public FileStormMod(IHeroesSource heroesSource)
+        : base(heroesSource)
+    {
+    }
+
     protected override void AddXmlFile(string xmlFilePath)
     {
         if (!ValidateXmlFile(xmlFilePath, out XDocument? document))

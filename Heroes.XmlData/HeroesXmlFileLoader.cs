@@ -22,6 +22,12 @@ public class HeroesXmlFileLoader
     public void LoadStormMods()
     {
         _fileHeroesSource.LoadStormData();
+        _fileHeroesSource.LoadDepotCache();
+    }
+
+    public void LoadMapMod(string mapLinkId)
+    {
+        _fileHeroesSource.LoadStormMapData(mapLinkId);
     }
 
     public void LoadGameStrings(HeroesLocalization localization = HeroesLocalization.ENUS)

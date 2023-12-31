@@ -2,9 +2,13 @@
 
 namespace Heroes.XmlData.StormMods;
 
-internal abstract class CASCStormMod(ICASCHeroesSource cascHeroesSource)
-    : StormModBase<ICASCHeroesSource>(cascHeroesSource), IStormMod
+internal abstract class CASCStormMod : StormMod<ICASCHeroesSource>, IStormMod
 {
+    public CASCStormMod(ICASCHeroesSource cascHeroesSource)
+        : base(cascHeroesSource)
+    {
+    }
+
     protected override void AddXmlFile(string xmlFilePath)
     {
         if (!ValidateXmlFile(xmlFilePath, out XDocument? document))

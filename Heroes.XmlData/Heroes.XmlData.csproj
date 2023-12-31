@@ -6,7 +6,7 @@
     <Nullable>enable</Nullable>
     <GenerateDocumentationFile>True</GenerateDocumentationFile>
     <Authors>Kevin Oliva</Authors>
-    <Copyright>Copyright © 2023 Kevin Oliva</Copyright>
+    <Copyright>Copyright © 2023 - 2024 Kevin Oliva</Copyright>
     <Description></Description>
     <!--<PackageProjectUrl></PackageProjectUrl>-->
     <!--<RepositoryUrl></RepositoryUrl>-->
@@ -27,7 +27,8 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>-->
     <!--<PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="8.0.0-rc.1.23419.4" />-->
-    <PackageReference Include="StyleCop.Analyzers" Version="1.2.0-beta.507">
+    <PackageReference Include="Heroes.MpqTool" Version="1.0.0" />
+    <PackageReference Include="StyleCop.Analyzers" Version="1.2.0-beta.556">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>

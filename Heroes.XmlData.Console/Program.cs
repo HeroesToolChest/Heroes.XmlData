@@ -5,10 +5,11 @@ using System.Xml.Linq;
 
 Console.WriteLine("Hello, World!");
 
-HeroesXmlFileLoader heroesXmlFileLoader = new(@"F:\heroes\heroes_91093\mods_91093");
+HeroesXmlFileLoader heroesXmlFileLoader = new(@"F:\heroes\heroes_91418\mods_91418");
 HeroesData heroesData = heroesXmlFileLoader.HeroesData;
 
 heroesXmlFileLoader.LoadStormMods();
+heroesXmlFileLoader.LoadMapMod("any");
 heroesXmlFileLoader.LoadGameStrings(HeroesLocalization.ENUS);
 heroesXmlFileLoader.LoadGameStrings(HeroesLocalization.DEDE);
 

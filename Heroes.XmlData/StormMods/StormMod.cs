@@ -1,9 +1,15 @@
 ﻿namespace Heroes.XmlData.StormMods;
 
-internal abstract class StormModBase<T>(T heroesSource) : IStormMod
+internal abstract class StormMod<T> : IStormMod
     where T : IHeroesSource
 {
+    private readonly T _heroesSource;
     private List<IStormMod> _includesStormModsCache = [];
+
+    public StormMod(T heroesSource)
+    {
+        _heroesSource = heroesSource;
+    }
 
     /// <summary>
     /// Gets the inner path, after the "mods" and before the "base" directory.
@@ -25,9 +31,9 @@ internal abstract class StormModBase<T>(T heroesSource) : IStormMod
     /// </summary>
     protected virtual string IncludesFilePath => Path.Join(HeroesSource.ModsDirectoryPath, DirectoryPath, HeroesSource.BaseStormDataDirectory, HeroesSource.IncludesXmlFile);
 
-    protected T HeroesSource => heroesSource;
+    protected T HeroesSource => _heroesSource;
 
-    protected IHeroesData HeroesData => heroesSource.HeroesData;
+    protected IHeroesData HeroesData => _heroesSource.HeroesData;
 
     public virtual void LoadStormData()
     {

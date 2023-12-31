@@ -1,7 +1,14 @@
 ﻿namespace Heroes.XmlData.StormMods;
 
-internal class CASCStormModPathStormMod(ICASCHeroesSource cascHeroesSource, string directoryPath)
-    : CASCStormMod(cascHeroesSource)
+internal class CASCStormModPathStormMod : CASCStormMod
 {
-    protected override string? DirectoryPath => directoryPath;
+    private readonly string _directoryPath;
+
+    public CASCStormModPathStormMod(ICASCHeroesSource cascHeroesSource, string directoryPath)
+        : base(cascHeroesSource)
+    {
+        _directoryPath = directoryPath;
+    }
+
+    protected override string? DirectoryPath => _directoryPath;
 }

@@ -1,6 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-
-namespace Heroes.XmlData.Helpers;
+﻿namespace Heroes.XmlData.Helpers;
 
 internal class PathHelper
 {

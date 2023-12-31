@@ -1,6 +1,4 @@
-﻿using Heroes.XmlData.StormMods;
-
-namespace Heroes.XmlData.Source;
+﻿namespace Heroes.XmlData.Source;
 
 internal abstract class HeroesSource : IHeroesSource
 {
@@ -17,6 +15,8 @@ internal abstract class HeroesSource : IHeroesSource
     private const string _heroesDataStormModDirectory = "heroesdata.stormmod";
 
     private const string _heroModsDirectory = "heromods";
+    private const string _depotCacheDirectory = "core.stormmod\\base.stormdata\\DepotCache";
+    private const string _battleMapModsDirectory = "heroesmapmods\\battlegroundmapmods";
 
     public HeroesSource(IHeroesData heroesData, string modsDirectoryPath)
     {
@@ -25,6 +25,7 @@ internal abstract class HeroesSource : IHeroesSource
         ModsDirectoryPath = modsDirectoryPath;
 
         AddStormMods(StormMods);
+        AddStormMaps();
     }
 
     public int HotsBuild { get; }
@@ -53,9 +54,23 @@ internal abstract class HeroesSource : IHeroesSource
 
     public string HeroModsDirectory => _heroModsDirectory;
 
+    public string DepotCacheDirectory => _depotCacheDirectory;
+
+    public string BattleMapModsDirectory => _battleMapModsDirectory;
+
     public IHeroesData HeroesData { get; }
 
     public IList<IStormMod> StormMods { get; } = new List<IStormMod>();
+
+    public IDepotCache DepotCache { get; protected set; }
+
+    public Dictionary<int, S2MVProperties> S2MVPropertiesByHashCode { get; } = [];
+
+    public List<string> S2MVPaths { get; } = [];
+
+    public List<S2MAProperties> S2MAProperties { get; } = [];
+
+    public List<string> S2MAPaths { get; } = [];
 
     public void LoadStormData()
     {
@@ -75,6 +90,27 @@ internal abstract class HeroesSource : IHeroesSource
         }
     }
 
+    public void LoadDepotCache()
+    {
+        DepotCache.LoadDepotCache();
+    }
+
+    public bool LoadStormMapData(string mapLinkId)
+    {
+        //if (!MapDependencyByMapLink.IsValueCreated)
+        //    AddStormMaps();
+
+        //if (!MapDependencyByMapLink.TryGetValue(mapLinkId, out List<MapDependency>? mapDependencies))
+        //    return false;
+
+        //foreach (MapDependency mapDependency in mapDependencies)
+        //{
+        //    //mapDependency.LocalFile
+        //}
+
+        return true;
+    }
+
     public IStormMod CreateStormModInstance<T>(params object?[]? args)
         where T : IStormMod
     {
@@ -87,4 +123,7 @@ internal abstract class HeroesSource : IHeroesSource
     }
 
     protected abstract void AddStormMods(IList<IStormMod> stormMods);
+
+    [MemberNotNull(nameof(DepotCache))]
+    protected abstract void AddStormMaps();
 }

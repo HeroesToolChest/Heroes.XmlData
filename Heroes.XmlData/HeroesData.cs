@@ -19,7 +19,7 @@ public class HeroesData : IHeroesData
 
     public int? HotsBuild { get; }
 
-    public HeroesLocalization HeroesLocalization { get; private set; }
+    public HeroesLocalization? HeroesLocalization { get; private set; }
 
     public void AddXmlFile(XDocument document, string filePath)
     {

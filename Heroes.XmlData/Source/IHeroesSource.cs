@@ -1,6 +1,4 @@
-﻿using Heroes.XmlData.StormMods;
-
-namespace Heroes.XmlData.Source;
+﻿namespace Heroes.XmlData.Source;
 
 internal interface IHeroesSource
 {
@@ -28,17 +26,29 @@ internal interface IHeroesSource
 
     string HeroesDataStormModDirectory { get; }
 
-    public string HeroModsDirectory { get; }
+    string HeroModsDirectory { get; }
+
+    string DepotCacheDirectory { get; }
+
+    string BattleMapModsDirectory { get; }
 
     IHeroesData HeroesData { get; }
 
     IList<IStormMod> StormMods { get; }
 
+    Dictionary<int, S2MVProperties> S2MVPropertiesByHashCode { get; }
+
+    List<string> S2MVPaths { get; }
+
+    List<S2MAProperties> S2MAProperties { get; }
+
+    List<string> S2MAPaths { get; }
+
     /// <summary>
     /// Creates an instance of an <see cref="IStormMod"/>.
     /// </summary>
     /// <typeparam name="T">A type of <see cref="IStormMod"/>.</typeparam>
-    /// <param name="args">Additional arguments to be passed in a paramters to the constructor.</param>
+    /// <param name="args">Additional arguments to be passed in a paramaters to the constructor.</param>
     /// <returns>An instance of a <see cref="IStormMod"/>.</returns>
     IStormMod CreateStormModInstance<T>(params object?[]? args)
         where T : IStormMod;
@@ -46,4 +56,6 @@ internal interface IHeroesSource
     void LoadStormData();
 
     void LoadGamestrings(HeroesLocalization localization);
+
+    //void LoadStormMapData(string mapLinkId);
 }

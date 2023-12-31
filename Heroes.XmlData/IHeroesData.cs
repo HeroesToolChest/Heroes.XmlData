@@ -4,7 +4,7 @@ internal interface IHeroesData
 {
     int? HotsBuild { get; }
 
-    HeroesLocalization HeroesLocalization { get; }
+    HeroesLocalization? HeroesLocalization { get; }
 
     void AddXmlFile(XDocument document, string filePath);
 

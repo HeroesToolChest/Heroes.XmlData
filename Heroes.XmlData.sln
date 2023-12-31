@@ -14,7 +14,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CascLib", "CascLib\CascLib\CascLib.csproj", "{B2E03C99-9058-4086-BF5B-CE9EDAB4DBF0}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Heroes.XmlData.Console", "Heroes.XmlData.Console\Heroes.XmlData.Console.csproj", "{603C28EB-0870-440F-AB72-9FC302DACC1C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Heroes.XmlData.Console", "Heroes.XmlData.Console\Heroes.XmlData.Console.csproj", "{603C28EB-0870-440F-AB72-9FC302DACC1C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Heroes.XmlData.Tests", "Heroes.XmlData.Tests\Heroes.XmlData.Tests.csproj", "{E2B4FB26-F4ED-4C2F-964B-2939765B17DF}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -34,9 +36,16 @@ Global
 		{603C28EB-0870-440F-AB72-9FC302DACC1C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{603C28EB-0870-440F-AB72-9FC302DACC1C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{603C28EB-0870-440F-AB72-9FC302DACC1C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E2B4FB26-F4ED-4C2F-964B-2939765B17DF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E2B4FB26-F4ED-4C2F-964B-2939765B17DF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E2B4FB26-F4ED-4C2F-964B-2939765B17DF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E2B4FB26-F4ED-4C2F-964B-2939765B17DF}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{E2B4FB26-F4ED-4C2F-964B-2939765B17DF} = {5F8104A6-9863-4B33-AE48-ABFAD6B32C69}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {A828FEDC-5602-448F-8352-73ED076EAEDB}
