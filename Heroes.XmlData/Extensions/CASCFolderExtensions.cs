@@ -1,37 +1,29 @@
-﻿using CASCLib;
+﻿namespace Heroes.XmlData.Extensions;
 
-namespace Heroes.XmlData.Extensions;
-
-public static class CASCFolderExtensions
+internal static class CASCFolderExtensions
 {
-    //public static CASCFolder GetDirectory(this CASCFolder cascFolder, string folderPath)
-    //{
-    //    CASCFolder currentFolder = cascFolder;
-
-    //    foreach (string directory in EnumeratedStringPath(folderPath))
-    //    {
-    //        currentFolder.
-    //        currentFolder = (CASCFolder)currentFolder.GetEntry(directory);
-    //    }
-
-    //    return currentFolder;
-    //}
-
-    //public static bool DirectoryExists(this CASCFolder cascFolder, string folderPath)
-    //{
-    //    CASCFolder currentFolder = cascFolder;
-
-    //    foreach (string directory in EnumeratedStringPath(folderPath))
-    //    {
-    //        if ((CASCFolder)currentFolder.GetEntry(directory) == null)
-    //            return false;
-    //    }
-
-    //    return true;
-    //}
-
-    private static string[] EnumeratedStringPath(string filePath)
+    public static bool TryGetLastDirectory(this CASCFolder folder, string directoryPath, [NotNullWhen(true)] out CASCFolder? cascFolder)
     {
-        return filePath.Split(new char[] { Path.DirectorySeparatorChar }, StringSplitOptions.RemoveEmptyEntries);
+        cascFolder = null;
+
+        CASCFolder currentFolder = folder;
+
+        foreach (string directory in EnumeratedStringPath(directoryPath))
+        {
+            CASCFolder? foundFolder = currentFolder.GetFolder(directory);
+            if (foundFolder is null)
+                return false;
+
+            currentFolder = foundFolder;
+        }
+
+        cascFolder = currentFolder;
+
+        return true;
+    }
+
+    private static string[] EnumeratedStringPath(string directoryPath)
+    {
+        return directoryPath.Split(new char[] { Path.DirectorySeparatorChar }, StringSplitOptions.RemoveEmptyEntries);
     }
 }

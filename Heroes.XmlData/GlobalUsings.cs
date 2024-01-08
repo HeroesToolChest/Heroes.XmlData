@@ -1,8 +1,10 @@
-﻿global using Heroes.MpqTool;
+﻿global using CASCLib;
+global using Heroes.MpqTool;
 global using Heroes.XmlData.Extensions;
 global using Heroes.XmlData.Helpers;
+global using Heroes.XmlData.MpqEntry;
 global using Heroes.XmlData.Source;
-global using Heroes.XmlData.StormMapMods;
+global using Heroes.XmlData.StormDepotCache;
 global using Heroes.XmlData.StormMods;
 global using Heroes.XmlData.XmlCore;
 global using System.Diagnostics.CodeAnalysis;

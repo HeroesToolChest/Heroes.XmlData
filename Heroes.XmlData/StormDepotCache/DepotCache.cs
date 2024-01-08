@@ -1,6 +1,6 @@
 ﻿using System.Text.Json;
 
-namespace Heroes.XmlData.StormMapMods;
+namespace Heroes.XmlData.StormDepotCache;
 
 internal abstract class DepotCache<T> : IDepotCache
     where T : IHeroesSource
@@ -20,15 +20,14 @@ internal abstract class DepotCache<T> : IDepotCache
 
     public void LoadDepotCache()
     {
-        LoadMapDependencyData();
-
+        FindMapRootData();
     }
 
     protected static bool IsS2mvFile(string xmlFilePath) => Path.GetExtension(xmlFilePath).Equals(".s2mv", StringComparison.OrdinalIgnoreCase);
 
     protected static bool IsS2maFile(string xmlFilePath) => Path.GetExtension(xmlFilePath).Equals(".s2ma", StringComparison.OrdinalIgnoreCase);
 
-    protected abstract void LoadMapDependencyData();
+    protected abstract void FindMapRootData();
 
     // find the root s2mv files
     protected bool LoadS2mvFile(Stream s2mvFile)
@@ -111,22 +110,24 @@ internal abstract class DepotCache<T> : IDepotCache
 
         using MpqHeroesArchive mpqHeroesArchive = MpqHeroesFile.Open(s2maFile);
 
-        if (!mpqHeroesArchive.FileEntryExists("BankList.xml") || !mpqHeroesArchive.FileEntryExists("mapscript.galaxy") || !mpqHeroesArchive.TryGetEntry("DocumentInfo", out MpqHeroesArchiveEntry? documentInfoEntry))
+        if (!mpqHeroesArchive.FileEntryExists("BankList.xml") || !mpqHeroesArchive.TryGetEntry("mapscript.galaxy", out MpqHeroesArchiveEntry? mapScriptEntry) || !mpqHeroesArchive.TryGetEntry(HeroesSource.DocumentInfoFile, out MpqHeroesArchiveEntry? documentInfoEntry))
             return false;
+
+        string? mapId = GetMapId(mpqHeroesArchive, mapScriptEntry.Value);
 
         XDocument document = XDocument.Load(mpqHeroesArchive.DecompressEntry(documentInfoEntry.Value));
         XElement rootElement = document.Root!;
 
-        S2MAProperties s2maProperties = new()
-        {
-            DocInfoIconFile = PathHelper.NormalizePath(rootElement.Element("Icon")?.Value, HeroesSource.DefaultModsDirectory),
-        };
-
         IEnumerable<XElement> dependencies = rootElement.Element("Dependencies")!.Elements();
         IEnumerable<XElement> modifiableDependencies = rootElement.Element("ModifiableDependencies")!.Elements();
 
-        AddMapDependencies(s2maProperties, dependencies);
-        AddMapModifiableDependencies(s2maProperties, modifiableDependencies);
+        S2MAProperties s2maProperties = new()
+        {
+            DocInfoIconFile = PathHelper.NormalizePath(rootElement.Element("Icon")?.Value, HeroesSource.DefaultModsDirectory),
+            MapId = mapId,
+            MapDependencies = MapDependency.GetMapDependencies(dependencies, HeroesSource.DefaultModsDirectory).ToList(),
+            ModifiableDependencies = GetMapModifiableDependencies(modifiableDependencies, HeroesSource.DefaultModsDirectory).ToList(),
+        };
 
         // find the s2mv file equivalent
         if (HeroesSource.S2MVPropertiesByHashCode.TryGetValue(s2maProperties.GetHashCode(), out S2MVProperties? s2mvProperties))
@@ -134,54 +135,38 @@ internal abstract class DepotCache<T> : IDepotCache
 
         HeroesSource.S2MAProperties.Add(s2maProperties);
 
+        if (s2maProperties.S2MVProperties is not null)
+            HeroesSource.S2MAPropertiesByTitle.Add(s2maProperties.S2MVProperties.HeaderTitle, s2maProperties);
+
         return true;
     }
 
-    private void AddMapDependencies(S2MAProperties s2maProperties, IEnumerable<XElement> dependencies)
+    private static string? GetMapId(MpqHeroesArchive mpqHeroesArchive, MpqHeroesArchiveEntry mapScriptEntry)
     {
-        Span<Range> valueParts = stackalloc Range[2];
-        Span<Range> bnetParts = stackalloc Range[3];
+        using StreamReader streamReader = new(mpqHeroesArchive.DecompressEntry(mapScriptEntry));
 
-        foreach (XElement valueElement in dependencies)
+        while (!streamReader.EndOfStream)
         {
-            ReadOnlySpan<char> value = valueElement.Value;
+            ReadOnlySpan<char> line = streamReader.ReadLine();
 
-            value.Split(valueParts, ',');
+            if (line.IsEmpty || line.IsWhiteSpace() || !line.Contains("mAPMapStringID", StringComparison.OrdinalIgnoreCase))
+                continue;
 
-            // bnet:<file name>/<major>.<minor>/<namespace>
-            ReadOnlySpan<char> bnetSpan = value[valueParts[0]];
+            int equalsIndex = line.IndexOf('=');
+            if (equalsIndex < 0)
+                continue;
 
-            // file:<filePath>
-            ReadOnlySpan<char> filePathSpan = value[valueParts[1]];
-            int indexOfFilePath = filePathSpan.IndexOf(':');
-
-            // split the bnetSpan into parts
-            bnetSpan.Split(bnetParts, '/');
-
-            // get the file name part of the bnetParts -> bnet:<file name>
-            ReadOnlySpan<char> bnetFileName = bnetSpan[bnetParts[0]];
-            int indexOfBnetFileName = bnetFileName.IndexOf(':');
-
-            // get the version part -> <major>.<minor>
-            ReadOnlySpan<char> bnetVersion = bnetSpan[bnetParts[1]];
-            int indexOfBnetVersion = bnetVersion.IndexOf('.');
-
-            s2maProperties.MapDependencies.Add(new MapDependency()
-            {
-                BnetName = bnetSpan[bnetParts[0]][(indexOfBnetFileName + 1)..].ToString(),
-                BnetVersionMajor = int.Parse(bnetSpan[bnetParts[1]][..indexOfBnetVersion]),
-                BnetVersionMinor = int.Parse(bnetSpan[bnetParts[1]][(indexOfBnetVersion + 1)..]),
-                BnetNamespace = int.Parse(bnetSpan[bnetParts[2]]),
-                LocalFile = PathHelper.NormalizePath(filePathSpan[(indexOfFilePath + 1)..], HeroesSource.DefaultModsDirectory),
-            });
+            return line[(equalsIndex + 1)..].Trim().Trim(new char[] { '"', ';' }).ToString();
         }
+
+        return null;
     }
 
-    private void AddMapModifiableDependencies(S2MAProperties s2maProperties, IEnumerable<XElement> modifiableDependencies)
+    private static IEnumerable<string> GetMapModifiableDependencies(IEnumerable<XElement> modifiableDependencies, string modsDirectory)
     {
         foreach (XElement valueElement in modifiableDependencies)
         {
-            s2maProperties.ModifiableDependencies.Add(PathHelper.NormalizePath(valueElement.Value, HeroesSource.DefaultModsDirectory));
+            yield return PathHelper.NormalizePath(valueElement.Value, modsDirectory);
         }
     }
 }

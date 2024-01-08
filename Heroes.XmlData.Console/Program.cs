@@ -7,11 +7,12 @@ Console.WriteLine("Hello, World!");
 
 HeroesXmlFileLoader heroesXmlFileLoader = new(@"F:\heroes\heroes_91418\mods_91418");
 HeroesData heroesData = heroesXmlFileLoader.HeroesData;
-
+//var a = heroesXmlFileLoader.GetMapTitles();
 heroesXmlFileLoader.LoadStormMods();
-heroesXmlFileLoader.LoadMapMod("any");
+var b = heroesXmlFileLoader.GetMapTitles();
+heroesXmlFileLoader.LoadMapMod("Volskaya Foundry");
 heroesXmlFileLoader.LoadGameStrings(HeroesLocalization.ENUS);
-heroesXmlFileLoader.LoadGameStrings(HeroesLocalization.DEDE);
+//heroesXmlFileLoader.LoadGameStrings(HeroesLocalization.DEDE);
 
 //XDocument xDocument = new XDocument();
 
@@ -36,4 +37,7 @@ heroesXmlFileLoader.LoadGameStrings(HeroesLocalization.DEDE);
 //cascHandler.Root.LoadListFile(Path.Combine(Environment.CurrentDirectory, "listfile.txt"));
 
 //CASCFolder CASCFolderRoot = cascHandler.Root.SetFlags(LocaleFlags.All);
+
+//HeroesXmlCASCLoader heroesXmlCASCLoader = new HeroesXmlCASCLoader(null);
+//heroesXmlCASCLoader.Test("E:\\Games\\Heroes of the Storm");
 Console.ReadKey();

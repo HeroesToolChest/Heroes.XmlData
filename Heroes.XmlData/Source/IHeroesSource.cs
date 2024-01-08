@@ -20,6 +20,8 @@ internal interface IHeroesSource
 
     string IncludesXmlFile { get; }
 
+    string DocumentInfoFile { get; }
+
     string CoreStormModDirectory { get; }
 
     string HeroesStormModDirectory { get; }
@@ -34,13 +36,15 @@ internal interface IHeroesSource
 
     IHeroesData HeroesData { get; }
 
-    IList<IStormMod> StormMods { get; }
+    IDepotCache DepotCache { get; }
 
     Dictionary<int, S2MVProperties> S2MVPropertiesByHashCode { get; }
 
     List<string> S2MVPaths { get; }
 
     List<S2MAProperties> S2MAProperties { get; }
+
+    Dictionary<string, S2MAProperties> S2MAPropertiesByTitle { get; }
 
     List<string> S2MAPaths { get; }
 
@@ -57,5 +61,5 @@ internal interface IHeroesSource
 
     void LoadGamestrings(HeroesLocalization localization);
 
-    //void LoadStormMapData(string mapLinkId);
+    bool LoadStormMapData(string mapTitle);
 }

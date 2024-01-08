@@ -1,6 +1,4 @@
-﻿using Heroes.XmlData.StormMods;
-
-namespace Heroes.XmlData.Source;
+﻿namespace Heroes.XmlData.Source;
 
 internal class CASCHeroesSource : HeroesSource, ICASCHeroesSource
 {
@@ -14,13 +12,17 @@ internal class CASCHeroesSource : HeroesSource, ICASCHeroesSource
 
     public CASCHeroesStorage CASCHeroesStorage => _cascHeroesStorage;
 
-    protected override void AddStormMods(IList<IStormMod> stormMods)
-    {
-        throw new NotImplementedException();
-    }
+    protected override IStormMod GetStormMod(string directoryPath) => CreateStormModInstance<CASCStormMod>(this, directoryPath);
 
-    protected override void AddStormMaps()
+    protected override IStormMod GetMpqStormMod(string directoryPath, string name) => CreateStormModInstance<CASCMpqStormMod>(this, directoryPath, name);
+
+    protected override IDepotCache GetDepotCache() => new CASCDepotCache(this);
+
+    protected override bool CasingExists()
     {
-        throw new NotImplementedException();
+        if (!_cascHeroesStorage.CASCFolderRoot.TryGetLastDirectory(TestCasingDirectoryPath, out _))
+            return false;
+
+        return true;
     }
 }

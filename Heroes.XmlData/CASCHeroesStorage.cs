@@ -1,6 +1,4 @@
-﻿using CASCLib;
-
-namespace Heroes.XmlData;
+﻿namespace Heroes.XmlData;
 
 public class CASCHeroesStorage(CASCHandler cascHandler, CASCFolder cascFolderRoot)
 {

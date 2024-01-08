@@ -1,4 +1,4 @@
-﻿namespace Heroes.XmlData.StormMapMods;
+﻿namespace Heroes.XmlData.StormDepotCache;
 
 internal class S2mapDependencies
 {

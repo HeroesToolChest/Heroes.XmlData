@@ -6,13 +6,15 @@ internal interface IHeroesData
 
     HeroesLocalization? HeroesLocalization { get; }
 
-    void AddMainXmlFile(XDocument document, string filePath);
+    void AddXmlStorage(XmlStorage xmlStorage);
 
-    void AddMainGameStringFile(Stream stream, string filePath);
+    //void AddMainXmlFile(XDocument document, string filePath);
 
-    void AddMapXmlFile(XDocument document, string filePath);
+    //void AddMainGameStringFile(Stream stream, string filePath);
 
-    void AddMapGameStringFile(Stream stream, string filePath);
+    //void AddMapXmlFile(XDocument document, string filePath);
+
+    //void AddMapGameStringFile(Stream stream, string filePath);
 
     internal void AddDirectoryNotFound(string directoryPath);
 

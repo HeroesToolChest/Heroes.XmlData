@@ -22,25 +22,20 @@ public class HeroesData : IHeroesData
 
     public HeroesLocalization? HeroesLocalization { get; private set; }
 
-    public void AddMainXmlFile(XDocument document, string filePath)
+    public void AddXmlStorage(XmlStorage xmlStorage)
     {
-        _xmlGameData.XmlMainData.AddXmlFile(document, filePath);
+        _xmlGameData.Add(xmlStorage);
     }
 
-    public void AddMainGameStringFile(Stream stream, string filePath)
-    {
-        _xmlGameData.XmlMainData.AddGameStringFile(stream, filePath);
-    }
+    //public void AddMainXmlFile(XDocument document, string filePath)
+    //{
+    //    _xmlGameData.XmlMainData.AddXmlFile(document, filePath);
+    //}
 
-    public void AddMapXmlFile(XDocument document, string filePath)
-    {
-        _xmlGameData.XmlMapData.AddXmlFile(document, filePath);
-    }
-
-    public void AddMapGameStringFile(Stream stream, string filePath)
-    {
-        _xmlGameData.XmlMapData.AddGameStringFile(stream, filePath);
-    }
+    //public void AddMainGameStringFile(Stream stream, string filePath)
+    //{
+    //    _xmlGameData.XmlMainData.AddGameStringFile(stream, filePath);
+    //}
 
     void IHeroesData.AddDirectoryNotFound(string directoryPath)
     {
@@ -54,8 +49,7 @@ public class HeroesData : IHeroesData
 
     void IHeroesData.ClearGamestrings()
     {
-        _xmlGameData.XmlMainData.ClearGameStrings();
-        _xmlGameData.XmlMapData.ClearGameStrings();
+        _xmlGameData.ClearGamestrings();
     }
 
     internal void SetHeroesLocalization(HeroesLocalization localization)

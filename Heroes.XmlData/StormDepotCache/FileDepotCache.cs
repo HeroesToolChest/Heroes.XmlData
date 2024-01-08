@@ -1,4 +1,4 @@
-﻿namespace Heroes.XmlData.StormMapMods;
+﻿namespace Heroes.XmlData.StormDepotCache;
 
 internal class FileDepotCache : DepotCache<FileHeroesSource>
 {
@@ -7,7 +7,7 @@ internal class FileDepotCache : DepotCache<FileHeroesSource>
     {
     }
 
-    protected override void LoadMapDependencyData()
+    protected override void FindMapRootData()
     {
         if (!Directory.Exists(DepotCacheDirectoryPath))
         {
@@ -39,7 +39,10 @@ internal class FileDepotCache : DepotCache<FileHeroesSource>
             using FileStream fileStream = File.OpenRead(s2maFile);
 
             if (LoadS2maFile(fileStream))
+            {
                 HeroesSource.S2MAPaths.Add(s2maFile);
+                HeroesSource.S2MAProperties.Last().DirectoryPath = PathHelper.NormalizePath(s2maFile, HeroesSource.ModsDirectoryPath);
+            }
         }
     }
 }

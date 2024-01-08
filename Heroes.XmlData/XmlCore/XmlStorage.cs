@@ -1,6 +1,6 @@
 ﻿namespace Heroes.XmlData.XmlCore;
 
-internal class XmlStorage
+public class XmlStorage
 {
     private const string _selfName = "HXD";
 
@@ -8,6 +8,10 @@ internal class XmlStorage
     private readonly Dictionary<string, List<GameStringText>> _gameStringsById = [];
 
     private readonly XDocument _xml = new();
+
+    public string StormModName { get; internal set; } = string.Empty;
+
+    public string StormModDirectoryPath { get; internal set; } = string.Empty;
 
     public void AddGameStringFile(Stream stream, string filePath)
     {
@@ -66,5 +70,11 @@ internal class XmlStorage
     public void ClearGameStrings()
     {
         _gameStringsById.Clear();
+    }
+
+    /// <inheritdoc/>
+    public override string ToString()
+    {
+        return StormModName;
     }
 }

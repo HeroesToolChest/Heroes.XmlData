@@ -7,15 +7,11 @@ internal class FileHeroesSource : HeroesSource
     {
     }
 
-    protected override void AddStormMods(IList<IStormMod> stormMods)
-    {
-        stormMods.Add(CreateStormModInstance<FileStormModPathStormMod>(this, CoreStormModDirectory));
-        stormMods.Add(CreateStormModInstance<FileStormModPathStormMod>(this, HeroesStormModDirectory));
-        stormMods.Add(CreateStormModInstance<FileStormModPathStormMod>(this, HeroesDataStormModDirectory));
-    }
+    protected override IStormMod GetStormMod(string directoryPath) => CreateStormModInstance<FileStormMod>(this, directoryPath);
 
-    protected override void AddStormMaps()
-    {
-        DepotCache = new FileDepotCache(this);
-    }
+    protected override IStormMod GetMpqStormMod(string directoryPath, string name) => CreateStormModInstance<FileMpqStormMod>(this, directoryPath, name);
+
+    protected override IDepotCache GetDepotCache() => new FileDepotCache(this);
+
+    protected override bool CasingExists() => Directory.Exists(TestCasingDirectoryPath);
 }

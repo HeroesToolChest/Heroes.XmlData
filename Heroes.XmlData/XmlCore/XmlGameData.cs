@@ -1,14 +1,17 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Heroes.XmlData.XmlCore;
+﻿namespace Heroes.XmlData.XmlCore;
 
 internal class XmlGameData
 {
-    public XmlMainData XmlMainData { get; } = new();
+    private readonly List<XmlStorage> _xmlStormMods = [];
 
-    public XmlMapData XmlMapData { get; } = new();
+    public void Add(XmlStorage xmlStormMod)
+    {
+        _xmlStormMods.Add(xmlStormMod);
+    }
+
+    public void ClearGamestrings()
+    {
+        _xmlStormMods.ForEach(x => x.ClearGameStrings());
+    }
 }
+

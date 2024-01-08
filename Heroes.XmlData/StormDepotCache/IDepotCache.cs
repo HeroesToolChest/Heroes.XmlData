@@ -1,4 +1,4 @@
-﻿namespace Heroes.XmlData.StormMapMods;
+﻿namespace Heroes.XmlData.StormDepotCache;
 
 internal interface IDepotCache
 {

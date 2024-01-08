@@ -1,7 +1,4 @@
-﻿using Heroes.XmlData.Source;
-using Heroes.XmlData.StormMods;
-
-namespace Heroes.XmlData;
+﻿namespace Heroes.XmlData;
 
 public class HeroesXmlFileLoader
 {
@@ -17,6 +14,7 @@ public class HeroesXmlFileLoader
 
         _heroesData = new(_hotsBuild);
         _fileHeroesSource = new(_heroesData, pathToModsDirectory);
+        _fileHeroesSource.ValidateCasing();
     }
 
     public void LoadStormMods()
@@ -25,9 +23,9 @@ public class HeroesXmlFileLoader
         _fileHeroesSource.LoadDepotCache();
     }
 
-    public void LoadMapMod(string mapLinkId)
+    public void LoadMapMod(string mapTitle)
     {
-        _fileHeroesSource.LoadStormMapData(mapLinkId);
+        _fileHeroesSource.LoadStormMapData(mapTitle);
     }
 
     public void LoadGameStrings(HeroesLocalization localization = HeroesLocalization.ENUS)
@@ -35,6 +33,11 @@ public class HeroesXmlFileLoader
         HeroesData.SetHeroesLocalization(localization);
 
         _fileHeroesSource.LoadGamestrings(localization);
+    }
+
+    public IEnumerable<string> GetMapTitles()
+    {
+        return _fileHeroesSource.S2MAPropertiesByTitle.Select(x => x.Key).Order();
     }
 
     public HeroesData HeroesData => _heroesData;

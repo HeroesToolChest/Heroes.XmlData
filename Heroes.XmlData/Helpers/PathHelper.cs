@@ -53,8 +53,8 @@ internal class PathHelper
     /// Returns a modified path to use the current platform's directory separator character and lowecases all characters. Will remove the 'mods' part as well.
     /// </summary>
     /// <param name="filePath">A file path.</param>
-    /// <param name="modsDirectory">The name of the mods directory</param>
-    /// <returns>A file path</returns>
+    /// <param name="modsDirectory">The name of the mods directory.</param>
+    /// <returns>The modified file path.</returns>
     public static string NormalizePath(ReadOnlySpan<char> filePath, string modsDirectory)
     {
         if (filePath.IsEmpty || filePath.IsWhiteSpace())
