@@ -1,8 +1,16 @@
-﻿namespace Heroes.XmlData.StormMods;
+﻿using System.Buffers;
+
+namespace Heroes.XmlData.StormMods;
 
 internal abstract class MpqStormMod<T> : StormMod<T>
     where T : IHeroesSource
 {
+    private static readonly char _forwardSlashChar = '/';
+    private static readonly char _backSlashChar = '\\';
+    private static readonly char[] _pathSeperators = string.Join(string.Empty, _forwardSlashChar, _backSlashChar).ToCharArray();
+    private static readonly SearchValues<char> _forwardSlashSeperatorSearchValue = SearchValues.Create(_forwardSlashChar.ToString());
+    private static readonly SearchValues<char> _backSlashSeperatorSearchValue = SearchValues.Create(_backSlashChar.ToString());
+
     private MpqHeroesArchive? _mpqHeroesArchive;
     private MpqFolder? _mpqFolderRoot;
 
@@ -56,7 +64,7 @@ internal abstract class MpqStormMod<T> : StormMod<T>
         if (!IsXmlFile(xmlFilePath))
             return false;
 
-        if (_mpqHeroesArchive is null || !_mpqHeroesArchive.TryGetEntry(xmlFilePath, out MpqHeroesArchiveEntry? entry))
+        if (_mpqHeroesArchive is null || !TryGetEntry(xmlFilePath, out MpqHeroesArchiveEntry? entry))
         {
             if (isRequired)
                 HeroesData.AddFileNotFound(xmlFilePath);
@@ -74,7 +82,7 @@ internal abstract class MpqStormMod<T> : StormMod<T>
         stream = null;
         path = GetGameStringFilePath(localization);
 
-        if (_mpqHeroesArchive is null || !_mpqHeroesArchive.TryGetEntry(path, out MpqHeroesArchiveEntry? entry))
+        if (_mpqHeroesArchive is null || !TryGetEntry(path, out MpqHeroesArchiveEntry? entry))
         {
             HeroesData.AddFileNotFound(path);
             return false;
@@ -103,7 +111,7 @@ internal abstract class MpqStormMod<T> : StormMod<T>
 
     private static void CreateFilePaths(MpqFolder root, string file)
     {
-        string[] parts = file.Split(Path.DirectorySeparatorChar, StringSplitOptions.RemoveEmptyEntries);
+        string[] parts = file.Split(_pathSeperators, StringSplitOptions.RemoveEmptyEntries);
 
         MpqFolder folder = root;
 
@@ -149,7 +157,9 @@ internal abstract class MpqStormMod<T> : StormMod<T>
             if (string.IsNullOrWhiteSpace(file))
                 continue;
 
-            if (file.Contains(Path.DirectorySeparatorChar))
+            string normalizedFile = PathHelper.NormalizePath(file);
+
+            if (normalizedFile.Contains(Path.DirectorySeparatorChar))
             {
                 CreateFilePaths(_mpqFolderRoot, file);
             }
@@ -158,5 +168,43 @@ internal abstract class MpqStormMod<T> : StormMod<T>
                 _mpqFolderRoot.Files[file] = new MpqFile(file);
             }
         }
+    }
+
+    private bool TryGetEntry(string path, [NotNullWhen(true)] out MpqHeroesArchiveEntry? mpqHeroesArchiveEntry)
+    {
+        if (_mpqHeroesArchive is null)
+        {
+            mpqHeroesArchiveEntry = null;
+            return false;
+        }
+
+        if (_mpqHeroesArchive.TryGetEntry(path, out mpqHeroesArchiveEntry))
+        {
+            return true;
+        }
+        else
+        {
+            ReadOnlySpan<char> pathSpan = path;
+            Span<char> buffer = stackalloc char[path.Length];
+
+            if (pathSpan.IndexOfAny(_backSlashSeperatorSearchValue) >= 0)
+            {
+                pathSpan.Replace(buffer, _backSlashChar, _forwardSlashChar);
+                if (_mpqHeroesArchive.TryGetEntry(buffer, out mpqHeroesArchiveEntry))
+                {
+                    return true;
+                }
+            }
+            else if (pathSpan.IndexOfAny(_forwardSlashSeperatorSearchValue) >= 0)
+            {
+                pathSpan.Replace(buffer, _forwardSlashChar, _backSlashChar);
+                if (_mpqHeroesArchive.TryGetEntry(buffer, out mpqHeroesArchiveEntry))
+                {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 }

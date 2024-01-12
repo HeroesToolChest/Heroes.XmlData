@@ -12,6 +12,4 @@ internal class FileHeroesSource : HeroesSource
     protected override IStormMod GetMpqStormMod(string directoryPath, string name) => CreateStormModInstance<FileMpqStormMod>(this, directoryPath, name);
 
     protected override IDepotCache GetDepotCache() => new FileDepotCache(this);
-
-    protected override bool CasingExists() => Directory.Exists(TestCasingDirectoryPath);
 }

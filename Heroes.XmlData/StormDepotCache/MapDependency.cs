@@ -16,11 +16,11 @@ internal record MapDependency
     {
         foreach (XElement valueElement in dependencies)
         {
-            yield return Test(valueElement, modsDirectory);
+            yield return GetMapDependency(valueElement, modsDirectory);
         }
     }
 
-    private static MapDependency Test(XElement valueElement, string modsDirectory)
+    private static MapDependency GetMapDependency(XElement valueElement, string modsDirectory)
     {
         Span<Range> valueParts = stackalloc Range[2];
         Span<Range> bnetParts = stackalloc Range[3];

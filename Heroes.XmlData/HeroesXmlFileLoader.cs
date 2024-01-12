@@ -14,7 +14,6 @@ public class HeroesXmlFileLoader
 
         _heroesData = new(_hotsBuild);
         _fileHeroesSource = new(_heroesData, pathToModsDirectory);
-        _fileHeroesSource.ValidateCasing();
     }
 
     public void LoadStormMods()

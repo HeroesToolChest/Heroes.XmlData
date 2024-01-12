@@ -21,7 +21,6 @@ public class HeroesXmlCASCLoader
 
         HeroesData heroesData = new HeroesData();
         CASCHeroesSource cASCHeroesSource = new CASCHeroesSource(heroesData, new(cascHandler, cascFolderRoot));
-        cASCHeroesSource.ValidateCasing();
 
         cASCHeroesSource.LoadStormData();
         cASCHeroesSource.LoadDepotCache();

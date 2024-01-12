@@ -68,7 +68,7 @@ internal abstract class DepotCache<T> : IDepotCache
         {
             MapLink = mapLinkElement.GetString() ?? string.Empty,
             HeaderTitle = docInfoNameElement.GetProperty("enUS").GetString() ?? string.Empty,
-            LoadingImage = loadingElement.GetProperty("Image").GetString() ?? string.Empty,
+            LoadingImage = PathHelper.NormalizePath(loadingElement.GetProperty("Image").GetString()),
             MapSize = new Point(mapInfoSizeElement.GetProperty("x").GetInt32(), mapInfoSizeElement.GetProperty("y").GetInt32()),
         };
 
@@ -89,7 +89,7 @@ internal abstract class DepotCache<T> : IDepotCache
             s2mvProperties.ModifiableDependencies.Add(PathHelper.NormalizePath(dependencyElement.GetString(), HeroesSource.DefaultModsDirectory));
         }
 
-        s2mvProperties.DocInfoIconFile = PathHelper.NormalizePath(infoElement.GetProperty("IconFile").GetString(), HeroesSource.DefaultModsDirectory);
+        s2mvProperties.DocInfoIconFile = PathHelper.NormalizePath(infoElement.GetProperty("IconFile").GetString());
 
         HeroesSource.S2MVPropertiesByHashCode.Add(s2mvProperties.GetHashCode(), s2mvProperties);
 
@@ -123,7 +123,7 @@ internal abstract class DepotCache<T> : IDepotCache
 
         S2MAProperties s2maProperties = new()
         {
-            DocInfoIconFile = PathHelper.NormalizePath(rootElement.Element("Icon")?.Value, HeroesSource.DefaultModsDirectory),
+            DocInfoIconFile = PathHelper.NormalizePath(rootElement.Element("Icon")?.Value),
             MapId = mapId,
             MapDependencies = MapDependency.GetMapDependencies(dependencies, HeroesSource.DefaultModsDirectory).ToList(),
             ModifiableDependencies = GetMapModifiableDependencies(modifiableDependencies, HeroesSource.DefaultModsDirectory).ToList(),

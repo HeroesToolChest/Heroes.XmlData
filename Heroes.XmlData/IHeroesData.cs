@@ -16,9 +16,11 @@ internal interface IHeroesData
 
     //void AddMapGameStringFile(Stream stream, string filePath);
 
-    internal void AddDirectoryNotFound(string directoryPath);
+    internal void SetCurrentStormMod(string name, string directoryPath);
 
-    internal void AddFileNotFound(string filePath);
+    internal void AddDirectoryNotFound(string notFoundDirectory);
+
+    internal void AddFileNotFound(string notFoundFile);
 
     internal void ClearGamestrings();
 }

@@ -1,11 +1,11 @@
-﻿using CASCLib;
-using Heroes.XmlData;
-using System.ComponentModel;
-using System.Xml.Linq;
+﻿using Heroes.XmlData;
 
 Console.WriteLine("Hello, World!");
 
-HeroesXmlFileLoader heroesXmlFileLoader = new(@"F:\heroes\heroes_91418\mods_91418");
+Console.WriteLine(Environment.OSVersion);
+var aa = Environment.OSVersion;
+
+HeroesXmlFileLoader heroesXmlFileLoader = new("/home/koliva/mods_all_91418");
 HeroesData heroesData = heroesXmlFileLoader.HeroesData;
 //var a = heroesXmlFileLoader.GetMapTitles();
 heroesXmlFileLoader.LoadStormMods();

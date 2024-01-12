@@ -3,26 +3,24 @@
 internal abstract class HeroesSource : IHeroesSource
 {
     private const string _defaultModsDirectory = "mods";
-    private const string _gameDataDirectory = "GameData";
+    private const string _gameDataDirectory = "gamedata";
     private const string _baseStormDataDirectory = "base.stormdata";
-    private const string _localizedDataDirectory = "LocalizedData";
-    private const string _gameStringFile = "GameStrings.txt";
-    private const string _gameDataXmlFile = "GameData.xml";
-    private const string _includesXmlFile = "Includes.xml";
-    private const string _documentInfoFile = "DocumentInfo";
+    private const string _localizedDataDirectory = "localizeddata";
+    private const string _gameStringFile = "gamestrings.txt";
+    private const string _gameDataXmlFile = "gamedata.xml";
+    private const string _includesXmlFile = "includes.xml";
+    private const string _documentInfoFile = "documentinfo";
 
     private const string _coreStormModDirectory = "core.stormmod";
     private const string _heroesStormModDirectory = "heroes.stormmod";
     private const string _heroesDataStormModDirectory = "heroesdata.stormmod";
 
     private const string _heroModsDirectory = "heromods";
-    private const string _depotCacheDirectory = "core.stormmod\\base.stormdata\\DepotCache";
-    private const string _battleMapModsDirectory = "heroesmapmods\\battlegroundmapmods";
+    private readonly string _depotCacheDirectory = Path.Join("core.stormmod", "base.stormdata", "depotcache");
+    private readonly string _battleMapModsDirectory = Path.Join("heroesmapmods", "battlegroundmapmods");
 
     private readonly List<IStormMod> _stormMods = [];
     private readonly List<IStormMod> _stormMapMods = [];
-
-    private bool _fileCasingIsUpper = true;
 
     public HeroesSource(IHeroesData heroesData, string modsDirectoryPath)
     {
@@ -40,17 +38,17 @@ internal abstract class HeroesSource : IHeroesSource
 
     public string DefaultModsDirectory => _defaultModsDirectory;
 
-    public string GameDataDirectory => _fileCasingIsUpper ? _gameDataDirectory : _gameDataDirectory.ToLowerInvariant();
+    public string GameDataDirectory => _gameDataDirectory;
 
     public string BaseStormDataDirectory => _baseStormDataDirectory;
 
-    public string LocalizedDataDirectory => _fileCasingIsUpper ? _localizedDataDirectory : _localizedDataDirectory.ToLowerInvariant();
+    public string LocalizedDataDirectory => _localizedDataDirectory;
 
-    public string GameStringFile => _fileCasingIsUpper ? _gameStringFile : _gameStringFile.ToLowerInvariant();
+    public string GameStringFile => _gameStringFile;
 
-    public string GameDataXmlFile => _fileCasingIsUpper ? _gameDataXmlFile : _gameDataXmlFile.ToLowerInvariant();
+    public string GameDataXmlFile => _gameDataXmlFile;
 
-    public string IncludesXmlFile => _fileCasingIsUpper ? _includesXmlFile : _includesXmlFile.ToLowerInvariant();
+    public string IncludesXmlFile => _includesXmlFile;
 
     public string DocumentInfoFile => _documentInfoFile;
 
@@ -79,8 +77,6 @@ internal abstract class HeroesSource : IHeroesSource
     public Dictionary<string, S2MAProperties> S2MAPropertiesByTitle { get; } = [];
 
     public List<string> S2MAPaths { get; } = [];
-
-    protected static string TestCasingDirectoryPath => Path.Join(_defaultModsDirectory, _coreStormModDirectory, _baseStormDataDirectory, _gameDataDirectory);
 
     public void LoadStormData()
     {
@@ -140,21 +136,11 @@ internal abstract class HeroesSource : IHeroesSource
         return instance;
     }
 
-    public void ValidateCasing()
-    {
-        if (!CasingExists())
-        {
-            _fileCasingIsUpper = false;
-        }
-    }
-
     protected abstract IStormMod GetStormMod(string directoryPath);
 
     protected abstract IStormMod GetMpqStormMod(string directoryPath, string name);
 
     protected abstract IDepotCache GetDepotCache();
-
-    protected abstract bool CasingExists();
 
     private void AddStormMods()
     {

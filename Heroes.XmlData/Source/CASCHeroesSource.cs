@@ -17,12 +17,4 @@ internal class CASCHeroesSource : HeroesSource, ICASCHeroesSource
     protected override IStormMod GetMpqStormMod(string directoryPath, string name) => CreateStormModInstance<CASCMpqStormMod>(this, directoryPath, name);
 
     protected override IDepotCache GetDepotCache() => new CASCDepotCache(this);
-
-    protected override bool CasingExists()
-    {
-        if (!_cascHeroesStorage.CASCFolderRoot.TryGetLastDirectory(TestCasingDirectoryPath, out _))
-            return false;
-
-        return true;
-    }
 }

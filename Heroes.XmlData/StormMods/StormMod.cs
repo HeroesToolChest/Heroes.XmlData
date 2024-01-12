@@ -55,6 +55,7 @@ internal abstract class StormMod<T> : IStormMod
     {
         XmlStorage.StormModName = Name;
         XmlStorage.StormModDirectoryPath = DirectoryPath;
+        HeroesData.SetCurrentStormMod(Name, DirectoryPath);
 
         LoadGameDataXmlFile();
         LoadGameDataDirectory();
@@ -165,7 +166,7 @@ internal abstract class StormMod<T> : IStormMod
 
             if (path.StartsWith(HeroesSource.GameDataDirectory, StringComparison.OrdinalIgnoreCase))
             {
-                string xmlFilePath = Path.Join(HeroesSource.ModsDirectoryPath, DirectoryPath, HeroesSource.BaseStormDataDirectory, catalogPathValue);
+                string xmlFilePath = Path.Join(HeroesSource.ModsDirectoryPath, DirectoryPath, HeroesSource.BaseStormDataDirectory, path);
 
                 AddXmlFile(xmlFilePath);
             }

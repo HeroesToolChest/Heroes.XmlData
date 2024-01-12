@@ -3,32 +3,7 @@
 internal class PathHelper
 {
     /// <summary>
-    /// Returns a modified path using the current platform's directory separator character. If <paramref name="filePath"/> is <see langword="null"/>, returns <see langword="null"/>.
-    /// </summary>
-    /// <param name="filePath">A file path.</param>
-    /// <returns>A modified path.</returns>
-    [return: NotNullIfNotNull(nameof(filePath))]
-    public static string? GetFilePath(string? filePath)
-    {
-        if (string.IsNullOrWhiteSpace(filePath))
-        {
-            return filePath;
-        }
-
-        if (Path.DirectorySeparatorChar != '\\')
-        {
-            filePath = filePath.Replace('\\', Path.DirectorySeparatorChar);
-        }
-        else if (Path.DirectorySeparatorChar == '\\')
-        {
-            filePath = filePath.Replace('/', Path.DirectorySeparatorChar);
-        }
-
-        return filePath;
-    }
-
-    /// <summary>
-    /// Modifies the path to use the current platform's directory separator character and lowecases all characters.
+    /// Modifies the path to use the current platform's directory separator character and lowercase all characters.
     /// </summary>
     /// <param name="filePath">A file path.</param>
     public static void NormalizePath(Span<char> filePath)
@@ -50,7 +25,25 @@ internal class PathHelper
     }
 
     /// <summary>
-    /// Returns a modified path to use the current platform's directory separator character and lowecases all characters. Will remove the 'mods' part as well.
+    /// Returns a modified path to use the current platform's directory separator character and lowercase all characters.
+    /// </summary>
+    /// <param name="filePath">A file path.</param>
+    /// <returns>The modified file path.</returns>
+    public static string NormalizePath(ReadOnlySpan<char> filePath)
+    {
+        if (filePath.IsEmpty || filePath.IsWhiteSpace())
+            return string.Empty;
+
+        Span<char> buffer = stackalloc char[filePath.Length];
+        filePath.CopyTo(buffer);
+
+        NormalizePath(buffer);
+
+        return buffer.ToString();
+    }
+
+    /// <summary>
+    /// Returns a modified path to use the current platform's directory separator character and lowercase all characters. Will remove the 'mods' part as well.
     /// </summary>
     /// <param name="filePath">A file path.</param>
     /// <param name="modsDirectory">The name of the mods directory.</param>
