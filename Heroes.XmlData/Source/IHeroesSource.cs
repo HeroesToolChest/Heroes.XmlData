@@ -22,6 +22,8 @@ internal interface IHeroesSource
 
     string DocumentInfoFile { get; }
 
+    string FontStyleFile { get; }
+
     string CoreStormModDirectory { get; }
 
     string HeroesStormModDirectory { get; }
@@ -29,6 +31,8 @@ internal interface IHeroesSource
     string HeroesDataStormModDirectory { get; }
 
     string HeroModsDirectory { get; }
+
+    string UIDirectory { get; }
 
     string DepotCacheDirectory { get; }
 

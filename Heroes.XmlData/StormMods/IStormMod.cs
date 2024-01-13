@@ -10,5 +10,5 @@ internal interface IStormMod
 
     IEnumerable<IStormMod> GetStormMapMods(S2MAProperties s2maProperties);
 
-    List<IStormMod> LoadDocumentInfo();
+    List<IStormMod> LoadDocumentInfoFile();
 }

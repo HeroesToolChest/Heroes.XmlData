@@ -10,12 +10,15 @@ internal abstract class HeroesSource : IHeroesSource
     private const string _gameDataXmlFile = "gamedata.xml";
     private const string _includesXmlFile = "includes.xml";
     private const string _documentInfoFile = "documentinfo";
+    private const string _fontStyleFile = "fontstyles.stormstyle";
 
     private const string _coreStormModDirectory = "core.stormmod";
     private const string _heroesStormModDirectory = "heroes.stormmod";
     private const string _heroesDataStormModDirectory = "heroesdata.stormmod";
 
     private const string _heroModsDirectory = "heromods";
+    private const string _uiDirectory = "ui";
+
     private readonly string _depotCacheDirectory = Path.Join("core.stormmod", "base.stormdata", "depotcache");
     private readonly string _battleMapModsDirectory = Path.Join("heroesmapmods", "battlegroundmapmods");
 
@@ -52,6 +55,8 @@ internal abstract class HeroesSource : IHeroesSource
 
     public string DocumentInfoFile => _documentInfoFile;
 
+    public string FontStyleFile => _fontStyleFile;
+
     public string CoreStormModDirectory => _coreStormModDirectory;
 
     public string HeroesStormModDirectory => _heroesStormModDirectory;
@@ -59,6 +64,8 @@ internal abstract class HeroesSource : IHeroesSource
     public string HeroesDataStormModDirectory => _heroesDataStormModDirectory;
 
     public string HeroModsDirectory => _heroModsDirectory;
+
+    public string UIDirectory => _uiDirectory;
 
     public string DepotCacheDirectory => _depotCacheDirectory;
 

@@ -22,52 +22,6 @@ internal class CASCStormMod : StormMod<ICASCHeroesSource>, IStormMod
 
     public override string Name => _name is null ? base.Name : _name;
 
-    protected override void AddXmlFile(string xmlFilePath)
-    {
-        if (!ValidateXmlFile(xmlFilePath, out XDocument? document))
-            return;
-
-        XmlStorage.AddXmlFile(document, xmlFilePath);
-    }
-
-    protected override bool ValidateXmlFile(string xmlFilePath, [NotNullWhen(true)] out XDocument? document, bool isRequired = true)
-    {
-        document = null;
-
-        if (!IsXmlFile(xmlFilePath))
-            return false;
-
-        if (!HeroesSource.CASCHeroesStorage.CASCHandler.FileExists(xmlFilePath))
-        {
-            if (isRequired)
-                HeroesData.AddFileNotFound(xmlFilePath);
-
-            return false;
-        }
-
-        using Stream fileStream = HeroesSource.CASCHeroesStorage.CASCHandler.OpenFile(xmlFilePath);
-
-        document = XDocument.Load(fileStream);
-
-        return true;
-    }
-
-    protected override bool ValidateGameStringFile(HeroesLocalization localization, [NotNullWhen(true)] out Stream? stream, out string path)
-    {
-        stream = null;
-        path = GetGameStringFilePath(localization);
-
-        if (!HeroesSource.CASCHeroesStorage.CASCHandler.FileExists(path))
-        {
-            HeroesData.AddFileNotFound(path);
-            return false;
-        }
-
-        stream = HeroesSource.CASCHeroesStorage.CASCHandler.OpenFile(path);
-
-        return true;
-    }
-
     protected override bool TryGetFile(string filePath, [NotNullWhen(true)] out Stream? stream)
     {
         stream = null;

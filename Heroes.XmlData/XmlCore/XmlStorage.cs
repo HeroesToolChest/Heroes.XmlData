@@ -4,10 +4,12 @@ public class XmlStorage
 {
     private const string _selfName = "HXD";
 
-    private readonly HashSet<string> _addedXmlFilePathsList = [];
+    private readonly HashSet<string> _addedXmlDataFilePathsList = [];
+    private readonly HashSet<string> _addedXmlFontStyleFilePathsList = [];
     private readonly Dictionary<string, List<GameStringText>> _gameStringsById = [];
 
-    private readonly XDocument _xml = new();
+    private readonly XDocument _xmlData = new();
+    private readonly XDocument _xmlFontStyle = new();
 
     public string StormModName { get; internal set; } = string.Empty;
 
@@ -42,29 +44,20 @@ public class XmlStorage
         }
     }
 
-    public void AddXmlFile(XDocument document, string filePath)
+    public void AddXmlDataFile(XDocument document, string filePath)
     {
         if (document.Root is null)
             return;
 
-        document.Root.SetAttributeValue($"{_selfName}-FilePath", filePath);
+        SetXml(document, filePath, _addedXmlDataFilePathsList, _xmlData);
+    }
 
-        if (_addedXmlFilePathsList.Contains(filePath))
+    public void AddXmlFontStyleFile(XDocument document, string filePath)
+    {
+        if (document.Root is null)
             return;
 
-        if (_xml.Root is null)
-        {
-            _xml.Declaration = document.Declaration;
-            _xml.Add(new XElement(_selfName));
-
-            _xml.Root!.Add(document.Root);
-        }
-        else
-        {
-            _xml.Root.Add(document.Root);
-        }
-
-        _addedXmlFilePathsList.Add(filePath);
+        SetXml(document, filePath, _addedXmlFontStyleFilePathsList, _xmlFontStyle);
     }
 
     public void ClearGameStrings()
@@ -76,5 +69,27 @@ public class XmlStorage
     public override string ToString()
     {
         return StormModName;
+    }
+
+    private static void SetXml(XDocument document, string filePath, HashSet<string> filePaths, XDocument xmlDoc)
+    {
+        document.Root!.SetAttributeValue($"{_selfName}-FilePath", filePath);
+
+        if (filePaths.Contains(filePath))
+            return;
+
+        if (xmlDoc.Root is null)
+        {
+            xmlDoc.Declaration = document.Declaration;
+            xmlDoc.Add(new XElement(_selfName));
+
+            xmlDoc.Root!.Add(document.Root);
+        }
+        else
+        {
+            xmlDoc.Root.Add(document.Root);
+        }
+
+        filePaths.Add(filePath);
     }
 }

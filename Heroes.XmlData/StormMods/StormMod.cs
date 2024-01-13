@@ -47,6 +47,11 @@ internal abstract class StormMod<T> : IStormMod
     /// </summary>
     protected virtual string DocumentInfoPath => Path.Join(HeroesSource.ModsDirectoryPath, DirectoryPath, HeroesSource.DocumentInfoFile);
 
+    /// <summary>
+    /// Gets the FontStyles.StormStyle file path.
+    /// </summary>
+    protected virtual string FontStyleFilePath => Path.Join(HeroesSource.ModsDirectoryPath, DirectoryPath, HeroesSource.BaseStormDataDirectory, HeroesSource.UIDirectory, HeroesSource.FontStyleFile);
+
     protected T HeroesSource => _heroesSource;
 
     protected IHeroesData HeroesData => _heroesSource.HeroesData;
@@ -59,6 +64,7 @@ internal abstract class StormMod<T> : IStormMod
 
         LoadGameDataXmlFile();
         LoadGameDataDirectory();
+        LoadFontStyleFile();
 
         HeroesData.AddXmlStorage(XmlStorage);
 
@@ -76,7 +82,7 @@ internal abstract class StormMod<T> : IStormMod
         return BuildMapDependencyTree(s2maProperties);
     }
 
-    public List<IStormMod> LoadDocumentInfo()
+    public List<IStormMod> LoadDocumentInfoFile()
     {
         if (!TryGetFile(DocumentInfoPath, out Stream? stream))
             return [];
@@ -88,6 +94,16 @@ internal abstract class StormMod<T> : IStormMod
         IEnumerable<MapDependency> mapDependencies = MapDependency.GetMapDependencies(dependencies, HeroesSource.DefaultModsDirectory);
 
         return GetStormMapModDependencies(mapDependencies);
+    }
+
+    public void LoadFontStyleFile()
+    {
+        if (!TryGetFile(FontStyleFilePath, out Stream? stream))
+            return;
+
+        XDocument document = XDocument.Load(stream);
+
+        XmlStorage.AddXmlFontStyleFile(document, FontStyleFilePath);
     }
 
     protected static bool IsXmlFile(string xmlFilePath) => Path.GetExtension(xmlFilePath).Equals(".xml", StringComparison.OrdinalIgnoreCase);
@@ -106,7 +122,13 @@ internal abstract class StormMod<T> : IStormMod
     /// Adds an xml file to the <see cref="HeroesData"/>. Checks first if it's an xml file and it exists.
     /// </summary>
     /// <param name="xmlFilePath">The path to the xml file.</param>
-    protected abstract void AddXmlFile(string xmlFilePath);
+    protected void AddXmlFile(string xmlFilePath)
+    {
+        if (!ValidateXmlFile(xmlFilePath, out XDocument? document))
+            return;
+
+        XmlStorage.AddXmlDataFile(document, xmlFilePath);
+    }
 
     /// <summary>
     /// Validates an xml file, returning a value that indicates whether the file exists.
@@ -115,7 +137,26 @@ internal abstract class StormMod<T> : IStormMod
     /// <param name="document">When this method returns, contains an <see cref="XDocument"/> of the <paramref name="xmlFilePath"/>.</param>
     /// <param name="isRequired">If <see langword="true"/>, if file does not exist, then add the <paramref name="xmlFilePath"/> as a missing file.</param>
     /// <returns><see langword="true"/> if the xml file was found; otherwise <see langword="false"/>.</returns>
-    protected abstract bool ValidateXmlFile(string xmlFilePath, [NotNullWhen(true)] out XDocument? document, bool isRequired = true);
+    protected bool ValidateXmlFile(string xmlFilePath, [NotNullWhen(true)] out XDocument? document, bool isRequired = true)
+    {
+        document = null;
+
+        if (!IsXmlFile(xmlFilePath))
+            return false;
+
+        if (!TryGetFile(xmlFilePath, out Stream? stream))
+        {
+            if (isRequired)
+                HeroesData.AddFileNotFound(xmlFilePath);
+
+            return false;
+        }
+
+        using Stream fileStream = stream;
+        document = XDocument.Load(fileStream);
+
+        return true;
+    }
 
     /// <summary>
     /// Validates an gamestring file, returning a value that indicates whether the file exists.
@@ -124,7 +165,18 @@ internal abstract class StormMod<T> : IStormMod
     /// <param name="stream">When this method returns, contains the <see cref="Stream"/> of the gamestring file.</param>
     /// <param name="path">When this method returns, contains the file path to the gamestring file.</param>
     /// <returns><see langword="true"/> if the gamestring file was found; otherwise <see langword="false"/>.</returns>
-    protected abstract bool ValidateGameStringFile(HeroesLocalization localization, [NotNullWhen(true)] out Stream? stream, out string path);
+    protected bool ValidateGameStringFile(HeroesLocalization localization, [NotNullWhen(true)] out Stream? stream, out string path)
+    {
+        path = GetGameStringFilePath(localization);
+
+        if (!TryGetFile(path, out stream))
+        {
+            HeroesData.AddFileNotFound(path);
+            return false;
+        }
+
+        return true;
+    }
 
     /// <summary>
     /// Gets a file if it exists, return a value that indicates whether the file exists.
@@ -234,7 +286,7 @@ internal abstract class StormMod<T> : IStormMod
             IStormMod stormMod = GetStormMod(mapDependency.LocalFile);
             currentDependencies.Add(stormMod);
 
-            mapModDependecies.AddRange(stormMod.LoadDocumentInfo());
+            mapModDependecies.AddRange(stormMod.LoadDocumentInfoFile());
         }
 
         currentDependencies.Reverse(); // flip-flop

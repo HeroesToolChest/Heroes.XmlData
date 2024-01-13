@@ -49,42 +49,12 @@ internal abstract class MpqStormMod<T> : StormMod<T>
         return Path.Join(localization.GetDescription(), HeroesSource.LocalizedDataDirectory, HeroesSource.GameStringFile);
     }
 
-    protected override void AddXmlFile(string xmlFilePath)
-    {
-        if (!ValidateXmlFile(xmlFilePath, out XDocument? document))
-            return;
-
-        XmlStorage.AddXmlFile(document, xmlFilePath);
-    }
-
-    protected override bool ValidateXmlFile(string xmlFilePath, [NotNullWhen(true)] out XDocument? document, bool isRequired = true)
-    {
-        document = null;
-
-        if (!IsXmlFile(xmlFilePath))
-            return false;
-
-        if (_mpqHeroesArchive is null || !TryGetEntry(xmlFilePath, out MpqHeroesArchiveEntry? entry))
-        {
-            if (isRequired)
-                HeroesData.AddFileNotFound(xmlFilePath);
-
-            return false;
-        }
-
-        document = XDocument.Load(_mpqHeroesArchive.DecompressEntry(entry.Value));
-
-        return true;
-    }
-
-    protected override bool ValidateGameStringFile(HeroesLocalization localization, [NotNullWhen(true)] out Stream? stream, out string path)
+    protected override bool TryGetFile(string filePath, [NotNullWhen(true)] out Stream? stream)
     {
         stream = null;
-        path = GetGameStringFilePath(localization);
 
-        if (_mpqHeroesArchive is null || !TryGetEntry(path, out MpqHeroesArchiveEntry? entry))
+        if (_mpqHeroesArchive is null || !TryGetEntry(filePath, out MpqHeroesArchiveEntry? entry))
         {
-            HeroesData.AddFileNotFound(path);
             return false;
         }
 
