@@ -2,25 +2,15 @@
 
 internal class FileStormMod : StormMod<IHeroesSource>
 {
-    private readonly string _directoryPath;
-    private readonly string? _name;
-
     public FileStormMod(IHeroesSource heroesSource, string directoryPath)
-        : base(heroesSource)
+        : base(heroesSource, directoryPath)
     {
-        _directoryPath = directoryPath;
     }
 
-    public FileStormMod(IHeroesSource heroesSource, string directoryPath, string name)
-        : base(heroesSource)
+    public FileStormMod(IHeroesSource heroesSource, string name, string directoryPath)
+        : base(heroesSource, name, directoryPath)
     {
-        _directoryPath = directoryPath;
-        _name = name;
     }
-
-    public override string DirectoryPath => _directoryPath;
-
-    public override string Name => _name is null ? base.Name : _name;
 
     protected override bool TryGetFile(string filePath, [NotNullWhen(true)] out Stream? stream)
     {
@@ -40,7 +30,7 @@ internal class FileStormMod : StormMod<IHeroesSource>
     {
         if (!Directory.Exists(GameDataDirectoryPath))
         {
-            HeroesData.AddDirectoryNotFound(GameDataDirectoryPath);
+            StormStorage.AddDirectoryNotFound(GameDataDirectoryPath);
             return;
         }
 

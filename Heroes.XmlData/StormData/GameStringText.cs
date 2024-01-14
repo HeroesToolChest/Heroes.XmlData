@@ -1,4 +1,4 @@
-﻿namespace Heroes.XmlData.XmlCore;
+﻿namespace Heroes.XmlData.StormData;
 
 internal record GameStringText
 {

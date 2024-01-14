@@ -11,7 +11,7 @@ internal class CASCDepotCache : DepotCache<CASCHeroesSource>
     {
         if (!HeroesSource.CASCHeroesStorage.CASCFolderRoot.TryGetLastDirectory(DepotCacheDirectoryPath, out CASCFolder? depotCacheFolder))
         {
-            HeroesData.AddDirectoryNotFound(DepotCacheDirectoryPath);
+            StormStorage.AddDirectoryNotFound(DepotCacheDirectoryPath);
             return;
         }
 

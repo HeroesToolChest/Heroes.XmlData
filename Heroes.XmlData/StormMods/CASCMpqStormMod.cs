@@ -2,21 +2,15 @@
 
 internal class CASCMpqStormMod : MpqStormMod<CASCHeroesSource>
 {
-    private readonly string _directoryPath;
-    private readonly string _name;
-
-    public CASCMpqStormMod(CASCHeroesSource heroesSource, string directoryPath, string name)
-        : base(heroesSource)
+    public CASCMpqStormMod(CASCHeroesSource heroesSource, string directoryPath)
+        : base(heroesSource, directoryPath)
     {
-        _directoryPath = directoryPath;
-        _name = name;
     }
 
-    public override string DirectoryPath => _directoryPath;
-
-    public override string Name => _name is null ? base.Name : _name;
-
-    protected override string MpqDirectoryPath => Path.Join(HeroesSource.ModsDirectoryPath, _directoryPath);
+    public CASCMpqStormMod(CASCHeroesSource heroesSource, string name, string directoryPath)
+        : base(heroesSource, name, directoryPath)
+    {
+    }
 
     protected override Stream GetMpqFile(string file) => HeroesSource.CASCHeroesStorage.CASCHandler.OpenFile(file);
 

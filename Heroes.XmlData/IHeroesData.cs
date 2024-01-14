@@ -1,4 +1,6 @@
-﻿namespace Heroes.XmlData;
+﻿using Heroes.XmlData.StormData;
+
+namespace Heroes.XmlData;
 
 internal interface IHeroesData
 {
@@ -6,7 +8,7 @@ internal interface IHeroesData
 
     HeroesLocalization? HeroesLocalization { get; }
 
-    void AddXmlStorage(XmlStorage xmlStorage);
+    //void AddXmlStorage(StormModDataContainer xmlStorage);
 
     //void AddMainXmlFile(XDocument document, string filePath);
 
@@ -16,11 +18,11 @@ internal interface IHeroesData
 
     //void AddMapGameStringFile(Stream stream, string filePath);
 
-    internal void SetCurrentStormMod(string name, string directoryPath);
+    //internal void SetCurrentStormMod(string name, string directoryPath);
 
-    internal void AddDirectoryNotFound(string notFoundDirectory);
+    //internal void AddDirectoryNotFound(string notFoundDirectory);
 
-    internal void AddFileNotFound(string notFoundFile);
+    //internal void AddFileNotFound(string notFoundFile);
 
-    internal void ClearGamestrings();
+    //internal void ClearGamestrings();
 }

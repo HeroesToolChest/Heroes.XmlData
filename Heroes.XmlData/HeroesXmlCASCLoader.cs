@@ -18,9 +18,10 @@ public class HeroesXmlCASCLoader
 
         CASCFolder cascFolderRoot = cascHandler.Root.SetFlags(LocaleFlags.All);
 
+        IStormStorage stormStorage = new StormStorage(null);
 
-        HeroesData heroesData = new HeroesData();
-        CASCHeroesSource cASCHeroesSource = new CASCHeroesSource(heroesData, new(cascHandler, cascFolderRoot));
+        HeroesData heroesData = new HeroesData(stormStorage);
+        CASCHeroesSource cASCHeroesSource = new CASCHeroesSource(stormStorage, new(cascHandler, cascFolderRoot));
 
         cASCHeroesSource.LoadStormData();
         cASCHeroesSource.LoadDepotCache();

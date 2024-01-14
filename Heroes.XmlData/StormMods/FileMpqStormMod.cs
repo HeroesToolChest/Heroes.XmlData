@@ -2,21 +2,15 @@
 
 internal class FileMpqStormMod : MpqStormMod<FileHeroesSource>
 {
-    private readonly string _directoryPath;
-    private readonly string _name;
-
-    public FileMpqStormMod(FileHeroesSource heroesSource, string directoryPath, string name)
-        : base(heroesSource)
+    public FileMpqStormMod(FileHeroesSource heroesSource, string directoryPath)
+        : base(heroesSource, directoryPath)
     {
-        _directoryPath = directoryPath;
-        _name = name;
     }
 
-    public override string DirectoryPath => _directoryPath;
-
-    public override string Name => _name is null ? base.Name : _name;
-
-    protected override string MpqDirectoryPath => Path.Join(HeroesSource.ModsDirectoryPath, _directoryPath);
+    public FileMpqStormMod(FileHeroesSource heroesSource, string name, string directoryPath)
+        : base(heroesSource, name, directoryPath)
+    {
+    }
 
     protected override Stream GetMpqFile(string file) => File.OpenRead(file);
 

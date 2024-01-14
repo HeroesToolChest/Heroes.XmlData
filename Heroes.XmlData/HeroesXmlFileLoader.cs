@@ -12,8 +12,10 @@ public class HeroesXmlFileLoader
         _pathToModsDirectory = pathToModsDirectory;
         _hotsBuild = hotsBuild;
 
-        _heroesData = new(_hotsBuild);
-        _fileHeroesSource = new(_heroesData, pathToModsDirectory);
+        StormStorage stormStorage = new StormStorage(_hotsBuild);
+
+        _fileHeroesSource = new(stormStorage, pathToModsDirectory);
+        _heroesData = new(stormStorage);
     }
 
     public void LoadStormMods()
@@ -29,7 +31,7 @@ public class HeroesXmlFileLoader
 
     public void LoadGameStrings(HeroesLocalization localization = HeroesLocalization.ENUS)
     {
-        HeroesData.SetHeroesLocalization(localization);
+        //HeroesData.SetHeroesLocalization(localization);
 
         _fileHeroesSource.LoadGamestrings(localization);
     }

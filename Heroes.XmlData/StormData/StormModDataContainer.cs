@@ -1,8 +1,11 @@
-﻿namespace Heroes.XmlData.XmlCore;
+﻿namespace Heroes.XmlData.StormData;
 
-public class XmlStorage
+public class StormModDataContainer
 {
     private const string _selfName = "HXD";
+
+    private readonly string _stormModName;
+    private readonly string _stormModDirectoryPath;
 
     private readonly HashSet<string> _addedXmlDataFilePathsList = [];
     private readonly HashSet<string> _addedXmlFontStyleFilePathsList = [];
@@ -11,9 +14,15 @@ public class XmlStorage
     private readonly XDocument _xmlData = new();
     private readonly XDocument _xmlFontStyle = new();
 
-    public string StormModName { get; internal set; } = string.Empty;
+    public StormModDataContainer(string stormModeName, string stormModDirectoryPath)
+    {
+        _stormModName = stormModeName;
+        _stormModDirectoryPath = stormModDirectoryPath;
+    }
 
-    public string StormModDirectoryPath { get; internal set; } = string.Empty;
+    public string StormModName => _stormModName;
+
+    public string StormModDiretoryPath => _stormModDirectoryPath;
 
     public void AddGameStringFile(Stream stream, string filePath)
     {

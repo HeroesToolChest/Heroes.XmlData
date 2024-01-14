@@ -11,7 +11,7 @@ internal class FileDepotCache : DepotCache<FileHeroesSource>
     {
         if (!Directory.Exists(DepotCacheDirectoryPath))
         {
-            HeroesData.AddDirectoryNotFound(DepotCacheDirectoryPath);
+            StormStorage.AddDirectoryNotFound(DepotCacheDirectoryPath);
             return;
         }
 

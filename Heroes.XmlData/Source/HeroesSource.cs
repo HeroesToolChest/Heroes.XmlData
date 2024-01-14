@@ -25,17 +25,17 @@ internal abstract class HeroesSource : IHeroesSource
     private readonly List<IStormMod> _stormMods = [];
     private readonly List<IStormMod> _stormMapMods = [];
 
-    public HeroesSource(IHeroesData heroesData, string modsDirectoryPath)
+    public HeroesSource(IStormStorage stormStorage, string modsDirectoryPath)
     {
-        HeroesData = heroesData;
-        HotsBuild = HeroesData.HotsBuild ?? int.MaxValue;
+        StormStorage = stormStorage;
+        HotsBuild = StormStorage.HotsBuild;
         ModsDirectoryPath = modsDirectoryPath;
 
         AddStormMods();
         DepotCache = GetDepotCache();
     }
 
-    public int HotsBuild { get; }
+    public int? HotsBuild { get; }
 
     public string ModsDirectoryPath { get; }
 
@@ -71,7 +71,7 @@ internal abstract class HeroesSource : IHeroesSource
 
     public string BattleMapModsDirectory => _battleMapModsDirectory;
 
-    public IHeroesData HeroesData { get; }
+    public IStormStorage StormStorage { get; }
 
     public IDepotCache DepotCache { get; }
 
@@ -95,7 +95,7 @@ internal abstract class HeroesSource : IHeroesSource
 
     public void LoadGamestrings(HeroesLocalization localization)
     {
-        HeroesData.ClearGamestrings();
+        StormStorage.ClearGamestrings();
 
         foreach (IStormMod stormMod in _stormMods)
         {
@@ -120,7 +120,7 @@ internal abstract class HeroesSource : IHeroesSource
 
         _stormMapMods.Clear();
 
-        IStormMod mapRootMod = GetMpqStormMod(s2maProperties.DirectoryPath, mapTitle);
+        IStormMod mapRootMod = GetMpqStormMod(mapTitle, s2maProperties.DirectoryPath);
 
         _stormMapMods.AddRange(mapRootMod.GetStormMapMods(s2maProperties));
 
@@ -145,7 +145,7 @@ internal abstract class HeroesSource : IHeroesSource
 
     protected abstract IStormMod GetStormMod(string directoryPath);
 
-    protected abstract IStormMod GetMpqStormMod(string directoryPath, string name);
+    protected abstract IStormMod GetMpqStormMod(string name, string directoryPath);
 
     protected abstract IDepotCache GetDepotCache();
 

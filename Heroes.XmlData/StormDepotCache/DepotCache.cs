@@ -16,7 +16,7 @@ internal abstract class DepotCache<T> : IDepotCache
 
     protected T HeroesSource => _heroesSource;
 
-    protected IHeroesData HeroesData => _heroesSource.HeroesData;
+    protected IStormStorage StormStorage => _heroesSource.StormStorage;
 
     public void LoadDepotCache()
     {

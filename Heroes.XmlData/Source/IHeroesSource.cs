@@ -2,7 +2,7 @@
 
 internal interface IHeroesSource
 {
-    int HotsBuild { get; }
+    int? HotsBuild { get; }
 
     string ModsDirectoryPath { get; }
 
@@ -38,7 +38,7 @@ internal interface IHeroesSource
 
     string BattleMapModsDirectory { get; }
 
-    IHeroesData HeroesData { get; }
+    IStormStorage StormStorage { get; }
 
     IDepotCache DepotCache { get; }
 

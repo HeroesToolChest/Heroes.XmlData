@@ -4,8 +4,8 @@ internal class CASCHeroesSource : HeroesSource, ICASCHeroesSource
 {
     private readonly CASCHeroesStorage _cascHeroesStorage;
 
-    public CASCHeroesSource(HeroesData heroesData, CASCHeroesStorage cascHeroesStorage)
-        : base(heroesData, "mods")
+    public CASCHeroesSource(IStormStorage stormStorage, CASCHeroesStorage cascHeroesStorage)
+        : base(stormStorage, "mods")
     {
         _cascHeroesStorage = cascHeroesStorage;
     }
@@ -14,7 +14,7 @@ internal class CASCHeroesSource : HeroesSource, ICASCHeroesSource
 
     protected override IStormMod GetStormMod(string directoryPath) => CreateStormModInstance<CASCStormMod>(this, directoryPath);
 
-    protected override IStormMod GetMpqStormMod(string directoryPath, string name) => CreateStormModInstance<CASCMpqStormMod>(this, directoryPath, name);
+    protected override IStormMod GetMpqStormMod(string name, string directoryPath) => CreateStormModInstance<CASCMpqStormMod>(this, name, directoryPath);
 
     protected override IDepotCache GetDepotCache() => new CASCDepotCache(this);
 }
