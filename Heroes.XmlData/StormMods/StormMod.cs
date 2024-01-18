@@ -5,23 +5,26 @@ internal abstract class StormMod<T> : IStormMod
 {
     private readonly string _name;
     private readonly string _directoryPath;
+    private readonly bool _isMapMod;
 
     private readonly T _heroesSource;
     private readonly List<IStormMod> _includesStormModsCache = [];
     private readonly StormModDataContainer _stormModDataContainer;
 
-    public StormMod(T heroesSource, string directoryPath)
-        : this(heroesSource, Path.GetFileNameWithoutExtension(directoryPath), directoryPath)
+    public StormMod(T heroesSource, string directoryPath, bool isMapMod)
+        : this(heroesSource, Path.GetFileNameWithoutExtension(directoryPath), directoryPath, isMapMod)
     {
     }
 
-    public StormMod(T heroesSource, string name, string directoryPath)
+    public StormMod(T heroesSource, string name, string directoryPath, bool isMapMod)
     {
         _name = name;
         _directoryPath = directoryPath;
+        _isMapMod = isMapMod;
 
         _heroesSource = heroesSource;
-        _stormModDataContainer = StormStorage.GetContainerInstance(_name, _directoryPath);
+
+        _stormModDataContainer = StormStorage.GetContainerInstance(_name, _directoryPath, _isMapMod);
     }
 
     /// <summary>
@@ -199,7 +202,7 @@ internal abstract class StormMod<T> : IStormMod
     /// </summary>
     protected abstract void LoadGameDataDirectory();
 
-    protected abstract IStormMod GetStormMod(string path);
+    protected abstract IStormMod GetStormMod(string path, bool isMapMod);
 
     /// <summary>
     /// Loads and adds the files from the gamedata.xml file.
@@ -255,7 +258,7 @@ internal abstract class StormMod<T> : IStormMod
                 continue;
 
             string path = PathHelper.NormalizePath(pathValuePath, HeroesSource.DefaultModsDirectory);
-            IStormMod stormMod = GetStormMod(path);
+            IStormMod stormMod = GetStormMod(path, false);
 
             _includesStormModsCache.Add(stormMod);
             stormMod.LoadStormData();
@@ -291,7 +294,7 @@ internal abstract class StormMod<T> : IStormMod
 
         foreach (MapDependency mapDependency in mapDependencies)
         {
-            IStormMod stormMod = GetStormMod(mapDependency.LocalFile);
+            IStormMod stormMod = GetStormMod(mapDependency.LocalFile, true);
             currentDependencies.Add(stormMod);
 
             mapModDependecies.AddRange(stormMod.LoadDocumentInfoFile());

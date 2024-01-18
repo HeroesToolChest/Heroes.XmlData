@@ -14,13 +14,13 @@ internal abstract class MpqStormMod<T> : StormMod<T>
     private MpqHeroesArchive? _mpqHeroesArchive;
     private MpqFolder? _mpqFolderRoot;
 
-    protected MpqStormMod(T heroesSource, string directoryPath)
-        : base(heroesSource, directoryPath)
+    protected MpqStormMod(T heroesSource, string directoryPath, bool isMapMod)
+        : base(heroesSource, directoryPath, isMapMod)
     {
     }
 
-    protected MpqStormMod(T heroesSource, string name, string directoryPath)
-        : base(heroesSource, name, directoryPath)
+    protected MpqStormMod(T heroesSource, string name, string directoryPath, bool isMapMod)
+        : base(heroesSource, name, directoryPath, isMapMod)
     {
     }
 

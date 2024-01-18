@@ -5,7 +5,8 @@ Console.WriteLine("Hello, World!");
 Console.WriteLine(Environment.OSVersion);
 var aa = Environment.OSVersion;
 
-HeroesXmlFileLoader heroesXmlFileLoader = new("/home/koliva/mods_all_91418");
+//HeroesXmlFileLoader heroesXmlFileLoader = new("/home/koliva/mods_all_91418");
+HeroesXmlFileLoader heroesXmlFileLoader = new("F:\\heroes\\heroes_91418\\mods_all_91418");
 HeroesData heroesData = heroesXmlFileLoader.HeroesData;
 //var a = heroesXmlFileLoader.GetMapTitles();
 heroesXmlFileLoader.LoadStormMods();
@@ -41,3 +42,8 @@ heroesXmlFileLoader.LoadGameStrings(HeroesLocalization.ENUS);
 //HeroesXmlCASCLoader heroesXmlCASCLoader = new HeroesXmlCASCLoader(null);
 //heroesXmlCASCLoader.Test("E:\\Games\\Heroes of the Storm");
 Console.ReadKey();
+//
+//
+// XmlContainer
+// HeroesContainer
+// HeroesDataContainer

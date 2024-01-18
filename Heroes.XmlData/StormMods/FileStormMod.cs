@@ -2,13 +2,13 @@
 
 internal class FileStormMod : StormMod<IHeroesSource>
 {
-    public FileStormMod(IHeroesSource heroesSource, string directoryPath)
-        : base(heroesSource, directoryPath)
+    public FileStormMod(IHeroesSource heroesSource, string directoryPath, bool isMapMod)
+        : base(heroesSource, directoryPath, isMapMod)
     {
     }
 
-    public FileStormMod(IHeroesSource heroesSource, string name, string directoryPath)
-        : base(heroesSource, name, directoryPath)
+    public FileStormMod(IHeroesSource heroesSource, string name, string directoryPath, bool isMapMod)
+        : base(heroesSource, name, directoryPath, isMapMod)
     {
     }
 
@@ -42,5 +42,5 @@ internal class FileStormMod : StormMod<IHeroesSource>
         }
     }
 
-    protected override IStormMod GetStormMod(string path) => HeroesSource.CreateStormModInstance<FileStormMod>(HeroesSource, path);
+    protected override IStormMod GetStormMod(string path, bool isMapMod) => HeroesSource.CreateStormModInstance<FileStormMod>(HeroesSource, path, isMapMod);
 }

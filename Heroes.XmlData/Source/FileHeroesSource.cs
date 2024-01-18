@@ -7,9 +7,9 @@ internal class FileHeroesSource : HeroesSource
     {
     }
 
-    protected override IStormMod GetStormMod(string directoryPath) => CreateStormModInstance<FileStormMod>(this, directoryPath);
+    protected override IStormMod GetStormMod(string directoryPath, bool isMapMod) => CreateStormModInstance<FileStormMod>(this, directoryPath, isMapMod);
 
-    protected override IStormMod GetMpqStormMod(string name, string directoryPath) => CreateStormModInstance<FileMpqStormMod>(this, name, directoryPath);
+    protected override IStormMod GetMpqStormMod(string name, string directoryPath, bool isMapMod) => CreateStormModInstance<FileMpqStormMod>(this, name, directoryPath, isMapMod);
 
     protected override IDepotCache GetDepotCache() => new FileDepotCache(this);
 }

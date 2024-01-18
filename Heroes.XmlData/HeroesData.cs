@@ -12,7 +12,7 @@ public class HeroesData : IHeroesData
     private string? _stormModName;
     private string? _stormModDirectoryPath;
 
-    public HeroesData(IStormStorage stormStorage)
+    internal HeroesData(StormStorage stormStorage)
     {
         _stormStorage = stormStorage;
     }

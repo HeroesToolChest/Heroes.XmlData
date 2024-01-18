@@ -1,33 +1,45 @@
 ﻿namespace Heroes.XmlData.StormData;
 
-public class StormStorage : IStormStorage
+internal class StormStorage : IStormStorage
 {
+    private readonly string _modsDirectoryPath;
+    private readonly int? _hotsBuild;
+
     private readonly List<StormModDataContainer> _stormModContainers = [];
 
     private readonly HashSet<RequiredStormFile> _notFoundDirectoriesList = [];
     private readonly HashSet<RequiredStormFile> _notFoundFilesList = [];
 
+    private readonly StormCache _stormCache = new();
+    private readonly StormCache _stormMapCache = new();
+
     private string? _stormModName;
     private string? _stormModDirectoryPath;
 
-    public StormStorage(int? hotsBuild)
+    public StormStorage(string modsDirectoryPath, int? hotsBuild)
     {
-        HotsBuild = hotsBuild;
+        _modsDirectoryPath = modsDirectoryPath;
+        _hotsBuild = hotsBuild;
     }
 
-    public int? HotsBuild { get; }
+    public int? HotsBuild => _hotsBuild;
+
+    public string ModsDirectoryPath => _modsDirectoryPath;
 
     public void AddContainer(StormModDataContainer stormModDataContainer)
     {
         _stormModContainers.Add(stormModDataContainer);
     }
 
-    public StormModDataContainer GetContainerInstance(string stormModName, string stormModDirectoryPath)
+    public StormModDataContainer GetContainerInstance(string stormModName, string stormModDirectoryPath, bool useMapCache = false)
     {
         _stormModName = stormModName;
         _stormModDirectoryPath = stormModDirectoryPath;
 
-        return new(_stormModName, _stormModDirectoryPath);
+        if (useMapCache is false)
+            return new(_stormCache, _modsDirectoryPath, _stormModName, _stormModDirectoryPath);
+        else
+            return new(_stormMapCache, _modsDirectoryPath, _stormModName, _stormModDirectoryPath);
     }
 
     public void AddDirectoryNotFound(string directory)

@@ -120,7 +120,7 @@ internal abstract class HeroesSource : IHeroesSource
 
         _stormMapMods.Clear();
 
-        IStormMod mapRootMod = GetMpqStormMod(mapTitle, s2maProperties.DirectoryPath);
+        IStormMod mapRootMod = GetMpqStormMod(mapTitle, s2maProperties.DirectoryPath, true);
 
         _stormMapMods.AddRange(mapRootMod.GetStormMapMods(s2maProperties));
 
@@ -143,16 +143,16 @@ internal abstract class HeroesSource : IHeroesSource
         return instance;
     }
 
-    protected abstract IStormMod GetStormMod(string directoryPath);
+    protected abstract IStormMod GetStormMod(string directoryPath, bool isMapMod);
 
-    protected abstract IStormMod GetMpqStormMod(string name, string directoryPath);
+    protected abstract IStormMod GetMpqStormMod(string name, string directoryPath, bool isMapMod);
 
     protected abstract IDepotCache GetDepotCache();
 
     private void AddStormMods()
     {
-        _stormMods.Add(GetStormMod(CoreStormModDirectory));
-        _stormMods.Add(GetStormMod(HeroesStormModDirectory));
-        _stormMods.Add(GetStormMod(HeroesDataStormModDirectory));
+        _stormMods.Add(GetStormMod(CoreStormModDirectory, false));
+        _stormMods.Add(GetStormMod(HeroesStormModDirectory, false));
+        _stormMods.Add(GetStormMod(HeroesDataStormModDirectory, false));
     }
 }

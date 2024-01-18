@@ -2,22 +2,17 @@
 
 internal class CASCMpqStormMod : MpqStormMod<CASCHeroesSource>
 {
-    public CASCMpqStormMod(CASCHeroesSource heroesSource, string directoryPath)
-        : base(heroesSource, directoryPath)
+    public CASCMpqStormMod(CASCHeroesSource heroesSource, string directoryPath, bool isMapMod)
+        : base(heroesSource, directoryPath, isMapMod)
     {
     }
 
-    public CASCMpqStormMod(CASCHeroesSource heroesSource, string name, string directoryPath)
-        : base(heroesSource, name, directoryPath)
+    public CASCMpqStormMod(CASCHeroesSource heroesSource, string name, string directoryPath, bool isMapMod)
+        : base(heroesSource, name, directoryPath, isMapMod)
     {
     }
 
     protected override Stream GetMpqFile(string file) => HeroesSource.CASCHeroesStorage.CASCHandler.OpenFile(file);
 
-    protected override IStormMod GetStormMod(string path) => HeroesSource.CreateStormModInstance<CASCStormMod>(HeroesSource, path);
-
-    protected override bool TryGetFile(string filePath, [NotNullWhen(true)] out Stream? stream)
-    {
-        throw new NotImplementedException();
-    }
+    protected override IStormMod GetStormMod(string path, bool isMapMod) => HeroesSource.CreateStormModInstance<CASCStormMod>(HeroesSource, path, isMapMod);
 }

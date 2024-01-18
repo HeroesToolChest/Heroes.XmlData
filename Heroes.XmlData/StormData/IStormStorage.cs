@@ -1,6 +1,6 @@
 ﻿namespace Heroes.XmlData.StormData;
 
-public interface IStormStorage
+internal interface IStormStorage
 {
     int? HotsBuild { get; }
 
@@ -12,5 +12,5 @@ public interface IStormStorage
 
     void ClearGamestrings();
 
-    StormModDataContainer GetContainerInstance(string stormModName, string stormModDirectoryPath);
+    StormModDataContainer GetContainerInstance(string stormModName, string stormModDirectoryPath, bool useMapCache = false);
 }

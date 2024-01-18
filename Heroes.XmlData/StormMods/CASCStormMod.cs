@@ -2,13 +2,13 @@
 
 internal class CASCStormMod : StormMod<ICASCHeroesSource>, IStormMod
 {
-    public CASCStormMod(ICASCHeroesSource cascHeroesSource, string directoryPath)
-        : base(cascHeroesSource, directoryPath)
+    public CASCStormMod(ICASCHeroesSource cascHeroesSource, string directoryPath, bool isMapMod)
+        : base(cascHeroesSource, directoryPath, isMapMod)
     {
     }
 
-    public CASCStormMod(ICASCHeroesSource cascHeroesSource, string name, string directoryPath)
-    : base(cascHeroesSource, name, directoryPath)
+    public CASCStormMod(ICASCHeroesSource cascHeroesSource, string name, string directoryPath, bool isMapMod)
+    : base(cascHeroesSource, name, directoryPath, isMapMod)
     {
     }
 
@@ -38,5 +38,5 @@ internal class CASCStormMod : StormMod<ICASCHeroesSource>, IStormMod
         }
     }
 
-    protected override IStormMod GetStormMod(string path) => HeroesSource.CreateStormModInstance<CASCStormMod>(HeroesSource, path);
+    protected override IStormMod GetStormMod(string path, bool isMapMod) => HeroesSource.CreateStormModInstance<CASCStormMod>(HeroesSource, path, isMapMod);
 }

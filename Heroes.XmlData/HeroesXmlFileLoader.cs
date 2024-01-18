@@ -12,7 +12,7 @@ public class HeroesXmlFileLoader
         _pathToModsDirectory = pathToModsDirectory;
         _hotsBuild = hotsBuild;
 
-        StormStorage stormStorage = new StormStorage(_hotsBuild);
+        StormStorage stormStorage = new StormStorage(_pathToModsDirectory, hotsBuild: _hotsBuild);
 
         _fileHeroesSource = new(stormStorage, pathToModsDirectory);
         _heroesData = new(stormStorage);
