@@ -36,6 +36,8 @@ internal abstract class MpqStormMod<T> : StormMod<T>
 
     protected override string FontStyleFilePath => Path.Join(HeroesSource.BaseStormDataDirectory, HeroesSource.FontStyleFile);
 
+    protected override string BuildIdFilePath => Path.Join(HeroesSource.BaseStormDataDirectory, HeroesSource.BuildIdFile);
+
     public override void LoadStormData()
     {
         using MpqHeroesArchive mpqHeroesArchive = GetMpqHeroesArchive();

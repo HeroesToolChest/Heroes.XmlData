@@ -1,5 +1,6 @@
 ﻿namespace Heroes.XmlData.StormData;
 
+// class for each stormmod
 internal class StormModDataContainer
 {
     private const string _selfName = "HXD";
@@ -13,6 +14,8 @@ internal class StormModDataContainer
     private readonly XDocument _xmlData = new();
     private readonly XDocument _xmlFontStyle = new();
 
+    private int? _buildId;
+
     public StormModDataContainer(StormCache stormCache, string modsDirectoryPath, string stormModeName, string stormModDirectoryPath)
     {
         _stormCache = stormCache;
@@ -24,6 +27,8 @@ internal class StormModDataContainer
     public string StormModName { get; }
 
     public string StormModDiretoryPath { get; }
+
+    public int? BuildId => _buildId;
 
     public void AddGameStringFile(Stream stream, ReadOnlySpan<char> filePath)
     {
@@ -77,6 +82,16 @@ internal class StormModDataContainer
         SetFontStyleCache(document, modlessPath);
 
         SetXml(document, modlessPath, _addedXmlFontStyleFilePathsList, _xmlFontStyle);
+    }
+
+    public void AddBuildIdFile(Stream stream)
+    {
+        using StreamReader reader = new(stream);
+
+        string? buildText = reader.ReadLine()?.TrimStart('B');
+
+        if (int.TryParse(buildText, out int result))
+            _buildId = result;
     }
 
     public void ClearGameStrings()

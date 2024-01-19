@@ -24,6 +24,8 @@ internal interface IHeroesSource
 
     string FontStyleFile { get; }
 
+    string BuildIdFile { get; }
+
     string CoreStormModDirectory { get; }
 
     string HeroesStormModDirectory { get; }

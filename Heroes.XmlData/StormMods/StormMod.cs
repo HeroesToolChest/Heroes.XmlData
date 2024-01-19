@@ -67,12 +67,18 @@ internal abstract class StormMod<T> : IStormMod
     /// </summary>
     protected virtual string FontStyleFilePath => Path.Join(HeroesSource.ModsDirectoryPath, DirectoryPath, HeroesSource.BaseStormDataDirectory, HeroesSource.UIDirectory, HeroesSource.FontStyleFile);
 
+    /// <summary>
+    /// Gets the BuildId.txt file path.
+    /// </summary>
+    protected virtual string BuildIdFilePath => Path.Join(HeroesSource.ModsDirectoryPath, DirectoryPath, HeroesSource.BaseStormDataDirectory, HeroesSource.BuildIdFile);
+
     protected T HeroesSource => _heroesSource;
 
     protected IStormStorage StormStorage => _heroesSource.StormStorage;
 
     public virtual void LoadStormData()
     {
+        LoadBuildIdFile();
         LoadGameDataXmlFile();
         LoadGameDataDirectory();
         LoadFontStyleFile();
@@ -115,6 +121,14 @@ internal abstract class StormMod<T> : IStormMod
         XDocument document = XDocument.Load(stream);
 
         StormModDataContainer.AddXmlFontStyleFile(document, FontStyleFilePath);
+    }
+
+    public void LoadBuildIdFile()
+    {
+        if (!TryGetFile(BuildIdFilePath, out Stream? stream))
+            return;
+
+        StormModDataContainer.AddBuildIdFile(stream);
     }
 
     protected static bool IsXmlFile(string xmlFilePath) => Path.GetExtension(xmlFilePath).Equals(".xml", StringComparison.OrdinalIgnoreCase);

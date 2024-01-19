@@ -11,6 +11,7 @@ internal abstract class HeroesSource : IHeroesSource
     private const string _includesXmlFile = "includes.xml";
     private const string _documentInfoFile = "documentinfo";
     private const string _fontStyleFile = "fontstyles.stormstyle";
+    private const string _buildIdFile = "buildid.txt";
 
     private const string _coreStormModDirectory = "core.stormmod";
     private const string _heroesStormModDirectory = "heroes.stormmod";
@@ -56,6 +57,8 @@ internal abstract class HeroesSource : IHeroesSource
     public string DocumentInfoFile => _documentInfoFile;
 
     public string FontStyleFile => _fontStyleFile;
+
+    public string BuildIdFile => _buildIdFile;
 
     public string CoreStormModDirectory => _coreStormModDirectory;
 

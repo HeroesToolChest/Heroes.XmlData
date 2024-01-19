@@ -1,5 +1,6 @@
 ﻿namespace Heroes.XmlData.StormData;
 
+// class for overall storage for all stormmods
 internal class StormStorage : IStormStorage
 {
     private readonly string _modsDirectoryPath;
