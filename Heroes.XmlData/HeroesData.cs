@@ -1,7 +1,13 @@
-﻿using Heroes.XmlData.StormData;
+﻿using System;
+using System.Collections.Generic;
+using System.Runtime.InteropServices;
+using System.Xml.Linq;
 
 namespace Heroes.XmlData;
 
+/// <summary>
+/// 
+/// </summary>
 public class HeroesData : IHeroesData
 {
     private readonly IStormStorage _stormStorage;
@@ -9,56 +15,435 @@ public class HeroesData : IHeroesData
     //private readonly HashSet<RequiredStormFile> _notFoundDirectoriesList = [];
     //private readonly HashSet<RequiredStormFile> _notFoundFilesList = [];
 
-    private string? _stormModName;
-    private string? _stormModDirectoryPath;
+    private StormLocale? _heroesLocalization;
 
-    internal HeroesData(StormStorage stormStorage)
+    internal HeroesData(IStormStorage stormStorage)
     {
         _stormStorage = stormStorage;
     }
 
-    public int? HotsBuild { get; }
+    /// <summary>
+    /// Gets the current gamestring localization.
+    /// </summary>
+    public StormLocale? HeroesLocalization => _heroesLocalization;
 
-    public HeroesLocalization? HeroesLocalization { get; private set; }
+    //public int? GetBuildNumber() => _stormStorage.GetBuildId();
 
-    //public void AddXmlStorage(StormModDataContainer xmlStorage)
-    //{
-    //    _xmlGameData.AddContainer(xmlStorage);
-    //}
+    /// <summary>
+    /// Checks if the gamestring id exists.
+    /// </summary>
+    /// <param name="id">A character span that contains the gamestring id.</param>
+    /// <returns><see langword="true"/> if the gamestring is found, otherwise <see langword="false"/>.</returns>
+    public bool IsGameStringExists(ReadOnlySpan<char> id)
+    {
+        return IsGameStringExists(id.ToString());
+    }
 
-    //void IHeroesData.SetCurrentStormMod(string name, string directoryPath)
-    //{
-    //    _stormModName = name;
-    //    _stormModDirectoryPath = directoryPath;
-    //}
+    /// <summary>
+    /// Checks if the gamestring id exists.
+    /// </summary>
+    /// <param name="id">The gamestring id.</param>
+    /// <returns><see langword="true"/> if the gamestring is found, otherwise <see langword="false"/>.</returns>
+    public bool IsGameStringExists(string id)
+    {
+        return _stormStorage.StormMapCache.GameStringsById.ContainsKey(id) || _stormStorage.StormCache.GameStringsById.ContainsKey(id);
+    }
 
-    //void IHeroesData.AddDirectoryNotFound(string notFoundDirectory)
-    //{
-    //    _notFoundDirectoriesList.Add(new RequiredStormFile()
-    //    {
-    //        StormModName = _stormModName,
-    //        StormModDirectoryPath = _stormModDirectoryPath,
-    //        Path = notFoundDirectory,
-    //    });
-    //}
+    /// <summary>
+    /// Gets the gamestring from a given id.
+    /// </summary>
+    /// <param name="id">A character span that contains the gamestring id.</param>
+    /// <returns>The <see cref="GameStringText"/>.</returns>
+    /// <exception cref="KeyNotFoundException"><paramref name="id"/> was not found.</exception>
+    public GameStringText GetGameString(ReadOnlySpan<char> id)
+    {
+        return GetGameString(id.ToString());
+    }
 
-    //void IHeroesData.AddFileNotFound(string notFoundFile)
-    //{
-    //    _notFoundFilesList.Add(new RequiredStormFile()
-    //    {
-    //        StormModName = _stormModName,
-    //        StormModDirectoryPath = _stormModDirectoryPath,
-    //        Path = notFoundFile,
-    //    });
-    //}
+    /// <summary>
+    /// Gets the gamestring from a given id.
+    /// </summary>
+    /// <param name="id">The gamestring id.</param>
+    /// <returns>The <see cref="GameStringText"/>.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="id"/> is <see langword="null"/>.</exception>
+    /// <exception cref="KeyNotFoundException"><paramref name="id"/> was not found.</exception>
+    public GameStringText GetGameString(string id)
+    {
+        ArgumentNullException.ThrowIfNull(id);
 
-    //void IHeroesData.ClearGamestrings()
-    //{
-    //    _xmlGameData.ClearGamestrings();
-    //}
+        // map cache always first
+        if (_stormStorage.StormMapCache.GameStringsById.TryGetValue(id, out GameStringText? gameStringText))
+            return gameStringText;
 
-    //internal void SetHeroesLocalization(HeroesLocalization localization)
-    //{
-    //    HeroesLocalization = localization;
-    //}
+        return _stormStorage.StormCache.GameStringsById[id];
+    }
+
+    /// <summary>
+    /// Looks up a gamestring from the given <paramref name="id"/>, returning a value that indicates whether such value exists.
+    /// </summary>
+    /// <param name="id">A character span that contains the gamestring id.</param>
+    /// <param name="gameStringText">The returning <see cref="GameStringText"/> if <paramref name="id"/> is found.</param>
+    /// <returns><see langword="true"/> if the value was found; otherwise <see langword="false"/>.</returns>
+    public bool TryGetGameString(ReadOnlySpan<char> id, [NotNullWhen(true)] out GameStringText? gameStringText)
+    {
+        return TryGetGameString(id.ToString(), out gameStringText);
+    }
+
+    /// <summary>
+    /// Looks up a gamestring from the given <paramref name="id"/>, returning a value that indicates whether such value exists.
+    /// </summary>
+    /// <param name="id">The gamestring id.</param>
+    /// <param name="gameStringText">The returning <see cref="GameStringText"/> if <paramref name="id"/> is found.</param>
+    /// <returns><see langword="true"/> if the value was found; otherwise <see langword="false"/>.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="id"/> is <see langword="null"/>.</exception>
+    public bool TryGetGameString(string id, [NotNullWhen(true)] out GameStringText? gameStringText)
+    {
+        ArgumentNullException.ThrowIfNull(id);
+
+        // map cache always first
+        if (_stormStorage.StormMapCache.GameStringsById.TryGetValue(id, out gameStringText))
+            return true;
+
+        if (_stormStorage.StormCache.GameStringsById.TryGetValue(id, out gameStringText))
+            return true;
+
+        return false;
+    }
+
+    /// <summary>
+    /// Checks if the level scaling entry exists.
+    /// </summary>
+    /// <param name="catalog">The value of the Catalog element.</param>
+    /// <param name="entry">The value of the Entry element.</param>
+    /// <param name="field">The value of the Field element.</param>
+    /// <returns><see langword="true"/> if the entry is found, otherwise <see langword="false"/>.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="catalog"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="entry"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="field"/> is <see langword="null"/>.</exception>
+    public bool IsLevelScalingEntryExists(string catalog, string entry, string field)
+    {
+        ArgumentNullException.ThrowIfNull(catalog);
+        ArgumentNullException.ThrowIfNull(entry);
+        ArgumentNullException.ThrowIfNull(field);
+
+        LevelScalingEntry levelScalingEntry = new(catalog, entry, field);
+
+        return _stormStorage.StormMapCache.ScaleValueByEntry.ContainsKey(levelScalingEntry) || _stormStorage.StormCache.ScaleValueByEntry.ContainsKey(levelScalingEntry);
+    }
+
+    /// <summary>
+    /// Gets the value of the level scaling entry.
+    /// </summary>
+    /// <param name="catalog">The value of the Catalog element.</param>
+    /// <param name="entry">The value of the Entry element.</param>
+    /// <param name="field">The value of the Field element.</param>
+    /// <returns>The <see cref="StormStringValue"/>.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="catalog"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="entry"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="field"/> is <see langword="null"/>.</exception>
+    /// <exception cref="KeyNotFoundException">The combination of <paramref name="catalog"/>, <paramref name="entry"/>, and <paramref name="field"/> was not found.</exception>
+    public StormStringValue GetLevelScalingEntryExists(string catalog, string entry, string field)
+    {
+        ArgumentNullException.ThrowIfNull(catalog);
+        ArgumentNullException.ThrowIfNull(entry);
+        ArgumentNullException.ThrowIfNull(field);
+
+        LevelScalingEntry levelScalingEntry = new(catalog, entry, field);
+
+        if (_stormStorage.StormMapCache.ScaleValueByEntry.TryGetValue(levelScalingEntry, out StormStringValue? stormStringValue))
+            return stormStringValue;
+
+        return _stormStorage.StormCache.ScaleValueByEntry[levelScalingEntry];
+    }
+
+    /// <summary>
+    /// Looks up a level scaling entry from the given parameters, returning a value that indicates whether such value exists.
+    /// </summary>
+    /// <param name="catalog">The value of the Catalog element.</param>
+    /// <param name="entry">The value of the Entry element.</param>
+    /// <param name="field">The value of the Field element.</param>
+    /// <param name="stormStringValue">The returning <see cref="StormStringValue"/> if the entry is found.</param>
+    /// <returns><see langword="true"/> if the entry is found, otherwise <see langword="false"/>.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="catalog"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="entry"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="field"/> is <see langword="null"/>.</exception>
+    public bool TryGetLevelScalingEntryExists(string catalog, string entry, string field, out StormStringValue? stormStringValue)
+    {
+        ArgumentNullException.ThrowIfNull(catalog);
+        ArgumentNullException.ThrowIfNull(entry);
+        ArgumentNullException.ThrowIfNull(field);
+
+        LevelScalingEntry levelScalingEntry = new(catalog, entry, field);
+
+        if (_stormStorage.StormMapCache.ScaleValueByEntry.TryGetValue(levelScalingEntry, out stormStringValue))
+            return true;
+
+        if (_stormStorage.StormCache.ScaleValueByEntry.TryGetValue(levelScalingEntry, out stormStringValue))
+            return true;
+
+        return false;
+    }
+
+    /// <summary>
+    /// Checks if the style name exists.
+    /// </summary>
+    /// <param name="name">A character span that contains the style or constanst name.</param>
+    /// <returns><see langword="true"/> if the style name is found, otherwise <see langword="false"/>.</returns>
+    public bool IsStormStyleHexColorValueExists(ReadOnlySpan<char> name)
+    {
+        return IsStormStyleHexColorValueExists(name.ToString());
+    }
+
+    /// <summary>
+    /// Checks if the style name of a StyleFile exists.
+    /// </summary>
+    /// <param name="name">The style or constanst name.</param>
+    /// <returns><see langword="true"/> if the style name is found, otherwise <see langword="false"/>.</returns>
+    public bool IsStormStyleHexColorValueExists(string name)
+    {
+        return _stormStorage.StormMapCache.StormStyleHexColorValueByName.ContainsKey(name) || _stormStorage.StormCache.StormStyleHexColorValueByName.ContainsKey(name);
+    }
+
+    /// <summary>
+    /// Gets the value from the style name of a StyleFile. The value could be another name that required another lookup.
+    /// </summary>
+    /// <param name="name">A character span that contains the style or constanst name.</param>
+    /// <returns>The <see cref="StormStringValue"/>.</returns>
+    /// <exception cref="KeyNotFoundException"><paramref name="name"/> was not found.</exception>
+    public StormStringValue GetStormStyleHexColorValue(ReadOnlySpan<char> name)
+    {
+        return GetStormStyleHexColorValue(name.ToString());
+    }
+
+    /// <summary>
+    /// Gets the value from the style name of a StyleFile. The value could be another name that required another lookup.
+    /// </summary>
+    /// <param name="name">The style or constanst name.</param>
+    /// <returns>The <see cref="StormStringValue"/>.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="name"/> is <see langword="null"/>.</exception>
+    /// <exception cref="KeyNotFoundException"><paramref name="name"/> was not found.</exception>
+    public StormStringValue GetStormStyleHexColorValue(string name)
+    {
+        ArgumentNullException.ThrowIfNull(name);
+
+        // map cache always first
+        if (_stormStorage.StormMapCache.StormStyleHexColorValueByName.TryGetValue(name, out StormStringValue? stormStringValue))
+            return stormStringValue;
+
+        return _stormStorage.StormCache.StormStyleHexColorValueByName[name];
+    }
+
+    /// <summary>
+    /// Looks up a value from the style name of a StyleFile, returning a value that indicates whether such value exists.
+    /// </summary>
+    /// <param name="name">A character span that contains the style or constanst name.</param>
+    /// <param name="stormStringValue">The returning <see cref="StormStringValue"/> if the name is found.</param>
+    /// <returns><see langword="true"/> if the name is found, otherwise <see langword="false"/>.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="name"/> is <see langword="null"/>.</exception>
+    public bool TryGetStormStyleHexColorValue(ReadOnlySpan<char> name, out StormStringValue? stormStringValue)
+    {
+        return TryGetStormStyleHexColorValue(name.ToString(), out stormStringValue);
+    }
+
+    /// <summary>
+    /// Looks up a value from the style name of a StyleFile, returning a value that indicates whether such value exists.
+    /// </summary>
+    /// <param name="name">The style or constanst name.</param>
+    /// <param name="stormStringValue">The returning <see cref="StormStringValue"/> if the name is found.</param>
+    /// <returns><see langword="true"/> if the name is found, otherwise <see langword="false"/>.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="name"/> is <see langword="null"/>.</exception>
+    public bool TryGetStormStyleHexColorValue(string name, out StormStringValue? stormStringValue)
+    {
+        ArgumentNullException.ThrowIfNull(name);
+
+        if (_stormStorage.StormMapCache.StormStyleHexColorValueByName.TryGetValue(name, out stormStringValue))
+            return true;
+
+        if (_stormStorage.StormCache.StormStyleHexColorValueByName.TryGetValue(name, out stormStringValue))
+            return true;
+
+        return false;
+    }
+
+    /// <summary>
+    /// Checks if the constant id exists.
+    /// </summary>
+    /// <param name="id">A character span that contains the constant id.</param>
+    /// <returns><see langword="true"/> if the constant id is found, otherwise <see langword="false"/>.</returns>
+    public bool IsConstantElementExists(ReadOnlySpan<char> id)
+    {
+        return IsConstantElementExists(id.ToString());
+    }
+
+    /// <summary>
+    /// Checks if the constant id exists.
+    /// </summary>
+    /// <param name="id">The constant id.</param>
+    /// <returns><see langword="true"/> if the constant id is found, otherwise <see langword="false"/>.</returns>
+    public bool IsConstantElementExists(string id)
+    {
+        return _stormStorage.StormMapCache.ConstantElementById.ContainsKey(id) || _stormStorage.StormCache.ConstantElementById.ContainsKey(id);
+    }
+
+    /// <summary>
+    /// Gets the <see cref="XElement"/> from the constant id.
+    /// </summary>
+    /// <param name="id">A character span that contains the constant id.</param>
+    /// <returns>The <see cref="StormXElementValue"/>.</returns>
+    /// <exception cref="KeyNotFoundException"><paramref name="id"/> was not found.</exception>
+    public StormXElementValue GetConstantElement(ReadOnlySpan<char> id)
+    {
+        return GetConstantElement(id.ToString());
+    }
+
+    /// <summary>
+    /// Gets the <see cref="XElement"/> from the constant id.
+    /// </summary>
+    /// <param name="id">The constant id.</param>
+    /// <returns>The <see cref="StormXElementValue"/>.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="id"/> is <see langword="null"/>.</exception>
+    /// <exception cref="KeyNotFoundException"><paramref name="id"/> was not found.</exception>
+    public StormXElementValue GetConstantElement(string id)
+    {
+        ArgumentNullException.ThrowIfNull(id);
+
+        // map cache always first
+        if (_stormStorage.StormMapCache.ConstantElementById.TryGetValue(id, out StormXElementValue? stormXElementValue))
+            return stormXElementValue;
+
+        return _stormStorage.StormCache.ConstantElementById[id];
+    }
+
+    /// <summary>
+    /// Looks up a constant element from the given <paramref name="id"/>, returning a value that indicates whether such value exists.
+    /// </summary>
+    /// <param name="id">A character span that contains the constant id.</param>
+    /// <param name="stormXElementValue">The returning <see cref="StormXElementValue"/> if <paramref name="id"/> is found.</param>
+    /// <returns><see langword="true"/> if the value was found; otherwise <see langword="false"/>.</returns>
+    public bool TryGetConstantElement(ReadOnlySpan<char> id, [NotNullWhen(true)] out StormXElementValue? stormXElementValue)
+    {
+        return TryGetConstantElement(id.ToString(), out stormXElementValue);
+    }
+
+    /// <summary>
+    /// Looks up a constant element from the given <paramref name="id"/>, returning a value that indicates whether such value exists.
+    /// </summary>
+    /// <param name="id">The constant id.</param>
+    /// <param name="stormXElementValue">The returning <see cref="StormXElementValue"/> if <paramref name="id"/> is found.</param>
+    /// <returns><see langword="true"/> if the value was found; otherwise <see langword="false"/>.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="id"/> is <see langword="null"/>.</exception>
+    public bool TryGetConstantElement(string id, [NotNullWhen(true)] out StormXElementValue? stormXElementValue)
+    {
+        ArgumentNullException.ThrowIfNull(id);
+
+        // map cache always first
+        if (_stormStorage.StormMapCache.ConstantElementById.TryGetValue(id, out stormXElementValue))
+            return true;
+
+        if (_stormStorage.StormCache.ConstantElementById.TryGetValue(id, out stormXElementValue))
+            return true;
+
+        return false;
+    }
+
+    /// <summary>
+    /// Checks if the <see cref="XElement"/> name exists.
+    /// </summary>
+    /// <param name="name">The <see cref="XElement"/> name.</param>
+    /// <returns><see langword="true"/> if the name is found, otherwise <see langword="false"/>.</returns>
+    public bool IsElementExists(ReadOnlySpan<char> name)
+    {
+        return IsElementExists(name.ToString());
+    }
+
+    /// <summary>
+    /// Checks if the <see cref="XElement"/> name exists.
+    /// </summary>
+    /// <param name="name">The <see cref="XElement"/> name.</param>
+    /// <returns><see langword="true"/> if the name is found, otherwise <see langword="false"/>.</returns>
+    public bool IsElementExists(string name)
+    {
+        return _stormStorage.StormMapCache.ElementsByElementName.ContainsKey(name) || _stormStorage.StormCache.ElementsByElementName.ContainsKey(name);
+    }
+
+    /// <summary>
+    /// Gets the elements from the given <see cref="XElement"/> name.
+    /// </summary>
+    /// <param name="name">A character span that contains the <see cref="XElement"/> name.</param>
+    /// <returns>A collection of <see cref="StormXElementValue"/>.</returns>
+    /// <exception cref="KeyNotFoundException"><paramref name="name"/> was not found.</exception>
+    public List<StormXElementValue> GetElements(ReadOnlySpan<char> name)
+    {
+        return GetElements(name.ToString());
+    }
+
+    /// <summary>
+    /// Gets the elements from the given <see cref="XElement"/> name.
+    /// </summary>
+    /// <param name="name">The <see cref="XElement"/> name.</param>
+    /// <returns>A collection of <see cref="StormXElementValue"/>.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="name"/> is <see langword="null"/>.</exception>
+    /// <exception cref="KeyNotFoundException"><paramref name="name"/> was not found.</exception>
+    public List<StormXElementValue> GetElements(string name)
+    {
+        ArgumentNullException.ThrowIfNull(name);
+
+        if (!IsElementExists(name))
+            throw new KeyNotFoundException(name);
+
+        List<StormXElementValue> elements = [];
+
+        if (_stormStorage.StormCache.ElementsByElementName.TryGetValue(name, out List<StormXElementValue>? stormXElementValues))
+            elements.AddRange(stormXElementValues);
+
+        if (_stormStorage.StormMapCache.ElementsByElementName.TryGetValue(name, out stormXElementValues))
+            elements.AddRange(stormXElementValues);
+
+        return elements;
+    }
+
+    /// <summary>
+    /// Looks up a collection of <see cref="XElement"/>s from the given <see cref="XElement"/> <paramref name="name"/>, returning a value that indicates whether such value exists.
+    /// </summary>
+    /// <param name="name">A character span that contains the <see cref="XElement"/> name.</param>
+    /// <param name="stormXElementValues">The returning collection of <see cref="StormXElementValue"/>s if <paramref name="name"/> is found.</param>
+    /// <returns><see langword="true"/> if the element was found; otherwise <see langword="false"/>.</returns>
+    public bool TryGetElements(ReadOnlySpan<char> name, [NotNullWhen(true)] out List<StormXElementValue>? stormXElementValues)
+    {
+        return TryGetElements(name.ToString(), out stormXElementValues);
+    }
+
+    /// <summary>
+    /// Looks up a collection of <see cref="XElement"/>s from the given <see cref="XElement"/> <paramref name="name"/>, returning a value that indicates whether such value exists.
+    /// </summary>
+    /// <param name="name">The <see cref="XElement"/> name.</param>
+    /// <param name="stormXElementValues">The returning collection of <see cref="StormXElementValue"/>s if <paramref name="name"/> is found.</param>
+    /// <returns><see langword="true"/> if the element was found; otherwise <see langword="false"/>.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="name"/> is <see langword="null"/>.</exception>
+    public bool TryGetElements(string name, [NotNullWhen(true)] out List<StormXElementValue>? stormXElementValues)
+    {
+        ArgumentNullException.ThrowIfNull(name);
+
+        stormXElementValues = [];
+        bool success = false;
+
+        if (_stormStorage.StormCache.ElementsByElementName.TryGetValue(name, out List<StormXElementValue>? cachStormXElementValues))
+        {
+            stormXElementValues.AddRange(cachStormXElementValues);
+            success = true;
+        }
+
+        if (_stormStorage.StormMapCache.ElementsByElementName.TryGetValue(name, out cachStormXElementValues))
+        {
+            stormXElementValues.AddRange(cachStormXElementValues);
+            success = true;
+        }
+
+        return success;
+    }
+
+    internal void SetHeroesLocalization(StormLocale stormLocale)
+    {
+        _heroesLocalization = stormLocale;
+    }
 }

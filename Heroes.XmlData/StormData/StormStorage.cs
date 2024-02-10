@@ -3,62 +3,48 @@
 // class for overall storage for all stormmods
 internal class StormStorage : IStormStorage
 {
-    private readonly string _modsDirectoryPath;
-    private readonly int? _hotsBuild;
-
     private readonly List<StormModDataContainer> _stormModContainers = [];
-
     private readonly HashSet<RequiredStormFile> _notFoundDirectoriesList = [];
     private readonly HashSet<RequiredStormFile> _notFoundFilesList = [];
 
-    private readonly StormCache _stormCache = new();
-    private readonly StormCache _stormMapCache = new();
+    private int _loadedMapMods;
 
-    private string? _stormModName;
-    private string? _stormModDirectoryPath;
+    public StormCache StormCache { get; } = new();
 
-    public StormStorage(string modsDirectoryPath, int? hotsBuild)
-    {
-        _modsDirectoryPath = modsDirectoryPath;
-        _hotsBuild = hotsBuild;
-    }
-
-    public int? HotsBuild => _hotsBuild;
-
-    public string ModsDirectoryPath => _modsDirectoryPath;
+    public StormCache StormMapCache { get; } = new();
 
     public void AddContainer(StormModDataContainer stormModDataContainer)
     {
         _stormModContainers.Add(stormModDataContainer);
+
+        if (stormModDataContainer.IsMapMod)
+            _loadedMapMods++;
     }
 
-    public StormModDataContainer GetContainerInstance(string stormModName, string stormModDirectoryPath, bool useMapCache = false)
+    public StormModDataContainer CreateContainerInstance(string modsDirectoryPath, StormModDataProperties stormStorageProperties)
     {
-        _stormModName = stormModName;
-        _stormModDirectoryPath = stormModDirectoryPath;
-
-        if (useMapCache is false)
-            return new(_stormCache, _modsDirectoryPath, _stormModName, _stormModDirectoryPath);
+        if (stormStorageProperties.IsMapMod is false)
+            return new(StormCache, modsDirectoryPath, stormStorageProperties);
         else
-            return new(_stormMapCache, _modsDirectoryPath, _stormModName, _stormModDirectoryPath);
+            return new(StormMapCache, modsDirectoryPath, stormStorageProperties);
     }
 
-    public void AddDirectoryNotFound(string directory)
+    public void AddDirectoryNotFound(string directory, string stormModName, string stormModDirectoryPath)
     {
         _notFoundDirectoriesList.Add(new RequiredStormFile()
         {
-            StormModName = _stormModName,
-            StormModDirectoryPath = _stormModDirectoryPath,
+            StormModName = stormModName,
+            StormModDirectoryPath = stormModDirectoryPath,
             Path = directory,
         });
     }
 
-    public void AddFileNotFound(string notFoundFile)
+    public void AddFileNotFound(string notFoundFile, string stormModName, string stormModDirectoryPath)
     {
         _notFoundFilesList.Add(new RequiredStormFile()
         {
-            StormModName = _stormModName,
-            StormModDirectoryPath = _stormModDirectoryPath,
+            StormModName = stormModName,
+            StormModDirectoryPath = stormModDirectoryPath,
             Path = notFoundFile,
         });
     }
@@ -66,6 +52,35 @@ internal class StormStorage : IStormStorage
     public void ClearGamestrings()
     {
         _stormModContainers.ForEach(x => x.ClearGameStrings());
+        StormCache.GameStringsById.Clear();
+        StormMapCache.GameStringsById.Clear();
+    }
+
+    public void ClearStormMapMods()
+    {
+        ClearStormMapContainers();
+        StormMapCache.Clear();
+    }
+
+    public int? GetBuildId()
+    {
+        return _stormModContainers.FirstOrDefault()?.BuildId;
+    }
+
+    private void ClearStormMapContainers()
+    {
+        // stormmap mods are always at the end
+        for (int i = _stormModContainers.Count - 1; i > 0; i--)
+        {
+            if (_loadedMapMods < 1)
+                break;
+
+            if (_stormModContainers[i].IsMapMod)
+            {
+                _stormModContainers.RemoveAt(i);
+                _loadedMapMods--;
+            }
+        }
     }
 }
 

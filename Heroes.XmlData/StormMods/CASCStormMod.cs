@@ -28,7 +28,7 @@ internal class CASCStormMod : StormMod<ICASCHeroesSource>, IStormMod
     {
         if (!HeroesSource.CASCHeroesStorage.CASCFolderRoot.TryGetLastDirectory(GameDataDirectoryPath, out CASCFolder? gameDataFolder))
         {
-            StormStorage.AddDirectoryNotFound(GameDataDirectoryPath);
+            StormStorage.AddDirectoryNotFound(GameDataDirectoryPath, Name, DirectoryPath);
             return;
         }
 

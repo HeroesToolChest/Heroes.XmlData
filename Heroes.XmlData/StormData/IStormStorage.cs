@@ -2,15 +2,21 @@
 
 internal interface IStormStorage
 {
-    int? HotsBuild { get; }
+    StormCache StormCache { get; }
+
+    StormCache StormMapCache { get; }
 
     void AddContainer(StormModDataContainer stormModDataContainer);
 
-    void AddDirectoryNotFound(string directory);
+    void AddDirectoryNotFound(string directory, string stormModName, string stormModDirectoryPath);
 
-    void AddFileNotFound(string notFoundFile);
+    void AddFileNotFound(string notFoundFile, string stormModName, string stormModDirectoryPath);
 
     void ClearGamestrings();
 
-    StormModDataContainer GetContainerInstance(string stormModName, string stormModDirectoryPath, bool useMapCache = false);
+    void ClearStormMapMods();
+
+    int? GetBuildId();
+
+    StormModDataContainer CreateContainerInstance(string modsDirectoryPath, StormModDataProperties stormStorageProperties);
 }

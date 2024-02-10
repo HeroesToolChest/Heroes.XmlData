@@ -30,7 +30,7 @@ internal class FileStormMod : StormMod<IHeroesSource>
     {
         if (!Directory.Exists(GameDataDirectoryPath))
         {
-            StormStorage.AddDirectoryNotFound(GameDataDirectoryPath);
+            StormStorage.AddDirectoryNotFound(GameDataDirectoryPath, Name, DirectoryPath);
             return;
         }
 

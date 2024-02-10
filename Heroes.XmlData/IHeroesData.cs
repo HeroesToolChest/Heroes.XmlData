@@ -1,12 +1,13 @@
-﻿using Heroes.XmlData.StormData;
+﻿using Heroes.LocaleText;
+using Heroes.XmlData.StormData;
 
 namespace Heroes.XmlData;
 
 internal interface IHeroesData
 {
-    int? HotsBuild { get; }
+    //int? HotsBuild { get; }
 
-    HeroesLocalization? HeroesLocalization { get; }
+    //StormLocale? HeroesLocalization { get; internal set; }
 
     //void AddXmlStorage(StormModDataContainer xmlStorage);
 

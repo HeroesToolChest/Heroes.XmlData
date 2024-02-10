@@ -1,18 +1,35 @@
-﻿using Heroes.XmlData;
+﻿using Heroes.LocaleText;
+using Heroes.XmlData;
 
 Console.WriteLine("Hello, World!");
 
 Console.WriteLine(Environment.OSVersion);
 var aa = Environment.OSVersion;
 
+HeroesXmlLoader xmlLoader = HeroesXmlLoader.LoadAsFile("F:\\heroes\\heroes_91418\\mods_all_91418");
 //HeroesXmlFileLoader heroesXmlFileLoader = new("/home/koliva/mods_all_91418");
-HeroesXmlFileLoader heroesXmlFileLoader = new("F:\\heroes\\heroes_91418\\mods_all_91418");
-HeroesData heroesData = heroesXmlFileLoader.HeroesData;
-//var a = heroesXmlFileLoader.GetMapTitles();
-heroesXmlFileLoader.LoadStormMods();
-var b = heroesXmlFileLoader.GetMapTitles();
-heroesXmlFileLoader.LoadMapMod("Volskaya Foundry");
-heroesXmlFileLoader.LoadGameStrings(HeroesLocalization.ENUS);
+//HeroesXmlFileLoader heroesXmlFileLoader = new("F:\\heroes\\heroes_91418\\mods_all_91418");
+//HeroesData heroesData = heroesXmlFileLoader.HeroesData;
+var hero = xmlLoader.HeroesData;
+var a = xmlLoader.GetMapTitles();
+xmlLoader.LoadStormMods();
+var b = xmlLoader.GetMapTitles();
+xmlLoader.LoadMapMod("Volskaya Foundry");
+xmlLoader.LoadMapMod("");
+xmlLoader.LoadGameStrings(StormLocale.ENUS);
+xmlLoader.LoadMapMod("Alterac Pass");
+//fileLoader.LoadGameStrings(StormLocale.DEDE);
+
+//Heroes.XmlData.StormData.GameStringText? a1 = hero.GetGameString("");
+//var a2 = hero.GetGameString("Unit/Name/AllianceCavalry");
+//var a3 = hero.GetGameString("Button/Tooltip/LiLiShakeItOffTalent");
+
+var bxcvxcv = hero.GetElements("CAbilEffectInstant");
+
+//var a333333333333 = hero.GetBuildNumber();
+var hero2 = xmlLoader.HeroesData;
+
+//xmlLoader.LoadMapMod("Volskaya Foundry");
 //heroesXmlFileLoader.LoadGameStrings(HeroesLocalization.DEDE);
 
 //XDocument xDocument = new XDocument();

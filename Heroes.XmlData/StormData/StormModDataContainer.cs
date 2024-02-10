@@ -5,57 +5,46 @@ internal class StormModDataContainer
 {
     private const string _selfName = "HXD";
 
-    private readonly StormCache _stormCache;
     private readonly string _modsDirectoryPath;
+    private readonly StormCache _stormCache;
+    private readonly StormModDataProperties _stormModDataProperties;
     private readonly HashSet<string> _addedXmlDataFilePathsList = [];
     private readonly HashSet<string> _addedXmlFontStyleFilePathsList = [];
-    private readonly Dictionary<string, List<GameStringText>> _gameStringsById = [];
+    private readonly Dictionary<string, GameStringText> _gameStringsById = [];
 
     private readonly XDocument _xmlData = new();
     private readonly XDocument _xmlFontStyle = new();
 
-    private int? _buildId;
-
-    public StormModDataContainer(StormCache stormCache, string modsDirectoryPath, string stormModeName, string stormModDirectoryPath)
+    internal StormModDataContainer(StormCache stormCache, string modsDirectoryPath, StormModDataProperties stormModDataProperties)
     {
         _stormCache = stormCache;
         _modsDirectoryPath = modsDirectoryPath;
-        StormModName = stormModeName;
-        StormModDiretoryPath = stormModDirectoryPath;
+        _stormModDataProperties = stormModDataProperties;
     }
 
-    public string StormModName { get; }
+    public int? BuildId { get; private set; }
 
-    public string StormModDiretoryPath { get; }
+    public bool IsMapMod => _stormModDataProperties.IsMapMod;
 
-    public int? BuildId => _buildId;
-
-    public void AddGameStringFile(Stream stream, ReadOnlySpan<char> filePath)
+    public void AddGameStringFile(Stream stream, string filePath)
     {
+        Span<Range> ranges = stackalloc Range[2];
+
         using StreamReader reader = new(stream);
 
         while (!reader.EndOfStream)
         {
-            string line = reader.ReadLine() ?? string.Empty;
+            ReadOnlySpan<char> line = reader.ReadLine().AsSpan();
 
-            if (string.IsNullOrWhiteSpace(line))
+            if (line.IsEmpty || line.IsWhiteSpace())
                 continue;
 
-            string[] splitLine = line.Split('=', 2, StringSplitOptions.None);
+            line.Split(ranges, '=', StringSplitOptions.None);
 
-            if (splitLine.Length != 2)
-                continue;
+            GameStringText gameStringText = new(line[ranges[1]].ToString(), GetModlessPath(filePath));
 
-            GameStringText gameStringText = new()
-            {
-                GameStringValue = splitLine[1],
-                FilePath = GetModlessPath(filePath),
-            };
-
-            if (_gameStringsById.TryGetValue(splitLine[0], out List<GameStringText>? gameStringTexts))
-                gameStringTexts.Add(gameStringText);
-            else
-                _gameStringsById.Add(splitLine[0], [gameStringText]);
+            _gameStringsById[line[ranges[0]].ToString()] = gameStringText;
+            _stormCache.GameStringsById[line[ranges[0]].ToString()] = gameStringText;
         }
     }
 
@@ -91,7 +80,7 @@ internal class StormModDataContainer
         string? buildText = reader.ReadLine()?.TrimStart('B');
 
         if (int.TryParse(buildText, out int result))
-            _buildId = result;
+            BuildId = result;
     }
 
     public void ClearGameStrings()
@@ -102,10 +91,10 @@ internal class StormModDataContainer
     /// <inheritdoc/>
     public override string ToString()
     {
-        return StormModName;
+        return _stormModDataProperties.StormModName;
     }
 
-    private void SetXml(XDocument document, string filePath, HashSet<string> filePaths, XDocument storedXmlDoc)
+    private static void SetXml(XDocument document, string filePath, HashSet<string> filePaths, XDocument storedXmlDoc)
     {
         document.Root!.SetAttributeValue($"{_selfName}-FilePath", filePath);
 
@@ -127,13 +116,15 @@ internal class StormModDataContainer
         filePaths.Add(filePath);
     }
 
-    private string GetModlessPath(ReadOnlySpan<char> path)
+    private string GetModlessPath(string path)
     {
         int indexOfMods = path.IndexOf(_modsDirectoryPath);
+        if (indexOfMods < 0)
+            return path;
 
-        ReadOnlySpan<char> modlessPath = path[(indexOfMods + _modsDirectoryPath.Length)..];
+        string modlessPath = path[(indexOfMods + _modsDirectoryPath.Length)..];
 
-        return modlessPath.ToString();
+        return modlessPath;
     }
 
     private void SetFontStyleCache(XDocument document, string filePath)
@@ -149,7 +140,7 @@ internal class StormModDataContainer
                 if (string.IsNullOrEmpty(name) || string.IsNullOrEmpty(val))
                     continue;
 
-                _stormCache.StormStyleHexColorValueByName[name] = new StormValue<string>(filePath, val);
+                _stormCache.StormStyleHexColorValueByName[name] = new StormStringValue(val, filePath);
             }
             else if (elementName.Equals("Style", StringComparison.OrdinalIgnoreCase))
             {
@@ -159,7 +150,7 @@ internal class StormModDataContainer
                 if (string.IsNullOrEmpty(textColor) || string.IsNullOrEmpty(name))
                     continue;
 
-                _stormCache.StormStyleHexColorValueByName[name] = new StormValue<string>(filePath, textColor);
+                _stormCache.StormStyleHexColorValueByName[name] = new StormStringValue(textColor, filePath);
 
                 // TODO: needed anymore?
                 // if (textColor[0] == '#') // variable
@@ -195,7 +186,7 @@ internal class StormModDataContainer
                 // TODO:
                 // if (field.Contains(']', StringComparison.OrdinalIgnoreCase))
                 //    _scaleValueByLookupId[(catalog, entry, Regex.Replace(field, @"\[.*?\]", string.Empty))] = double.Parse(value);
-                _stormCache.ScaleValueByEntry[new(catalog, entry, field)] = new StormValue<double>(filePath, double.Parse(value));
+                _stormCache.ScaleValueByEntry[new(catalog, entry, field)] = new StormStringValue(value, filePath);
             }
         }
     }
@@ -208,9 +199,9 @@ internal class StormModDataContainer
 
             // set elements
             if (_stormCache.ElementsByElementName.TryGetValue(elementName, out List<StormXElementValue>? elementStormValues))
-                elementStormValues.Add(new StormXElementValue(filePath, element));
+                elementStormValues.Add(new StormXElementValue(element, filePath));
             else
-                _stormCache.ElementsByElementName.Add(elementName, [new StormXElementValue(filePath, element)]);
+                _stormCache.ElementsByElementName.Add(elementName, [new StormXElementValue(element, filePath)]);
 
             // set consts
             if (elementName.Equals("const", StringComparison.OrdinalIgnoreCase))
@@ -220,7 +211,7 @@ internal class StormModDataContainer
                 if (string.IsNullOrEmpty(id))
                     continue;
 
-                _stormCache.ConstantElementById[id] = new StormXElementValue(filePath, element);
+                _stormCache.ConstantElementById[id] = new StormXElementValue(element, filePath);
             }
         }
     }

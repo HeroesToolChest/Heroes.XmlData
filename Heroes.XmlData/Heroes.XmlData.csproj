@@ -27,7 +27,7 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>-->
     <!--<PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="8.0.0-rc.1.23419.4" />-->
-    <PackageReference Include="Heroes.MpqTool" Version="1.0.0-build.47" />
+    <PackageReference Include="Heroes.MpqTool" Version="1.1.0" />
     <PackageReference Include="StyleCop.Analyzers" Version="1.2.0-beta.556">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -35,6 +35,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\Heroes.LocaleText\Heroes.LocaleText\Heroes.LocaleText.csproj" />
     <ProjectReference Include="..\CascLib\CascLib\CascLib.csproj" />
   </ItemGroup>
 

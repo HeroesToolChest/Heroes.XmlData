@@ -2,8 +2,6 @@
 
 internal interface IHeroesSource
 {
-    int? HotsBuild { get; }
-
     string ModsDirectoryPath { get; }
 
     string DefaultModsDirectory { get; }
@@ -65,7 +63,9 @@ internal interface IHeroesSource
 
     void LoadStormData();
 
-    void LoadGamestrings(HeroesLocalization localization);
+    void LoadGamestrings(StormLocale stormLocale);
 
     bool LoadStormMapData(string mapTitle);
+
+    void LoadDepotCache();
 }

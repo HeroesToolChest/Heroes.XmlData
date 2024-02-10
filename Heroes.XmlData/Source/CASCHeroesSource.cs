@@ -5,7 +5,7 @@ internal class CASCHeroesSource : HeroesSource, ICASCHeroesSource
     private readonly CASCHeroesStorage _cascHeroesStorage;
 
     public CASCHeroesSource(IStormStorage stormStorage, CASCHeroesStorage cascHeroesStorage)
-        : base(stormStorage, "mods")
+        : base(stormStorage)
     {
         _cascHeroesStorage = cascHeroesStorage;
     }

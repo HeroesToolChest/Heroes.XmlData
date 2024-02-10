@@ -1,3 +1,5 @@
 ﻿namespace Heroes.XmlData.StormData;
 
-internal record StormXElementValue(string Path, XElement Value);
+/// <inheritdoc/>
+public record StormXElementValue(XElement Value, string Path)
+    : StormValue<XElement>(Value, Path);

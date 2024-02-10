@@ -46,16 +46,16 @@ internal abstract class MpqStormMod<T> : StormMod<T>
         base.LoadStormData();
     }
 
-    public override void LoadStormGameStrings(HeroesLocalization localization)
+    public override void LoadStormGameStrings(StormLocale stormLocale)
     {
         using MpqHeroesArchive mpqHeroesArchive = GetMpqHeroesArchive();
 
-        base.LoadStormGameStrings(localization);
+        base.LoadStormGameStrings(stormLocale);
     }
 
-    protected override string GetGameStringFilePath(HeroesLocalization localization)
+    protected override string GetGameStringFilePath(StormLocale stormLocale)
     {
-        return Path.Join(localization.GetDescription(), HeroesSource.LocalizedDataDirectory, HeroesSource.GameStringFile);
+        return Path.Join(StormLocaleData.GetStormDataFileName(stormLocale), HeroesSource.LocalizedDataDirectory, HeroesSource.GameStringFile);
     }
 
     protected override bool TryGetFile(string filePath, [NotNullWhen(true)] out Stream? stream)
@@ -76,7 +76,7 @@ internal abstract class MpqStormMod<T> : StormMod<T>
     {
         if (_mpqFolderRoot is null || !_mpqFolderRoot.TryGetLastDirectory(GameDataDirectoryPath, out MpqFolder? gameDataFolder))
         {
-            StormStorage.AddDirectoryNotFound(GameDataDirectoryPath);
+            StormStorage.AddDirectoryNotFound(GameDataDirectoryPath, Name, DirectoryPath);
             return;
         }
 

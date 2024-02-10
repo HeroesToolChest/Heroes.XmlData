@@ -1,4 +1,5 @@
 ﻿global using CASCLib;
+global using Heroes.LocaleText;
 global using Heroes.MpqTool;
 global using Heroes.XmlData.Extensions;
 global using Heroes.XmlData.Helpers;

@@ -20,23 +20,25 @@ internal abstract class HeroesSource : IHeroesSource
     private const string _heroModsDirectory = "heromods";
     private const string _uiDirectory = "ui";
 
-    private readonly string _depotCacheDirectory = Path.Join("core.stormmod", "base.stormdata", "depotcache");
+    private readonly string _depotCacheDirectory = Path.Join(_coreStormModDirectory, _baseStormDataDirectory, "depotcache");
     private readonly string _battleMapModsDirectory = Path.Join("heroesmapmods", "battlegroundmapmods");
 
     private readonly List<IStormMod> _stormMods = [];
     private readonly List<IStormMod> _stormMapMods = [];
 
+    public HeroesSource(IStormStorage stormStorage)
+        : this(stormStorage, _defaultModsDirectory)
+    {
+    }
+
     public HeroesSource(IStormStorage stormStorage, string modsDirectoryPath)
     {
         StormStorage = stormStorage;
-        HotsBuild = StormStorage.HotsBuild;
         ModsDirectoryPath = modsDirectoryPath;
 
         AddStormMods();
         DepotCache = GetDepotCache();
     }
-
-    public int? HotsBuild { get; }
 
     public string ModsDirectoryPath { get; }
 
@@ -96,18 +98,18 @@ internal abstract class HeroesSource : IHeroesSource
         }
     }
 
-    public void LoadGamestrings(HeroesLocalization localization)
+    public void LoadGamestrings(StormLocale stormLocale)
     {
         StormStorage.ClearGamestrings();
 
         foreach (IStormMod stormMod in _stormMods)
         {
-            stormMod.LoadStormGameStrings(localization);
+            stormMod.LoadStormGameStrings(stormLocale);
         }
 
         foreach (IStormMod stormMapMod in _stormMapMods)
         {
-            stormMapMod.LoadStormGameStrings(localization);
+            stormMapMod.LoadStormGameStrings(stormLocale);
         }
     }
 
@@ -118,10 +120,11 @@ internal abstract class HeroesSource : IHeroesSource
 
     public bool LoadStormMapData(string mapTitle)
     {
+        _stormMapMods.Clear();
+        StormStorage.ClearStormMapMods();
+
         if (!S2MAPropertiesByTitle.TryGetValue(mapTitle, out S2MAProperties? s2maProperties))
             return false;
-
-        _stormMapMods.Clear();
 
         IStormMod mapRootMod = GetMpqStormMod(mapTitle, s2maProperties.DirectoryPath, true);
 
