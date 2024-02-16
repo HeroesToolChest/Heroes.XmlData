@@ -46,6 +46,8 @@ public class HeroesData : IHeroesData
     /// <returns><see langword="true"/> if the gamestring is found, otherwise <see langword="false"/>.</returns>
     public bool IsGameStringExists(string id)
     {
+        ArgumentNullException.ThrowIfNull(id);
+
         return _stormStorage.StormMapCache.GameStringsById.ContainsKey(id) || _stormStorage.StormCache.GameStringsById.ContainsKey(id);
     }
 
@@ -201,6 +203,8 @@ public class HeroesData : IHeroesData
     /// <returns><see langword="true"/> if the style name is found, otherwise <see langword="false"/>.</returns>
     public bool IsStormStyleHexColorValueExists(string name)
     {
+        ArgumentNullException.ThrowIfNull(name);
+
         return _stormStorage.StormMapCache.StormStyleHexColorValueByName.ContainsKey(name) || _stormStorage.StormCache.StormStyleHexColorValueByName.ContainsKey(name);
     }
 
@@ -282,6 +286,8 @@ public class HeroesData : IHeroesData
     /// <returns><see langword="true"/> if the constant id is found, otherwise <see langword="false"/>.</returns>
     public bool IsConstantElementExists(string id)
     {
+        ArgumentNullException.ThrowIfNull(id);
+
         return _stormStorage.StormMapCache.ConstantElementById.ContainsKey(id) || _stormStorage.StormCache.ConstantElementById.ContainsKey(id);
     }
 
@@ -363,6 +369,8 @@ public class HeroesData : IHeroesData
     /// <returns><see langword="true"/> if the name is found, otherwise <see langword="false"/>.</returns>
     public bool IsElementExists(string name)
     {
+        ArgumentNullException.ThrowIfNull(name);
+
         return _stormStorage.StormMapCache.ElementsByElementName.ContainsKey(name) || _stormStorage.StormCache.ElementsByElementName.ContainsKey(name);
     }
 
@@ -424,17 +432,19 @@ public class HeroesData : IHeroesData
     {
         ArgumentNullException.ThrowIfNull(name);
 
-        stormXElementValues = [];
+        stormXElementValues = null;
         bool success = false;
 
         if (_stormStorage.StormCache.ElementsByElementName.TryGetValue(name, out List<StormXElementValue>? cachStormXElementValues))
         {
+            stormXElementValues ??= [];
             stormXElementValues.AddRange(cachStormXElementValues);
             success = true;
         }
 
         if (_stormStorage.StormMapCache.ElementsByElementName.TryGetValue(name, out cachStormXElementValues))
         {
+            stormXElementValues ??= [];
             stormXElementValues.AddRange(cachStormXElementValues);
             success = true;
         }

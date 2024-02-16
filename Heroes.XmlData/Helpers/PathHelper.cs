@@ -43,7 +43,7 @@ internal class PathHelper
     }
 
     /// <summary>
-    /// Returns a modified path to use the current platform's directory separator character and lowercase all characters. Will remove the 'mods' part as well.
+    /// Returns a modified path to use the current platform's directory separator character and lowercase all characters. Will remove the 'mods' part (start of filepath) as well.
     /// </summary>
     /// <param name="filePath">A file path.</param>
     /// <param name="modsDirectory">The name of the mods directory.</param>
