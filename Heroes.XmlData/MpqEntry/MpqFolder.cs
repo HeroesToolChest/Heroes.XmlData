@@ -49,7 +49,7 @@ internal class MpqFolder
 
             if (isFile)
             {
-                if (Files.TryGetValue(pathPart, out MpqFile? value))
+                if (currentFolder.Files.TryGetValue(pathPart, out MpqFile? value))
                 {
                     mpqFile = value;
                     return true;
