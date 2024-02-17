@@ -158,7 +158,7 @@ internal abstract class DepotCache<T> : IDepotCache
             if (equalsIndex < 0)
                 continue;
 
-            return line[(equalsIndex + 1)..].Trim().Trim(new char[] { '"', ';' }).ToString();
+            return line[(equalsIndex + 1)..].Trim().Trim(['"', ';']).ToString();
         }
 
         return null;
