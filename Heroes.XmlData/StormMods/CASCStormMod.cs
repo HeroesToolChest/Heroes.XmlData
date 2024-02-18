@@ -38,5 +38,5 @@ internal class CASCStormMod : StormMod<ICASCHeroesSource>, IStormMod
         }
     }
 
-    protected override IStormMod GetStormMod(string path, bool isMapMod) => HeroesSource.CreateStormModInstance<CASCStormMod>(HeroesSource, path, isMapMod);
+    protected override IStormMod GetStormMod(string path, bool isMapMod) => HeroesSource.StormModFactory.CreateCASCStormModInstance(HeroesSource, path, isMapMod);
 }

@@ -26,19 +26,24 @@ internal abstract class HeroesSource : IHeroesSource
     private readonly List<IStormMod> _stormMods = [];
     private readonly List<IStormMod> _stormMapMods = [];
 
-    public HeroesSource(IStormStorage stormStorage)
-        : this(stormStorage, _defaultModsDirectory)
+    public HeroesSource(IStormStorage stormStorage, IStormModFactory stormModFactory, IDepotCacheFactory depotCacheFactory)
+        : this(stormStorage, stormModFactory, depotCacheFactory, _defaultModsDirectory)
     {
     }
 
-    public HeroesSource(IStormStorage stormStorage, string modsDirectoryPath)
+    public HeroesSource(IStormStorage stormStorage, IStormModFactory stormModFactory, IDepotCacheFactory depotCacheFactory, string modsDirectoryPath)
     {
         StormStorage = stormStorage;
+        StormModFactory = stormModFactory;
+        DepotCacheFactory = depotCacheFactory;
         ModsDirectoryPath = modsDirectoryPath;
 
         AddStormMods();
+
         DepotCache = GetDepotCache();
     }
+
+    public IStormModFactory StormModFactory { get; }
 
     public string ModsDirectoryPath { get; }
 
@@ -90,6 +95,8 @@ internal abstract class HeroesSource : IHeroesSource
 
     public List<string> S2MAPaths { get; } = [];
 
+    protected IDepotCacheFactory DepotCacheFactory { get; }
+
     public void LoadStormData()
     {
         foreach (IStormMod stormMod in _stormMods)
@@ -136,17 +143,6 @@ internal abstract class HeroesSource : IHeroesSource
         }
 
         return true;
-    }
-
-    public IStormMod CreateStormModInstance<T>(params object?[]? args)
-        where T : IStormMod
-    {
-        if (Activator.CreateInstance(typeof(T), args) is not IStormMod instance)
-        {
-            throw new InvalidOperationException();
-        }
-
-        return instance;
     }
 
     protected abstract IStormMod GetStormMod(string directoryPath, bool isMapMod);

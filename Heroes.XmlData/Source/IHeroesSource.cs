@@ -2,6 +2,8 @@
 
 internal interface IHeroesSource
 {
+    IStormModFactory StormModFactory { get; }
+
     string ModsDirectoryPath { get; }
 
     string DefaultModsDirectory { get; }
@@ -51,15 +53,6 @@ internal interface IHeroesSource
     Dictionary<string, S2MAProperties> S2MAPropertiesByTitle { get; }
 
     List<string> S2MAPaths { get; }
-
-    /// <summary>
-    /// Creates an instance of an <see cref="IStormMod"/>.
-    /// </summary>
-    /// <typeparam name="T">A type of <see cref="IStormMod"/>.</typeparam>
-    /// <param name="args">Additional arguments to be passed in a paramaters to the constructor.</param>
-    /// <returns>An instance of a <see cref="IStormMod"/>.</returns>
-    IStormMod CreateStormModInstance<T>(params object?[]? args)
-        where T : IStormMod;
 
     void LoadStormData();
 

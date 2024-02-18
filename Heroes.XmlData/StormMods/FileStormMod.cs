@@ -1,13 +1,13 @@
 ﻿namespace Heroes.XmlData.StormMods;
 
-internal class FileStormMod : StormMod<IHeroesSource>
+internal class FileStormMod : StormMod<IFileHeroesSource>
 {
-    public FileStormMod(IHeroesSource heroesSource, string directoryPath, bool isMapMod)
+    public FileStormMod(IFileHeroesSource heroesSource, string directoryPath, bool isMapMod)
         : base(heroesSource, directoryPath, isMapMod)
     {
     }
 
-    public FileStormMod(IHeroesSource heroesSource, string name, string directoryPath, bool isMapMod)
+    public FileStormMod(IFileHeroesSource heroesSource, string name, string directoryPath, bool isMapMod)
         : base(heroesSource, name, directoryPath, isMapMod)
     {
     }
@@ -42,5 +42,5 @@ internal class FileStormMod : StormMod<IHeroesSource>
         }
     }
 
-    protected override IStormMod GetStormMod(string path, bool isMapMod) => HeroesSource.CreateStormModInstance<FileStormMod>(HeroesSource, path, isMapMod);
+    protected override IStormMod GetStormMod(string path, bool isMapMod) => HeroesSource.StormModFactory.CreateFileStormModInstance(HeroesSource, path, isMapMod);
 }

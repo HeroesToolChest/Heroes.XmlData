@@ -2,5 +2,4 @@
 
 internal interface IFileHeroesSource : IHeroesSource
 {
-    void LoadXmlFile(string filePath);
 }
