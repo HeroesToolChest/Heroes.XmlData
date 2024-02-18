@@ -27,7 +27,10 @@ internal class FileDepotCache : DepotCache<FileHeroesSource>
             using FileStream fileStream = File.OpenRead(s2mvFile);
 
             if (LoadS2mvFile(fileStream))
+            {
                 HeroesSource.S2MVPaths.Add(s2mvFile);
+                HeroesSource.S2MVPropertiesByHashCode.Last().Value.DirectoryPath = PathHelper.NormalizePath(s2mvFile, HeroesSource.ModsDirectoryPath);
+            }
         }
 
         // then the s2ma files, which are the map stormmod files

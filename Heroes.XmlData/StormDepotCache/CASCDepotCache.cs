@@ -26,7 +26,10 @@ internal class CASCDepotCache : DepotCache<CASCHeroesSource>
                         continue;
 
                     if (LoadS2mvFile(HeroesSource.CASCHeroesStorage.CASCHandler.OpenFile(file.Value.FullName)))
+                    {
                         HeroesSource.S2MVPaths.Add(file.Value.FullName);
+                        HeroesSource.S2MVPropertiesByHashCode.Last().Value.DirectoryPath = PathHelper.NormalizePath(file.Value.FullName, HeroesSource.DefaultModsDirectory);
+                    }
                 }
             }
         }

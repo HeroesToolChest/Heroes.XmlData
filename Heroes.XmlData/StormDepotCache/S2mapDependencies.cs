@@ -8,6 +8,8 @@ internal class S2mapDependencies
 
     public string DocInfoIconFile { get; set; } = string.Empty;
 
+    public string DirectoryPath { get; set; } = string.Empty;
+
     public override int GetHashCode()
     {
         HashCode hashCode = default;
