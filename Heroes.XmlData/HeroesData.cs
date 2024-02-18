@@ -1,12 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Runtime.InteropServices;
-using System.Xml.Linq;
-
-namespace Heroes.XmlData;
+﻿namespace Heroes.XmlData;
 
 /// <summary>
-/// 
+/// Contains the methods and properties to access the data.
 /// </summary>
 public class HeroesData : IHeroesData
 {
