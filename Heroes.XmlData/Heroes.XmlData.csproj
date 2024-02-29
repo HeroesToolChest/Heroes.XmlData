@@ -6,7 +6,7 @@
     <Nullable>enable</Nullable>
     <GenerateDocumentationFile>True</GenerateDocumentationFile>
     <Authors>Kevin Oliva</Authors>
-    <Copyright>Copyright © 2023 - 2024 Kevin Oliva</Copyright>
+    <Copyright>Copyright © 2024 Kevin Oliva</Copyright>
     <Description></Description>
     <!--<PackageProjectUrl></PackageProjectUrl>-->
     <!--<RepositoryUrl></RepositoryUrl>-->
@@ -23,11 +23,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <!--<PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.1.1">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>-->
-    <!--<PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="8.0.0-rc.1.23419.4" />-->
+    <PackageReference Include="Heroes.LocaleText" Version="1.0.0-beta.1" />
     <PackageReference Include="Heroes.MpqTool" Version="1.1.0" />
     <PackageReference Include="StyleCop.Analyzers" Version="1.2.0-beta.556">
       <PrivateAssets>all</PrivateAssets>
@@ -36,7 +32,6 @@
   </ItemGroup>
 
   <ItemGroup>
-	<ProjectReference Include="..\..\Heroes.LocaleText\Heroes.LocaleText\Heroes.LocaleText.csproj" />
     <ProjectReference Include="..\CascLib\CascLib\CascLib.csproj" />
   </ItemGroup>
 
@@ -44,8 +39,8 @@
     <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
       <_Parameter1>Heroes.XmlData.Tests</_Parameter1>
     </AssemblyAttribute>
-	<AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
-		<_Parameter1>DynamicProxyGenAssembly2</_Parameter1>
-	</AssemblyAttribute>
+	  <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
+		  <_Parameter1>DynamicProxyGenAssembly2</_Parameter1>
+	  </AssemblyAttribute>
   </ItemGroup>
 </Project>
