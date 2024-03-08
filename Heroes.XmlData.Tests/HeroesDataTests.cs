@@ -7,13 +7,13 @@ public class HeroesDataTests
 {
     private readonly IStormStorage _stormStorage;
 
-    private readonly HeroesData _heroesData;
+    private readonly IHeroesData _heroesData;
 
     public HeroesDataTests()
     {
         _stormStorage = Substitute.For<IStormStorage>();
 
-        _heroesData = new(_stormStorage);
+        _heroesData = new HeroesData(_stormStorage);
     }
 
     [TestMethod]

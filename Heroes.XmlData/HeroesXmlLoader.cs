@@ -25,7 +25,7 @@ public class HeroesXmlLoader
     /// <summary>
     /// Gets the <see cref="HeroesData"/> which contain the xml and gamestrings data.
     /// </summary>
-    public HeroesData HeroesData { get; }
+    public IHeroesData HeroesData { get; }
 
     /// <summary>
     /// Gets an instanace of the <see cref="HeroesXmlLoader"/> class. Loads the data from an extracted file source.
