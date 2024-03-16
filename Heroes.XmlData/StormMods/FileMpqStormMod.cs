@@ -14,5 +14,5 @@ internal class FileMpqStormMod : MpqStormMod<IFileHeroesSource>
 
     protected override Stream GetMpqFile(string file) => File.OpenRead(file);
 
-    protected override IStormMod GetStormMod(string path, bool isMapMod) => HeroesSource.StormModFactory.CreateFileMpqStormModInstance(HeroesSource, path, isMapMod);
+    protected override IStormMod GetStormMod(string path, bool isMapMod) => HeroesSource.StormModFactory.CreateFileStormModInstance(HeroesSource, path, isMapMod);
 }
