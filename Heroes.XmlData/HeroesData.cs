@@ -60,7 +60,6 @@ public class HeroesData : IHeroesData
         return TryGetGameString(id.ToString(), out gameStringText);
     }
 
-
     /// <inheritdoc/>
     public bool TryGetGameString(string id, [NotNullWhen(true)] out GameStringText? gameStringText)
     {

@@ -8,6 +8,8 @@ public class HeroesXmlLoader
     private readonly IStormStorage _stormStorage;
     private readonly IHeroesSource _heroesSource;
 
+    private bool _baseStormModsLoaded = false;
+
     private HeroesXmlLoader(string pathToModsDirectory)
     {
         _stormStorage = new StormStorage();
@@ -48,62 +50,68 @@ public class HeroesXmlLoader
     }
 
     /// <summary>
-    /// Gets an instanace of the <see cref="HeroesXmlLoader"/> class. Loads the data from the Heroes of the Storm directory.
+    /// Loads the base stormmods.
     /// </summary>
-    /// <param name="pathToHeroesDirectory">The Heroes of the storm directory.</param>
-    /// <returns>A <see cref="HeroesXmlLoader"/>.</returns>
-    public static HeroesXmlLoader LoadAsCASC(string pathToHeroesDirectory)
+    /// <returns>The current <see cref="HeroesXmlLoader"/> instance.</returns>
+    public HeroesXmlLoader LoadStormMods()
     {
-        CASCConfig.ThrowOnFileNotFound = true;
-        CASCConfig.ThrowOnMissingDecryptionKey = true;
-        CASCConfig config = CASCConfig.LoadLocalStorageConfig(pathToHeroesDirectory, "hero");
-        CASCHandler cascHandler = CASCHandler.OpenStorage(config);
+        if (_baseStormModsLoaded is false)
+        {
+            _heroesSource.LoadStormData();
+            _heroesSource.LoadDepotCache();
+        }
 
-        cascHandler.Root.LoadListFile(Path.Combine(Environment.CurrentDirectory, "listfile.txt"));
+        _baseStormModsLoaded = true;
 
-        CASCFolder cascFolderRoot = cascHandler.Root.SetFlags(LocaleFlags.All);
-
-        return new HeroesXmlLoader(new CASCHeroesStorage(cascHandler, cascFolderRoot));
-    }
-
-    /// <summary>
-    /// Loads the default stormmods.
-    /// </summary>
-    public void LoadStormMods()
-    {
-        _heroesSource.LoadStormData();
-        _heroesSource.LoadDepotCache();
+        return this;
     }
 
     /// <summary>
     /// Loads a map mod.
     /// </summary>
     /// <param name="mapTitle">A map's title. Can be found from <see cref="GetMapTitles"/>.</param>
-    public void LoadMapMod(string mapTitle)
+    /// <returns>The current <see cref="HeroesXmlLoader"/> instance.</returns>
+    public HeroesXmlLoader LoadMapMod(string mapTitle)
     {
+        LoadBaseStormMods();
+
         _heroesSource.LoadStormMapData(mapTitle);
 
         if (HeroesData.HeroesLocalization is not null)
             LoadGameStrings(HeroesData.HeroesLocalization.Value);
+
+        return this;
     }
 
     /// <summary>
     /// Loads a specific localization for gamestrings.
     /// </summary>
     /// <param name="localization">The <see cref="StormLocale"/>.</param>
-    public void LoadGameStrings(StormLocale localization = StormLocale.ENUS)
+    /// <returns>The current <see cref="HeroesXmlLoader"/> instance.</returns>
+    public HeroesXmlLoader LoadGameStrings(StormLocale localization = StormLocale.ENUS)
     {
+        LoadBaseStormMods();
+
         HeroesData.SetHeroesLocalization(localization);
 
         _heroesSource.LoadGamestrings(localization);
+
+        return this;
     }
 
     /// <summary>
     /// Gets a collection of the map titles.
     /// </summary>
     /// <returns>A collection of map titles.</returns>
+    /// <returns>The current <see cref="HeroesXmlLoader"/> instance.</returns>
     public IEnumerable<string> GetMapTitles()
     {
         return _heroesSource.S2MAPropertiesByTitle.Select(x => x.Key).Order();
+    }
+
+    private void LoadBaseStormMods()
+    {
+        if (_baseStormModsLoaded is false)
+            LoadStormMods();
     }
 }
