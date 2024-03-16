@@ -24,11 +24,11 @@ internal class StormModFactory : IStormModFactory
 
     public IStormMod CreateCASCMpqStormModInstance(ICASCHeroesSource heroesSource, string directoryPath, bool isMapMod)
     {
-        return new CASCStormMod(heroesSource, directoryPath, isMapMod);
+        return new CASCMpqStormMod(heroesSource, directoryPath, isMapMod);
     }
 
     public IStormMod CreateCASCMpqStormModInstance(ICASCHeroesSource heroesSource, string name, string directoryPath, bool isMapMod)
     {
-        return new CASCStormMod(heroesSource, name, directoryPath, isMapMod);
+        return new CASCMpqStormMod(heroesSource, name, directoryPath, isMapMod);
     }
 }

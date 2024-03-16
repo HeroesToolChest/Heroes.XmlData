@@ -14,5 +14,5 @@ internal class CASCMpqStormMod : MpqStormMod<ICASCHeroesSource>
 
     protected override Stream GetMpqFile(string file) => HeroesSource.CASCHeroesStorage.CASCHandler.OpenFile(file);
 
-    protected override IStormMod GetStormMod(string path, bool isMapMod) => HeroesSource.StormModFactory.CreateCASCMpqStormModInstance(HeroesSource, path, isMapMod);
+    protected override IStormMod GetStormMod(string path, bool isMapMod) => HeroesSource.StormModFactory.CreateCASCStormModInstance(HeroesSource, path, isMapMod);
 }
