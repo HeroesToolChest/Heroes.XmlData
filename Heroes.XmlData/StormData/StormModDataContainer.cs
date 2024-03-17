@@ -26,25 +26,18 @@ internal class StormModDataContainer
 
     public bool IsMapMod => _stormModDataProperties.IsMapMod;
 
-    public void AddGameStringFile(Stream stream, string filePath)
+    public void AddGameStringFile(Stream stream, ReadOnlySpan<char> filePath)
     {
-        Span<Range> ranges = stackalloc Range[2];
-
         using StreamReader reader = new(stream);
 
         while (!reader.EndOfStream)
         {
-            ReadOnlySpan<char> line = reader.ReadLine().AsSpan();
+            ReadOnlySpan<char> lineSpan = reader.ReadLine().AsSpan();
 
-            if (line.IsEmpty || line.IsWhiteSpace())
+            if (lineSpan.IsEmpty || lineSpan.IsWhiteSpace())
                 continue;
 
-            line.Split(ranges, '=', StringSplitOptions.None);
-
-            GameStringText gameStringText = new(line[ranges[1]].ToString(), GetModlessPath(filePath));
-
-            _gameStringsById[line[ranges[0]].ToString()] = gameStringText;
-            _stormCache.GameStringsById[line[ranges[0]].ToString()] = gameStringText;
+            _stormCache.AddGameString(lineSpan, GetModlessPath(filePath), _gameStringsById);
         }
     }
 
@@ -127,6 +120,15 @@ internal class StormModDataContainer
         return modlessPath;
     }
 
+    private ReadOnlySpan<char> GetModlessPath(ReadOnlySpan<char> path)
+    {
+        int indexOfMods = path.IndexOf(_modsDirectoryPath);
+        if (indexOfMods < 0)
+            return path;
+
+        return path[(indexOfMods + _modsDirectoryPath.Length)..];
+    }
+
     private void SetFontStyleCache(XDocument document, string filePath)
     {
         foreach (XElement element in document.Root!.Elements())
@@ -204,15 +206,7 @@ internal class StormModDataContainer
                 _stormCache.ElementsByElementName.Add(elementName, [new StormXElementValue(element, filePath)]);
 
             // set consts
-            if (elementName.Equals("const", StringComparison.OrdinalIgnoreCase))
-            {
-                string? id = element.Attribute("id")?.Value;
-
-                if (string.IsNullOrEmpty(id))
-                    continue;
-
-                _stormCache.ConstantElementById[id] = new StormXElementValue(element, filePath);
-            }
+            _stormCache.AddConstantElement(element, filePath);
         }
     }
 }

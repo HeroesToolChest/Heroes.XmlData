@@ -5,10 +5,17 @@
 /// </summary>
 public class HeroesXmlLoader
 {
+    private const string _customPath = "custom";
+
     private readonly IStormStorage _stormStorage;
     private readonly IHeroesSource _heroesSource;
 
     private bool _baseStormModsLoaded = false;
+
+    private HeroesXmlLoader()
+        : this(string.Empty)
+    {
+    }
 
     private HeroesXmlLoader(string pathToModsDirectory)
     {
@@ -30,30 +37,40 @@ public class HeroesXmlLoader
     public IHeroesData HeroesData { get; }
 
     /// <summary>
-    /// Gets an instanace of the <see cref="HeroesXmlLoader"/> class. Sets the source of the data to be loaded from an extracted file source.
+    /// Gets an instance of the <see cref="HeroesXmlLoader"/> class. The source of data will be emtpy.
+    /// </summary>
+    /// <returns>A <see cref="HeroesXmlLoader"/>.</returns>
+    public static HeroesXmlLoader LoadAsEmpty()
+    {
+        return new HeroesXmlLoader();
+    }
+
+    /// <summary>
+    /// Gets an instance of the <see cref="HeroesXmlLoader"/> class. Sets the source of the data to be loaded from an extracted file source.
     /// </summary>
     /// <param name="pathToModsDirectory">A mods directory.</param>
-    /// <returns>A <see cref="HeroesXmlLoader"/>.</returns>
+    /// <returns>A <see cref="HeroesXmlLoader"/> instance.</returns>
+    /// <remarks>On linux and macos, all directories and files must be in lowercase characters.</remarks>
     public static HeroesXmlLoader LoadAsFile(string pathToModsDirectory)
     {
         return new HeroesXmlLoader(pathToModsDirectory);
     }
 
     /// <summary>
-    /// Gets an instanace of the <see cref="HeroesXmlLoader"/> class. Sets the source of the data to be loaded from the Heroes of the Storm directory.
+    /// Gets an instance of the <see cref="HeroesXmlLoader"/> class. Sets the source of the data to be loaded from the Heroes of the Storm directory.
     /// </summary>
     /// <param name="cascHeroesStorage">A <paramref name="cascHeroesStorage"/>.</param>
-    /// <returns>A <see cref="HeroesXmlLoader"/>.</returns>
+    /// <returns>A <see cref="HeroesXmlLoader"/> instance.</returns>
     public static HeroesXmlLoader LoadAsCASC(CASCHeroesStorage cascHeroesStorage)
     {
         return new HeroesXmlLoader(cascHeroesStorage);
     }
 
     /// <summary>
-    /// Gets an instanace of the <see cref="HeroesXmlLoader"/> class. Sets the source of the data to be loaded from the Heroes of the Storm directory.
+    /// Gets an instance of the <see cref="HeroesXmlLoader"/> class. Sets the source of the data to be loaded from the Heroes of the Storm directory.
     /// </summary>
     /// <param name="pathToHeroesDirectory">The Heroes of the storm directory.</param>
-    /// <returns>A <see cref="HeroesXmlLoader"/>.</returns>
+    /// <returns>A <see cref="HeroesXmlLoader"/> instance.</returns>
     public static HeroesXmlLoader LoadAsCASC(string pathToHeroesDirectory)
     {
         CASCConfig.ThrowOnFileNotFound = true;
@@ -103,7 +120,18 @@ public class HeroesXmlLoader
     }
 
     /// <summary>
-    /// Loads a specific localization for gamestrings. Only on can be loaded at a time. Will automatically load the base stormmods if not already loaded.
+    /// Unloads the current map mod.
+    /// </summary>
+    /// <returns>The current <see cref="HeroesXmlLoader"/> instance.</returns>
+    public HeroesXmlLoader UnloadMapMod()
+    {
+        _heroesSource.LoadStormMapData(string.Empty);
+
+        return this;
+    }
+
+    /// <summary>
+    /// Loads a specific localization for gamestrings. Only one can be loaded at a time. Will automatically load the base stormmods if not already loaded.
     /// </summary>
     /// <param name="localization">The <see cref="StormLocale"/>.</param>
     /// <returns>The current <see cref="HeroesXmlLoader"/> instance.</returns>
@@ -114,6 +142,33 @@ public class HeroesXmlLoader
         HeroesData.SetHeroesLocalization(localization);
 
         _heroesSource.LoadGamestrings(localization);
+
+        return this;
+    }
+
+    /// <summary>
+    /// Adds a gamestring collection to the custom cache storage. If an id already exists, it will be overridden.
+    /// </summary>
+    /// <param name="gameStrings">A collection of gamestrings in a format of &lt;id&gt;=&lt;value&gt;.</param>
+    /// <returns>The current <see cref="HeroesXmlLoader"/> instance.</returns>
+    public HeroesXmlLoader AddGameStrings(IEnumerable<string> gameStrings)
+    {
+        foreach (string item in gameStrings)
+            _stormStorage.StormCustomCache.AddGameString(item, _customPath);
+
+        return this;
+    }
+
+    /// <summary>
+    /// Adds a colletion of <see cref="XElement"/>s with a local name of 'const' to the custom cache storage.
+    /// If an element with an id value already exists, it will be overridden.
+    /// </summary>
+    /// <param name="elements">A collection of <see cref="XElement"/>s with a local name of 'const'.</param>
+    /// <returns>The current <see cref="HeroesXmlLoader"/> instance.</returns>
+    public HeroesXmlLoader AddConstantElements(IEnumerable<XElement> elements)
+    {
+        foreach (XElement item in elements)
+            _stormStorage.StormCustomCache.AddConstantElement(item, _customPath);
 
         return this;
     }

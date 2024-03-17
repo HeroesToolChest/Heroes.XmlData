@@ -13,6 +13,8 @@ internal class StormStorage : IStormStorage
 
     public StormCache StormMapCache { get; } = new();
 
+    public StormCache StormCustomCache { get; } = new();
+
     public void AddContainer(StormModDataContainer stormModDataContainer)
     {
         _stormModContainers.Add(stormModDataContainer);

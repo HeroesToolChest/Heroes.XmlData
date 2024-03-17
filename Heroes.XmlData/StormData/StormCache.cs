@@ -29,6 +29,43 @@ internal class StormCache
     /// </summary>
     public Dictionary<string, GameStringText> GameStringsById { get; } = [];
 
+    public void AddGameString(ReadOnlySpan<char> gamestring, ReadOnlySpan<char> path)
+    {
+        AddGameString(gamestring, path, null);
+    }
+
+    public void AddGameString(ReadOnlySpan<char> gamestring, ReadOnlySpan<char> path, Dictionary<string, GameStringText>? containerDictionary)
+    {
+        Span<Range> ranges = stackalloc Range[2];
+
+        gamestring.Split(ranges, '=', StringSplitOptions.None);
+
+        if (gamestring[ranges[0]].IsEmpty || gamestring[ranges[0]].IsWhiteSpace())
+            return;
+
+        GameStringText gameStringText = new(gamestring[ranges[1]].ToString(), path.ToString());
+
+        string id = gamestring[ranges[0]].ToString();
+
+        GameStringsById[id] = gameStringText;
+
+        if (containerDictionary is not null)
+            containerDictionary[id] = gameStringText;
+    }
+
+    public void AddConstantElement(XElement element, string path)
+    {
+        if (element.Name.LocalName.Equals("const", StringComparison.OrdinalIgnoreCase))
+        {
+            string? id = element.Attribute("id")?.Value;
+
+            if (string.IsNullOrEmpty(id))
+                return;
+
+            ConstantElementById[id] = new StormXElementValue(element, path);
+        }
+    }
+
     public void Clear()
     {
         StormStyleHexColorValueByName.Clear();

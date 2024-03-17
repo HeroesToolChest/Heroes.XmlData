@@ -6,6 +6,8 @@ internal interface IStormStorage
 
     StormCache StormMapCache { get; }
 
+    StormCache StormCustomCache { get; }
+
     void AddContainer(StormModDataContainer stormModDataContainer);
 
     void AddDirectoryNotFound(string directory, string stormModName, string stormModDirectoryPath);

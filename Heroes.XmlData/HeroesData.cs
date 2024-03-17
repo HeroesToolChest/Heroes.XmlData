@@ -33,7 +33,9 @@ public class HeroesData : IHeroesData
     {
         ArgumentNullException.ThrowIfNull(id);
 
-        return _stormStorage.StormMapCache.GameStringsById.ContainsKey(id) || _stormStorage.StormCache.GameStringsById.ContainsKey(id);
+        return _stormStorage.StormCustomCache.GameStringsById.ContainsKey(id) ||
+            _stormStorage.StormMapCache.GameStringsById.ContainsKey(id) ||
+            _stormStorage.StormCache.GameStringsById.ContainsKey(id);
     }
 
     /// <inheritdoc/>
@@ -47,8 +49,12 @@ public class HeroesData : IHeroesData
     {
         ArgumentNullException.ThrowIfNull(id);
 
-        // map cache always first
-        if (_stormStorage.StormMapCache.GameStringsById.TryGetValue(id, out GameStringText? gameStringText))
+        // custom cache always first
+        if (_stormStorage.StormCustomCache.GameStringsById.TryGetValue(id, out GameStringText? gameStringText))
+            return gameStringText;
+
+        // map cache second
+        if (_stormStorage.StormMapCache.GameStringsById.TryGetValue(id, out gameStringText))
             return gameStringText;
 
         return _stormStorage.StormCache.GameStringsById[id];
@@ -65,7 +71,11 @@ public class HeroesData : IHeroesData
     {
         ArgumentNullException.ThrowIfNull(id);
 
-        // map cache always first
+        // custom cache always first
+        if (_stormStorage.StormCustomCache.GameStringsById.TryGetValue(id, out gameStringText))
+            return true;
+
+        // map cache second
         if (_stormStorage.StormMapCache.GameStringsById.TryGetValue(id, out gameStringText))
             return true;
 
@@ -84,7 +94,9 @@ public class HeroesData : IHeroesData
 
         LevelScalingEntry levelScalingEntry = new(catalog, entry, field);
 
-        return _stormStorage.StormMapCache.ScaleValueByEntry.ContainsKey(levelScalingEntry) || _stormStorage.StormCache.ScaleValueByEntry.ContainsKey(levelScalingEntry);
+        return _stormStorage.StormCustomCache.ScaleValueByEntry.ContainsKey(levelScalingEntry) || 
+            _stormStorage.StormMapCache.ScaleValueByEntry.ContainsKey(levelScalingEntry) ||
+            _stormStorage.StormCache.ScaleValueByEntry.ContainsKey(levelScalingEntry);
     }
 
     /// <inheritdoc/>
@@ -96,7 +108,10 @@ public class HeroesData : IHeroesData
 
         LevelScalingEntry levelScalingEntry = new(catalog, entry, field);
 
-        if (_stormStorage.StormMapCache.ScaleValueByEntry.TryGetValue(levelScalingEntry, out StormStringValue? stormStringValue))
+        if (_stormStorage.StormCustomCache.ScaleValueByEntry.TryGetValue(levelScalingEntry, out StormStringValue? stormStringValue))
+            return stormStringValue;
+
+        if (_stormStorage.StormMapCache.ScaleValueByEntry.TryGetValue(levelScalingEntry, out stormStringValue))
             return stormStringValue;
 
         return _stormStorage.StormCache.ScaleValueByEntry[levelScalingEntry];
@@ -110,6 +125,9 @@ public class HeroesData : IHeroesData
         ArgumentNullException.ThrowIfNull(field);
 
         LevelScalingEntry levelScalingEntry = new(catalog, entry, field);
+
+        if (_stormStorage.StormCustomCache.ScaleValueByEntry.TryGetValue(levelScalingEntry, out stormStringValue))
+            return true;
 
         if (_stormStorage.StormMapCache.ScaleValueByEntry.TryGetValue(levelScalingEntry, out stormStringValue))
             return true;
@@ -131,7 +149,9 @@ public class HeroesData : IHeroesData
     {
         ArgumentNullException.ThrowIfNull(name);
 
-        return _stormStorage.StormMapCache.StormStyleHexColorValueByName.ContainsKey(name) || _stormStorage.StormCache.StormStyleHexColorValueByName.ContainsKey(name);
+        return _stormStorage.StormCustomCache.StormStyleHexColorValueByName.ContainsKey(name) ||
+            _stormStorage.StormMapCache.StormStyleHexColorValueByName.ContainsKey(name) ||
+            _stormStorage.StormCache.StormStyleHexColorValueByName.ContainsKey(name);
     }
 
     /// <inheritdoc/>
@@ -145,8 +165,12 @@ public class HeroesData : IHeroesData
     {
         ArgumentNullException.ThrowIfNull(name);
 
-        // map cache always first
-        if (_stormStorage.StormMapCache.StormStyleHexColorValueByName.TryGetValue(name, out StormStringValue? stormStringValue))
+        // custom cache always first
+        if (_stormStorage.StormCustomCache.StormStyleHexColorValueByName.TryGetValue(name, out StormStringValue? stormStringValue))
+            return stormStringValue;
+
+        // map cache second
+        if (_stormStorage.StormMapCache.StormStyleHexColorValueByName.TryGetValue(name, out stormStringValue))
             return stormStringValue;
 
         return _stormStorage.StormCache.StormStyleHexColorValueByName[name];
@@ -162,6 +186,9 @@ public class HeroesData : IHeroesData
     public bool TryGetStormStyleHexColorValue(string name, out StormStringValue? stormStringValue)
     {
         ArgumentNullException.ThrowIfNull(name);
+
+        if (_stormStorage.StormCustomCache.StormStyleHexColorValueByName.TryGetValue(name, out stormStringValue))
+            return true;
 
         if (_stormStorage.StormMapCache.StormStyleHexColorValueByName.TryGetValue(name, out stormStringValue))
             return true;
@@ -183,7 +210,9 @@ public class HeroesData : IHeroesData
     {
         ArgumentNullException.ThrowIfNull(id);
 
-        return _stormStorage.StormMapCache.ConstantElementById.ContainsKey(id) || _stormStorage.StormCache.ConstantElementById.ContainsKey(id);
+        return _stormStorage.StormCustomCache.ConstantElementById.ContainsKey(id) ||
+            _stormStorage.StormMapCache.ConstantElementById.ContainsKey(id) ||
+            _stormStorage.StormCache.ConstantElementById.ContainsKey(id);
     }
 
     /// <inheritdoc/>
@@ -197,8 +226,12 @@ public class HeroesData : IHeroesData
     {
         ArgumentNullException.ThrowIfNull(id);
 
-        // map cache always first
-        if (_stormStorage.StormMapCache.ConstantElementById.TryGetValue(id, out StormXElementValue? stormXElementValue))
+        // custom cache always first
+        if (_stormStorage.StormCustomCache.ConstantElementById.TryGetValue(id, out StormXElementValue? stormXElementValue))
+            return stormXElementValue;
+
+        // map cache second
+        if (_stormStorage.StormMapCache.ConstantElementById.TryGetValue(id, out stormXElementValue))
             return stormXElementValue;
 
         return _stormStorage.StormCache.ConstantElementById[id];
@@ -215,7 +248,11 @@ public class HeroesData : IHeroesData
     {
         ArgumentNullException.ThrowIfNull(id);
 
-        // map cache always first
+        // custom cache always first
+        if (_stormStorage.StormCustomCache.ConstantElementById.TryGetValue(id, out stormXElementValue))
+            return true;
+
+        // map cache second
         if (_stormStorage.StormMapCache.ConstantElementById.TryGetValue(id, out stormXElementValue))
             return true;
 
@@ -236,7 +273,9 @@ public class HeroesData : IHeroesData
     {
         ArgumentNullException.ThrowIfNull(name);
 
-        return _stormStorage.StormMapCache.ElementsByElementName.ContainsKey(name) || _stormStorage.StormCache.ElementsByElementName.ContainsKey(name);
+        return _stormStorage.StormCustomCache.ElementsByElementName.ContainsKey(name) ||
+            _stormStorage.StormMapCache.ElementsByElementName.ContainsKey(name) ||
+            _stormStorage.StormCache.ElementsByElementName.ContainsKey(name);
     }
 
     /// <inheritdoc/>
@@ -259,6 +298,9 @@ public class HeroesData : IHeroesData
             elements.AddRange(stormXElementValues);
 
         if (_stormStorage.StormMapCache.ElementsByElementName.TryGetValue(name, out stormXElementValues))
+            elements.AddRange(stormXElementValues);
+
+        if (_stormStorage.StormCustomCache.ElementsByElementName.TryGetValue(name, out stormXElementValues))
             elements.AddRange(stormXElementValues);
 
         return elements;
@@ -286,6 +328,13 @@ public class HeroesData : IHeroesData
         }
 
         if (_stormStorage.StormMapCache.ElementsByElementName.TryGetValue(name, out cachStormXElementValues))
+        {
+            stormXElementValues ??= [];
+            stormXElementValues.AddRange(cachStormXElementValues);
+            success = true;
+        }
+
+        if (_stormStorage.StormCustomCache.ElementsByElementName.TryGetValue(name, out cachStormXElementValues))
         {
             stormXElementValues ??= [];
             stormXElementValues.AddRange(cachStormXElementValues);
