@@ -125,13 +125,13 @@ internal abstract class HeroesSource : IHeroesSource
         DepotCache.LoadDepotCache();
     }
 
-    public bool LoadStormMapData(string mapTitle)
+    public void LoadStormMapData(string mapTitle)
     {
         _stormMapMods.Clear();
         StormStorage.ClearStormMapMods();
 
         if (!S2MAPropertiesByTitle.TryGetValue(mapTitle, out S2MAProperties? s2maProperties))
-            return false;
+            return;
 
         IStormMod mapRootMod = GetMpqStormMod(mapTitle, s2maProperties.DirectoryPath, true);
 
@@ -141,8 +141,6 @@ internal abstract class HeroesSource : IHeroesSource
         {
             stormMapMod.LoadStormData();
         }
-
-        return true;
     }
 
     protected abstract IStormMod GetStormMod(string directoryPath, bool isMapMod);

@@ -58,7 +58,7 @@ internal interface IHeroesSource
 
     void LoadGamestrings(StormLocale stormLocale);
 
-    bool LoadStormMapData(string mapTitle);
+    void LoadStormMapData(string mapTitle);
 
     void LoadDepotCache();
 }
