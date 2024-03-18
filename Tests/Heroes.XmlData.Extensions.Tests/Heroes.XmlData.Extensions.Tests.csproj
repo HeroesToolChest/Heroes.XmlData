@@ -3,16 +3,17 @@
   <PropertyGroup>
     <EnableMSTestRunner>true</EnableMSTestRunner>
     <OutputType>Exe</OutputType>
-    
+
     <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
     <NoWarn>EnableGenerateDocumentationFile</NoWarn>
     <EnforceCodeStyleInBuild>True</EnforceCodeStyleInBuild>
-	  
+
     <TestingPlatformDotnetTestSupport>true</TestingPlatformDotnetTestSupport>
-    <TestingPlatformCaptureOutput>false</TestingPlatformCaptureOutput>       
+    <TestingPlatformCaptureOutput>false</TestingPlatformCaptureOutput>
   </PropertyGroup>
 
   <ItemGroup>
@@ -34,7 +35,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Heroes.XmlData\Heroes.XmlData.csproj" />
+    <ProjectReference Include="..\..\Heroes.XmlData.Extensions\Heroes.XmlData.Extensions.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Include="Microsoft.VisualStudio.TestTools.UnitTesting" />
   </ItemGroup>
 
 </Project>

@@ -1,7 +1,7 @@
 ﻿using System.Collections.Concurrent;
 using System.Data;
 
-namespace Heroes.XmlData.Tests;
+namespace Heroes.XmlData.Extensions.Tests;
 
 [TestClass]
 public class HeroesMathTests
@@ -35,8 +35,14 @@ public class HeroesMathTests
     [DataRow(10, "10/0")]
     public void Compute_ValidExpressions_ReturnsValue(double expected, string expression)
     {
-        HeroesMath.Compute(expression).Should().Be(expected);
-        HeroesMath.Compute(expression.AsSpan()).Should().Be(expected);
+        // arrange
+        // act
+        double result = HeroesMath.Compute(expression);
+        double resultFromSpan = HeroesMath.Compute(expression.AsSpan());
+
+        // assert
+        result.Should().Be(expected);
+        resultFromSpan.Should().Be(expected);
     }
 
     [TestMethod]
