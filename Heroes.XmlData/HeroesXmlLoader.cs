@@ -163,7 +163,7 @@ public class HeroesXmlLoader
     /// Adds a colletion of <see cref="XElement"/>s with a local name of 'const' to the custom cache storage.
     /// If an element with an id value already exists, it will be overridden.
     /// </summary>
-    /// <param name="elements">A collection of <see cref="XElement"/>s with a local name of 'const'.</param>
+    /// <param name="elements">A collection of <see cref="XElement"/>s with a local name of "const".</param>
     /// <returns>The current <see cref="HeroesXmlLoader"/> instance.</returns>
     public HeroesXmlLoader AddConstantElements(IEnumerable<XElement> elements)
     {
