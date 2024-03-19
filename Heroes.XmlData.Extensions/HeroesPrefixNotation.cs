@@ -32,13 +32,10 @@ internal class HeroesPrefixNotation
         if (!TryGetOperator(expression, out char? op))
             throw new SyntaxErrorException("Operator not found");
 
-        double? firstValue = GetExpression(expression, '(', ' ');
-        double? secondValue = GetExpression(expression, ' ', ')');
+        double firstValue = GetExpression(expression, '(', ' ');
+        double secondValue = GetExpression(expression, ' ', ')');
 
-        if (!firstValue.HasValue && !secondValue.HasValue)
-            return 0;
-
-        return HeroesMath.ApplyOperator(op.Value, secondValue.Value, firstValue.Value);
+        return HeroesMath.ApplyOperator(op.Value, secondValue, firstValue);
     }
 
     private bool TryGetOperator(ReadOnlySpan<char> expression, [NotNullWhen(true)] out char? op)
@@ -81,7 +78,26 @@ internal class HeroesPrefixNotation
                 _index += i;
                 ReadOnlySpan<char> value = currentTextSpan.Slice(startIndex + 1, i - startIndex - 1);
 
-                return _heroesData.GetValueFromValueText(value);
+                if (value.StartsWith("negate", StringComparison.OrdinalIgnoreCase))
+                {
+                    ReadOnlySpan<char> valueToBeNegated;
+
+                    if (endChar == ')')
+                    {
+                        valueToBeNegated = value[7..];
+                        _index++;
+                    }
+                    else
+                    {
+                        valueToBeNegated = value[7..^1]; // slice after the word negate accounting for parenthesis, e.g negate(4)
+                    }
+
+                    return _heroesData.GetValueFromValueText(valueToBeNegated) * -1;
+                }
+                else
+                {
+                    return _heroesData.GetValueFromValueText(value);
+                }
             }
         }
 
