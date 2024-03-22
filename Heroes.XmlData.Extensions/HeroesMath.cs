@@ -26,7 +26,7 @@ public class HeroesMath
     /// </summary>
     /// <param name="expression">The character span that contains the math expression.</param>
     /// <returns>The calculated value of the expression.</returns>
-    /// <exception cref="SyntaxErrorException">There expression contains a syntax error.</exception>
+    /// <exception cref="SyntaxErrorException">The expression contains a syntax error.</exception>
     public static double Compute(ReadOnlySpan<char> expression)
     {
         HeroesMath heroesMath = new();

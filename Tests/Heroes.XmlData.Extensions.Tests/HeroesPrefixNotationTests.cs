@@ -11,6 +11,10 @@ public class HeroesPrefixNotationTests
     }
 
     [TestMethod]
+    [DataRow(4, "4")]
+    [DataRow(0, "d")]
+    [DataRow(0, "*")]
+    [DataRow(-90, "negate(90)")]
     [DataRow(1, "/(4 4)")]
     [DataRow(0, "/(0 4)")]
     [DataRow(4, "/(4 0)")]
@@ -20,7 +24,9 @@ public class HeroesPrefixNotationTests
     [DataRow(-1, "/(negate(4) 4)")]
     [DataRow(-0.125, "/(*(0.1 negate(5)) 4)")]
     [DataRow(-0.0125, "/(*(0.1 negate(0.5)) 4)")]
-    [DataRow(200, "+(1000 negate(800)")]
+    [DataRow(200, "+(1000 negate(800))")]
+    [DataRow(0.0062499999999999995, "/(0.3 *(3 16))")]
+    [DataRow(82.5, "+(-(100 60) *(5 8.5))")]
     public void Compute_ValidNumberExpressions_ReturnsValue(double expected, string expression)
     {
         // arrange
@@ -57,7 +63,7 @@ public class HeroesPrefixNotationTests
     public void Compute_InvalidExpression_ThrowException()
     {
         // arrange
-        string expression = "1(*a4/z)+0*100";
+        string expression = "*(1(*a4/z)+0*100";
 
         // act
         Action act = () => HeroesPrefixNotation.Compute(null!, expression);

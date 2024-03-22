@@ -1,12 +1,10 @@
 ﻿using System.Data;
-using System.Diagnostics.CodeAnalysis;
 
 namespace Heroes.XmlData.Extensions;
 
 internal class HeroesPrefixNotation
 {
     private readonly IHeroesData _heroesData;
-    private int _index = 0;
 
     private HeroesPrefixNotation(IHeroesData heroesData)
     {
@@ -27,78 +25,92 @@ internal class HeroesPrefixNotation
         }
     }
 
-    private double Evaluate(ReadOnlySpan<char> expression)
+    private static ReadOnlySpan<char> GetExpression(ReadOnlySpan<char> expression)
     {
-        if (!TryGetOperator(expression, out char? op))
-            throw new SyntaxErrorException("Operator not found");
+        int startIndex = expression.IndexOf('(');
 
-        double firstValue = GetExpression(expression, '(', ' ');
-        double secondValue = GetExpression(expression, ' ', ')');
+        int parenthesis = 0;
 
-        return HeroesMath.ApplyOperator(op.Value, secondValue, firstValue);
-    }
+        if (startIndex > -1)
+            parenthesis++;
+        else
+            return expression;
 
-    private bool TryGetOperator(ReadOnlySpan<char> expression, [NotNullWhen(true)] out char? op)
-    {
-        op = null;
-
-        bool found = HeroesMath.IsOperator(expression[_index]);
-
-        if (found)
+        for (int i = startIndex + 1; i < expression.Length; i++)
         {
-            op = expression[_index];
+            if (expression[i] == '(')
+            {
+                parenthesis++;
+            }
+            else if (expression[i] == ')')
+            {
+                parenthesis--;
 
-            return true;
+                if (parenthesis == 0)
+                {
+                    return expression.Slice(startIndex + 1, i - startIndex - 1);
+                }
+            }
         }
 
-        return false;
+        return expression;
     }
 
-    private double GetExpression(ReadOnlySpan<char> expression, char startChar, char endChar)
+    private static int GetSplitIndex(ReadOnlySpan<char> expression)
     {
-        ReadOnlySpan<char> currentTextSpan = expression[_index..];
+        int parenthesis = 0;
 
-        int startIndex = currentTextSpan.IndexOf(startChar);
-
-        if (startIndex < 0)
-            return 0;
-
-        for (int i = startIndex; i < currentTextSpan.Length; i++)
+        for (int i = 0; i < expression.Length; i++)
         {
-            if (HeroesMath.IsOperator(currentTextSpan[i]))
+            if (expression[i] == '(')
             {
-                double value = Evaluate(currentTextSpan[(startIndex + 1)..]);
-
-                _index += i + 1; // 1 for )
-                return value;
+                parenthesis++;
             }
-
-            if (currentTextSpan[i] == endChar)
+            else if (expression[i] == ')')
             {
-                _index += i;
-                ReadOnlySpan<char> value = currentTextSpan.Slice(startIndex + 1, i - startIndex - 1);
-
-                if (value.StartsWith("negate", StringComparison.OrdinalIgnoreCase))
-                {
-                    ReadOnlySpan<char> valueToBeNegated;
-
-                    if (endChar == ')')
-                    {
-                        valueToBeNegated = value[7..];
-                        _index++;
-                    }
-                    else
-                    {
-                        valueToBeNegated = value[7..^1]; // slice after the word negate accounting for parenthesis, e.g negate(4)
-                    }
-
-                    return _heroesData.GetValueFromValueText(valueToBeNegated) * -1;
-                }
-                else
-                {
-                    return _heroesData.GetValueFromValueText(value);
-                }
+                parenthesis--;
             }
+            else if (parenthesis == 0 && expression[i] == ' ')
+            {
+                return i++;
+            }
+        }
+
+        return 0;
+    }
+
+    private double Evaluate(ReadOnlySpan<char> expression)
+    {
+        if (HeroesMath.IsOperator(expression[0]) && expression.Length > 1 && expression[1] == '(')
+        {
+            char op = expression[0];
+
+            ReadOnlySpan<char> currentExpression = GetExpression(expression);
+
+            int indexSplit = GetSplitIndex(currentExpression);
+
+            ReadOnlySpan<char> firstValueSpan = currentExpression[0..indexSplit];
+            double firstValue = Evaluate(firstValueSpan);
+
+            ReadOnlySpan<char> secondValueSpan = currentExpression.Slice(indexSplit + 1, currentExpression.Length - indexSplit - 1);
+            double secondValue = Evaluate(secondValueSpan);
+
+            return HeroesMath.ApplyOperator(op, secondValue, firstValue);
+        }
+        else if (expression[0] == '$')
+        {
+            return _heroesData.GetValueFromValueText(expression);
+        }
+        else if (double.TryParse(expression, out double value))
+        {
+            return value;
+        }
+        else if (expression.StartsWith("negate"))
+        {
+            ReadOnlySpan<char> valueToBeNegatedSpan = expression[6..].Trim("()");
+
+            if (double.TryParse(valueToBeNegatedSpan, out value))
+                return value * -1;
         }
 
         return 0;

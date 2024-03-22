@@ -9,17 +9,18 @@ namespace Heroes.XmlData.Extensions;
 public static class HeroesDataExtensions
 {
     /// <summary>
-    /// Gets the calculated value from an <see cref="XElement"/> with a name of "const" and a <see cref="XAttribute"/> name of "value".
+    /// Gets the calculated value from an <see cref="XElement"/> with a name of <c>const</c> and a <see cref="XAttribute"/> <c>value</c>.
+    /// If there is a <see cref="XAttribute"/> <c>evaluateAsExpression</c> with a value of <c>1</c>, then then attribute <c>value</c> will be evalulated as an expression.
     /// <para>
     /// Example: &lt;const id="$GazloweHeroWeaponDamage" value="100" /&gt; will return 100.
     /// </para>
+    /// <para>
+    /// Example: &lt;const id="$GazloweDethLazorFirinMahLazorzWarningRange" value="/($GazloweDethLazorFirinMahLazorzRange 32)" evaluateAsExpression="1" /&gt;
+    /// will be evaluated an an expression and return the calculated value.
+    /// </para>
     /// </summary>
     /// <param name="heroesData">The <see cref="IHeroesData"/>.</param>
-    /// <param name="constElement">
-    /// The "const" element with a "value" attribute.
-    /// <para>
-    /// Example: &lt;const value="100" /&gt;.
-    /// </para>
+    /// <param name="constElement">The <c>const</c> element with a <c>value</c> attribute and optional <c>evaluateAsExpression</c> attribute.
     /// </param>
     /// <returns>The calculated value.</returns>
     public static double GetValueFromConstElement(this IHeroesData heroesData, XElement constElement)
@@ -40,18 +41,13 @@ public static class HeroesDataExtensions
     }
 
     /// <summary>
-    /// Gets the calculated value from an <see cref="XElement"/> that has a <see cref="XAttribute"/> name of "value".
+    /// Gets the calculated value from any <see cref="XElement"/> that has a <see cref="XAttribute"/> <c>value</c>.
     /// <para>
     /// Example: &lt;Vital index="Energy" value="50" /&gt; will return 50.
     /// </para>
     /// </summary>
     /// <param name="heroesData">The <see cref="IHeroesData"/>.</param>
-    /// <param name="element">
-    /// An element with a "value" attribute.
-    /// <para>
-    /// Example: &lt;Vital value="100" /&gt;.
-    /// </para>
-    /// </param>
+    /// <param name="element">An element with a <c>value</c> attribute.</param>
     /// <returns>The calculated value.</returns>
     public static double GetValueFromElement(this IHeroesData heroesData, XElement element)
     {
@@ -61,35 +57,35 @@ public static class HeroesDataExtensions
     }
 
     /// <summary>
-    /// Gets the calculated value from any text (preferred from a "value" attribute).
+    /// Gets the calculated value from any text (preferred the text is from a <c>value</c> attribute).
     /// </summary>
     /// <param name="heroesData">The <see cref="IHeroesData"/>.</param>
-    /// <param name="value">Text from a "value" attribute.</param>
+    /// <param name="text">Text from a <c>value</c> attribute.</param>
     /// <returns>The calculated value.</returns>
-    public static double GetValueFromValueText(this IHeroesData heroesData, string value)
+    public static double GetValueFromValueText(this IHeroesData heroesData, string text)
     {
-        return GetValueFromValueText(heroesData, value.AsSpan());
+        return GetValueFromValueText(heroesData, text.AsSpan());
     }
 
     /// <summary>
-    /// Gets the calculated value from any text (preferred from a "value" attribute).
+    /// Gets the calculated value from any text (preferred the text is from a <c>value</c> attribute).
     /// </summary>
     /// <param name="heroesData">The <see cref="IHeroesData"/>.</param>
-    /// <param name="value">A character span that contains the text from a "value" attribute.</param>
+    /// <param name="text">A character span that contains the text from a <c>value</c> attribute.</param>
     /// <returns>The calculated value.</returns>
-    public static double GetValueFromValueText(this IHeroesData heroesData, ReadOnlySpan<char> value)
+    public static double GetValueFromValueText(this IHeroesData heroesData, ReadOnlySpan<char> text)
     {
-        if (value.IsEmpty)
+        if (text.IsEmpty)
             return 0;
 
-        if (value[0] == '$')
+        if (text[0] == '$')
         {
-            if (heroesData.TryGetConstantElement(value, out StormXElementValue? stormXElementValue))
+            if (heroesData.TryGetConstantElement(text, out StormXElementValue? stormXElementValue))
             {
                 return heroesData.GetValueFromConstElement(stormXElementValue.Value);
             }
         }
-        else if (double.TryParse(value, out double result))
+        else if (double.TryParse(text, out double result))
         {
             return result;
         }
