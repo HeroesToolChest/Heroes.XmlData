@@ -2,15 +2,15 @@
 
 internal interface IStormModFactory
 {
-    IStormMod CreateFileStormModInstance(IFileHeroesSource heroesSource, string directoryPath, bool isMapMod);
+    IStormMod CreateFileStormModInstance(IFileHeroesSource heroesSource, string directoryPath, StormModType stormModType);
 
-    IStormMod CreateFileMpqStormModInstance(IFileHeroesSource heroesSource, string name, string directoryPath, bool isMapMod);
+    IStormMod CreateFileMpqStormModInstance(IFileHeroesSource heroesSource, string name, string directoryPath, StormModType stormModType);
 
-    IStormMod CreateFileMpqStormModInstance(IFileHeroesSource heroesSource, string directoryPath, bool isMapMod);
+    IStormMod CreateFileMpqStormModInstance(IFileHeroesSource heroesSource, string directoryPath, StormModType stormModType);
 
-    IStormMod CreateCASCStormModInstance(ICASCHeroesSource heroesSource, string directoryPath, bool isMapMod);
+    IStormMod CreateCASCStormModInstance(ICASCHeroesSource heroesSource, string directoryPath, StormModType stormModType);
 
-    IStormMod CreateCASCMpqStormModInstance(ICASCHeroesSource heroesSource, string name, string directoryPath, bool isMapMod);
+    IStormMod CreateCASCMpqStormModInstance(ICASCHeroesSource heroesSource, string name, string directoryPath, StormModType stormModType);
 
-    IStormMod CreateCASCMpqStormModInstance(ICASCHeroesSource heroesSource, string directoryPath, bool isMapMod);
+    IStormMod CreateCASCMpqStormModInstance(ICASCHeroesSource heroesSource, string directoryPath, StormModType stormModType);
 }

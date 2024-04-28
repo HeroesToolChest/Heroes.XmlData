@@ -4,8 +4,14 @@ internal interface IHeroesSource
 {
     IStormModFactory StormModFactory { get; }
 
-    string ModsDirectoryPath { get; }
+    /// <summary>
+    /// Gets the base directory path of the selected mods folder.
+    /// </summary>
+    string ModsBaseDirectoryPath { get; }
 
+    /// <summary>
+    /// Gets the default directory of the mods folder.
+    /// </summary>
     string DefaultModsDirectory { get; }
 
     string GameDataDirectory { get; }
@@ -59,6 +65,10 @@ internal interface IHeroesSource
     void LoadGamestrings(StormLocale stormLocale);
 
     void LoadStormMapData(string mapTitle);
+
+    void LoadCustomMod(IStormMod stormMod);
+
+    void LoadCustomMod(string directoryPath);
 
     void LoadDepotCache();
 }

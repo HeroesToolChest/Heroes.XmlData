@@ -2,13 +2,13 @@
 
 internal class CASCStormMod : StormMod<ICASCHeroesSource>, IStormMod
 {
-    public CASCStormMod(ICASCHeroesSource cascHeroesSource, string directoryPath, bool isMapMod)
-        : base(cascHeroesSource, directoryPath, isMapMod)
+    public CASCStormMod(ICASCHeroesSource cascHeroesSource, string directoryPath, StormModType stormModType)
+        : base(cascHeroesSource, directoryPath, stormModType)
     {
     }
 
-    public CASCStormMod(ICASCHeroesSource cascHeroesSource, string name, string directoryPath, bool isMapMod)
-    : base(cascHeroesSource, name, directoryPath, isMapMod)
+    public CASCStormMod(ICASCHeroesSource cascHeroesSource, string name, string directoryPath, StormModType stormModType)
+    : base(cascHeroesSource, name, directoryPath, stormModType)
     {
     }
 
@@ -28,7 +28,13 @@ internal class CASCStormMod : StormMod<ICASCHeroesSource>, IStormMod
     {
         if (!HeroesSource.CASCHeroesStorage.CASCFolderRoot.TryGetLastDirectory(GameDataDirectoryPath, out CASCFolder? gameDataFolder))
         {
-            StormStorage.AddDirectoryNotFound(GameDataDirectoryPath, Name, DirectoryPath);
+            StormModStorage.AddDirectoryNotFound(new StormFile()
+            {
+                Path = GameDataDirectoryPath,
+                StormModDirectoryPath = DirectoryPath,
+                StormModName = Name,
+            });
+
             return;
         }
 
@@ -38,5 +44,5 @@ internal class CASCStormMod : StormMod<ICASCHeroesSource>, IStormMod
         }
     }
 
-    protected override IStormMod GetStormMod(string path, bool isMapMod) => HeroesSource.StormModFactory.CreateCASCStormModInstance(HeroesSource, path, isMapMod);
+    protected override IStormMod GetStormMod(string path, StormModType stormModType) => HeroesSource.StormModFactory.CreateCASCStormModInstance(HeroesSource, path, stormModType);
 }

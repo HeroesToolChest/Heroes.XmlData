@@ -1,14 +1,9 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="MSTest.Sdk/3.3.1">
 
-  <PropertyGroup>
-    <EnableMSTestRunner>true</EnableMSTestRunner>
-    <OutputType>Exe</OutputType>
-    
+  <PropertyGroup>  
     <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <IsPackable>false</IsPackable>
-    <IsTestProject>true</IsTestProject>
     <NoWarn>EnableGenerateDocumentationFile</NoWarn>
     <EnforceCodeStyleInBuild>True</EnforceCodeStyleInBuild>
 	  
@@ -22,7 +17,6 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="MSTest" Version="3.2.0" />
     <PackageReference Include="NSubstitute" Version="5.1.0" />
     <PackageReference Include="NSubstitute.Analyzers.CSharp" Version="1.0.16">
       <PrivateAssets>all</PrivateAssets>

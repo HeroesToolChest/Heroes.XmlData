@@ -1,9 +1,9 @@
 ﻿namespace Heroes.XmlData.StormData;
 
 /// <summary>
-/// Contains properties for a missing directory or file.
+/// Contains properties file or directory.
 /// </summary>
-public record RequiredStormFile
+public record StormFile
 {
     /// <summary>
     /// Gets the name of the stormmod.
@@ -16,7 +16,7 @@ public record RequiredStormFile
     public required string? StormModDirectoryPath { get; init; }
 
     /// <summary>
-    /// Gets the missing location path.
+    /// Gets the path of the file or directory.
     /// </summary>
     public required string Path { get; init; } = string.Empty;
 

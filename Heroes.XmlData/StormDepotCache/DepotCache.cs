@@ -14,7 +14,7 @@ internal abstract class DepotCache<T> : IDepotCache
 
     protected static string Name => "DepotCache";
 
-    protected string DepotCacheDirectoryPath => Path.Join(HeroesSource.ModsDirectoryPath, HeroesSource.DepotCacheDirectory);
+    protected string DepotCacheDirectoryPath => Path.Join(HeroesSource.ModsBaseDirectoryPath, HeroesSource.DepotCacheDirectory);
 
     protected T HeroesSource => _heroesSource;
 

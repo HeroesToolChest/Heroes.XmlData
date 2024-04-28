@@ -2,4 +2,4 @@
 
 /// <inheritdoc/>
 public record StormStringValue(string Value, string Path)
-    : StormValue<string>(Value, Path);
+    : StormValuePath<string>(Value, Path);

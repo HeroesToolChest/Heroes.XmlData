@@ -3,83 +3,75 @@
 internal abstract class StormMod<T> : IStormMod
     where T : IHeroesSource
 {
-    private readonly T _heroesSource;
     private readonly List<IStormMod> _includesStormModsCache = [];
 
-    public StormMod(T heroesSource, string directoryPath, bool isMapMod)
-        : this(heroesSource, Path.GetFileNameWithoutExtension(directoryPath), directoryPath, isMapMod)
+    public StormMod(T heroesSource, string directoryPath, StormModType stormModType)
+        : this(heroesSource, Path.GetFileNameWithoutExtension(directoryPath), directoryPath, stormModType)
     {
     }
 
-    public StormMod(T heroesSource, string name, string directoryPath, bool isMapMod)
+    public StormMod(T heroesSource, string name, string directoryPath, StormModType stormModType)
     {
         Name = name;
         DirectoryPath = directoryPath;
-        IsMapMod = isMapMod;
+        StormModType = stormModType;
 
-        _heroesSource = heroesSource;
+        HeroesSource = heroesSource;
 
-        StormModDataContainer = StormStorage.CreateContainerInstance(HeroesSource.ModsDirectoryPath, new StormModDataProperties()
-        {
-            StormModName = Name,
-            StormModDirectoryPath = DirectoryPath,
-            IsMapMod = IsMapMod,
-        });
+        StormModStorage = heroesSource.StormStorage.CreateModStorage(this, HeroesSource.ModsBaseDirectoryPath);
     }
 
     public string Name { get; }
 
     public string DirectoryPath { get; }
 
-    public bool IsMapMod { get; }
+    public StormModType StormModType { get; }
 
     /// <summary>
     /// Gets the storage object to keep track of all the loaded xml and gamestrings.
     /// </summary>
-    protected StormModDataContainer StormModDataContainer { get; }
+    public StormModStorage StormModStorage { get; }
 
     /// <summary>
     /// Gets the GameData directory path.
     /// </summary>
-    protected virtual string GameDataDirectoryPath => Path.Join(HeroesSource.ModsDirectoryPath, DirectoryPath, HeroesSource.BaseStormDataDirectory, HeroesSource.GameDataDirectory);
+    protected virtual string GameDataDirectoryPath => Path.Join(HeroesSource.ModsBaseDirectoryPath, DirectoryPath, HeroesSource.BaseStormDataDirectory, HeroesSource.GameDataDirectory);
 
     /// <summary>
     /// Gets the gamedata.xml file path.
     /// </summary>
-    protected virtual string GameDataFilePath => Path.Join(HeroesSource.ModsDirectoryPath, DirectoryPath, HeroesSource.BaseStormDataDirectory, HeroesSource.GameDataXmlFile);
+    protected virtual string GameDataFilePath => Path.Join(HeroesSource.ModsBaseDirectoryPath, DirectoryPath, HeroesSource.BaseStormDataDirectory, HeroesSource.GameDataXmlFile);
 
     /// <summary>
     /// Gets the includes.xml file path.
     /// </summary>
-    protected virtual string IncludesFilePath => Path.Join(HeroesSource.ModsDirectoryPath, DirectoryPath, HeroesSource.BaseStormDataDirectory, HeroesSource.IncludesXmlFile);
+    protected virtual string IncludesFilePath => Path.Join(HeroesSource.ModsBaseDirectoryPath, DirectoryPath, HeroesSource.BaseStormDataDirectory, HeroesSource.IncludesXmlFile);
 
     /// <summary>
     /// Gets the DocumentInfo file path.
     /// </summary>
-    protected virtual string DocumentInfoPath => Path.Join(HeroesSource.ModsDirectoryPath, DirectoryPath, HeroesSource.DocumentInfoFile);
+    protected virtual string DocumentInfoPath => Path.Join(HeroesSource.ModsBaseDirectoryPath, DirectoryPath, HeroesSource.DocumentInfoFile);
 
     /// <summary>
     /// Gets the FontStyles.StormStyle file path.
     /// </summary>
-    protected virtual string FontStyleFilePath => Path.Join(HeroesSource.ModsDirectoryPath, DirectoryPath, HeroesSource.BaseStormDataDirectory, HeroesSource.UIDirectory, HeroesSource.FontStyleFile);
+    protected virtual string FontStyleFilePath => Path.Join(HeroesSource.ModsBaseDirectoryPath, DirectoryPath, HeroesSource.BaseStormDataDirectory, HeroesSource.UIDirectory, HeroesSource.FontStyleFile);
 
     /// <summary>
     /// Gets the BuildId.txt file path.
     /// </summary>
-    protected virtual string BuildIdFilePath => Path.Join(HeroesSource.ModsDirectoryPath, DirectoryPath, HeroesSource.BaseStormDataDirectory, HeroesSource.BuildIdFile);
+    protected virtual string BuildIdFilePath => Path.Join(HeroesSource.ModsBaseDirectoryPath, DirectoryPath, HeroesSource.BaseStormDataDirectory, HeroesSource.BuildIdFile);
 
-    protected T HeroesSource => _heroesSource;
+    protected T HeroesSource { get; }
 
-    protected IStormStorage StormStorage => _heroesSource.StormStorage;
+    protected IStormStorage StormStorage => HeroesSource.StormStorage;
 
     public virtual void LoadStormData()
     {
         LoadBuildIdFile();
-        LoadGameDataXmlFile();
         LoadGameDataDirectory();
+        LoadGameDataXmlFile();
         LoadFontStyleFile();
-
-        StormStorage.AddContainer(StormModDataContainer);
 
         LoadIncludesStormMods();
     }
@@ -116,7 +108,12 @@ internal abstract class StormMod<T> : IStormMod
 
         XDocument document = XDocument.Load(stream);
 
-        StormModDataContainer.AddXmlFontStyleFile(document, FontStyleFilePath);
+        StormModStorage.AddXmlFontStyleFile(document, new StormFile()
+        {
+            Path = FontStyleFilePath,
+            StormModDirectoryPath = DirectoryPath,
+            StormModName = Name,
+        });
     }
 
     public void LoadBuildIdFile()
@@ -124,7 +121,7 @@ internal abstract class StormMod<T> : IStormMod
         if (!TryGetFile(BuildIdFilePath, out Stream? stream))
             return;
 
-        StormModDataContainer.AddBuildIdFile(stream);
+        StormModStorage.AddBuildIdFile(stream);
     }
 
     protected static bool IsXmlFile(string xmlFilePath) => Path.GetExtension(xmlFilePath).Equals(".xml", StringComparison.OrdinalIgnoreCase);
@@ -136,19 +133,28 @@ internal abstract class StormMod<T> : IStormMod
     /// <returns>The path to the gamestrings file.</returns>
     protected virtual string GetGameStringFilePath(StormLocale stormLocale)
     {
-        return Path.Join(HeroesSource.ModsDirectoryPath, DirectoryPath, StormLocaleData.GetStormDataFileName(stormLocale), HeroesSource.LocalizedDataDirectory, HeroesSource.GameStringFile);
+        return Path.Join(HeroesSource.ModsBaseDirectoryPath, DirectoryPath, StormLocaleData.GetStormDataFileName(stormLocale), HeroesSource.LocalizedDataDirectory, HeroesSource.GameStringFile);
     }
 
     /// <summary>
     /// Adds an xml file to the <see cref="StormStorage"/>. Checks first if it's an xml file and it exists.
     /// </summary>
     /// <param name="xmlFilePath">The path to the xml file.</param>
-    protected void AddXmlFile(string xmlFilePath)
+    /// <param name="isBaseGameDataDirectory">Indicates that the xml file is from the gamedata directory from a base storm mod.</param>
+    protected void AddXmlFile(string xmlFilePath, bool isBaseGameDataDirectory = false)
     {
         if (!ValidateXmlFile(xmlFilePath, out XDocument? document))
             return;
 
-        StormModDataContainer.AddXmlDataFile(document, xmlFilePath);
+        StormModStorage.AddXmlDataFile(
+            document,
+            new StormFile()
+            {
+                Path = xmlFilePath,
+                StormModDirectoryPath = DirectoryPath,
+                StormModName = Name,
+            },
+            isBaseGameDataDirectory);
     }
 
     /// <summary>
@@ -168,7 +174,14 @@ internal abstract class StormMod<T> : IStormMod
         if (!TryGetFile(xmlFilePath, out Stream? stream))
         {
             if (isRequired)
-                StormStorage.AddFileNotFound(xmlFilePath, Name, DirectoryPath);
+            {
+                StormModStorage.AddFileNotFound(new StormFile()
+                {
+                    Path = xmlFilePath,
+                    StormModDirectoryPath = DirectoryPath,
+                    StormModName = Name,
+                });
+            }
 
             return false;
         }
@@ -192,7 +205,13 @@ internal abstract class StormMod<T> : IStormMod
 
         if (!TryGetFile(path, out stream))
         {
-            StormStorage.AddFileNotFound(path, Name, DirectoryPath);
+            StormModStorage.AddFileNotFound(new StormFile()
+            {
+                Path = path,
+                StormModDirectoryPath = DirectoryPath,
+                StormModName = Name,
+            });
+
             return false;
         }
 
@@ -212,7 +231,7 @@ internal abstract class StormMod<T> : IStormMod
     /// </summary>
     protected abstract void LoadGameDataDirectory();
 
-    protected abstract IStormMod GetStormMod(string path, bool isMapMod);
+    protected abstract IStormMod GetStormMod(string path, StormModType stormModType);
 
     /// <summary>
     /// Loads and adds the files from the gamedata.xml file.
@@ -239,7 +258,7 @@ internal abstract class StormMod<T> : IStormMod
 
             if (path.StartsWith(HeroesSource.GameDataDirectory, StringComparison.OrdinalIgnoreCase))
             {
-                string xmlFilePath = Path.Join(HeroesSource.ModsDirectoryPath, DirectoryPath, HeroesSource.BaseStormDataDirectory, path);
+                string xmlFilePath = Path.Join(HeroesSource.ModsBaseDirectoryPath, DirectoryPath, HeroesSource.BaseStormDataDirectory, path);
 
                 AddXmlFile(xmlFilePath);
             }
@@ -268,10 +287,12 @@ internal abstract class StormMod<T> : IStormMod
                 continue;
 
             string path = PathHelper.NormalizePath(pathValuePath, HeroesSource.DefaultModsDirectory);
-            IStormMod stormMod = GetStormMod(path, false);
+            IStormMod stormMod = GetStormMod(path, StormModType.Normal);
 
             _includesStormModsCache.Add(stormMod);
             stormMod.LoadStormData();
+
+            StormStorage.AddModStorage(stormMod.StormModStorage);
         }
     }
 
@@ -284,7 +305,7 @@ internal abstract class StormMod<T> : IStormMod
         if (!ValidateGameStringFile(stormLocale, out Stream? stream, out string path))
             return;
 
-        StormModDataContainer.AddGameStringFile(stream, path);
+        StormModStorage.AddGameStringFile(stream, path);
     }
 
     private IEnumerable<IStormMod> BuildMapDependencyTree(S2MAProperties s2maProperties)
@@ -304,7 +325,7 @@ internal abstract class StormMod<T> : IStormMod
 
         foreach (MapDependency mapDependency in mapDependencies)
         {
-            IStormMod stormMod = GetStormMod(mapDependency.LocalFile, true);
+            IStormMod stormMod = GetStormMod(mapDependency.LocalFile, StormModType.Map);
             currentDependencies.Add(stormMod);
 
             mapModDependecies.AddRange(stormMod.LoadDocumentInfoFile());

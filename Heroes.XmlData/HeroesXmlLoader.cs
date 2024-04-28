@@ -34,7 +34,7 @@ public class HeroesXmlLoader
     /// <summary>
     /// Gets the <see cref="HeroesData"/> which contain the xml and gamestrings data.
     /// </summary>
-    public IHeroesData HeroesData { get; }
+    public HeroesData HeroesData { get; }
 
     /// <summary>
     /// Gets an instance of the <see cref="HeroesXmlLoader"/> class. The source of data will be emtpy.
@@ -146,6 +146,23 @@ public class HeroesXmlLoader
         return this;
     }
 
+    public HeroesXmlLoader LoadCustomMod(ManualModLoader manualModLoader)
+    {
+        CustomStormMod customStormMod = new(_heroesSource, manualModLoader);
+
+        _heroesSource.LoadCustomMod(customStormMod);
+
+        return this;
+    }
+
+    public HeroesXmlLoader LoadCustomMod(string directoryPath)
+    {
+        _heroesSource.LoadCustomMod(directoryPath);
+
+        return this;
+    }
+
+
     /// <summary>
     /// Adds a gamestring collection to the custom cache storage. If an id already exists, it will be overridden.
     /// </summary>
@@ -153,8 +170,8 @@ public class HeroesXmlLoader
     /// <returns>The current <see cref="HeroesXmlLoader"/> instance.</returns>
     public HeroesXmlLoader AddGameStrings(IEnumerable<string> gameStrings)
     {
-        foreach (string item in gameStrings)
-            _stormStorage.StormCustomCache.AddGameString(item, _customPath);
+       // foreach (string item in gameStrings)
+          //  _stormStorage.StormCustomCache.AddGameString(item, _customPath);
 
         return this;
     }
@@ -167,8 +184,8 @@ public class HeroesXmlLoader
     /// <returns>The current <see cref="HeroesXmlLoader"/> instance.</returns>
     public HeroesXmlLoader AddConstantElements(IEnumerable<XElement> elements)
     {
-        foreach (XElement item in elements)
-            _stormStorage.StormCustomCache.AddConstantElement(item, _customPath);
+        //foreach (XElement item in elements)
+          //  _stormStorage.StormCustomCache.AddConstantElement(item, _customPath);
 
         return this;
     }

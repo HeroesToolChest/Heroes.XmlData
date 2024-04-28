@@ -11,7 +11,13 @@ internal class FileDepotCache : DepotCache<IFileHeroesSource>
     {
         if (!Directory.Exists(DepotCacheDirectoryPath))
         {
-            StormStorage.AddDirectoryNotFound(DepotCacheDirectoryPath, Name, string.Empty);
+            StormStorage.AddDirectoryNotFound(StormModType.Normal, new StormFile()
+            {
+                Path = DepotCacheDirectoryPath,
+                StormModDirectoryPath = string.Empty,
+                StormModName = Name,
+            });
+
             return;
         }
 
@@ -29,7 +35,7 @@ internal class FileDepotCache : DepotCache<IFileHeroesSource>
             if (LoadS2mvFile(fileStream))
             {
                 HeroesSource.S2MVPaths.Add(s2mvFile);
-                HeroesSource.S2MVPropertiesByHashCode.Last().Value.DirectoryPath = PathHelper.NormalizePath(s2mvFile, HeroesSource.ModsDirectoryPath);
+                HeroesSource.S2MVPropertiesByHashCode.Last().Value.DirectoryPath = PathHelper.NormalizePath(s2mvFile, HeroesSource.ModsBaseDirectoryPath);
             }
         }
 
@@ -44,7 +50,7 @@ internal class FileDepotCache : DepotCache<IFileHeroesSource>
             if (LoadS2maFile(fileStream))
             {
                 HeroesSource.S2MAPaths.Add(s2maFile);
-                HeroesSource.S2MAProperties.Last().DirectoryPath = PathHelper.NormalizePath(s2maFile, HeroesSource.ModsDirectoryPath);
+                HeroesSource.S2MAProperties.Last().DirectoryPath = PathHelper.NormalizePath(s2maFile, HeroesSource.ModsBaseDirectoryPath);
             }
         }
     }

@@ -25,6 +25,7 @@ internal abstract class HeroesSource : IHeroesSource
 
     private readonly List<IStormMod> _stormMods = [];
     private readonly List<IStormMod> _stormMapMods = [];
+    private readonly List<IStormMod> _stormCustomMods = [];
 
     public HeroesSource(IStormStorage stormStorage, IStormModFactory stormModFactory, IDepotCacheFactory depotCacheFactory)
         : this(stormStorage, stormModFactory, depotCacheFactory, _defaultModsDirectory)
@@ -36,7 +37,7 @@ internal abstract class HeroesSource : IHeroesSource
         StormStorage = stormStorage;
         StormModFactory = stormModFactory;
         DepotCacheFactory = depotCacheFactory;
-        ModsDirectoryPath = modsDirectoryPath;
+        ModsBaseDirectoryPath = modsDirectoryPath;
 
         AddStormMods();
 
@@ -45,7 +46,7 @@ internal abstract class HeroesSource : IHeroesSource
 
     public IStormModFactory StormModFactory { get; }
 
-    public string ModsDirectoryPath { get; }
+    public string ModsBaseDirectoryPath { get; }
 
     public string DefaultModsDirectory => _defaultModsDirectory;
 
@@ -101,6 +102,8 @@ internal abstract class HeroesSource : IHeroesSource
     {
         foreach (IStormMod stormMod in _stormMods)
         {
+            StormStorage.AddModStorage(stormMod.StormModStorage);
+
             stormMod.LoadStormData();
         }
     }
@@ -115,6 +118,11 @@ internal abstract class HeroesSource : IHeroesSource
         }
 
         foreach (IStormMod stormMapMod in _stormMapMods)
+        {
+            stormMapMod.LoadStormGameStrings(stormLocale);
+        }
+
+        foreach (IStormMod stormMapMod in _stormCustomMods)
         {
             stormMapMod.LoadStormGameStrings(stormLocale);
         }
@@ -133,26 +141,48 @@ internal abstract class HeroesSource : IHeroesSource
         if (!S2MAPropertiesByTitle.TryGetValue(mapTitle, out S2MAProperties? s2maProperties))
             return;
 
-        IStormMod mapRootMod = GetMpqStormMod(mapTitle, s2maProperties.DirectoryPath, true);
+        IStormMod mapRootMod = GetMpqStormMod(mapTitle, s2maProperties.DirectoryPath, StormModType.Map);
 
         _stormMapMods.AddRange(mapRootMod.GetStormMapMods(s2maProperties));
 
         foreach (IStormMod stormMapMod in _stormMapMods)
         {
             stormMapMod.LoadStormData();
+
+            StormStorage.AddModStorage(stormMapMod.StormModStorage);
         }
     }
 
-    protected abstract IStormMod GetStormMod(string directoryPath, bool isMapMod);
+    public void LoadCustomMod(IStormMod stormMod)
+    {
+        _stormCustomMods.Add(stormMod);
 
-    protected abstract IStormMod GetMpqStormMod(string name, string directoryPath, bool isMapMod);
+        stormMod.LoadStormData();
+    }
+
+    public void LoadCustomMod(string directoryPath)
+    {
+        IStormMod stormMod = GetStormMod(directoryPath, StormModType.Custom);
+        _stormCustomMods.Add(stormMod);
+
+        stormMod.LoadStormData();
+    }
+
+    public void UnloadCustomMods()
+    {
+        _stormCustomMods.Clear();
+    }
+
+    protected abstract IStormMod GetStormMod(string directoryPath, StormModType stormModType);
+
+    protected abstract IStormMod GetMpqStormMod(string name, string directoryPath, StormModType stormModType);
 
     protected abstract IDepotCache GetDepotCache();
 
     private void AddStormMods()
     {
-        _stormMods.Add(GetStormMod(CoreStormModDirectory, false));
-        _stormMods.Add(GetStormMod(HeroesStormModDirectory, false));
-        _stormMods.Add(GetStormMod(HeroesDataStormModDirectory, false));
+        _stormMods.Add(GetStormMod(CoreStormModDirectory, StormModType.Normal));
+        _stormMods.Add(GetStormMod(HeroesStormModDirectory, StormModType.Normal));
+        _stormMods.Add(GetStormMod(HeroesDataStormModDirectory, StormModType.Normal));
     }
 }

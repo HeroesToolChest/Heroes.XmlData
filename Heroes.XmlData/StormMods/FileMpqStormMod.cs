@@ -2,17 +2,17 @@
 
 internal class FileMpqStormMod : MpqStormMod<IFileHeroesSource>
 {
-    public FileMpqStormMod(IFileHeroesSource heroesSource, string directoryPath, bool isMapMod)
-        : base(heroesSource, directoryPath, isMapMod)
+    public FileMpqStormMod(IFileHeroesSource heroesSource, string directoryPath, StormModType stormModType)
+        : base(heroesSource, directoryPath, stormModType)
     {
     }
 
-    public FileMpqStormMod(IFileHeroesSource heroesSource, string name, string directoryPath, bool isMapMod)
-        : base(heroesSource, name, directoryPath, isMapMod)
+    public FileMpqStormMod(IFileHeroesSource heroesSource, string name, string directoryPath, StormModType stormModType)
+        : base(heroesSource, name, directoryPath, stormModType)
     {
     }
 
     protected override Stream GetMpqFile(string file) => File.OpenRead(file);
 
-    protected override IStormMod GetStormMod(string path, bool isMapMod) => HeroesSource.StormModFactory.CreateFileStormModInstance(HeroesSource, path, isMapMod);
+    protected override IStormMod GetStormMod(string path, StormModType stormModType) => HeroesSource.StormModFactory.CreateFileStormModInstance(HeroesSource, path, stormModType);
 }

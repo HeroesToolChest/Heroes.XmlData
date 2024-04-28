@@ -8,17 +8,35 @@ internal interface IStormStorage
 
     StormCache StormCustomCache { get; }
 
-    void AddContainer(StormModDataContainer stormModDataContainer);
+    StormModStorage CreateModStorage(IStormMod stormMod, string modsDirectoryPath);
 
-    void AddDirectoryNotFound(string directory, string stormModName, string stormModDirectoryPath);
+    void AddModStorage(StormModStorage stormModStorage);
 
-    void AddFileNotFound(string notFoundFile, string stormModName, string stormModDirectoryPath);
+    void AddDirectoryNotFound(StormModType stormModType, StormFile stormDirectory);
+
+    void AddFileNotFound(StormModType stormModType, StormFile stormFile);
+
+    void AddGameString(StormModType stormModType, string id, GameStringText gameStringText);
+
+    (string Id, GameStringText GameStringText)? GetGameStringWithId(ReadOnlySpan<char> gamestring, ReadOnlySpan<char> path);
+
+    bool AddConstantXElement(StormModType stormModType, XElement element, string path);
+
+    string GetValueFromConstTextAsText(ReadOnlySpan<char> text);
+
+    double GetValueFromConstTextAsNumber(ReadOnlySpan<char> text);
+
+    bool AddBaseElementTypes(StormModType stormModType, string dataObjectType, string elementName);
+
+    bool AddElement(StormModType stormModType, XElement element, string filePath);
+
+    void SetFontStyleCache(StormModType stormModType, XDocument document, string filePath);
+
+    void SetLevelScalingArrayCache(StormModType stormModType, XElement element, string filePath);
 
     void ClearGamestrings();
 
     void ClearStormMapMods();
 
     int? GetBuildId();
-
-    StormModDataContainer CreateContainerInstance(string modsDirectoryPath, StormModDataProperties stormStorageProperties);
 }

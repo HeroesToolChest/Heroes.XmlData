@@ -14,17 +14,17 @@ internal abstract class MpqStormMod<T> : StormMod<T>
     private MpqHeroesArchive? _mpqHeroesArchive;
     private MpqFolder? _mpqFolderRoot;
 
-    protected MpqStormMod(T heroesSource, string directoryPath, bool isMapMod)
-        : base(heroesSource, directoryPath, isMapMod)
+    protected MpqStormMod(T heroesSource, string directoryPath, StormModType stormModType)
+        : base(heroesSource, directoryPath, stormModType)
     {
     }
 
-    protected MpqStormMod(T heroesSource, string name, string directoryPath, bool isMapMod)
-        : base(heroesSource, name, directoryPath, isMapMod)
+    protected MpqStormMod(T heroesSource, string name, string directoryPath, StormModType stormModType)
+        : base(heroesSource, name, directoryPath, stormModType)
     {
     }
 
-    protected string MpqDirectoryPath => Path.Join(HeroesSource.ModsDirectoryPath, DirectoryPath);
+    protected string MpqDirectoryPath => Path.Join(HeroesSource.ModsBaseDirectoryPath, DirectoryPath);
 
     protected override string GameDataDirectoryPath => Path.Join(HeroesSource.BaseStormDataDirectory, HeroesSource.GameDataDirectory);
 
@@ -76,7 +76,13 @@ internal abstract class MpqStormMod<T> : StormMod<T>
     {
         if (_mpqFolderRoot is null || !_mpqFolderRoot.TryGetLastDirectory(GameDataDirectoryPath, out MpqFolder? gameDataFolder))
         {
-            StormStorage.AddDirectoryNotFound(GameDataDirectoryPath, Name, DirectoryPath);
+            StormModStorage.AddDirectoryNotFound(new StormFile()
+            {
+                Path = GameDataDirectoryPath,
+                StormModDirectoryPath = DirectoryPath,
+                StormModName = Name,
+            });
+
             return;
         }
 

@@ -12,9 +12,9 @@ internal class CASCHeroesSource : HeroesSource, ICASCHeroesSource
 
     public CASCHeroesStorage CASCHeroesStorage => _cascHeroesStorage;
 
-    protected override IStormMod GetStormMod(string directoryPath, bool isMapMod) => StormModFactory.CreateCASCStormModInstance(this, directoryPath, isMapMod);
+    protected override IStormMod GetStormMod(string directoryPath, StormModType stormModType) => StormModFactory.CreateCASCStormModInstance(this, directoryPath, stormModType);
 
-    protected override IStormMod GetMpqStormMod(string name, string directoryPath, bool isMapMod) => StormModFactory.CreateCASCMpqStormModInstance(this, name, directoryPath, isMapMod);
+    protected override IStormMod GetMpqStormMod(string name, string directoryPath, StormModType stormModType) => StormModFactory.CreateCASCMpqStormModInstance(this, name, directoryPath, stormModType);
 
     protected override IDepotCache GetDepotCache() => DepotCacheFactory.CreateCASCDepotCache(this);
 }

@@ -87,7 +87,7 @@ public class HeroesPrefixNotationTests
                     new XAttribute("value", "0.25")),
             });
 
-        IHeroesData heroesData = loader.HeroesData;
+        HeroesData heroesData = loader.HeroesData;
 
         // act
         double result = HeroesPrefixNotation.Compute(heroesData, expression);
@@ -111,7 +111,7 @@ public class HeroesPrefixNotationTests
                     new XAttribute("value", "0.25")),
             });
 
-        IHeroesData heroesData = loader.HeroesData;
+        HeroesData heroesData = loader.HeroesData;
 
         // act
         double result = HeroesPrefixNotation.Compute(heroesData, expression);

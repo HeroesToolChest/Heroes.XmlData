@@ -2,13 +2,13 @@
 
 internal class FileStormMod : StormMod<IFileHeroesSource>
 {
-    public FileStormMod(IFileHeroesSource heroesSource, string directoryPath, bool isMapMod)
-        : base(heroesSource, directoryPath, isMapMod)
+    public FileStormMod(IFileHeroesSource heroesSource, string directoryPath, StormModType stormModType)
+        : base(heroesSource, directoryPath, stormModType)
     {
     }
 
-    public FileStormMod(IFileHeroesSource heroesSource, string name, string directoryPath, bool isMapMod)
-        : base(heroesSource, name, directoryPath, isMapMod)
+    public FileStormMod(IFileHeroesSource heroesSource, string name, string directoryPath, StormModType stormModType)
+        : base(heroesSource, name, directoryPath, stormModType)
     {
     }
 
@@ -30,7 +30,13 @@ internal class FileStormMod : StormMod<IFileHeroesSource>
     {
         if (!Directory.Exists(GameDataDirectoryPath))
         {
-            StormStorage.AddDirectoryNotFound(GameDataDirectoryPath, Name, DirectoryPath);
+            StormModStorage.AddDirectoryNotFound(new StormFile()
+            {
+                Path = GameDataDirectoryPath,
+                StormModDirectoryPath = DirectoryPath,
+                StormModName = Name,
+            });
+
             return;
         }
 
@@ -38,9 +44,12 @@ internal class FileStormMod : StormMod<IFileHeroesSource>
 
         foreach (string file in files)
         {
-            AddXmlFile(file);
+            if (DirectoryPath == HeroesSource.CoreStormModDirectory || DirectoryPath == HeroesSource.HeroesDataStormModDirectory)
+                AddXmlFile(file, true);
+            else
+                AddXmlFile(file);
         }
     }
 
-    protected override IStormMod GetStormMod(string path, bool isMapMod) => HeroesSource.StormModFactory.CreateFileStormModInstance(HeroesSource, path, isMapMod);
+    protected override IStormMod GetStormMod(string path, StormModType stormModType) => HeroesSource.StormModFactory.CreateFileStormModInstance(HeroesSource, path, stormModType);
 }

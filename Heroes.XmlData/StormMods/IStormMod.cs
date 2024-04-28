@@ -13,9 +13,11 @@ internal interface IStormMod
     string DirectoryPath { get; }
 
     /// <summary>
-    /// Gets a value indicating whether this mod is a map mod.
+    /// Gets the type of the mod.
     /// </summary>
-    bool IsMapMod { get; }
+    StormModType StormModType { get; }
+
+    StormModStorage StormModStorage { get; }
 
     void LoadStormData();
 

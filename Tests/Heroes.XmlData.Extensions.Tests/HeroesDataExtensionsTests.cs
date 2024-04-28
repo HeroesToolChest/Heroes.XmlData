@@ -16,7 +16,7 @@ public class HeroesDataExtensionsTests
                     new XAttribute("value", "220")),
             });
 
-        IHeroesData heroesData = loader.HeroesData;
+        HeroesData heroesData = loader.HeroesData;
 
         // act
         double value = heroesData.GetValueFromConstElement(new XElement(
@@ -35,7 +35,7 @@ public class HeroesDataExtensionsTests
         // arrange
         HeroesXmlLoader loader = HeroesXmlLoader.LoadAsEmpty();
 
-        IHeroesData heroesData = loader.HeroesData;
+        HeroesData heroesData = loader.HeroesData;
 
         // act
         double value = heroesData.GetValueFromConstElement(new XElement(
@@ -53,7 +53,7 @@ public class HeroesDataExtensionsTests
         // arrange
         HeroesXmlLoader loader = HeroesXmlLoader.LoadAsEmpty();
 
-        IHeroesData heroesData = loader.HeroesData;
+        HeroesData heroesData = loader.HeroesData;
 
         // act
         double value = heroesData.GetValueFromConstElement(new XElement(
@@ -72,7 +72,7 @@ public class HeroesDataExtensionsTests
         // arrange
         HeroesXmlLoader loader = HeroesXmlLoader.LoadAsEmpty();
 
-        IHeroesData heroesData = loader.HeroesData;
+        HeroesData heroesData = loader.HeroesData;
 
         // act
         double value = heroesData.GetValueFromConstElement(new XElement(
@@ -97,7 +97,7 @@ public class HeroesDataExtensionsTests
                     new XAttribute("value", "100")),
             });
 
-        IHeroesData heroesData = loader.HeroesData;
+        HeroesData heroesData = loader.HeroesData;
 
         // act
         double value = heroesData.GetValueFromElement(new XElement(
@@ -114,7 +114,7 @@ public class HeroesDataExtensionsTests
         // arrange
         HeroesXmlLoader loader = HeroesXmlLoader.LoadAsEmpty();
 
-        IHeroesData heroesData = loader.HeroesData;
+        HeroesData heroesData = loader.HeroesData;
 
         // act
         double value = heroesData.GetValueFromElement(new XElement(
@@ -132,7 +132,7 @@ public class HeroesDataExtensionsTests
         // arrange
         HeroesXmlLoader loader = HeroesXmlLoader.LoadAsEmpty();
 
-        IHeroesData heroesData = loader.HeroesData;
+        HeroesData heroesData = loader.HeroesData;
 
         // act
         double value = heroesData.GetValueFromElement(new XElement(
@@ -149,7 +149,7 @@ public class HeroesDataExtensionsTests
         // arrange
         HeroesXmlLoader loader = HeroesXmlLoader.LoadAsEmpty();
 
-        IHeroesData heroesData = loader.HeroesData;
+        HeroesData heroesData = loader.HeroesData;
 
         // act
         double value = heroesData.GetValueFromValueText("50");
@@ -166,7 +166,7 @@ public class HeroesDataExtensionsTests
         // arrange
         HeroesXmlLoader loader = HeroesXmlLoader.LoadAsEmpty();
 
-        IHeroesData heroesData = loader.HeroesData;
+        HeroesData heroesData = loader.HeroesData;
 
         // act
         double value = heroesData.GetValueFromValueText("CasterUnit");
@@ -183,7 +183,7 @@ public class HeroesDataExtensionsTests
         // arrange
         HeroesXmlLoader loader = HeroesXmlLoader.LoadAsEmpty();
 
-        IHeroesData heroesData = loader.HeroesData;
+        HeroesData heroesData = loader.HeroesData;
 
         // act
         double value = heroesData.GetValueFromValueText(string.Empty);
@@ -207,7 +207,7 @@ public class HeroesDataExtensionsTests
                     new XAttribute("value", "100")),
             });
 
-        IHeroesData heroesData = loader.HeroesData;
+        HeroesData heroesData = loader.HeroesData;
 
         // act
         double value = heroesData.GetValueFromValueText("$GazloweHeroWeaponDamage");

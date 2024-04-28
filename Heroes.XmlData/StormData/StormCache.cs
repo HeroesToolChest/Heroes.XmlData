@@ -1,9 +1,50 @@
 ﻿namespace Heroes.XmlData.StormData;
 
-// used for creating caches from the xml data for faster lookups for certain elements and values
-// includes the gamestrings for all stormmods as well
+/// <summary>
+/// Combined storage for the types of <see cref="StormModType"/>s.
+/// </summary>
 internal class StormCache
 {
+    /// <summary>
+    /// Gets a collection of directories that were not found.
+    /// </summary>
+    public HashSet<StormFile> NotFoundDirectoriesList { get; } = [];
+
+    /// <summary>
+    /// Gets a collection of files that were not found.
+    /// </summary>
+    public HashSet<StormFile> NotFoundFilesList { get; } = [];
+
+    /// <summary>
+    /// Gets a dictionary of gamestrings by id.
+    /// </summary>
+    public Dictionary<string, GameStringText> GameStringsById { get; } = [];
+
+    /// <summary>
+    /// Gets the a collection of element types (e.g. CEffectDamage) from a given data object type (e.g. Effect).
+    /// </summary>
+    public Dictionary<string, HashSet<string>> ElementTypesByDataObjectType { get; } = new(StringComparer.OrdinalIgnoreCase);
+
+    /// <summary>
+    /// Gets a data object type (e.g. Effect) from a given element type (e.g CEffectDamage).
+    /// </summary>
+    public Dictionary<string, string> DataObjectTypeByElementType { get; } = [];
+
+    /// <summary>
+    /// Gets a dictionary of const elements by id.
+    /// </summary>
+    public Dictionary<string, StormXElementValuePath> ConstantXElementById { get; } = [];
+
+    /// <summary>
+    /// Gets a dictionary of <see cref="StormElement"/>s that have no id attribute by their element name.
+    /// </summary>
+    public Dictionary<string, StormElement> StormElementByElementType { get; } = [];
+
+    /// <summary>
+    /// Gets a dictionary of <see cref="StormElement"/>s by their id by their data object type.
+    /// </summary>
+    public Dictionary<string, Dictionary<StormElementId, StormElement>> StormElementsByDataObjectType { get; } = new(StringComparer.OrdinalIgnoreCase);
+
     /// <summary>
     /// Gets the font style cache. Used to determine color hex values.
     /// </summary>
@@ -14,64 +55,17 @@ internal class StormCache
     /// </summary>
     public Dictionary<LevelScalingEntry, StormStringValue> ScaleValueByEntry { get; } = [];
 
-    /// <summary>
-    /// Gets the constant xlement cache. Used to get the const elements and their values.
-    /// </summary>
-    public Dictionary<string, StormXElementValue> ConstantElementById { get; } = [];
-
-    /// <summary>
-    /// Gets the elements cache. Elements are grouped up by their element name.
-    /// </summary>
-    public Dictionary<string, List<StormXElementValue>> ElementsByElementName { get; } = [];
-
-    /// <summary>
-    /// Gets all the gamestrings cache.
-    /// </summary>
-    public Dictionary<string, GameStringText> GameStringsById { get; } = [];
-
-    public void AddGameString(ReadOnlySpan<char> gamestring, ReadOnlySpan<char> path)
-    {
-        AddGameString(gamestring, path, null);
-    }
-
-    public void AddGameString(ReadOnlySpan<char> gamestring, ReadOnlySpan<char> path, Dictionary<string, GameStringText>? containerDictionary)
-    {
-        Span<Range> ranges = stackalloc Range[2];
-
-        gamestring.Split(ranges, '=', StringSplitOptions.None);
-
-        if (gamestring[ranges[0]].IsEmpty || gamestring[ranges[0]].IsWhiteSpace())
-            return;
-
-        GameStringText gameStringText = new(gamestring[ranges[1]].ToString(), path.ToString());
-
-        string id = gamestring[ranges[0]].ToString();
-
-        GameStringsById[id] = gameStringText;
-
-        if (containerDictionary is not null)
-            containerDictionary[id] = gameStringText;
-    }
-
-    public void AddConstantElement(XElement element, string path)
-    {
-        if (element.Name.LocalName.Equals("const", StringComparison.OrdinalIgnoreCase))
-        {
-            string? id = element.Attribute("id")?.Value;
-
-            if (string.IsNullOrEmpty(id))
-                return;
-
-            ConstantElementById[id] = new StormXElementValue(element, path);
-        }
-    }
-
     public void Clear()
     {
+        NotFoundDirectoriesList.Clear();
+        NotFoundFilesList.Clear();
+        GameStringsById.Clear();
+        ElementTypesByDataObjectType.Clear();
+        DataObjectTypeByElementType.Clear();
+        ConstantXElementById.Clear();
+        StormElementByElementType.Clear();
+        StormElementsByDataObjectType.Clear();
         StormStyleHexColorValueByName.Clear();
         ScaleValueByEntry.Clear();
-        ConstantElementById.Clear();
-        ElementsByElementName.Clear();
-        GameStringsById.Clear();
     }
 }
