@@ -1,4 +1,6 @@
-﻿namespace Heroes.XmlData.StormData;
+﻿using Heroes.XmlData.StormMath;
+
+namespace Heroes.XmlData.StormData;
 
 /// <summary>
 /// Storage for all storm mods.
@@ -6,9 +8,6 @@
 internal partial class StormStorage : IStormStorage
 {
     private readonly List<StormModStorage> _stormModStorages = [];
-
-    private readonly HashSet<StormFile> _notFoundDirectoriesList = [];
-    private readonly HashSet<StormFile> _notFoundFilesList = [];
 
     private int _loadedMapMods;
 
@@ -85,6 +84,46 @@ internal partial class StormStorage : IStormStorage
         }
 
         return false;
+    }
+
+    public string GetValueFromConstElement(XElement constElement)
+    {
+        string? valueAttribute = constElement.Attribute("value")?.Value;
+        string? isExpressionAttribute = constElement.Attribute("evaluateAsExpression")?.Value;
+
+        if (string.IsNullOrWhiteSpace(valueAttribute))
+            return valueAttribute ?? string.Empty;
+
+        if (!string.IsNullOrWhiteSpace(isExpressionAttribute) && isExpressionAttribute == "1")
+        {
+            return HeroesPrefixNotation.Compute(this, valueAttribute).ToString();
+        }
+        else if (double.TryParse(valueAttribute, out double value))
+        {
+            return value.ToString();
+        }
+
+        return valueAttribute;
+    }
+
+    public double GetValueFromConstElementAsNumber(XElement constElement)
+    {
+        string? valueAttribute = constElement.Attribute("value")?.Value;
+        string? isExpressionAttribute = constElement.Attribute("evaluateAsExpression")?.Value;
+
+        if (string.IsNullOrWhiteSpace(valueAttribute))
+            return 0;
+
+        if (!string.IsNullOrWhiteSpace(isExpressionAttribute) && isExpressionAttribute == "1")
+        {
+            return HeroesPrefixNotation.Compute(this, valueAttribute);
+        }
+        else if (double.TryParse(valueAttribute, out double value))
+        {
+            return value;
+        }
+
+        return 0;
     }
 
     public string GetValueFromConstTextAsText(ReadOnlySpan<char> text)
@@ -167,7 +206,7 @@ internal partial class StormStorage : IStormStorage
         {
             if (!TryGetDataObjectTypeByElementType(elementName, out string? dataObjectType))
             {
-                // didnt find one, so look for a existing match
+                // didnt find one, so look for an existing match
                 string foundExistingDataObjectType = FindExistingDataObjectType(elementName);
 
                 AddBaseElementTypes(stormModType, foundExistingDataObjectType, elementName);
@@ -175,15 +214,13 @@ internal partial class StormStorage : IStormStorage
                 dataObjectType = foundExistingDataObjectType;
             }
 
-            StormElementId stormElementId = new(elementName, idAtt);
-
             if (!currentStormCache.StormElementsByDataObjectType.ContainsKey(dataObjectType))
                 currentStormCache.StormElementsByDataObjectType.Add(dataObjectType, []);
 
-            if (TryGetStormStormElementsByDataObjectType(dataObjectType, stormElementId, out StormElement? stormElement))
+            if (TryGetStormElementsByDataObjectType(dataObjectType, idAtt, out StormElement? stormElement))
                 stormElement.AddValue(stormXElementValuePath);
             else
-                currentStormCache.StormElementsByDataObjectType[dataObjectType].Add(stormElementId, new StormElement(stormXElementValuePath));
+                currentStormCache.StormElementsByDataObjectType[dataObjectType].Add(idAtt, new StormElement(stormXElementValuePath));
         }
 
         return true;
@@ -232,7 +269,7 @@ internal partial class StormStorage : IStormStorage
         }
     }
 
-    public void SetLevelScalingArrayCache(StormModType stormModType, XElement element, string filePath)
+    public void AddLevelScalingArrayElement(StormModType stormModType, XElement element, string filePath)
     {
         StormCache currentStormCache = GetCurrentStormCache(stormModType);
 
@@ -299,46 +336,6 @@ internal partial class StormStorage : IStormStorage
                 _loadedMapMods--;
             }
         }
-    }
-
-    private string GetValueFromConstElement(XElement constElement)
-    {
-        string? valueAttribute = constElement.Attribute("value")?.Value;
-        string? isExpressionAttribute = constElement.Attribute("evaluateAsExpression")?.Value;
-
-        if (string.IsNullOrWhiteSpace(valueAttribute))
-            return valueAttribute ?? string.Empty;
-
-        if (!string.IsNullOrWhiteSpace(isExpressionAttribute) && isExpressionAttribute == "1")
-        {
-            return HeroesPrefixNotation.Compute(this, valueAttribute).ToString();
-        }
-        else if (double.TryParse(valueAttribute, out double value))
-        {
-            return value.ToString();
-        }
-
-        return valueAttribute;
-    }
-
-    private double GetValueFromConstElementAsNumber(XElement constElement)
-    {
-        string? valueAttribute = constElement.Attribute("value")?.Value;
-        string? isExpressionAttribute = constElement.Attribute("evaluateAsExpression")?.Value;
-
-        if (string.IsNullOrWhiteSpace(valueAttribute))
-            return 0;
-
-        if (!string.IsNullOrWhiteSpace(isExpressionAttribute) && isExpressionAttribute == "1")
-        {
-            return HeroesPrefixNotation.Compute(this, valueAttribute);
-        }
-        else if (double.TryParse(valueAttribute, out double value))
-        {
-            return value;
-        }
-
-        return 0;
     }
 }
 

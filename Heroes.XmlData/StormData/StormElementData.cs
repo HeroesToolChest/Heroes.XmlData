@@ -3,7 +3,7 @@
 namespace Heroes.XmlData.StormData;
 
 [DebuggerDisplay("{DebuggerDisplay,nq}")]
-internal class StormElementData
+public class StormElementData
 {
     public StormElementData(string value)
     {

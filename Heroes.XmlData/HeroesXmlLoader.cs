@@ -7,7 +7,6 @@ public class HeroesXmlLoader
 {
     private const string _customPath = "custom";
 
-    private readonly IStormStorage _stormStorage;
     private readonly IHeroesSource _heroesSource;
 
     private bool _baseStormModsLoaded = false;
@@ -19,16 +18,16 @@ public class HeroesXmlLoader
 
     private HeroesXmlLoader(string pathToModsDirectory)
     {
-        _stormStorage = new StormStorage();
-        _heroesSource = new FileHeroesSource(_stormStorage, new StormModFactory(), new DepotCacheFactory(), pathToModsDirectory);
-        HeroesData = new HeroesData(_stormStorage);
+        StormStorage stormStorage = new();
+        _heroesSource = new FileHeroesSource(stormStorage, new StormModFactory(), new DepotCacheFactory(), pathToModsDirectory);
+        HeroesData = new HeroesData((IStormStorageCacheData)stormStorage);
     }
 
     private HeroesXmlLoader(CASCHeroesStorage cascHeroesStorage)
     {
-        _stormStorage = new StormStorage();
-        _heroesSource = new CASCHeroesSource(_stormStorage, new StormModFactory(), new DepotCacheFactory(), cascHeroesStorage);
-        HeroesData = new HeroesData(_stormStorage);
+        StormStorage stormStorage = new();
+        _heroesSource = new CASCHeroesSource(stormStorage, new StormModFactory(), new DepotCacheFactory(), cascHeroesStorage);
+        HeroesData = new HeroesData((IStormStorageCacheData)stormStorage);
     }
 
     /// <summary>

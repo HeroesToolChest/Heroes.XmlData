@@ -1,6 +1,6 @@
 ﻿using System.Data;
 
-namespace Heroes.XmlData.StormData;
+namespace Heroes.XmlData.StormMath;
 
 internal class HeroesPrefixNotation
 {
@@ -81,7 +81,7 @@ internal class HeroesPrefixNotation
 
     private double Evaluate(ReadOnlySpan<char> expression)
     {
-        if (HeroesMath.IsOperator(expression[0]) && expression.Length > 1 && expression[1] == '(')
+        if (HeroesCalculator.IsOperator(expression[0]) && expression.Length > 1 && expression[1] == '(')
         {
             char op = expression[0];
 
@@ -95,7 +95,7 @@ internal class HeroesPrefixNotation
             ReadOnlySpan<char> secondValueSpan = currentExpression.Slice(indexSplit + 1, currentExpression.Length - indexSplit - 1);
             double secondValue = Evaluate(secondValueSpan);
 
-            return HeroesMath.ApplyOperator(op, secondValue, firstValue);
+            return HeroesCalculator.ApplyOperator(op, secondValue, firstValue);
         }
         else if (expression[0] == '$')
         {

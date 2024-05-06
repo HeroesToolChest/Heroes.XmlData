@@ -1,10 +1,10 @@
 ﻿using System.Collections.Concurrent;
 using System.Data;
 
-namespace Heroes.XmlData.Extensions.Tests;
+namespace Heroes.XmlData.StormMath.Tests;
 
 [TestClass]
-public class HeroesMathTests
+public class HeroesCalculatorTests
 {
     [TestMethod]
     [DataRow(100, "(12 + 6.000000) * (0.1875 + 0.062500) - (12 * 0.1875) / (12 * 0.1875) * 100")]
@@ -37,8 +37,8 @@ public class HeroesMathTests
     {
         // arrange
         // act
-        double result = HeroesMath.Compute(expression);
-        double resultFromSpan = HeroesMath.Compute(expression.AsSpan());
+        double result = HeroesCalculator.Compute(expression);
+        double resultFromSpan = HeroesCalculator.Compute(expression.AsSpan());
 
         // assert
         result.Should().Be(expected);
@@ -60,7 +60,7 @@ public class HeroesMathTests
         // act
         Parallel.ForEach(expressions, (x) =>
         {
-            results.Add(HeroesMath.Compute(x));
+            results.Add(HeroesCalculator.Compute(x));
         });
 
         // assert
@@ -74,7 +74,7 @@ public class HeroesMathTests
         string expression = "1(*a4/z)+0*100";
 
         // act
-        Action act = () => HeroesMath.Compute(expression);
+        Action act = () => HeroesCalculator.Compute(expression);
 
         // assert
         act.Should().Throw<SyntaxErrorException>();

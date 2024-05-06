@@ -1,101 +1,141 @@
 ﻿using BenchmarkDotNet.Attributes;
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Buffers;
 
 namespace Heroes.XmlData.Benchmarks;
 
 [MemoryDiagnoser]
 public class XmlDataBenchmarks
 {
-    public struct Struct1
-    {
-        public string Value1 { get; set; }
-        public string Value2 { get; set; }
+    //private SearchValues<char> _operators = SearchValues.Create("*-+/");
 
-        public Class1 Class1 { get; set; }
-    }
-    public record Record1
-    {
-        public string Value1 { get; set; }
-        public string Value2 { get; set; }
-
-        public Class1 Class1 { get; set; }
-    }
-
-    public class Class1
-    {
-        public string Value1 { get; set; }
-        public string Value2 { get; set; }
-
-        public Class1 ClassOfItself { get; set; }
-    }
-
-
-    //private readonly string _value = "thisIsAstringValueOfSoMeSorts";
+    private string _test = "sdflkjsfd+sdfjlkfds-sdklfjsdlk/sdflkjsdfjkl+sdljkd-sljkdsdf*dfg%sdf%sdfg";
 
     [Benchmark]
-    public Struct1 Struct()
+    public int Test()
     {
-        Struct1 struct1 = new Struct1()
-        {
-            Value1 = "item",
-            Value2 = "item2",
-            Class1 = new Class1()
-            {
-                Value1 = "item4",
-                Value2 = "item5",
-            },
-        };
+        int count = _test.AsSpan().Count('+');
+        count += _test.AsSpan().Count('-');
+        count += _test.AsSpan().Count('*');
+        count += _test.AsSpan().Count('%');
+        count += _test.AsSpan().Count('/');
 
-        Dictionary<string, Struct1> dic = [];
-        dic.Add("item1", struct1);
-
-        return dic["item1"];
+        return count;
     }
 
     [Benchmark]
-    public Record1 Record()
+    public int TestWithForEach()
     {
-        Record1 struct1 = new Record1()
+        int count = 0;
+        foreach (char item in _test.AsSpan())
         {
-            Value1 = "item",
-            Value2 = "item2",
-            Class1 = new Class1()
+            if (item == '+' || item == '-' || item == '*' || item == '%' || item == '/')
             {
-                Value1 = "item4",
-                Value2 = "item5",
-            },
-        };
+                count++;
+            }
+        }
 
-        Dictionary<string, Record1> dic = [];
-        dic.Add("item1", struct1);
-
-        return dic["item1"];
+        return count;
     }
 
-    [Benchmark]
-    public Class1 Class()
-    {
-        Class1 struct1 = new Class1()
-        {
-            Value1 = "item",
-            Value2 = "item2",
-            ClassOfItself = new Class1()
-            {
-                Value1 = "item4",
-                Value2 = "item5",
-            },
-        };
+    //[Benchmark]
+    //public bool WithBooleanCheck()
+    //{
+    //    return IsOperator('/');
+    //}
 
-        Dictionary<string, Class1> dic = [];
-        dic.Add("item1", struct1);
+    //[Benchmark]
+    //public bool WithSearchValues()
+    //{
+    //    return "/".AsSpan().ContainsAny(_operators);
+    //}
 
-        return dic["item1"];
-    }
+
+    //private static bool IsOperator(char value) => value == '*' || value == '-' || value == '+' || value == '/';
+    //public struct Struct1
+    //{
+    //    public string Value1 { get; set; }
+    //    public string Value2 { get; set; }
+
+    //    public Class1 Class1 { get; set; }
+    //}
+    //public record Record1
+    //{
+    //    public string Value1 { get; set; }
+    //    public string Value2 { get; set; }
+
+    //    public Class1 Class1 { get; set; }
+    //}
+
+    //public class Class1
+    //{
+    //    public string Value1 { get; set; }
+    //    public string Value2 { get; set; }
+
+    //    public Class1 ClassOfItself { get; set; }
+    //}
+
+
+    ////private readonly string _value = "thisIsAstringValueOfSoMeSorts";
+
+    //[Benchmark]
+    //public Struct1 Struct()
+    //{
+    //    Struct1 struct1 = new Struct1()
+    //    {
+    //        Value1 = "item",
+    //        Value2 = "item2",
+    //        Class1 = new Class1()
+    //        {
+    //            Value1 = "item4",
+    //            Value2 = "item5",
+    //        },
+    //    };
+
+    //    Dictionary<string, Struct1> dic = [];
+    //    dic.Add("item1", struct1);
+
+    //    return dic["item1"];
+    //}
+
+    //[Benchmark]
+    //public Record1 Record()
+    //{
+    //    Record1 struct1 = new Record1()
+    //    {
+    //        Value1 = "item",
+    //        Value2 = "item2",
+    //        Class1 = new Class1()
+    //        {
+    //            Value1 = "item4",
+    //            Value2 = "item5",
+    //        },
+    //    };
+
+    //    Dictionary<string, Record1> dic = [];
+    //    dic.Add("item1", struct1);
+
+    //    return dic["item1"];
+    //}
+
+    //[Benchmark]
+    //public Class1 Class()
+    //{
+    //    Class1 struct1 = new Class1()
+    //    {
+    //        Value1 = "item",
+    //        Value2 = "item2",
+    //        ClassOfItself = new Class1()
+    //        {
+    //            Value1 = "item4",
+    //            Value2 = "item5",
+    //        },
+    //    };
+
+    //    Dictionary<string, Class1> dic = [];
+    //    dic.Add("item1", struct1);
+
+    //    return dic["item1"];
+    //}
 
     //[Benchmark]
     //public string TestUpper()

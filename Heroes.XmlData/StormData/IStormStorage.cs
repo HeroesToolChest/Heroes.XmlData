@@ -22,6 +22,8 @@ internal interface IStormStorage
 
     bool AddConstantXElement(StormModType stormModType, XElement element, string path);
 
+    double GetValueFromConstElementAsNumber(XElement constElement);
+
     string GetValueFromConstTextAsText(ReadOnlySpan<char> text);
 
     double GetValueFromConstTextAsNumber(ReadOnlySpan<char> text);
@@ -32,7 +34,7 @@ internal interface IStormStorage
 
     void SetFontStyleCache(StormModType stormModType, XDocument document, string filePath);
 
-    void SetLevelScalingArrayCache(StormModType stormModType, XElement element, string filePath);
+    void AddLevelScalingArrayElement(StormModType stormModType, XElement element, string filePath);
 
     void ClearGamestrings();
 

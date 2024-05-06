@@ -11,7 +11,6 @@ public class HeroesDataTests
     public HeroesDataTests()
     {
         _stormStorage = Substitute.For<IStormStorage>();
-
         _heroesData = new HeroesData(_stormStorage);
     }
 
@@ -609,8 +608,8 @@ public class HeroesDataTests
         _stormStorage.StormCustomCache.Returns(stormCustomCache);
 
         // act
-        bool result = _heroesData.IsConstantElementExists(id);
-        bool resultSpan = _heroesData.IsConstantElementExists(id.AsSpan());
+        bool result = _heroesData.IsConstantXElementExists(id);
+        bool resultSpan = _heroesData.IsConstantXElementExists(id.AsSpan());
 
         // assert
         result.Should().Be(isFound);
@@ -624,7 +623,7 @@ public class HeroesDataTests
         string id = null!;
 
         // act
-        Action act = () => _heroesData.IsConstantElementExists(id);
+        Action act = () => _heroesData.IsConstantXElementExists(id);
 
         // assert
         act.Should().Throw<ArgumentNullException>();
@@ -666,8 +665,8 @@ public class HeroesDataTests
         StormXElementValuePath outcome = new(new XElement(xElementName), path);
 
         // act
-        StormXElementValuePath result = _heroesData.GetConstantElement(id);
-        StormXElementValuePath resultSpan = _heroesData.GetConstantElement(id.AsSpan());
+        StormXElementValuePath result = _heroesData.GetConstantXElement(id);
+        StormXElementValuePath resultSpan = _heroesData.GetConstantXElement(id.AsSpan());
 
         // assert
         result.Path.Should().Be(outcome.Path);
@@ -683,7 +682,7 @@ public class HeroesDataTests
         string id = null!;
 
         // act
-        Action act = () => _heroesData.GetConstantElement(id);
+        Action act = () => _heroesData.GetConstantXElement(id);
 
         // assert
         act.Should().Throw<ArgumentNullException>();
@@ -700,7 +699,7 @@ public class HeroesDataTests
         _stormStorage.StormCustomCache.Returns(new StormCache());
 
         // act
-        Action act = () => _heroesData.GetConstantElement(id);
+        Action act = () => _heroesData.GetConstantXElement(id);
 
         // assert
         act.Should().Throw<KeyNotFoundException>();
@@ -745,8 +744,8 @@ public class HeroesDataTests
             outcome = new(new XElement(xElementName), path);
 
         // act
-        bool result = _heroesData.TryGetConstantElement(id, out StormXElementValuePath? stormXElementValue);
-        bool resultSpan = _heroesData.TryGetConstantElement(id.AsSpan(), out StormXElementValuePath? stormXElementValueSpan);
+        bool result = _heroesData.TryGetConstantXElement(id, out StormXElementValuePath? stormXElementValue);
+        bool resultSpan = _heroesData.TryGetConstantXElement(id.AsSpan(), out StormXElementValuePath? stormXElementValueSpan);
 
         // assert
         result.Should().Be(isFound);
@@ -765,63 +764,7 @@ public class HeroesDataTests
         string id = null!;
 
         // act
-        Action act = () => _heroesData.TryGetConstantElement(id, out _);
-
-        // assert
-        act.Should().Throw<ArgumentNullException>();
-    }
-
-    [TestMethod]
-    public void IsElementExists_NullName_ThrowsException()
-    {
-        // arrange
-        string name = null!;
-
-        // act
-        Action act = () => _heroesData.IsElementExists(name);
-
-        // assert
-        act.Should().Throw<ArgumentNullException>();
-    }
-
-    [TestMethod]
-    public void GetElements_NullName_ThrowsException()
-    {
-        // arrange
-        string name = null!;
-
-        // act
-        Action act = () => _heroesData.GetElements(name);
-
-        // assert
-        act.Should().Throw<ArgumentNullException>();
-    }
-
-    [TestMethod]
-    public void GetElements_NonExistsName_ThrowsException()
-    {
-        // arrange
-        string name = "other";
-
-        _stormStorage.StormCache.Returns(new StormCache());
-        _stormStorage.StormMapCache.Returns(new StormCache());
-        _stormStorage.StormCustomCache.Returns(new StormCache());
-
-        // act
-        Action act = () => _heroesData.GetElements(name);
-
-        // assert
-        act.Should().Throw<KeyNotFoundException>();
-    }
-
-    [TestMethod]
-    public void TryGetElements_NullName_ThrowsException()
-    {
-        // arrange
-        string name = null!;
-
-        // act
-        Action act = () => _heroesData.TryGetElements(name, out _);
+        Action act = () => _heroesData.TryGetConstantXElement(id, out _);
 
         // assert
         act.Should().Throw<ArgumentNullException>();

@@ -1,10 +1,7 @@
-﻿using System.IO;
-
-namespace Heroes.XmlData.StormMods;
+﻿namespace Heroes.XmlData.StormMods;
 
 internal class CustomStormMod : IStormMod
 {
-    private const string _customPath = "custom";
     private readonly IHeroesSource _heroesSource;
     private readonly ManualModLoader _manualModLoader;
 
@@ -25,6 +22,8 @@ internal class CustomStormMod : IStormMod
 
     public StormModStorage StormModStorage { get; }
 
+    internal string CustomFilePath => $"hxd-{Name}";
+
     public IEnumerable<IStormMod> GetStormMapMods(S2MAProperties s2maProperties)
     {
         throw new NotImplementedException();
@@ -37,7 +36,29 @@ internal class CustomStormMod : IStormMod
 
     public void LoadStormData()
     {
-        throw new NotImplementedException();
+        foreach (XElement constantXElement in _manualModLoader.ConstantXElements)
+        {
+            _heroesSource.StormStorage.AddConstantXElement(StormModType, constantXElement, CustomFilePath);
+        }
+
+        foreach (var items in _manualModLoader.ElementNamesByDataObjectType)
+        {
+            foreach (string elementName in items.Value)
+            {
+                _heroesSource.StormStorage.AddBaseElementTypes(StormModType, items.Key, elementName);
+            }
+        }
+
+        foreach (XElement element in _manualModLoader.Elements)
+        {
+            _heroesSource.StormStorage.AddElement(StormModType, element, CustomFilePath);
+        }
+
+        foreach (XElement element in _manualModLoader.LevelScalingElements)
+        {
+            _heroesSource.StormStorage.AddLevelScalingArrayElement(StormModType, element, CustomFilePath);
+        }
+
     }
 
     public void LoadStormGameStrings(StormLocale stormLocale)
@@ -46,7 +67,7 @@ internal class CustomStormMod : IStormMod
         {
             foreach (string gameString in gameStrings)
             {
-                var gamestring = _heroesSource.StormStorage.GetGameStringWithId(gameString, _customPath);
+                var gamestring = _heroesSource.StormStorage.GetGameStringWithId(gameString, CustomFilePath);
 
                 if (gamestring is not null)
                     StormModStorage.AddGameString(gamestring.Value.Id, gamestring.Value.GameStringText);

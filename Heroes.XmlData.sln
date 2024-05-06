@@ -20,7 +20,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Heroes.XmlData.Benchmarks",
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Heroes.XmlData.Extensions", "Heroes.XmlData.Extensions\Heroes.XmlData.Extensions.csproj", "{5A638E98-5E15-473A-8633-947B336B66CA}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Heroes.XmlData.Extensions.Tests", "Tests\Heroes.XmlData.Extensions.Tests\Heroes.XmlData.Extensions.Tests.csproj", "{0BCBAD23-994F-45A7-A6D9-5FF403D44605}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Heroes.XmlData.Extensions.Tests", "Tests\Heroes.XmlData.Extensions.Tests\Heroes.XmlData.Extensions.Tests.csproj", "{0BCBAD23-994F-45A7-A6D9-5FF403D44605}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Heroes.XmlData.Tests", "Tests\Heroes.XmlData.Tests\Heroes.XmlData.Tests.csproj", "{6B0150B3-6CA1-4B7C-B6C5-BE5640D79864}"
 EndProject

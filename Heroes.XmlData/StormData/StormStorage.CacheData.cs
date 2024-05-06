@@ -1,11 +1,9 @@
-﻿using System.Runtime.InteropServices;
-
-namespace Heroes.XmlData.StormData;
+﻿namespace Heroes.XmlData.StormData;
 
 /// <content>
 /// Contains the methods for obtaining data from the caches.
 /// </content>
-internal partial class StormStorage
+internal partial class StormStorage : IStormStorageCacheData
 {
     public bool TryGetConstantXElementById(ReadOnlySpan<char> id, [NotNullWhen(true)] out StormXElementValuePath? stormXElementValuePath)
     {
@@ -107,7 +105,12 @@ internal partial class StormStorage
         return false;
     }
 
-    public bool TryGetStormStormElementsByDataObjectType(string dataObjectType, StormElementId id, [NotNullWhen(true)] out StormElement? stormElement)
+    public bool TryGetStormElementsByDataObjectType(ReadOnlySpan<char> dataObjectType, ReadOnlySpan<char> id, [NotNullWhen(true)] out StormElement? stormElement)
+    {
+        return TryGetStormElementsByDataObjectType(dataObjectType.ToString(), id.ToString(), out stormElement);
+    }
+
+    public bool TryGetStormElementsByDataObjectType(string dataObjectType, string id, [NotNullWhen(true)] out StormElement? stormElement)
     {
         ArgumentNullException.ThrowIfNull(dataObjectType);
         ArgumentNullException.ThrowIfNull(id);
@@ -125,6 +128,30 @@ internal partial class StormStorage
 
         if (StormCache.StormElementsByDataObjectType.TryGetValue(dataObjectType, out stormElementById) &&
             stormElementById.TryGetValue(id, out stormElement))
+            return true;
+
+        return false;
+    }
+
+    public bool TryGetLevelScalingArrayElement(ReadOnlySpan<char> catalog, ReadOnlySpan<char> entry, ReadOnlySpan<char> field, [NotNullWhen(true)] out StormStringValue? stormStringValue)
+    {
+        return TryGetLevelScalingArrayElement(catalog.ToString(), entry.ToString(), field.ToString(), out stormStringValue);
+    }
+
+    public bool TryGetLevelScalingArrayElement(string catalog, string entry, string field, [NotNullWhen(true)] out StormStringValue? stormStringValue)
+    {
+        ArgumentNullException.ThrowIfNull(catalog);
+        ArgumentNullException.ThrowIfNull(entry);
+        ArgumentNullException.ThrowIfNull(field);
+
+        // custom cache always first
+        if (StormCustomCache.ScaleValueByEntry.TryGetValue(new(catalog, entry, field), out stormStringValue))
+            return true;
+
+        if (StormMapCache.ScaleValueByEntry.TryGetValue(new(catalog, entry, field), out stormStringValue))
+            return true;
+
+        if (StormCache.ScaleValueByEntry.TryGetValue(new(catalog, entry, field), out stormStringValue))
             return true;
 
         return false;

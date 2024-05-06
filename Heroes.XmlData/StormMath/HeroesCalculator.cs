@@ -1,16 +1,16 @@
 ﻿using System.Data;
 
-namespace Heroes.XmlData.StormData;
+namespace Heroes.XmlData.StormMath;
 
 /// <summary>
-/// Contains the Heroes math calculations.
+/// The Heroes math calculator.
 /// </summary>
-public class HeroesMath
+public class HeroesCalculator
 {
     private readonly Stack<double> _values = new();
     private readonly Stack<char> _operators = new();
 
-    private HeroesMath()
+    private HeroesCalculator()
     {
     }
 
@@ -29,7 +29,7 @@ public class HeroesMath
     /// <exception cref="SyntaxErrorException">The expression contains a syntax error.</exception>
     public static double Compute(ReadOnlySpan<char> expression)
     {
-        HeroesMath heroesMath = new();
+        HeroesCalculator heroesMath = new();
 
         try
         {

@@ -172,7 +172,7 @@ internal class StormModStorage
 
             UpdateConstantAttributes(element.DescendantsAndSelf());
 
-            _stormStorage.SetLevelScalingArrayCache(StormModType, element, filePath);
+            _stormStorage.AddLevelScalingArrayElement(StormModType, element, filePath);
             _stormStorage.AddElement(StormModType, element, filePath);
         }
     }

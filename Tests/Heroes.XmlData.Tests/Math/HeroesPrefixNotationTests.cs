@@ -1,7 +1,9 @@
+using Heroes.XmlData.StormData;
+using Heroes.XmlData.StormMods;
 using System.Collections.Concurrent;
 using System.Data;
 
-namespace Heroes.XmlData.Extensions.Tests;
+namespace Heroes.XmlData.StormMath.Tests;
 
 [TestClass]
 public class HeroesPrefixNotationTests
@@ -78,19 +80,18 @@ public class HeroesPrefixNotationTests
         // arrange
         string expression = "-(/(0.75 $GazloweDethLazorLeechAmount) 1)";
 
-        HeroesXmlLoader loader = HeroesXmlLoader.LoadAsEmpty()
-            .AddConstantElements(new List<XElement>()
-            {
-                new(
-                    "const",
-                    new XAttribute("id", "$GazloweDethLazorLeechAmount"),
-                    new XAttribute("value", "0.25")),
-            });
+        StormStorage stormStorage = new();
 
-        HeroesData heroesData = loader.HeroesData;
+        stormStorage.AddConstantXElement(
+            StormModType.Custom,
+            new XElement(
+                "const",
+                new XAttribute("id", "$GazloweDethLazorLeechAmount"),
+                new XAttribute("value", "0.25")),
+            "custom");
 
         // act
-        double result = HeroesPrefixNotation.Compute(heroesData, expression);
+        double result = HeroesPrefixNotation.Compute(stormStorage, expression);
 
         // assert
         result.Should().Be(2);
@@ -102,19 +103,18 @@ public class HeroesPrefixNotationTests
         // arrange
         string expression = "-(/(0.75 $DoesNotExist) 1)";
 
-        HeroesXmlLoader loader = HeroesXmlLoader.LoadAsEmpty()
-            .AddConstantElements(new List<XElement>()
-            {
-                new(
-                    "const",
-                    new XAttribute("id", "$GazloweDethLazorLeechAmount"),
-                    new XAttribute("value", "0.25")),
-            });
+        StormStorage stormStorage = new();
 
-        HeroesData heroesData = loader.HeroesData;
+        stormStorage.AddConstantXElement(
+            StormModType.Custom,
+            new XElement(
+                "const",
+                new XAttribute("id", "$GazloweDethLazorLeechAmount"),
+                new XAttribute("value", "0.25")),
+            "custom");
 
         // act
-        double result = HeroesPrefixNotation.Compute(heroesData, expression);
+        double result = HeroesPrefixNotation.Compute(stormStorage, expression);
 
         // assert
         result.Should().Be(-0.25);

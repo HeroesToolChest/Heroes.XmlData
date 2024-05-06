@@ -1,6 +1,6 @@
 ﻿namespace Heroes.XmlData.StormData;
 
-internal class StormElement
+public class StormElement
 {
     public StormElement(StormXElementValuePath baseValue)
     {

@@ -41,9 +41,9 @@ internal class StormCache
     public Dictionary<string, StormElement> StormElementByElementType { get; } = [];
 
     /// <summary>
-    /// Gets a dictionary of <see cref="StormElement"/>s by their id by their data object type.
+    /// Gets a dictionary of <see cref="StormElement"/>s by their id attribute by their data object type (e.g. Effect).
     /// </summary>
-    public Dictionary<string, Dictionary<StormElementId, StormElement>> StormElementsByDataObjectType { get; } = new(StringComparer.OrdinalIgnoreCase);
+    public Dictionary<string, Dictionary<string, StormElement>> StormElementsByDataObjectType { get; } = new(StringComparer.OrdinalIgnoreCase);
 
     /// <summary>
     /// Gets the font style cache. Used to determine color hex values.
