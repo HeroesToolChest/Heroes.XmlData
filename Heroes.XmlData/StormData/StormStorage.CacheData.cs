@@ -156,4 +156,48 @@ internal partial class StormStorage : IStormStorageCacheData
 
         return false;
     }
+
+    public bool TryGetStormStyleHexColorValue(ReadOnlySpan<char> name, [NotNullWhen(true)] out StormStringValue? stormStringValue)
+    {
+        return TryGetStormStyleHexColorValue(name.ToString(), out stormStringValue);
+    }
+
+    public bool TryGetStormStyleHexColorValue(string name, [NotNullWhen(true)] out StormStringValue? stormStringValue)
+    {
+        ArgumentNullException.ThrowIfNull(name);
+
+        // custom cache always first
+        if (StormCustomCache.StormStyleHexColorValueByName.TryGetValue(name, out stormStringValue))
+            return true;
+
+        if (StormMapCache.StormStyleHexColorValueByName.TryGetValue(name, out stormStringValue))
+            return true;
+
+        if (StormCache.StormStyleHexColorValueByName.TryGetValue(name, out stormStringValue))
+            return true;
+
+        return false;
+    }
+
+    public bool TryGetStormStyleConstantsHexColorValue(ReadOnlySpan<char> name, [NotNullWhen(true)] out StormStringValue? stormStringValue)
+    {
+        return TryGetStormStyleConstantsHexColorValue(name.ToString(), out stormStringValue);
+    }
+
+    public bool TryGetStormStyleConstantsHexColorValue(string name, [NotNullWhen(true)] out StormStringValue? stormStringValue)
+    {
+        ArgumentNullException.ThrowIfNull(name);
+
+        // custom cache always first
+        if (StormCustomCache.StormStyleConstantsHexColorValueByName.TryGetValue(name, out stormStringValue))
+            return true;
+
+        if (StormMapCache.StormStyleConstantsHexColorValueByName.TryGetValue(name, out stormStringValue))
+            return true;
+
+        if (StormCache.StormStyleConstantsHexColorValueByName.TryGetValue(name, out stormStringValue))
+            return true;
+
+        return false;
+    }
 }

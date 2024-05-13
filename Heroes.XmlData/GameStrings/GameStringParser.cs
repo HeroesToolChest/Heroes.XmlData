@@ -1,11 +1,5 @@
-﻿using Heroes.LocaleText;
-using Heroes.XmlData.StormData;
-using System.Buffers;
-using System.Diagnostics.CodeAnalysis;
-using System.Globalization;
+﻿using System.Globalization;
 using System.Text;
-//using System.Xml;
-//using System.Xml.Linq;
 using U8Xml;
 
 namespace Heroes.XmlData.GameStrings;
@@ -13,29 +7,92 @@ namespace Heroes.XmlData.GameStrings;
 internal class GameStringParser
 {
     public const int MaxNumberLength = 9;
+    public const int MaxScalingLength = 6;
     public const double MaxValueSize = 999_999_999;
 
     private readonly HeroesData _heroesData;
+    private readonly DataRefParser _dataRefParser;
 
-    private readonly List<TextSection> _textStack = [];
+    private readonly List<ITextSection> _textStack = [];
     private int _startingIndex = 0;
     private int _index = 0;
 
-    //private CultureInfo? _culture;
-
-    public GameStringParser(HeroesData heroesData, StormLocale gameStringLocale = StormLocale.ENUS)
+    private GameStringParser(HeroesData heroesData)
     {
         _heroesData = heroesData;
-        GameStringLocale = gameStringLocale;
+
+        _dataRefParser = new DataRefParser(this, _heroesData);
     }
 
-    public StormLocale GameStringLocale { get; }
-
-    public string ParseTooltipDescription(ReadOnlySpan<char> description)
+    public static string ParseTooltipDescription(ReadOnlySpan<char> description, HeroesData heroesData)
     {
-        ConstructTextStack(description);
+        GameStringParser gameStringParser = new(heroesData);
 
-        return BuildDescription(description);
+        gameStringParser.ConstructTextStack(description);
+
+        return gameStringParser.BuildDescription(description);
+    }
+
+    // <d const=\"$YrelSacredGroundArmorBonus\" precision=\"2\"/>
+    // <d ref=\"Validator,ChromieFastForwardDistanceCheck,Range/Effect,ChromieSandBlastLaunchMissile,ImpactLocation.ProjectionDistanceScale*100\"/>
+    public ValueScale ParseDataTag(ReadOnlySpan<char> dataTag)
+    {
+        double resultValue = 0;
+        double? scaling = null;
+
+        using XmlObject xmlDataTag = XmlParser.Parse(dataTag);
+        XmlNode xmlRoot = xmlDataTag.Root;
+        XmlAttributeList xmlAttributes = xmlRoot.Attributes;
+
+        if (!((xmlAttributes.TryFind("precision", out XmlAttribute precisionAttribute) || xmlAttributes.TryFind("Precision", out precisionAttribute)) &&
+            precisionAttribute.Value.TryToInt32(out int precision)))
+        {
+            precision = 0;
+        }
+
+        if (xmlAttributes.TryFind("const", out XmlAttribute constAttribute))
+        {
+            Span<char> buffer = stackalloc char[constAttribute.Value.GetCharCount()];
+
+            Encoding.UTF8.TryGetChars(constAttribute.Value.AsSpan(), buffer, out int charsWritten);
+
+            if (_heroesData.TryGetConstantXElement(buffer, out StormXElementValuePath? stormXElementValue))
+            {
+                resultValue = _heroesData.EvaluateConstantElement(stormXElementValue.Value);
+            }
+        }
+        else if (xmlAttributes.TryFind("ref", out XmlAttribute refAttribute))
+        {
+            Span<char> buffer = stackalloc char[refAttribute.Value.GetCharCount()];
+
+            Encoding.UTF8.TryGetChars(refAttribute.Value.AsSpan(), buffer, out int charsWritten);
+
+            ValueScale valueScale = _dataRefParser.Parse(buffer);
+            resultValue = valueScale.Value;
+            scaling = valueScale.Scaling;
+        }
+
+        if (scaling.HasValue)
+            return new ValueScale(Math.Round(resultValue, precision), Math.Round(scaling.Value, MaxScalingLength));
+        else
+            return new ValueScale(Math.Round(resultValue, precision));
+    }
+
+    // <c val=\"#TooltipNumbers\">
+    private static bool TryParseAttributeValRange(ReadOnlySpan<char> styleTag, [NotNullWhen(true)] out Range? attributeValValue)
+    {
+        attributeValValue = null;
+
+        int indexOfVal = styleTag.IndexOf("val=", StringComparison.OrdinalIgnoreCase);
+        if (indexOfVal < 0)
+            return false;
+
+        int startIndexOfQuote = styleTag.IndexOf("\"");
+        int endIndeoxOfQuote = styleTag[(startIndexOfQuote + 1)..].IndexOf("\"");
+
+        attributeValValue = new Range(startIndexOfQuote + 1, startIndexOfQuote + endIndeoxOfQuote);
+
+        return true;
     }
 
     private string BuildDescription(ReadOnlySpan<char> description)
@@ -50,27 +107,31 @@ internal class GameStringParser
         int currentOffset = 0;
 
         // loop through and build string
-        foreach (TextSection item in _textStack)
+        for (int i = 0; i < _textStack.Count; i++)
         {
-            if (item.IsText)
+            ITextSection item = _textStack[i];
+
+            if (item.Type == TextSectionType.Text)
             {
-                ReadOnlySpan<char> itemText = description[item.Range.Value];
+                TextSection textSection = (TextSection)item;
+
+                ReadOnlySpan<char> itemText = description[textSection.Range];
 
                 itemText.CopyTo(buffer[currentOffset..]);
                 currentOffset += itemText.Length;
             }
-            else if (item.IsValue)
+            else if (item.Type == TextSectionType.Value)
             {
-                //_culture ??= StormLocaleData.GetCultureInfo(GameStringLocale);
+                TextSectionValueScale textSectionValueScale = (TextSectionValueScale)item;
 
-                ValueScale value = item.ValueScale.Value;
+                ValueScale value = textSectionValueScale.ValueScale;
 
                 value.Value.TryFormat(buffer[currentOffset..], out int charsWritten);
                 currentOffset += charsWritten;
 
                 if (value.Scaling.HasValue)
                 {
-                    value.Scaling.Value.TryFormat(buffer[currentOffset..], out charsWritten, format: $"~~{value.Scaling.Value}~~");
+                    value.Scaling.Value.TryFormat(buffer[currentOffset..], out charsWritten, format: $"~~{value.Scaling.Value}~~", CultureInfo.InvariantCulture);
                     currentOffset += charsWritten;
                 }
             }
@@ -86,19 +147,16 @@ internal class GameStringParser
 
         while (_index < description.Length)
         {
-            if (description[_index] == '[' && _index + 1 < description.Length && description[_index + 1] == ' ')
-            {
-            }
-            else if (description[_index] == '<' && _index + 1 < description.Length && description[_index + 1] == 'd')
+            if (description[_index] == '<' && _index + 1 < description.Length && description[_index + 1] == 'd')
             {
 #if DEBUG
                 PushNormalText(description);
 #else
                 PushNormalText();
 #endif
-                if (TryParseDataTag(description, out Range? tag))
+                if (TryParseTagContents(description, out Range? tag))
                 {
-                    PushValueFromTag(description, tag.Value);
+                    PushValueScaleFromTag(description, tag.Value);
                 }
 
                 _startingIndex = _index;
@@ -136,13 +194,13 @@ internal class GameStringParser
         int normalTextLength = _index - _startingIndex;
         if (normalTextLength > 0)
         {
-            _textStack.Add(new TextSection(new Range(_startingIndex, _index), TextSectionType.Text));
+            _textStack.Add(new TextSection(new Range(_startingIndex, _index)));
 
         }
     }
 #endif
 
-    private bool TryParseDataTag(ReadOnlySpan<char> description, [NotNullWhen(true)] out Range? tag)
+    private bool TryParseTagContents(ReadOnlySpan<char> description, [NotNullWhen(true)] out Range? tag)
     {
         tag = null;
 
@@ -180,167 +238,38 @@ internal class GameStringParser
         return false;
     }
 
-
-    private void PushValueFromTag(ReadOnlySpan<char> description, Range tag)
+    private void PushValueScaleFromTag(ReadOnlySpan<char> description, Range tag)
     {
         ReadOnlySpan<char> span = description[tag];
 
         ValueScale valueScale = ParseDataTag(span);
 
-        _textStack.Add(new TextSection(valueScale));
-    }
-    //private bool TryParseDataTag(ReadOnlySpan<char> description)
-    //{
-    //    ReadOnlySpan<char> currentTextSpan = description[_index..];
-    //    int lengthOffset = description.Length - currentTextSpan.Length;
-
-    //    int startTagIndex = 0; // index of <
-    //    int endTagIndex = -1;
-
-    //    for (int i = 1; i < currentTextSpan.Length; i++)
-    //    {
-    //        if (currentTextSpan[i] == '>' && currentTextSpan[i - 1] == '/')
-    //        {
-    //            endTagIndex = i;
-    //            break;
-    //        }
-    //        else if (currentTextSpan[i] == '<')
-    //        {
-    //            startTagIndex = i;
-    //            break;
-    //        }
-    //    }
-
-    //    if (endTagIndex > 0)
-    //    {
-    //        ReadOnlySpan<char> tagSpan = currentTextSpan[startTagIndex..(endTagIndex + 1)];
-
-    //        //// check if its a start tag
-    //        //if (tagSpan[1] != '/' && tagSpan[^2] != '/')
-    //        //    isStartTag = true;
-    //        //else
-    //        //    isStartTag = false;
-
-    //        //tag = new Range(startTagIndex + lengthOffset, endTagIndex + lengthOffset + 1);
-
-    //        _index += endTagIndex - startTagIndex + 1;
-
-    //        return true;
-    //    }
-
-    //    _index += startTagIndex;
-
-    //    return false;
-    //}
-
-    // <d const=\"$YrelSacredGroundArmorBonus\" precision=\"2\"/>
-    // <d ref=\"Validator,ChromieFastForwardDistanceCheck,Range/Effect,ChromieSandBlastLaunchMissile,ImpactLocation.ProjectionDistanceScale*100\"/>
-    private ValueScale ParseDataTag(ReadOnlySpan<char> dataTag)
-    {
-        double resultValue = 0;
-        double? scaling = null;
-
-        using XmlObject xmlDataTag = XmlParser.Parse(dataTag);
-        XmlNode xmlRoot = xmlDataTag.Root;
-        XmlAttributeList xmlAttributes = xmlRoot.Attributes;
-
-        if (!((xmlAttributes.TryFind("precision", out XmlAttribute precisionAttribute) || xmlAttributes.TryFind("Precision", out precisionAttribute)) &&
-            precisionAttribute.Value.TryToInt32(out int precision)))
-        {
-            precision = 0;
-        }
-
-        if (xmlAttributes.TryFind("const", out XmlAttribute constAttribute))
-        {
-            Span<char> buffer = stackalloc char[constAttribute.Value.GetCharCount()];
-
-            Encoding.UTF8.TryGetChars(constAttribute.Value.AsSpan(), buffer, out int charsWritten);
-
-            if (_heroesData.TryGetConstantXElement(buffer, out StormXElementValuePath? stormXElementValue))
-            {
-                resultValue = _heroesData.EvaluateConstantElement(stormXElementValue.Value);
-            }
-        }
-        else if (xmlAttributes.TryFind("ref", out XmlAttribute refAttribute))
-        {
-            Span<char> buffer = stackalloc char[refAttribute.Value.GetCharCount()];
-
-            Encoding.UTF8.TryGetChars(refAttribute.Value.AsSpan(), buffer, out int charsWritten);
-
-            ValueScale valueScale = DataRefParser.Parse(buffer, _heroesData);
-            resultValue = valueScale.Value;
-            scaling = valueScale.Scaling;
-        }
-
-        if (scaling.HasValue)
-            return new ValueScale(Math.Round(resultValue, precision), scaling.Value);
-        else
-            return new ValueScale(Math.Round(resultValue, precision));
+        _textStack.Add(new TextSectionValueScale(valueScale));
     }
 
     private int GetSizeOfBuffer()
     {
         int sum = 0;
 
-        foreach (TextSection current in _textStack)
+        foreach (ITextSection current in _textStack)
         {
-            if (current.IsValue)
+            if (current.Type == TextSectionType.Value)
             {
+                TextSectionValueScale textSectionValueScale = (TextSectionValueScale)current;
+
                 sum += MaxNumberLength;
 
-                if (current.ValueScale.Value.Scaling.HasValue)
-                    sum += 6;
+                if (textSectionValueScale.ValueScale.Scaling.HasValue)
+                    sum += MaxScalingLength;
             }
-            else if (current.IsText)
+            else if (current.Type == TextSectionType.Text)
             {
-                sum += current.Range!.Value.End.Value - current.Range.Value.Start.Value;
+                TextSection textSection = (TextSection)current;
+
+                sum += textSection.Range.End.Value - textSection.Range.Start.Value;
             }
         }
 
         return sum;
     }
-
-    //private double ParseDataRef(ReadOnlySpan<char> buffer)
-    //{
-    //    List<TextSection> dataRefParts = [];
-    //    // Abil,GuldanHorrify,CastIntroTime+Effect,GuldanHorrifyAbilityStartCreatePersistent,PeriodicPeriodArray[0]
-    //    // tgus - sdkjf + klsdf * sdflkj(234 + 3345)
-
-    //    //int operatorCount = buffer.Count('+');
-    //    //operatorCount += buffer.Count('-');
-    //    //operatorCount += buffer.Count('*');
-    //    //operatorCount += buffer.Count('/');
-    //    //operatorCount += buffer.Count('(');
-    //    //operatorCount += buffer.Count(')');
-
-    //    //Span<Range> ranges = stackalloc Range[operatorCount + 1];
-    //    int startIndex = 0;
-    //    while (startIndex < buffer.Length)
-    //    {
-    //        ReadOnlySpan<char> part = GetNextPart(buffer[startIndex..]);
-
-    //        if (part.IsEmpty)
-    //            continue;
-
-    //        if (double.TryParse(part.Trim(), out double value))
-    //            dataRefParts.Add(new TextSection(value)); // hardcoded value
-    //        else
-    //            dataRefParts.Add(new TextSection(10));
-
-    //        dataRefParts.Add(new TextSection(new Range(part.Length - 1, part.Length)));
-
-    //        startIndex += part.Length + 1;
-    //    }
-
-    //    return 0;
-    //}
-
-    //private static ReadOnlySpan<char> GetNextPart(ReadOnlySpan<char> text)
-    //{
-    //    int indexOfOperator = text.IndexOfAny(_gameStringOps);
-    //    if (indexOfOperator > -1)
-    //        return text[..indexOfOperator];
-    //    else
-    //        return text;
-    //}
 }

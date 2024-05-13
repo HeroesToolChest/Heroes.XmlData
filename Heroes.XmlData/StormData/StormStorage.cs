@@ -228,44 +228,54 @@ internal partial class StormStorage : IStormStorage
 
     public void SetFontStyleCache(StormModType stormModType, XDocument document, string filePath)
     {
-        StormCache currentStormCache = GetCurrentStormCache(stormModType);
-
         foreach (XElement element in document.Root!.Elements())
         {
-            string elementName = element.Name.LocalName;
-            if (elementName.Equals("Constant", StringComparison.OrdinalIgnoreCase))
-            {
-                string? name = element.Attribute("name")?.Value;
-                string? val = element.Attribute("val")?.Value;
+            AddStormStyleHexColor(stormModType, element, filePath);
+        }
+    }
 
-                if (string.IsNullOrEmpty(name) || string.IsNullOrEmpty(val))
-                    continue;
+    public void AddStormStyleHexColor(StormModType stormModType, XElement element, string filePath)
+    {
+        StormCache currentStormCache = GetCurrentStormCache(stormModType);
 
-                currentStormCache.StormStyleHexColorValueByName[name] = new StormStringValue(val, filePath);
-            }
-            else if (elementName.Equals("Style", StringComparison.OrdinalIgnoreCase))
-            {
-                string? name = element.Attribute("name")?.Value;
-                string? textColor = element.Attribute("textcolor")?.Value;
+        string elementName = element.Name.LocalName;
+        if (elementName.Equals("Constant", StringComparison.OrdinalIgnoreCase))
+        {
+            string? name = element.Attribute("name")?.Value;
+            string? val = element.Attribute("val")?.Value;
 
-                if (string.IsNullOrEmpty(textColor) || string.IsNullOrEmpty(name))
-                    continue;
+            if (string.IsNullOrEmpty(name) || string.IsNullOrEmpty(val))
+                return;
 
-                currentStormCache.StormStyleHexColorValueByName[name] = new StormStringValue(textColor, filePath);
+            currentStormCache.StormStyleConstantsHexColorValueByName[name] = new StormStringValue(val, filePath);
+        }
+        else if (elementName.Equals("Style", StringComparison.OrdinalIgnoreCase))
+        {
+            string? name = element.Attribute("name")?.Value;
+            string? textColor = element.Attribute("textcolor")?.Value;
 
-                // TODO: needed anymore?
-                // if (textColor[0] == '#') // variable
-                // {
-                //     if (_stormStyleHexColorValueByName.TryGetValue(textColor.TrimStart('#'), out string? hexValue))
-                //     {
-                //         _stormStyleHexColorValueByName.TryAdd(name, hexValue);
-                //     }
-                // }
-                // else if (!textColor.Contains(',', StringComparison.OrdinalIgnoreCase))
-                // {
-                //     _stormStyleHexColorValueByName.TryAdd(name, textColor);
-                // }
-            }
+            if (string.IsNullOrEmpty(textColor) || string.IsNullOrEmpty(name))
+                return;
+
+            //if (textColor[0] == '#')
+            //{
+            //    if (TryGetStormStyleHexColorValue(textColor[1..], out StormStringValue? stormStringValue))
+            //    {
+
+            //    }
+            //   // if (TryGetStormStyleConstantsHexColorValue(textColor[1..], out StormStringValue? stormStringValue))
+            //   //     currentStormCache.StormStyleHexColorValueByName[name] = new StormStringValue(stormStringValue.Value, filePath);
+            //}
+            //else
+            //{
+            currentStormCache.StormStyleHexColorValueByName[name] = new StormStringValue(textColor, filePath);
+            //}
+
+            // TODO: needed anymore?
+            // else if (!textColor.Contains(',', StringComparison.OrdinalIgnoreCase))
+            // {
+            //     _stormStyleHexColorValueByName.TryAdd(name, textColor);
+            // }
         }
     }
 
@@ -285,11 +295,26 @@ internal partial class StormStorage : IStormStorage
                 if (string.IsNullOrEmpty(value) || catalog is null || entry is null || field is null)
                     continue;
 
-                // add data without index
-                // TODO:
-                // if (field.Contains(']', StringComparison.OrdinalIgnoreCase))
-                //    _scaleValueByLookupId[(catalog, entry, Regex.Replace(field, @"\[.*?\]", string.Empty))] = double.Parse(value);
-                currentStormCache.ScaleValueByEntry[new(catalog, entry, field)] = new StormStringValue(value, filePath);
+                StormStringValue stormStringValue = new(value, filePath);
+
+                currentStormCache.ScaleValueByEntry[new(catalog, entry, field)] = stormStringValue;
+
+                //// check if indexed
+                //if (field[^1] == ']')
+                //{
+                //    // add an additional entry without the index
+                //    ReadOnlySpan<char> fieldSpan = field;
+                //    ReadOnlySpan<char> fieldWithoutIndexSpan = field.AsSpan(0, fieldSpan.LastIndexOf('['));
+
+                //    LevelScalingEntry levelScalingEntry = new(catalog, entry, fieldWithoutIndexSpan.ToString());
+
+                //    // try to add it in
+                //    if (!currentStormCache.ScaleValueByEntry.TryAdd(levelScalingEntry, stormStringValue))
+                //    {
+                //        // if it already exists, then there a multiple indexes, remove the index less one as it could have different values.
+                //        currentStormCache.ScaleValueByEntry.Remove(levelScalingEntry);
+                //    }
+                //}
             }
         }
     }

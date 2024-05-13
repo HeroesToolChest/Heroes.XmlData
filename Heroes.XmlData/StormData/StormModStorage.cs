@@ -5,7 +5,7 @@
 /// </summary>
 internal class StormModStorage
 {
-    public const string _selfNameConst = "HXDconst";
+    public const string SelfNameConst = "HXDconst-";
 
     private readonly IStormMod _stormMod;
     private readonly IStormStorage _stormStorage;
@@ -117,6 +117,36 @@ internal class StormModStorage
         return _stormMod.Name;
     }
 
+    public void UpdateConstantAttributes(IEnumerable<XElement> elements)
+    {
+        foreach (XElement element in elements)
+        {
+            List<XAttribute> attributes = element.Attributes().ToList();
+
+            foreach (XAttribute attribute in attributes)
+            {
+                ReadOnlySpan<char> attributeSpan = attribute.Value;
+
+                if (!attributeSpan.IsEmpty)
+                {
+                    int indexOfConst = attributeSpan.IndexOf('$');
+                    if (indexOfConst > -1)
+                    {
+                        ReadOnlySpan<char> attributeOfStartSpan = attributeSpan[indexOfConst..];
+
+                        int endIndexOfConst = attributeOfStartSpan.IndexOfAny(" ,.;");
+                        if (endIndexOfConst < 0)
+                            endIndexOfConst = attributeOfStartSpan.Length + indexOfConst;
+                        else
+                            endIndexOfConst += indexOfConst;
+
+                        element.SetAttributeValue($"{SelfNameConst}{attribute.Name}", attribute.Value.Replace(attributeSpan[indexOfConst..endIndexOfConst].ToString(), _stormStorage.GetValueFromConstTextAsText(attributeSpan[indexOfConst..endIndexOfConst])));
+                    }
+                }
+            }
+        }
+    }
+
     private static string? SetDataObjectTypes(string filePath)
     {
         ReadOnlySpan<char> fileNameSpan = Path.GetFileName(filePath.AsSpan());
@@ -174,36 +204,6 @@ internal class StormModStorage
 
             _stormStorage.AddLevelScalingArrayElement(StormModType, element, filePath);
             _stormStorage.AddElement(StormModType, element, filePath);
-        }
-    }
-
-    private void UpdateConstantAttributes(IEnumerable<XElement> elements)
-    {
-        foreach (XElement element in elements)
-        {
-            List<XAttribute> attributes = element.Attributes().ToList();
-
-            foreach (XAttribute attribute in attributes)
-            {
-                ReadOnlySpan<char> attributeSpan = attribute.Value;
-
-                if (!attributeSpan.IsEmpty)
-                {
-                    int indexOfConst = attributeSpan.IndexOf('$');
-                    if (indexOfConst > -1)
-                    {
-                        ReadOnlySpan<char> attributeOfStartSpan = attributeSpan[indexOfConst..];
-
-                        int endIndexOfConst = attributeOfStartSpan.IndexOfAny(" ,.;");
-                        if (endIndexOfConst < 0)
-                            endIndexOfConst = attributeOfStartSpan.Length + indexOfConst;
-                        else
-                            endIndexOfConst += indexOfConst;
-
-                        element.SetAttributeValue($"{_selfNameConst}-{attribute.Name}", attribute.Value.Replace(attributeSpan[indexOfConst..endIndexOfConst].ToString(), _stormStorage.GetValueFromConstTextAsText(attributeSpan[indexOfConst..endIndexOfConst])));
-                    }
-                }
-            }
         }
     }
 

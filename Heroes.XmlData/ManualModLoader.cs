@@ -17,7 +17,9 @@ public class ManualModLoader
 
     internal List<XElement> Elements { get; } = [];
 
-    internal List<XElement> LevelScalingElements { get; } = [];
+    internal List<XElement> LevelScalingArrayElements { get; } = [];
+
+    internal List<XElement> StormStyleHexColorElements { get; } = [];
 
     internal StormLocale GameStringsLocale { get; private set; }
 
@@ -51,6 +53,11 @@ public class ManualModLoader
         return this;
     }
 
+    /// <summary>
+    /// Adds a collection of base element types to the custom cache storage.
+    /// </summary>
+    /// <param name="elements">A collection of tuples consisting of the base type (e.g. Effect) and a name of an element (e.g. CEffectDamage).</param>
+    /// <returns>The current <see cref="ManualModLoader"/> instance.</returns>
     public ManualModLoader AddBaseElementTypes(IEnumerable<(string BaseType, string ElementName)> elements)
     {
         foreach ((string baseType, string elementName) in elements)
@@ -64,6 +71,12 @@ public class ManualModLoader
         return this;
     }
 
+    /// <summary>
+    /// Adds a collection of <see cref="XElement"/>s to the custom cache storage. 
+    /// Use <see cref="AddBaseElementTypes(IEnumerable{ValueTuple{string, string}})"/> to add in the base element types.
+    /// </summary>
+    /// <param name="elements">A collection of <see cref="XElement"/>s.</param>
+    /// <returns>The current <see cref="ManualModLoader"/> instance.</returns>
     public ManualModLoader AddElements(IEnumerable<XElement> elements)
     {
         Elements.AddRange(elements);
@@ -71,9 +84,26 @@ public class ManualModLoader
         return this;
     }
 
-    public ManualModLoader AddLevelScalingElements(IEnumerable<XElement> elements)
+    /// <summary>
+    /// Adds a collection of level scaling array <see cref="XElement"/>s to the custom cache storage.
+    /// </summary>
+    /// <param name="elements">A collection of level scaling array <see cref="XElement"/>s.</param>
+    /// <returns>The current <see cref="ManualModLoader"/> instance.</returns>
+    public ManualModLoader AddLevelScalingArrayElements(IEnumerable<XElement> elements)
     {
-        LevelScalingElements.AddRange(elements);
+        LevelScalingArrayElements.AddRange(elements);
+
+        return this;
+    }
+
+    /// <summary>
+    /// Adds a collection of storm style hex color <see cref="XElement"/>s to the custom cache storage.
+    /// </summary>
+    /// <param name="elements">A collection of storm style hex color <see cref="XElement"/>s.</param>
+    /// <returns>The current <see cref="ManualModLoader"/> instance.</returns>
+    public ManualModLoader Add(IEnumerable<XElement> elements)
+    {
+        StormStyleHexColorElements.AddRange(elements);
 
         return this;
     }

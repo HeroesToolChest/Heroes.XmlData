@@ -51,6 +51,11 @@ internal class StormCache
     public Dictionary<string, StormStringValue> StormStyleHexColorValueByName { get; } = [];
 
     /// <summary>
+    /// Gets the font style constants cache. Used to determine color hex values.
+    /// </summary>
+    public Dictionary<string, StormStringValue> StormStyleConstantsHexColorValueByName { get; } = [];
+
+    /// <summary>
     /// Gets the level scaling cache. Used to determine the scaling value of damage abilities.
     /// </summary>
     public Dictionary<LevelScalingEntry, StormStringValue> ScaleValueByEntry { get; } = [];
@@ -66,6 +71,7 @@ internal class StormCache
         StormElementByElementType.Clear();
         StormElementsByDataObjectType.Clear();
         StormStyleHexColorValueByName.Clear();
+        StormStyleConstantsHexColorValueByName.Clear();
         ScaleValueByEntry.Clear();
     }
 }

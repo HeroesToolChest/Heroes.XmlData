@@ -17,7 +17,7 @@ internal readonly struct ValueScale
 
     public double? Scaling { get; }
 
-    private static double ValidateValue (double value)
+    private static double ValidateValue(double value)
     {
         if (value > GameStringParser.MaxValueSize)
             return GameStringParser.MaxValueSize;

@@ -8,17 +8,17 @@ public class StormElement
         DataValues = new StormElementData(baseValue.Value);
     }
 
-    public StormElement(StormElement baseValue)
-    {
-        OriginalStormXElementValues.AddRange(baseValue.OriginalStormXElementValues);
+    //public StormElement(StormElement baseValue)
+    //{
+    //    OriginalStormXElementValues.AddRange(baseValue.OriginalStormXElementValues);
 
-        foreach (StormXElementValuePath valuePath in baseValue.OriginalStormXElementValues)
-        {
-            DataValues = new StormElementData(valuePath.Value);
-        }
-    }
+    //    foreach (StormXElementValuePath valuePath in baseValue.OriginalStormXElementValues)
+    //    {
+    //        DataValues = new StormElementData(valuePath.Value);
+    //    }
+    //}
 
-    public StormElementData? DataValues { get; private set; }
+    public StormElementData DataValues { get; private set; }
 
     public List<StormXElementValuePath> OriginalStormXElementValues { get; } = [];
 
@@ -26,10 +26,10 @@ public class StormElement
     {
         OriginalStormXElementValues.Add(stormXElementValue);
 
-        if (DataValues is null)
-            DataValues = new StormElementData(stormXElementValue.Value);
-        else
-            DataValues.AddXElement(stormXElementValue.Value);
+        //if (DataValues is null)
+         //   DataValues = new StormElementData(stormXElementValue.Value);
+        //else
+        DataValues.AddXElement(stormXElementValue.Value);
     }
 
     //private void Test(XElement rootElement)

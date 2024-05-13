@@ -5,6 +5,8 @@ namespace Heroes.XmlData.StormData;
 [DebuggerDisplay("{DebuggerDisplay,nq}")]
 public class StormElementData
 {
+    private static HashSet<string> _otherElementArrays = ["On", "Cost", "CatalogModifications"];
+
     public StormElementData(string value)
     {
         Value = value;
@@ -22,9 +24,15 @@ public class StormElementData
 
     public Dictionary<string, StormElementData> KeyValueDataPairs { get; } = new(StringComparer.OrdinalIgnoreCase);
 
+    [MemberNotNullWhen(true, nameof(Value))]
     public bool HasValue => Value is not null;
 
+    [MemberNotNullWhen(true, nameof(ConstValue))]
+    public bool HasConstValue => ConstValue is not null;
+
     public string? Value { get; private set; }
+
+    public string? ConstValue { get; private set; }
 
     public bool IsArray { get; private set; }
 
@@ -60,6 +68,12 @@ public class StormElementData
             if (attribute.Name.LocalName.Equals("value", StringComparison.OrdinalIgnoreCase))
             {
                 Value = attribute.Value;
+                continue;
+            }
+
+            if (attribute.Name.LocalName.Equals($"{StormModStorage.SelfNameConst}value", StringComparison.OrdinalIgnoreCase))
+            {
+                ConstValue = attribute.Value;
                 continue;
             }
 
@@ -106,7 +120,7 @@ public class StormElementData
                 }
                 else
                 {
-                    if (elementName.EndsWith("array", StringComparison.OrdinalIgnoreCase) || elementName == "On")
+                    if (elementName.EndsWith("array", StringComparison.OrdinalIgnoreCase) || _otherElementArrays.Contains(elementName))
                     {
                         KeyValueDataPairs[elementName] = new StormElementData("0", element)
                         {

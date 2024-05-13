@@ -1,4 +1,7 @@
-﻿namespace Heroes.XmlData;
+﻿using Heroes.XmlData.GameStrings;
+using Heroes.XmlData.StormData;
+
+namespace Heroes.XmlData;
 
 /// <summary>
 /// Contains the methods and properties to access the xml and gamestring data.
@@ -284,18 +287,7 @@ public class HeroesData
     /// <exception cref="ArgumentNullException"><paramref name="name"/> is <see langword="null"/>.</exception>
     public bool TryGetStormStyleHexColorValue(string name, out StormStringValue? stormStringValue)
     {
-        ArgumentNullException.ThrowIfNull(name);
-
-        if (_stormStorage.StormCustomCache.StormStyleHexColorValueByName.TryGetValue(name, out stormStringValue))
-            return true;
-
-        if (_stormStorage.StormMapCache.StormStyleHexColorValueByName.TryGetValue(name, out stormStringValue))
-            return true;
-
-        if (_stormStorage.StormCache.StormStyleHexColorValueByName.TryGetValue(name, out stormStringValue))
-            return true;
-
-        return false;
+        return _stormStorageCacheData.TryGetStormStyleHexColorValue(name, out stormStringValue);
     }
 
     /// <summary>
@@ -363,7 +355,7 @@ public class HeroesData
     /// <returns><see langword="true"/> if the value was found; otherwise <see langword="false"/>.</returns>
     public bool TryGetConstantXElement(ReadOnlySpan<char> id, [NotNullWhen(true)] out StormXElementValuePath? stormXElementValue)
     {
-        return TryGetConstantXElement(id.ToString(), out stormXElementValue);
+        return _stormStorageCacheData.TryGetConstantXElementById(id, out stormXElementValue);
     }
 
     /// <summary>
@@ -375,20 +367,7 @@ public class HeroesData
     /// <exception cref="ArgumentNullException"><paramref name="id"/> is <see langword="null"/>.</exception>
     public bool TryGetConstantXElement(string id, [NotNullWhen(true)] out StormXElementValuePath? stormXElementValue)
     {
-        ArgumentNullException.ThrowIfNull(id);
-
-        // custom cache always first
-        if (_stormStorage.StormCustomCache.ConstantXElementById.TryGetValue(id, out stormXElementValue))
-            return true;
-
-        // map cache second
-        if (_stormStorage.StormMapCache.ConstantXElementById.TryGetValue(id, out stormXElementValue))
-            return true;
-
-        if (_stormStorage.StormCache.ConstantXElementById.TryGetValue(id, out stormXElementValue))
-            return true;
-
-        return false;
+        return _stormStorageCacheData.TryGetConstantXElementById(id, out stormXElementValue);
     }
 
     public bool TryGetStormElement(ReadOnlySpan<char> dataObjectType, ReadOnlySpan<char> id, [NotNullWhen(true)] out StormElement? stormElement)
@@ -413,7 +392,12 @@ public class HeroesData
 
     public double EvaluateConstantElement(XElement constElement)
     {
-        return _stormStorage.GetValueFromConstElementAsNumber(constElement);
+        return _stormStorageCacheData.GetValueFromConstElementAsNumber(constElement);
+    }
+
+    public TooltipDescription ParseGameString(string gameString, StormLocale stormLocale)
+    {
+        return new TooltipDescription(GameStringParser.ParseTooltipDescription(gameString, this), stormLocale);
     }
 
     internal void SetHeroesLocalization(StormLocale stormLocale)

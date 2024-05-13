@@ -1,4 +1,6 @@
-﻿namespace Heroes.XmlData.StormMods;
+﻿using System.Xml.Linq;
+
+namespace Heroes.XmlData.StormMods;
 
 internal class CustomStormMod : IStormMod
 {
@@ -49,16 +51,21 @@ internal class CustomStormMod : IStormMod
             }
         }
 
+        StormModStorage.UpdateConstantAttributes(_manualModLoader.Elements.DescendantsAndSelf());
         foreach (XElement element in _manualModLoader.Elements)
         {
             _heroesSource.StormStorage.AddElement(StormModType, element, CustomFilePath);
         }
 
-        foreach (XElement element in _manualModLoader.LevelScalingElements)
+        foreach (XElement element in _manualModLoader.LevelScalingArrayElements)
         {
             _heroesSource.StormStorage.AddLevelScalingArrayElement(StormModType, element, CustomFilePath);
         }
 
+        foreach (XElement element in _manualModLoader.StormStyleHexColorElements)
+        {
+            _heroesSource.StormStorage.AddStormStyleHexColor(StormModType, element, CustomFilePath);
+        }
     }
 
     public void LoadStormGameStrings(StormLocale stormLocale)

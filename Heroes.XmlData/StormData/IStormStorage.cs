@@ -36,6 +36,8 @@ internal interface IStormStorage
 
     void AddLevelScalingArrayElement(StormModType stormModType, XElement element, string filePath);
 
+    void AddStormStyleHexColor(StormModType stormModType, XElement element, string filePath);
+
     void ClearGamestrings();
 
     void ClearStormMapMods();
