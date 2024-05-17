@@ -299,22 +299,12 @@ internal partial class StormStorage : IStormStorage
 
                 currentStormCache.ScaleValueByEntry[new(catalog, entry, field)] = stormStringValue;
 
-                //// check if indexed
-                //if (field[^1] == ']')
-                //{
-                //    // add an additional entry without the index
-                //    ReadOnlySpan<char> fieldSpan = field;
-                //    ReadOnlySpan<char> fieldWithoutIndexSpan = field.AsSpan(0, fieldSpan.LastIndexOf('['));
+                string? newField = AddDefaultIndexerToMultiFields(field);
 
-                //    LevelScalingEntry levelScalingEntry = new(catalog, entry, fieldWithoutIndexSpan.ToString());
-
-                //    // try to add it in
-                //    if (!currentStormCache.ScaleValueByEntry.TryAdd(levelScalingEntry, stormStringValue))
-                //    {
-                //        // if it already exists, then there a multiple indexes, remove the index less one as it could have different values.
-                //        currentStormCache.ScaleValueByEntry.Remove(levelScalingEntry);
-                //    }
-                //}
+                if (!string.IsNullOrWhiteSpace(newField))
+                {
+                    currentStormCache.ScaleValueByEntry[new(catalog, entry, newField)] = stormStringValue;
+                }
             }
         }
     }
@@ -337,6 +327,41 @@ internal partial class StormStorage : IStormStorage
     public int? GetBuildId()
     {
         return _stormModStorages.FirstOrDefault()?.BuildId;
+    }
+
+    // DamageResponse.ModifyLimit
+    private string? AddDefaultIndexerToMultiFields(ReadOnlySpan<char> field)
+    {
+        int splitterCount = field.Count('.');
+        if (splitterCount < 1)
+            return null;
+
+        Span<Range> ranges = stackalloc Range[splitterCount + 1];
+
+        field.Split(ranges, '.');
+
+        Span<char> newFieldBuffer = stackalloc char[field.Length + (ranges.Length * 3)];
+
+        int currentIndex = 0;
+        for (int i = 0; i < ranges.Length; i++)
+        {
+            ReadOnlySpan<char> fieldPart = field[ranges[i]];
+
+            fieldPart.CopyTo(newFieldBuffer[currentIndex..]);
+            currentIndex += fieldPart.Length;
+
+            if (i + 1 < ranges.Length)
+            {
+                "[0].".CopyTo(newFieldBuffer[currentIndex..]);
+                currentIndex += 4;
+            }
+            else
+            {
+                "[0]".CopyTo(newFieldBuffer[currentIndex..]);
+            }
+        }
+
+        return newFieldBuffer.TrimEnd('.').ToString();
     }
 
     private StormCache GetCurrentStormCache(StormModType stormModType) => stormModType switch

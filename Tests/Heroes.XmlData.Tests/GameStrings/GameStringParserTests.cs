@@ -102,6 +102,147 @@ public class GameStringParserTests
     }
 
     [TestMethod]
+    public void ParseTooltipDescription_NormalGameString2_ParsedGameString()
+    {
+        // arrange
+        string description = "Rain a small army of Demonic Grunts down on enemies, dealing <c val=\"#TooltipNumbers\"><d ref=\"Effect,AzmodanDemonicInvasionImpactDamage,Amount\"/></c> damage per impact. Grunts deal <c val=\"#TooltipNumbers\"><d ref=\"Effect,AzmodanDemonicInvasionDemonGruntWeaponDamage,Amount\"/></c> damage, have <c val=\"#TooltipNumbers\"><d ref=\"Unit,AzmodanDemonicInvasionDemonGrunt,LifeMax\"/></c> Health and last up to <c val=\"#TooltipNumbers\"><d ref=\"-Unit,AzmodanDemonicInvasionDemonGrunt,LifeMax/Unit,AzmodanDemonicInvasionDemonGrunt,LifeRegenRate\"/></c> seconds. When Grunts die they explode, dealing <c val=\"#TooltipNumbers\"><d ref=\"Effect,AzmodanDemonicInvasionExplodeDamage,Amount\"/></c> damage to nearby enemies, doubled against enemy Heroes.<n/><n/>Usable while Channeling All Shall Burn.";
+
+        HeroesXmlLoader loader = HeroesXmlLoader.LoadAsEmpty()
+            .LoadCustomMod(new ManualModLoader("custom")
+                .AddBaseElementTypes(new List<(string, string)>()
+                {
+                    ("Effect", "CEffectDamage"),
+                    ("Unit", "CUnit"),
+                })
+                .AddElements(new List<XElement>()
+                {
+                    new(
+                        "CEffectDamage",
+                        new XAttribute("id", "AzmodanDemonicInvasionImpactDamage"),
+                        new XElement(
+                            "Amount",
+                            new XAttribute("value", "85")),
+                        new XElement(
+                            "PeriodicPeriodArray",
+                            new XAttribute("value", "0")),
+                        new XElement(
+                            "PeriodicPeriodArray",
+                            new XAttribute("value", "0.25")),
+                        new XElement(
+                            "PeriodicPeriodArray",
+                            new XAttribute("value", "0.25"))),
+                    new(
+                        "CEffectDamage",
+                        new XAttribute("id", "AzmodanDemonicInvasionDemonGruntWeaponDamage"),
+                        new XElement(
+                            "Amount",
+                            new XAttribute("value", "39"))),
+                    new(
+                        "CUnit",
+                        new XAttribute("id", "AzmodanDemonicInvasionDemonGrunt"),
+                        new XElement(
+                            "LifeMax",
+                            new XAttribute("value", "750")),
+                        new XElement(
+                            "LifeRegenRate",
+                            new XAttribute("value", "-75"))),
+                    new(
+                        "CEffectDamage",
+                        new XAttribute("id", "AzmodanDemonicInvasionExplodeDamage"),
+                        new XElement(
+                            "Amount",
+                            new XAttribute("value", "40"))),
+                })
+                .AddLevelScalingArrayElements(new List<XElement>()
+                {
+                    new(
+                        "LevelScalingArray",
+                        new XAttribute("Ability", "AzmodanDemonicInvasion"),
+                        new XElement(
+                            "Modifications",
+                            new XElement(
+                                "Catalog",
+                                new XAttribute("value", "Effect")),
+                            new XElement(
+                                "Entry",
+                                new XAttribute("value", "AzmodanDemonicInvasionImpactDamage")),
+                            new XElement(
+                                "Field",
+                                new XAttribute("value", "Amount")),
+                            new XElement(
+                                "Value",
+                                new XAttribute("value", "0.040000"))),
+                        new XElement(
+                            "Modifications",
+                            new XElement(
+                                "Catalog",
+                                new XAttribute("value", "Effect")),
+                            new XElement(
+                                "Entry",
+                                new XAttribute("value", "AzmodanDemonicInvasionDemonGruntWeaponDamage")),
+                            new XElement(
+                                "Field",
+                                new XAttribute("value", "Amount")),
+                            new XElement(
+                                "Value",
+                                new XAttribute("value", "0.040000"))),
+                        new XElement(
+                            "Modifications",
+                            new XElement(
+                                "Catalog",
+                                new XAttribute("value", "Unit")),
+                            new XElement(
+                                "Entry",
+                                new XAttribute("value", "AzmodanDemonicInvasionDemonGrunt")),
+                            new XElement(
+                                "Field",
+                                new XAttribute("value", "LifeMax")),
+                            new XElement(
+                                "Value",
+                                new XAttribute("value", "0.040000"))),
+                        new XElement(
+                            "Modifications",
+                            new XElement(
+                                "Catalog",
+                                new XAttribute("value", "Unit")),
+                            new XElement(
+                                "Entry",
+                                new XAttribute("value", "AzmodanDemonicInvasionDemonGrunt")),
+                            new XElement(
+                                "Field",
+                                new XAttribute("value", "LifeRegenRate")),
+                            new XElement(
+                                "Value",
+                                new XAttribute("value", "0.040000")))),
+                    new(
+                        "LevelScalingArray",
+                        new XAttribute("Ability", "AzmodanDemonicInvasion"),
+                        new XElement(
+                            "Modifications",
+                            new XElement(
+                                "Catalog",
+                                new XAttribute("value", "Effect")),
+                            new XElement(
+                                "Entry",
+                                new XAttribute("value", "AzmodanDemonicInvasionExplodeDamage")),
+                            new XElement(
+                                "Field",
+                                new XAttribute("value", "Amount")),
+                            new XElement(
+                                "Value",
+                                new XAttribute("value", "0.040000")))),
+                }));
+
+        HeroesData heroesData = loader.HeroesData;
+
+        // act
+        string parsed = GameStringParser.ParseTooltipDescription(description, heroesData);
+
+        // assert
+        parsed.Should().Be("Rain a small army of Demonic Grunts down on enemies, dealing <c val=\"#TooltipNumbers\">85~~0.04~~</c> damage per impact. Grunts deal <c val=\"#TooltipNumbers\">39~~0.04~~</c> damage, have <c val=\"#TooltipNumbers\">750~~0.04~~</c> Health and last up to <c val=\"#TooltipNumbers\">10</c> seconds. When Grunts die they explode, dealing <c val=\"#TooltipNumbers\">40~~0.04~~</c> damage to nearby enemies, doubled against enemy Heroes.<n/><n/>Usable while Channeling All Shall Burn.");
+    }
+
+    [TestMethod]
     public void ParseTooltipDescription_HasParenthesisAndBrackets_ParsedGameString()
     {
         // arrange
@@ -298,6 +439,7 @@ public class GameStringParserTests
                         new XAttribute("id", "ChromieSandBlastFastForwardCooldownReduction"),
                         new XElement(
                             "Cost",
+                            new XAttribute("Abil", "ChromieSandBlast,Execute"),
                             new XAttribute("CooldownTimeUse", "0.5"))),
                 }));
 
@@ -593,32 +735,542 @@ public class GameStringParserTests
         // assert
         parsed.Should().Be("Deal <c val=\"#TooltipNumbers\">159~~0.04~~</c> damage to enemies within the target area.");
     }
-    //
-    //[TestMethod]
-    //public void ParseTooltipDescription2Test()
-    //{
-    //    // arrange
-    //    string description = "Shields the assisted ally for <c val=\"#TooltipNumbers\"><d ref=\"Behavior,CarapaceEvolutionShieldTooltipDummy,DamageResponse.ModifyLimit\"/></c>. Allied Heroes are healed for <c val=\"#TooltipNumbers\"><d ref=\"Effect,RegenerativeMicrobesCreateHealer,RechargeVitalRate\"/></c> Health per second while the Shield is active. Lasts for <c val=\"#TooltipNumbers\"><d ref=\"Behavior,CarapaceEvolutionShield,Duration\" player=\"0\"/></c> seconds.";
 
-    //    TooltipDescription tooltipDescription = new TooltipDescription(description);
-    //    string a =tooltipDescription.RawDescription;
+    [TestMethod]
+    public void ParseTooltipDescription_IndexerLessInLevelScalingArray_ParsedGameString()
+    {
+        // arrange
+        string description = "Shields Tyrael for <c val=\"#TooltipNumbers\"><d ref=\"Behavior,TyraelRighteousnessShield,DamageResponse[0].ModifyLimit[0]\"/></c> damage and nearby allied Heroes and Minions for <c val=\"#TooltipNumbers\">40%</c> as much for <c val=\"#TooltipNumbers\"><d ref=\"Behavior,TyraelRighteousnessShield,Duration[0]\"/></c> seconds.";
 
-    //    HeroesXmlLoader loader = HeroesXmlLoader.LoadAsEmpty()
-    //        .AddConstantElements(new List<XElement>()
-    //        {
-    //            new(
-    //                "const",
-    //                new XAttribute("id", "$YrelSacredGroundArmorBonus"),
-    //                new XAttribute("value", "50")),
-    //        });
+        HeroesXmlLoader loader = HeroesXmlLoader.LoadAsEmpty()
+            .LoadCustomMod(new ManualModLoader("custom")
+                .AddBaseElementTypes(new List<(string, string)>()
+                {
+                    ("Behavior", "CBehaviorBuff"),
+                })
+                .AddElements(new List<XElement>()
+                {
+                    new(
+                        "CBehaviorBuff",
+                        new XAttribute("id", "TyraelRighteousnessShield"),
+                        new XElement(
+                            "DamageResponse",
+                            new XAttribute("Exhausted", "RighteousnessSalvationCreateHealer"),
+                            new XAttribute("ModifyLimit", "336")),
+                        new XElement(
+                            "Duration",
+                            new XAttribute("value", "4"))),
+                })
+                .AddLevelScalingArrayElements(new List<XElement>()
+                {
+                    new(
+                        "LevelScalingArray",
+                        new XAttribute("Ability", "TyraelRighteousness"),
+                        new XElement(
+                            "Modifications",
+                            new XElement(
+                                "Catalog",
+                                new XAttribute("value", "Behavior")),
+                            new XElement(
+                                "Entry",
+                                new XAttribute("value", "TyraelRighteousnessShield")),
+                            new XElement(
+                                "Field",
+                                new XAttribute("value", "DamageResponse.ModifyLimit")),
+                            new XElement(
+                                "Value",
+                                new XAttribute("value", "0.040000")))),
+                }));
 
-    //    HeroesData heroesData = loader.HeroesData;
+        HeroesData heroesData = loader.HeroesData;
 
-    //    GameStringParser gameStringParser = new(heroesData);
-    //    // act
+        // act
+        string parsed = GameStringParser.ParseTooltipDescription(description, heroesData);
 
-    //    gameStringParser.ParseTooltipDescription(description);
+        // assert
+        parsed.Should().Be("Shields Tyrael for <c val=\"#TooltipNumbers\">336~~0.04~~</c> damage and nearby allied Heroes and Minions for <c val=\"#TooltipNumbers\">40%</c> as much for <c val=\"#TooltipNumbers\">4</c> seconds.");
+    }
 
-    //    // assert
-    //}
+    [TestMethod]
+    public void ParseTooltipDescription_HasArraysWithAndWithoutIndex_ParsedGameString()
+    {
+        // arrange
+        string description = "<c val=\"#AbilityPassive\">Pilot Mode: </c>Instead of a single shot, Big Shot fires <c val=\"#TooltipNumbers\"><d ref=\"Effect,DVaBigShotPewPewPewOffsetPeriodic,PeriodCount\"/></c> shots over <c val=\"#TooltipNumbers\"><d ref=\"Effect,DVaBigShotPewPewPewOffsetPeriodic,PeriodicPeriodArray[1]+Effect,DVaBigShotPewPewPewOffsetPeriodic,PeriodicPeriodArray[2]\" precision=\"2\"/></c> seconds. Each shot deals <c val=\"#TooltipNumbers\"><d ref=\"1+Effect,DVaPilotBigShotDamage,MultiplicativeModifierArray[PewPewPew].Modifier*100\"player=\"0\"/>%</c> damage.";
+
+        HeroesXmlLoader loader = HeroesXmlLoader.LoadAsEmpty()
+            .LoadCustomMod(new ManualModLoader("custom")
+                .AddBaseElementTypes(new List<(string, string)>()
+                {
+                    ("Effect", "CEffectCreatePersistent"),
+                    ("Effect", "CEffectDamage"),
+                })
+                .AddElements(new List<XElement>()
+                {
+                    new(
+                        "CEffectCreatePersistent",
+                        new XAttribute("id", "DVaBigShotPewPewPewOffsetPeriodic"),
+                        new XElement(
+                            "PeriodCount",
+                            new XAttribute("value", "3")),
+                        new XElement(
+                            "PeriodicPeriodArray",
+                            new XAttribute("value", "0")),
+                        new XElement(
+                            "PeriodicPeriodArray",
+                            new XAttribute("value", "0.25")),
+                        new XElement(
+                            "PeriodicPeriodArray",
+                            new XAttribute("value", "0.25"))),
+                    new(
+                        "CEffectDamage",
+                        new XAttribute("id", "DVaPilotBigShotDamage"),
+                        new XElement(
+                            "MultiplicativeModifierArray",
+                            new XAttribute("index", "PewPewPew"),
+                            new XAttribute("Modifier", "-0.25")),
+                        new XElement(
+                            "MultiplicativeModifierArray",
+                            new XAttribute("index", "Headshot"),
+                            new XAttribute("Modifier", "0.75"))),
+                })
+                .AddLevelScalingArrayElements(new List<XElement>()
+                {
+                    new(
+                        "LevelScalingArray",
+                        new XAttribute("Ability", "DVaPilotBigShot"),
+                        new XElement(
+                            "Modifications",
+                            new XElement(
+                                "Catalog",
+                                new XAttribute("value", "Effect")),
+                            new XElement(
+                                "Entry",
+                                new XAttribute("value", "DVaPilotBigShotDamage")),
+                            new XElement(
+                                "Field",
+                                new XAttribute("value", "Amount")),
+                            new XElement(
+                                "Value",
+                                new XAttribute("value", "0.040000")))),
+                }));
+
+        HeroesData heroesData = loader.HeroesData;
+
+        // act
+        string parsed = GameStringParser.ParseTooltipDescription(description, heroesData);
+
+        // assert
+        parsed.Should().Be("<c val=\"#AbilityPassive\">Pilot Mode: </c>Instead of a single shot, Big Shot fires <c val=\"#TooltipNumbers\">3</c> shots over <c val=\"#TooltipNumbers\">0.5</c> seconds. Each shot deals <c val=\"#TooltipNumbers\">75%</c> damage.");
+    }
+
+    [TestMethod]
+    public void ParseTooltipDescription_ConstantsWithExpressions_ParsedGameString()
+    {
+        // arrange
+        string description = "Eject from the Mech, setting it to self-destruct after <c val=\"#TooltipNumbers\"><d ref=\"Behavior,DVaMechSelfDestructMechDetonationCountdown,Duration\" player=\"0\"/></c> seconds. Deals <c val=\"#TooltipNumbers\"><d ref=\"Effect,DVaMechSelfDestructDetonationSearchDamage,Amount+Accumulator,DVaSelfDestructDistanceAccumulator,MinAccumulation\"/></c> to <c val=\"#TooltipNumbers\"><d ref=\"Effect,DVaMechSelfDestructDetonationSearchDamage,Amount\"/></c> damage in a large area, depending on distance from center. Deals <c val=\"#TooltipNumbers\"><d ref=\"Effect,DVaMechSelfDestructDetonationSearchDamage,AttributeFactor[Structure]*(-100)\"/>%</c> damage against Structures.</n></n><c val=\"FF8000\">Gain <c val=\"#TooltipNumbers\">1%</c> Charge for every <c val=\"#TooltipNumbers\">2</c> seconds spent Basic Attacking, and <c val=\"#TooltipNumbers\">25%</c> Charge per <c val=\"#TooltipNumbers\">100%</c> of Mech Health lost.</c>";
+
+        HeroesXmlLoader loader = HeroesXmlLoader.LoadAsEmpty()
+            .LoadCustomMod(new ManualModLoader("custom")
+                .AddBaseElementTypes(new List<(string, string)>()
+                {
+                    ("Behavior", "CBehaviorBuff"),
+                    ("Effect", "CEffectDamage"),
+                    ("Accumulator", "CAccumulatorDistance"),
+                })
+                .AddElements(new List<XElement>()
+                {
+                    new(
+                        "CBehaviorBuff",
+                        new XAttribute("id", "DVaMechSelfDestructMechDetonationCountdown"),
+                        new XElement(
+                            "Duration",
+                            new XAttribute("value", "4"))),
+                    new(
+                        "CAccumulatorDistance",
+                        new XAttribute("id", "DVaSelfDestructDistanceAccumulator"),
+                        new XElement(
+                            "MinAccumulation",
+                            new XAttribute("value", "$DVaMechSelfDestructDetonationMinimumAccumulation"))),
+                    new(
+                        "CEffectDamage",
+                        new XAttribute("id", "DVaMechSelfDestructDetonationSearchDamage"),
+                        new XElement(
+                            "AttributeFactor",
+                            new XAttribute("index", "Structure"),
+                            new XAttribute("value", "-0.5")),
+                        new XElement(
+                            "Amount",
+                            new XAttribute("value", "$DVaMechSelfDestructDetonationMaximumDamage"))),
+                })
+                .AddLevelScalingArrayElements(new List<XElement>()
+                {
+                    new(
+                        "LevelScalingArray",
+                        new XAttribute("Ability", "DVaMechSelfDestruct"),
+                        new XElement(
+                            "Modifications",
+                            new XElement(
+                                "Catalog",
+                                new XAttribute("value", "Effect")),
+                            new XElement(
+                                "Entry",
+                                new XAttribute("value", "DVaMechSelfDestructDetonationSearchDamage")),
+                            new XElement(
+                                "Field",
+                                new XAttribute("value", "Amount")),
+                            new XElement(
+                                "Value",
+                                new XAttribute("value", "0.040000"))),
+                        new XElement(
+                            "Modifications",
+                            new XElement(
+                                "Catalog",
+                                new XAttribute("value", "Effect")),
+                            new XElement(
+                                "Entry",
+                                new XAttribute("value", "DVaMechSelfDestructDetonationSearchDamage")),
+                            new XElement(
+                                "Field",
+                                new XAttribute("value", "Amount")),
+                            new XElement(
+                                "Value",
+                                new XAttribute("value", "0.040000"))),
+                        new XElement(
+                            "Modifications",
+                            new XElement(
+                                "Catalog",
+                                new XAttribute("value", "Accumulator")),
+                            new XElement(
+                                "Entry",
+                                new XAttribute("value", "DVaSelfDestructDistanceAccumulator")),
+                            new XElement(
+                                "Field",
+                                new XAttribute("value", "MinAccumulation")),
+                            new XElement(
+                                "Value",
+                                new XAttribute("value", "0.040000")))),
+                })
+                .AddConstantXElements(new List<XElement>()
+                {
+                    new(
+                        "const",
+                        new XAttribute("id", "$DVaMechSelfDestructDetonationMaximumDamage"),
+                        new XAttribute("value", "1100")),
+                    new(
+                        "const",
+                        new XAttribute("id", "$DVaMechSelfDestructDetonationMinimumDamage"),
+                        new XAttribute("value", "400")),
+                    new(
+                        "const",
+                        new XAttribute("id", "$DVaMechSelfDestructDetonationMinimumAccumulation"),
+                        new XAttribute("value", "-($DVaMechSelfDestructDetonationMinimumDamage $DVaMechSelfDestructDetonationMaximumDamage)"),
+                        new XAttribute("evaluateAsExpression", "1")),
+                }));
+
+        HeroesData heroesData = loader.HeroesData;
+
+        // act
+        string parsed = GameStringParser.ParseTooltipDescription(description, heroesData);
+
+        // assert
+        parsed.Should().Be("Eject from the Mech, setting it to self-destruct after <c val=\"#TooltipNumbers\">4</c> seconds. Deals <c val=\"#TooltipNumbers\">400~~0.04~~</c> to <c val=\"#TooltipNumbers\">1100~~0.04~~</c> damage in a large area, depending on distance from center. Deals <c val=\"#TooltipNumbers\">50%</c> damage against Structures.</n></n><c val=\"FF8000\">Gain <c val=\"#TooltipNumbers\">1%</c> Charge for every <c val=\"#TooltipNumbers\">2</c> seconds spent Basic Attacking, and <c val=\"#TooltipNumbers\">25%</c> Charge per <c val=\"#TooltipNumbers\">100%</c> of Mech Health lost.</c>");
+    }
+
+    [TestMethod]
+    public void ParseTooltipDescription_HasArrayOnLastFieldOnly_ParsedGameString()
+    {
+        // arrange
+        string description = "Transform for <c val=\"#TooltipNumbers\"><d ref=\"Behavior,MuradinAvatarHealthBuff,Duration\" player=\"0\" precision=\"2\"/></c> seconds, gaining <c val=\"#TooltipNumbers\"><d ref=\"Behavior,MuradinAvatar,Modification.VitalMaxArray[0]\"/></c> Health.";
+
+        HeroesXmlLoader loader = HeroesXmlLoader.LoadAsEmpty()
+            .LoadCustomMod(new ManualModLoader("custom")
+                .AddBaseElementTypes(new List<(string, string)>()
+                {
+                    ("Behavior", "CBehaviorBuff"),
+                    ("AbilEffect", "CAbilEffectInstant"),
+                })
+                .AddElements(new List<XElement>()
+                {
+                    new(
+                        "CBehaviorBuff",
+                        new XAttribute("id", "MuradinAvatarHealthBuff"),
+                        new XElement(
+                            "Duration",
+                            new XAttribute("value", "20"))),
+                    new(
+                        "CAbilEffectInstant",
+                        new XAttribute("id", "MuradinAvatar")),
+                    new(
+                        "CBehaviorBuff",
+                        new XAttribute("id", "MuradinAvatar"),
+                        new XElement(
+                            "Modification",
+                            new XElement(
+                                "VitalMaxArray",
+                                new XAttribute("index", "Life"),
+                                new XAttribute("value", "1000")))),
+                })
+                .AddLevelScalingArrayElements(new List<XElement>()
+                {
+                    new(
+                        "LevelScalingArray",
+                        new XAttribute("Ability", "MuradinAvatar"),
+                        new XElement(
+                            "Modifications",
+                            new XElement(
+                                "Catalog",
+                                new XAttribute("value", "Behavior")),
+                            new XElement(
+                                "Entry",
+                                new XAttribute("value", "MuradinAvatar")),
+                            new XElement(
+                                "Field",
+                                new XAttribute("value", "Modification.VitalMaxArray[0]")),
+                            new XElement(
+                                "Value",
+                                new XAttribute("value", "0.040000")))),
+                }));
+
+        HeroesData heroesData = loader.HeroesData;
+
+        // act
+        string parsed = GameStringParser.ParseTooltipDescription(description, heroesData);
+
+        // assert
+        parsed.Should().Be("Transform for <c val=\"#TooltipNumbers\">20</c> seconds, gaining <c val=\"#TooltipNumbers\">1000</c> Health.");
+    }
+
+    [TestMethod]
+    public void ParseTooltipDescription_HasIndexedArray_ParsedGameString()
+    {
+        // arrange
+        string description = "While at or below <c val=\"#TooltipNumbers\">50</c> Brew, gain <c val=\"#TooltipNumbers\"><d ref=\"100*Behavior,ChenBrewmastersBalanceSpeedBuff,Modification.UnifiedMoveSpeedFactor\"/>%</c> Movement Speed. While at or above <c val=\"#TooltipNumbers\">50</c> Brew, regenerate an additional <c val=\"#TooltipNumbers\"><d ref=\"Behavior,ChenBrewmastersBalanceHealthRegen,Modification.VitalRegenArray[Life]\"/></c> Health per second.";
+
+        HeroesXmlLoader loader = HeroesXmlLoader.LoadAsEmpty()
+            .LoadCustomMod(new ManualModLoader("custom")
+                .AddBaseElementTypes(new List<(string, string)>()
+                {
+                    ("Behavior", "CBehaviorBuff"),
+                    ("AbilEffect", "CAbilEffectInstant"),
+                })
+                .AddElements(new List<XElement>()
+                {
+                    new(
+                        "CBehaviorBuff",
+                        new XAttribute("id", "ChenBrewmastersBalanceSpeedBuff"),
+                        new XElement(
+                            "Modification",
+                            new XElement(
+                                "UnifiedMoveSpeedFactor",
+                                new XAttribute("value", "0.2")))),
+                    new(
+                        "CBehaviorBuff",
+                        new XAttribute("id", "ChenBrewmastersBalanceHealthRegen"),
+                        new XElement(
+                            "Modification",
+                            new XElement(
+                                "VitalRegenArray",
+                                new XAttribute("index", "Life"),
+                                new XAttribute("value", "18")))),
+                })
+                .AddLevelScalingArrayElements(new List<XElement>()
+                {
+                    new(
+                        "LevelScalingArray",
+                        new XAttribute("Ability", "ChenFortifyingBrew"),
+                        new XElement(
+                            "Modifications",
+                            new XElement(
+                                "Catalog",
+                                new XAttribute("value", "Behavior")),
+                            new XElement(
+                                "Entry",
+                                new XAttribute("value", "ChenBrewmastersBalanceHealthRegen")),
+                            new XElement(
+                                "Field",
+                                new XAttribute("value", "Modification.VitalRegenArray[Life]")),
+                            new XElement(
+                                "Value",
+                                new XAttribute("value", "0.040000")))),
+                }));
+
+        HeroesData heroesData = loader.HeroesData;
+
+        // act
+        string parsed = GameStringParser.ParseTooltipDescription(description, heroesData);
+
+        // assert
+        parsed.Should().Be("While at or below <c val=\"#TooltipNumbers\">50</c> Brew, gain <c val=\"#TooltipNumbers\">20%</c> Movement Speed. While at or above <c val=\"#TooltipNumbers\">50</c> Brew, regenerate an additional <c val=\"#TooltipNumbers\">18~~0.04~~</c> Health per second.");
+    }
+
+    [TestMethod]
+    public void ParseTooltipDescription_ElementArray_ParsedGameString()
+    {
+        // arrange
+        string description = "Increase Hardened Carapace's Spell Armor by <c val=\"#TooltipNumbers\"><d ref=\"Talent,AnubarakNerubianArmor,AbilityModificationArray[0].Modifications[0].Value\"/></c>.";
+
+        HeroesXmlLoader loader = HeroesXmlLoader.LoadAsEmpty()
+            .LoadCustomMod(new ManualModLoader("custom")
+                .AddBaseElementTypes(new List<(string, string)>()
+                {
+                    ("Talent", "CTalent"),
+                })
+                .AddElements(new List<XElement>()
+                {
+                    new(
+                        "CTalent",
+                        new XAttribute("id", "AnubarakNerubianArmor"),
+                        new XElement(
+                            "AbilityModificationArray",
+                            new XElement(
+                                "Modifications",
+                                new XElement(
+                                    "Field",
+                                    new XAttribute("value", "ArmorModification.ArmorSet[Hero].ArmorMitigationTable[Ability]")),
+                                new XElement(
+                                    "Value",
+                                    new XAttribute("value", "25.000000"))),
+                            new XElement(
+                                "Modifications",
+                                new XElement(
+                                    "Field",
+                                    new XAttribute("value", "ArmorModification.ArmorSet[Minion].ArmorMitigationTable[Ability]")),
+                                new XElement(
+                                    "Value",
+                                    new XAttribute("value", "500"))))),
+                }));
+
+        HeroesData heroesData = loader.HeroesData;
+
+        // act
+        string parsed = GameStringParser.ParseTooltipDescription(description, heroesData);
+
+        // assert
+        parsed.Should().Be("Increase Hardened Carapace's Spell Armor by <c val=\"#TooltipNumbers\">25</c>.");
+    }
+
+    [TestMethod]
+    public void ParseTooltipDescription_ArrayIndexOf2_ParsedGameString()
+    {
+        // arrange
+        string description = "Increases Burrow Charge impact area by <c val=\"#TooltipNumbers\"><d ref=\"100*Talent,AnubarakMasteryEpicenterBurrowCharge,AbilityModificationArray[0].Modifications[2].Value\"player=\"0\"/>%</c> and lowers the cooldown by <c val=\"#TooltipNumbers\"><d ref=\"-Effect,AnubarakBurrowChargeEpicenterModifyCooldown,Cost[0].CooldownTimeUse\"precision=\"2\"/></c> second for each Hero hit.";
+
+        HeroesXmlLoader loader = HeroesXmlLoader.LoadAsEmpty()
+            .LoadCustomMod(new ManualModLoader("custom")
+                .AddBaseElementTypes(new List<(string, string)>()
+                {
+                    ("Talent", "CTalent"),
+                    ("Effect", "CEffectModifyUnit"),
+                })
+                .AddElements(new List<XElement>()
+                {
+                    new(
+                        "CTalent",
+                        new XAttribute("id", "AnubarakMasteryEpicenterBurrowCharge"),
+                        new XElement(
+                            "AbilityModificationArray",
+                            new XElement(
+                                "Modifications",
+                                new XElement(
+                                    "Field",
+                                    new XAttribute("value", "AreaArray[0].Radius")),
+                                new XElement(
+                                    "Value",
+                                    new XAttribute("value", "1.600000"))),
+                            new XElement(
+                                "Modifications",
+                                new XElement(
+                                    "Field",
+                                    new XAttribute("value", "Chance")),
+                                new XElement(
+                                    "Value",
+                                    new XAttribute("value", "1.000000"))),
+                            new XElement(
+                                "Modifications",
+                                new XElement(
+                                    "Field",
+                                    new XAttribute("value", "AnubarakBurrowChargeCursorSplat")),
+                                new XElement(
+                                    "Value",
+                                    new XAttribute("value", "0.600000"))))),
+                    new(
+                        "CEffectModifyUnit",
+                        new XAttribute("id", "AnubarakBurrowChargeEpicenterModifyCooldown"),
+                        new XElement(
+                            "Cost",
+                            new XAttribute("Abil", "AnubarakBurrowCharge,Execute"),
+                            new XAttribute("CooldownTimeUse", "-1"))),
+                }));
+
+        HeroesData heroesData = loader.HeroesData;
+
+        // act
+        string parsed = GameStringParser.ParseTooltipDescription(description, heroesData);
+
+        // assert
+        parsed.Should().Be("Increases Burrow Charge impact area by <c val=\"#TooltipNumbers\">60%</c> and lowers the cooldown by <c val=\"#TooltipNumbers\">1</c> second for each Hero hit.");
+    }
+
+    [TestMethod]
+    public void ParseTooltipDescription_ValueInParentElement_ParsedGameString()
+    {
+        // arrange
+        string description = "<img path=\"@UI/StormTalentInTextQuestIcon\" alignment=\"uppermiddle\" color=\"B48E4C\" width=\"20\" height=\"22\"/><c val=\"#TooltipQuest\">Quest:</c> Gain <c val=\"#TooltipNumbers\"><d ref=\"Effect,KelThuzadMasterOfTheColdDarkModifyToken,Value\"/></c> Blight every time a Hero is Rooted by Frost Nova or hit by Chains of Kel'Thuzad.<n/><n/><img path=\"@UI/StormTalentInTextQuestIcon\" alignment=\"uppermiddle\" color=\"B48E4C\" width=\"20\" height=\"22\"/><c val=\"#TooltipQuest\">Reward:</c> After gaining <c val=\"#TooltipNumbers\"><d ref=\"Behavior,KelThuzadMasterOfTheColdDarkToken,ConditionalEvents[0].CompareValue\"/></c> Blight, gain the Glacial Spike Ability.<n/><n/><img path=\"@UI/StormTalentInTextQuestIcon\" alignment=\"uppermiddle\" color=\"B48E4C\" width=\"20\" height=\"22\"/><c val=\"#TooltipQuest\">Reward:</c> After gaining <c val=\"#TooltipNumbers\"><d ref=\"Behavior,KelThuzadMasterOfTheColdDarkToken,Max\"/></c> Blight, gain <c val=\"#TooltipNumbers\"><d ref=\"Behavior,KelThuzadMasterOfTheColdDarkSpellPower,Modification.DamageDealtFraction[Ability] * 100\"/>%</c> Spell Power.<n/><n/><c val=\"#TooltipQuest\">Blight:</c> <c val=\"#TooltipNumbers\" validator=\"True\"><d ref=\"$BehaviorStackCount:KelThuzadMasterOfTheColdDarkToken$\"/>/<d ref=\"Behavior,KelThuzadMasterOfTheColdDarkToken,Max\"/></c>";
+
+        HeroesXmlLoader loader = HeroesXmlLoader.LoadAsEmpty()
+            .LoadCustomMod(new ManualModLoader("custom")
+                .AddBaseElementTypes(new List<(string, string)>()
+                {
+                    ("Effect", "CEffectModifyTokenCount"),
+                    ("Behavior", "CBehaviorTokenCounter"),
+                    ("Behavior", "CBehaviorBuff"),
+                })
+                .AddElements(new List<XElement>()
+                {
+                    new(
+                        "CEffectModifyTokenCount",
+                        new XAttribute("default", "1"),
+                        new XAttribute("id", "BaseEffectModifyTokenCount"),
+                        new XElement(
+                            "Value",
+                            new XAttribute("value", "1"))),
+                    new(
+                        "CEffectModifyTokenCount",
+                        new XAttribute("id", "KelThuzadMasterOfTheColdDarkModifyToken"),
+                        new XAttribute("parent", "BaseEffectModifyTokenCount")),
+                    new(
+                        "CBehaviorTokenCounter",
+                        new XAttribute("id", "KelThuzadMasterOfTheColdDarkToken"),
+                        new XElement(
+                            "Max",
+                            new XAttribute("value", "30")),
+                        new XElement(
+                            "ConditionalEvents",
+                            new XAttribute("Compare", "GE"),
+                            new XAttribute("CompareValue", "15"),
+                            new XElement(
+                                "Event",
+                                new XAttribute("Effect", "KelThuzadMasterOfTheColdDarkTier1ModifyPlayer")))),
+                    new(
+                        "CBehaviorBuff",
+                        new XAttribute("id", "KelThuzadMasterOfTheColdDarkSpellPower"),
+                        new XElement(
+                            "Max",
+                            new XAttribute("value", "30")),
+                        new XElement(
+                            "Modification",
+                            new XElement(
+                                "DamageDealtFraction",
+                                new XAttribute("index", "Ability"),
+                                new XAttribute("value", "0.75")))),
+                }));
+
+        HeroesData heroesData = loader.HeroesData;
+
+        // act
+        string parsed = GameStringParser.ParseTooltipDescription(description, heroesData);
+
+        // assert
+        parsed.Should().Be("<img path=\"@UI/StormTalentInTextQuestIcon\" alignment=\"uppermiddle\" color=\"B48E4C\" width=\"20\" height=\"22\"/><c val=\"#TooltipQuest\">Quest:</c> Gain <c val=\"#TooltipNumbers\">1</c> Blight every time a Hero is Rooted by Frost Nova or hit by Chains of Kel'Thuzad.<n/><n/><img path=\"@UI/StormTalentInTextQuestIcon\" alignment=\"uppermiddle\" color=\"B48E4C\" width=\"20\" height=\"22\"/><c val=\"#TooltipQuest\">Reward:</c> After gaining <c val=\"#TooltipNumbers\">15</c> Blight, gain the Glacial Spike Ability.<n/><n/><img path=\"@UI/StormTalentInTextQuestIcon\" alignment=\"uppermiddle\" color=\"B48E4C\" width=\"20\" height=\"22\"/><c val=\"#TooltipQuest\">Reward:</c> After gaining <c val=\"#TooltipNumbers\">30</c> Blight, gain <c val=\"#TooltipNumbers\">75%</c> Spell Power.<n/><n/><c val=\"#TooltipQuest\">Blight:</c> <c val=\"#TooltipNumbers\" validator=\"True\">0/30</c>");
+    }
 }

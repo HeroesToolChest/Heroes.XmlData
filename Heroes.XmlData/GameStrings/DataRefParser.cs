@@ -17,27 +17,30 @@ internal class DataRefParser
     }
 
     // Abil,GuldanHorrify,CastIntroTime+Effect,GuldanHorrifyAbilityStartCreatePersistent,PeriodicPeriodArray[0]
-    public ValueScale Parse(ReadOnlySpan<char> buffer)
+    public ValueScale Parse(ReadOnlySpan<char> dRefSpan)
     {
         List<ITextSection> dataRefParts = [];
         int startIndex = 0;
 
-        while (startIndex < buffer.Length)
+        while (startIndex < dRefSpan.Length)
         {
             // getting the part of the expression, e.g. Abil,GuldanHorrify,CastIntroTime
-            ReadOnlySpan<char> partSpan = GetNextPart(buffer[startIndex..]);
+            ReadOnlySpan<char> partSpan = GetNextPart(dRefSpan[startIndex..]);
+            ReadOnlySpan<char> partSpanTrimmed = partSpan.Trim();
 
-            if (!partSpan.IsEmpty && !partSpan.IsWhiteSpace())
+            if (!partSpanTrimmed.IsEmpty)
             {
-                if (partSpan[0] == '[')
-                    dataRefParts.Add(new TextSectionValueScale(ParseBracketDRef(partSpan)));
-                else if (double.TryParse(partSpan.Trim(), out double value))
+                if (partSpanTrimmed[0] == '[')
+                    dataRefParts.Add(new TextSectionValueScale(ParseBracketDRef(partSpanTrimmed)));
+                else if (double.TryParse(partSpanTrimmed, out double value))
                     dataRefParts.Add(new TextSectionValueScale(new ValueScale(value))); // hardcoded value
+                else if (partSpanTrimmed[0] == '$' && partSpanTrimmed[^1] == '$')
+                    dataRefParts.Add(new TextSectionValueScale(new ValueScale(0)));
                 else
                     dataRefParts.Add(new TextSectionValueScale(ParsePart(partSpan)));
             }
 
-            if (startIndex + partSpan.Length >= buffer.Length)
+            if (startIndex + partSpan.Length >= dRefSpan.Length)
                 break;
 
             // the operator
@@ -46,10 +49,10 @@ internal class DataRefParser
             startIndex += partSpan.Length + 1;
         }
 
-        return CalculateExpression(buffer, dataRefParts);
+        return CalculateExpression(dRefSpan, dataRefParts);
     }
 
-    private static (int Size, int SizeScaling) GetSizeOfBuffer(ReadOnlySpan<char> buffer, List<ITextSection> dataRefParts)
+    private static (int Size, int SizeScaling) GetSizeOfBuffer(ReadOnlySpan<char> dRefSpan, List<ITextSection> dataRefParts)
     {
         int size = 0;
         int sizeWithScaling = 0;
@@ -58,7 +61,7 @@ internal class DataRefParser
         {
             if (dataSection.Type == TextSectionType.Text)
             {
-                size += buffer[((TextSection)dataSection).Range].Length;
+                size += dRefSpan[((TextSection)dataSection).Range].Length;
             }
             else if (dataSection.Type == TextSectionType.Value)
             {
@@ -90,38 +93,38 @@ internal class DataRefParser
             return text;
     }
 
-    private static void FillExpressionBuffer(ITextSection dataSection, ReadOnlySpan<char> buffer, Span<char> newBufferSpan, bool includeScaling, ref int currentOffset)
+    private static void FillExpressionBuffer(ITextSection dataSection, ReadOnlySpan<char> dRefSpan, Span<char> destination, bool includeScaling, ref int currentOffset)
     {
         if (dataSection.Type == TextSectionType.Text)
         {
             TextSection textSection = (TextSection)dataSection;
 
-            ReadOnlySpan<char> itemText = buffer[textSection.Range];
+            ReadOnlySpan<char> itemText = dRefSpan[textSection.Range];
 
-            itemText.CopyTo(newBufferSpan[currentOffset..]);
+            itemText.CopyTo(destination[currentOffset..]);
             currentOffset += itemText.Length;
         }
         else if (dataSection.Type == TextSectionType.Value)
         {
             TextSectionValueScale textSectionValueScale = (TextSectionValueScale)dataSection;
 
-            newBufferSpan[currentOffset..][0] = '(';
+            destination[currentOffset..][0] = '(';
             currentOffset++;
 
             // this value needs to be wrapped in parenthesis
-            textSectionValueScale.ValueScale.Value.TryFormat(newBufferSpan[currentOffset..], out int charsWritten);
+            textSectionValueScale.ValueScale.Value.TryFormat(destination[currentOffset..], out int charsWritten);
             currentOffset += charsWritten;
 
             if (includeScaling && textSectionValueScale.ValueScale.Scaling.HasValue)
             {
-                newBufferSpan[currentOffset..][0] = '*';
+                destination[currentOffset..][0] = '*';
                 currentOffset++;
 
-                (textSectionValueScale.ValueScale.Scaling.Value + 1).TryFormat(newBufferSpan[currentOffset..], out charsWritten);
+                (textSectionValueScale.ValueScale.Scaling.Value + 1).TryFormat(destination[currentOffset..], out charsWritten);
                 currentOffset += charsWritten;
             }
 
-            newBufferSpan[currentOffset..][0] = ')';
+            destination[currentOffset..][0] = ')';
             currentOffset++;
         }
     }
@@ -180,11 +183,19 @@ internal class DataRefParser
                 {
                     if (innerData.KeyValueDataPairs.TryGetValue(indexValueSpan.ToString(), out StormElementData? arrayData))
                         stormElementData = arrayData;
+                    else
+                        stormElementData = innerData;
                 }
             }
             else if (stormElementData.KeyValueDataPairs.TryGetValue(nextPartSpan.ToString(), out StormElementData? innerData))
             {
                 stormElementData = innerData;
+            }
+            else if (stormElementData.KeyValueDataPairs.TryGetValue("parent", out StormElementData? parentData) &&
+                _heroesData.TryGetStormElement(fullPartSpan[xmlParts[0]], parentData.Value!, out StormElement? stormElement))
+            {
+                // look up value int the parent element
+                return ParseParts(stormElement.DataValues, fullPartSpan, xmlParts);
             }
         }
 
@@ -196,7 +207,10 @@ internal class DataRefParser
         {
             KeyValuePair<string, StormElementData> firstKeyValueDataPair = stormElementData.KeyValueDataPairs.FirstOrDefault();
 
-            return GetValueScale(firstKeyValueDataPair.Value.Value, fullPartSpan, xmlParts, firstKeyValueDataPair.Key);
+            if (firstKeyValueDataPair.Value.HasConstValue)
+                return GetValueScale(firstKeyValueDataPair.Value.ConstValue, fullPartSpan, xmlParts, firstKeyValueDataPair.Key);
+            else
+                return GetValueScale(firstKeyValueDataPair.Value.Value, fullPartSpan, xmlParts, firstKeyValueDataPair.Key);
         }
         else
         {
@@ -208,7 +222,7 @@ internal class DataRefParser
     {
         if (double.TryParse(stormElementDataValue, out double dataValue))
         {
-            ReadOnlySpan<char> fieldSpan = fullSpan[xmlParts[2]];
+            ReadOnlySpan<char> fieldSpan = fullSpan[(fullSpan.LastIndexOf(',') + 1)..].Trim();
 
             if (!fieldIndexer.IsEmpty)
             {
@@ -243,50 +257,45 @@ internal class DataRefParser
         }
     }
 
-    private ValueScale CalculateExpression(ReadOnlySpan<char> buffer, List<ITextSection> dataRefParts)
+    private ValueScale CalculateExpression(ReadOnlySpan<char> dRefSpan, List<ITextSection> dataRefParts)
     {
-        var (size, sizeScaling) = GetSizeOfBuffer(buffer, dataRefParts);
+        var (size, sizeScaling) = GetSizeOfBuffer(dRefSpan, dataRefParts);
 
-        int currentOffset = 0;
-        double bufferValue;
-        double? scaleBufferValue = null;
+        double expressionValue = ComputeExpression(dRefSpan, size, dataRefParts, false);
 
-        // buffer for the parsed expression
-        Span<char> newBufferSpan = stackalloc char[size];
-
-        foreach (ITextSection dataSection in dataRefParts)
-        {
-            FillExpressionBuffer(dataSection, buffer, newBufferSpan, false, ref currentOffset);
-        }
-
-        bufferValue = HeroesCalculator.Compute(newBufferSpan[..currentOffset]);
+        double? expressionWithScalingValue = null;
 
         // there is scaling only if the sizeScaling is larger
         if (sizeScaling > size)
         {
-            int currentScaleOffset = 0;
-
-            // buffer for scaling
-            Span<char> newBufferScalingSpan = stackalloc char[sizeScaling];
-
-            foreach (ITextSection dataSection in dataRefParts)
-            {
-                FillExpressionBuffer(dataSection, buffer, newBufferScalingSpan, true, ref currentScaleOffset);
-            }
-
-            scaleBufferValue = HeroesCalculator.Compute(newBufferScalingSpan[..currentScaleOffset]);
+            expressionWithScalingValue = ComputeExpression(dRefSpan, sizeScaling, dataRefParts, true);
         }
 
-        if (scaleBufferValue.HasValue)
+        if (expressionWithScalingValue.HasValue)
         {
-            double scalingValue = (scaleBufferValue.Value / bufferValue) - 1;
+            double scalingValue = (expressionWithScalingValue.Value / expressionValue) - 1;
 
             if (scalingValue == 0)
-                return new ValueScale(bufferValue);
+                return new ValueScale(expressionValue);
             else
-                return new ValueScale(bufferValue, scalingValue);
+                return new ValueScale(expressionValue, scalingValue);
         }
 
-        return new ValueScale(bufferValue);
+        return new ValueScale(expressionValue);
+    }
+
+    private double ComputeExpression(ReadOnlySpan<char> dRefSpan, int bufferSize, List<ITextSection> dataRefParts, bool addScaling)
+    {
+        int currentOffset = 0;
+
+        // buffer for the parsed expression
+        Span<char> buffer = stackalloc char[bufferSize];
+
+        foreach (ITextSection dataSection in dataRefParts)
+        {
+            FillExpressionBuffer(dataSection, dRefSpan, buffer, addScaling, ref currentOffset);
+        }
+
+        return HeroesCalculator.Compute(buffer[..currentOffset]);
     }
 }

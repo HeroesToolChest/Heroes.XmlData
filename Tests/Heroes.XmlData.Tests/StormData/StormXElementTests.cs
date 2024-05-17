@@ -44,8 +44,8 @@ public class StormXElementTests
         // assert
         stormXElement.DataValues.KeyValueDataPairs["default"].Value.Should().Be("1");
         stormXElement.DataValues.KeyValueDataPairs["name"].Value.Should().Be("Abil/Name/##id##");
-        stormXElement.DataValues.KeyValueDataPairs["OrderArray"].KeyValueDataPairs["0"].KeyValueDataPairs["color"].Value.Should().Be("255,0,255,0");
-        stormXElement.DataValues.KeyValueDataPairs["OrderArray"].KeyValueDataPairs["0"].KeyValueDataPairs["Model"].Value.Should().Be("Assets\\UI\\Feedback\\WayPointConfirm\\WayPointConfirm.m3");
+        stormXElement.DataValues.KeyValueDataPairs["OrderArray"].KeyValueDataPairs["0"].KeyValueDataPairs["color"].KeyValueDataPairs["0"].Value.Should().Be("255,0,255,0");
+        stormXElement.DataValues.KeyValueDataPairs["OrderArray"].KeyValueDataPairs["0"].KeyValueDataPairs["Model"].KeyValueDataPairs["0"].Value.Should().Be("Assets\\UI\\Feedback\\WayPointConfirm\\WayPointConfirm.m3");
         stormXElement.DataValues.KeyValueDataPairs["OrderArray"].KeyValueDataPairs["0"].KeyValueDataPairs["LineTexture"].Value.Should().Be("Assets\\Textures\\Storm_WayPointLine.dds");
         stormXElement.DataValues.KeyValueDataPairs["SharedFlags"].KeyValueDataPairs["disableWhileDead"].Value.Should().Be("0");
         stormXElement.DataValues.KeyValueDataPairs["SharedFlags"].KeyValueDataPairs["AllowQuickCastCustomization"].Value.Should().Be("1");

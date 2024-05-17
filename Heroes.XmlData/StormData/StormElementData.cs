@@ -5,7 +5,7 @@ namespace Heroes.XmlData.StormData;
 [DebuggerDisplay("{DebuggerDisplay,nq}")]
 public class StormElementData
 {
-    private static HashSet<string> _otherElementArrays = ["On", "Cost", "CatalogModifications"];
+    private static readonly HashSet<string> _otherElementArrays = ["On", "Cost", "CatalogModifications"];
 
     public StormElementData(string value)
     {
@@ -17,9 +17,19 @@ public class StormElementData
        Parse(rootElement);
     }
 
+    public StormElementData(XElement rootElement, bool innerArray)
+    {
+        Parse(rootElement, innerArray);
+    }
+
     public StormElementData(string index, XElement element)
     {
         KeyValueDataPairs[index] = new StormElementData(element);
+    }
+
+    public StormElementData(string index, XElement element, bool innerArray)
+    {
+        KeyValueDataPairs[index] = new StormElementData(element, innerArray);
     }
 
     public Dictionary<string, StormElementData> KeyValueDataPairs { get; } = new(StringComparer.OrdinalIgnoreCase);
@@ -55,7 +65,7 @@ public class StormElementData
         Parse(element);
     }
 
-    private void Parse(XElement rootElement)
+    private void Parse(XElement rootElement, bool innerArray = false)
     {
         IEnumerable<XAttribute> attributes = rootElement.Attributes();
         IEnumerable<XElement> elements = rootElement.Elements();
@@ -96,7 +106,7 @@ public class StormElementData
                 }
                 else
                 {
-                    KeyValueDataPairs[elementName] = new StormElementData(indexAtt, element)
+                    KeyValueDataPairs[elementName] = new StormElementData(indexAtt, element, true)
                     {
                         IsArray = true,
                     };
@@ -120,9 +130,9 @@ public class StormElementData
                 }
                 else
                 {
-                    if (elementName.EndsWith("array", StringComparison.OrdinalIgnoreCase) || _otherElementArrays.Contains(elementName))
+                    if (innerArray || elementName.EndsWith("array", StringComparison.OrdinalIgnoreCase) || _otherElementArrays.Contains(elementName))
                     {
-                        KeyValueDataPairs[elementName] = new StormElementData("0", element)
+                        KeyValueDataPairs[elementName] = new StormElementData("0", element, true)
                         {
                             IsArray = true,
                         };
