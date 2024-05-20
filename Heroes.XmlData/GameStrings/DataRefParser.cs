@@ -144,81 +144,102 @@ internal class DataRefParser
     // Effect,AnduinHolyWordSalvationLightOfStormwindCooldownReduction,Cost[0].CooldownTimeUse
     private ValueScale ParsePart(ReadOnlySpan<char> fullPartSpan)
     {
+        // a proper dref consists of <Catalog>.<Entry>.<Field>
         int splitterCount = fullPartSpan.Count('.');
+
+        // <Field>s are comma separated
         splitterCount += fullPartSpan.Count(',');
 
         if (splitterCount < 2)
-            throw new Exception("TODO");
+            return new ValueScale(0);
 
         Span<Range> xmlParts = stackalloc Range[splitterCount + 1];
 
         fullPartSpan.SplitAny(xmlParts, ".,", StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
 
-        if (_heroesData.TryGetStormElement(fullPartSpan[xmlParts[0]], fullPartSpan[xmlParts[1]], out StormElement? stormElement))
+        return ParseStormElement(fullPartSpan, fullPartSpan[xmlParts[1]], xmlParts);
+    }
+
+    private ValueScale ParseStormElement(ReadOnlySpan<char> fullPartSpan, ReadOnlySpan<char> entry, ReadOnlySpan<Range> xmlParts)
+    {
+        if (_heroesData.TryGetStormElement(fullPartSpan[xmlParts[0]], entry, out StormElement? stormElement))
         {
-            return ParseParts(stormElement.DataValues, fullPartSpan, xmlParts);
+            return ParseFieldParts(stormElement, fullPartSpan, xmlParts);
         }
 
         return new ValueScale(0);
     }
 
-    private ValueScale ParseParts(StormElementData stormElementData, ReadOnlySpan<char> fullPartSpan, Span<Range> xmlParts)
+    private ValueScale ParseFieldParts(StormElement stormElement, ReadOnlySpan<char> fullPartSpan, ReadOnlySpan<Range> xmlParts)
     {
-        for (int i = 2; i < xmlParts.Length; i++)
-        {
-            ReadOnlySpan<char> nextPartSpan = fullPartSpan[xmlParts[i]];
+        StormElementData currentElementData = stormElement.DataValues;
 
-            if (nextPartSpan[^1] == ']')
+        ReadOnlySpan<Range> fieldParts = xmlParts[2..];
+
+        foreach (Range fieldPartRange in fieldParts)
+        {
+            ReadOnlySpan<char> fieldPartSpan = fullPartSpan[fieldPartRange];
+
+            if (fieldPartSpan.IsEmpty)
+                continue;
+
+            if (fieldPartSpan[^1] == ']')
             {
                 // PeriodicPeriodArray[0]
-                int indexOfStartBracket = nextPartSpan.LastIndexOf("[");
+                int indexOfStartBracket = fieldPartSpan.LastIndexOf("[");
 
                 // the value of the index, e.g. 0
-                ReadOnlySpan<char> indexValueSpan = nextPartSpan.Slice(indexOfStartBracket + 1, nextPartSpan.Length - indexOfStartBracket - 2);
+                ReadOnlySpan<char> fieldPartIndexValue = fieldPartSpan.Slice(indexOfStartBracket + 1, fieldPartSpan.Length - indexOfStartBracket - 2);
+                bool numericalIndex = int.TryParse(fieldPartIndexValue, out int indexAsNumber);
 
                 // the part with out the indexer, e.g. PeriodicPeriodArray
-                ReadOnlySpan<char> nextPartWithoutIndexerSpan = nextPartSpan[..indexOfStartBracket];
+                ReadOnlySpan<char> fieldPartSpanWithoutIndexer = fieldPartSpan[..indexOfStartBracket];
 
-                if (stormElementData.KeyValueDataPairs.TryGetValue(nextPartWithoutIndexerSpan.ToString(), out StormElementData? innerData))
+                if (currentElementData.KeyValueDataPairs.TryGetValue(fieldPartSpanWithoutIndexer.ToString(), out StormElementData? withoutIndexerStormElementData))
                 {
-                    if (innerData.KeyValueDataPairs.TryGetValue(indexValueSpan.ToString(), out StormElementData? arrayData))
-                        stormElementData = arrayData;
+                    if (((numericalIndex is true && withoutIndexerStormElementData.HasNumericalIndex is true) ||
+                        (numericalIndex is false && withoutIndexerStormElementData.HasTextIndex is true)) && withoutIndexerStormElementData.KeyValueDataPairs.TryGetValue(fieldPartIndexValue.ToString(), out StormElementData? indexStormElementData))
+                    {
+                        currentElementData = indexStormElementData;
+                    }
+                    else if (numericalIndex is true && withoutIndexerStormElementData.HasTextIndex is true &&
+                        withoutIndexerStormElementData.KeyValueDataPairs.Keys.Count > 0 && indexAsNumber < withoutIndexerStormElementData.KeyValueDataPairs.Keys.Count)
+                    {
+                        currentElementData = withoutIndexerStormElementData.KeyValueDataPairs.ElementAt(indexAsNumber).Value;
+                    }
                     else
-                        stormElementData = innerData;
+                    {
+                        currentElementData = withoutIndexerStormElementData;
+                    }
                 }
             }
-            else if (stormElementData.KeyValueDataPairs.TryGetValue(nextPartSpan.ToString(), out StormElementData? innerData))
+            else if (currentElementData.KeyValueDataPairs.TryGetValue(fieldPartSpan.ToString(), out StormElementData? stormElementData) ||
+                ((currentElementData.HasNumericalIndex || currentElementData.HasTextIndex) && currentElementData.KeyValueDataPairs.First().Value.KeyValueDataPairs.TryGetValue(fieldPartSpan.ToString(), out stormElementData)))
             {
-                stormElementData = innerData;
+                currentElementData = stormElementData;
             }
-            else if (stormElementData.KeyValueDataPairs.TryGetValue("parent", out StormElementData? parentData) &&
-                _heroesData.TryGetStormElement(fullPartSpan[xmlParts[0]], parentData.Value!, out StormElement? stormElement))
+            else if (stormElement.HasParentId)
             {
-                // look up value int the parent element
-                return ParseParts(stormElement.DataValues, fullPartSpan, xmlParts);
+                return ParseStormElement(fullPartSpan, stormElement.ParentId, xmlParts);
             }
         }
 
-        if (stormElementData.HasConstValue)
+        if (currentElementData.HasConstValue)
         {
-            return GetValueScale(stormElementData.ConstValue, fullPartSpan, xmlParts);
+            return GetValueScale(currentElementData.ConstValue, fullPartSpan, xmlParts);
         }
-        else if (stormElementData.IsArray)
+        else if (currentElementData.HasValue)
         {
-            KeyValuePair<string, StormElementData> firstKeyValueDataPair = stormElementData.KeyValueDataPairs.FirstOrDefault();
-
-            if (firstKeyValueDataPair.Value.HasConstValue)
-                return GetValueScale(firstKeyValueDataPair.Value.ConstValue, fullPartSpan, xmlParts, firstKeyValueDataPair.Key);
+            if (currentElementData.HasTextIndex)
+                return GetValueScale(currentElementData.Value, fullPartSpan, xmlParts, currentElementData.KeyValueDataPairs.First().Key);
             else
-                return GetValueScale(firstKeyValueDataPair.Value.Value, fullPartSpan, xmlParts, firstKeyValueDataPair.Key);
+                return GetValueScale(currentElementData.Value, fullPartSpan, xmlParts);
         }
-        else
-        {
-            return GetValueScale(stormElementData.Value, fullPartSpan, xmlParts);
-        }
+
+        return new ValueScale(0);
     }
 
-    private ValueScale GetValueScale(ReadOnlySpan<char> stormElementDataValue, ReadOnlySpan<char> fullSpan, Span<Range> xmlParts, ReadOnlySpan<char> fieldIndexer = default)
+    private ValueScale GetValueScale(ReadOnlySpan<char> stormElementDataValue, ReadOnlySpan<char> fullSpan, ReadOnlySpan<Range> xmlParts, ReadOnlySpan<char> fieldIndexer = default)
     {
         if (double.TryParse(stormElementDataValue, out double dataValue))
         {
@@ -241,7 +262,7 @@ internal class DataRefParser
 
         return new ValueScale(0);
 
-        ValueScale ScalingLookUp(ReadOnlySpan<char> fullSpan, Span<Range> xmlParts, double dataValue, ReadOnlySpan<char> fieldSpan)
+        ValueScale ScalingLookUp(ReadOnlySpan<char> fullSpan, ReadOnlySpan<Range> xmlParts, double dataValue, ReadOnlySpan<char> fieldSpan)
         {
             if (_heroesData.TryGetLevelScalingValue(fullSpan[xmlParts[0]], fullSpan[xmlParts[1]], fieldSpan, out StormStringValue? stormStringValue))
             {

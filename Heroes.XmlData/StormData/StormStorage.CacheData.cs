@@ -200,4 +200,9 @@ internal partial class StormStorage : IStormStorageCacheData
 
         return false;
     }
+
+    public List<GameStringText> Test()
+    {
+        return StormCache.GameStringsById.Values.ToList();
+    }
 }

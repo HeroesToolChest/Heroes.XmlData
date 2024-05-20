@@ -1037,7 +1037,7 @@ public class GameStringParserTests
         string parsed = GameStringParser.ParseTooltipDescription(description, heroesData);
 
         // assert
-        parsed.Should().Be("Transform for <c val=\"#TooltipNumbers\">20</c> seconds, gaining <c val=\"#TooltipNumbers\">1000</c> Health.");
+        parsed.Should().Be("Transform for <c val=\"#TooltipNumbers\">20</c> seconds, gaining <c val=\"#TooltipNumbers\">1000~~0.04~~</c> Health.");
     }
 
     [TestMethod]
@@ -1272,5 +1272,265 @@ public class GameStringParserTests
 
         // assert
         parsed.Should().Be("<img path=\"@UI/StormTalentInTextQuestIcon\" alignment=\"uppermiddle\" color=\"B48E4C\" width=\"20\" height=\"22\"/><c val=\"#TooltipQuest\">Quest:</c> Gain <c val=\"#TooltipNumbers\">1</c> Blight every time a Hero is Rooted by Frost Nova or hit by Chains of Kel'Thuzad.<n/><n/><img path=\"@UI/StormTalentInTextQuestIcon\" alignment=\"uppermiddle\" color=\"B48E4C\" width=\"20\" height=\"22\"/><c val=\"#TooltipQuest\">Reward:</c> After gaining <c val=\"#TooltipNumbers\">15</c> Blight, gain the Glacial Spike Ability.<n/><n/><img path=\"@UI/StormTalentInTextQuestIcon\" alignment=\"uppermiddle\" color=\"B48E4C\" width=\"20\" height=\"22\"/><c val=\"#TooltipQuest\">Reward:</c> After gaining <c val=\"#TooltipNumbers\">30</c> Blight, gain <c val=\"#TooltipNumbers\">75%</c> Spell Power.<n/><n/><c val=\"#TooltipQuest\">Blight:</c> <c val=\"#TooltipNumbers\" validator=\"True\">0/30</c>");
+    }
+
+    [TestMethod]
+    public void ParseTooltipDescription_DrefDoesNotHaveIndexerForArrayFields_ParsedGameString()
+    {
+        // arrange
+        string description = "Launch a grenade that explodes at the end of its path or upon hitting an enemy, dealing <c val=\"#TooltipNumbers\"><d ref=\"Effect,JunkratFragLauncherExplosionDamage,Amount\"/></c> damage to nearby enemies. Grenades can ricochet off of terrain. Deals <c val=\"#TooltipNumbers\"><d ref=\"-Effect,JunkratFragLauncherExplosionDamage,AttributeFactor[Structure] * 100\"/>%</c> less damage to Structures.<n/><n/>Stores up to <c val=\"#TooltipNumbers\"><d ref=\"Abil,JunkratFragLauncher,Cost.Charge.CountMax\" player=\"0\"/></c> charges. Frag Launcher's cooldown replenishes all charges at the same time.";
+
+        HeroesXmlLoader loader = HeroesXmlLoader.LoadAsEmpty()
+            .LoadCustomMod(new ManualModLoader("custom")
+                .AddBaseElementTypes(new List<(string, string)>()
+                {
+                    ("Effect", "CEffectDamage"),
+                    ("Abil", "CAbilEffectTarget"),
+                })
+                .AddElements(new List<XElement>()
+                {
+                    new(
+                        "CEffectDamage",
+                        new XAttribute("id", "JunkratFragLauncherExplosionDamage"),
+                        new XElement(
+                            "Amount",
+                            new XAttribute("value", "124")),
+                        new XElement(
+                            "AttributeFactor",
+                            new XAttribute("index", "Structure"),
+                            new XAttribute("value", "-0.5"))),
+                    new(
+                        "CAbilEffectTarget",
+                        new XAttribute("id", "JunkratFragLauncher"),
+                        new XElement(
+                            "Cost",
+                            new XElement(
+                                "Charge",
+                                new XElement(
+                                    "CountMax",
+                                    new XAttribute("value", "4"))))),
+                })
+                .AddLevelScalingArrayElements(new List<XElement>()
+                {
+                    new(
+                        "LevelScalingArray",
+                        new XAttribute("Ability", "JunkratFragLauncher"),
+                        new XElement(
+                            "Modifications",
+                            new XElement(
+                                "Catalog",
+                                new XAttribute("value", "Effect")),
+                            new XElement(
+                                "Entry",
+                                new XAttribute("value", "JunkratFragLauncherExplosionDamage")),
+                            new XElement(
+                                "Field",
+                                new XAttribute("value", "Amount")),
+                            new XElement(
+                                "Value",
+                                new XAttribute("value", "0.040000")))),
+                }));
+
+        HeroesData heroesData = loader.HeroesData;
+
+        // act
+        string parsed = GameStringParser.ParseTooltipDescription(description, heroesData);
+
+        // assert
+        parsed.Should().Be("Launch a grenade that explodes at the end of its path or upon hitting an enemy, dealing <c val=\"#TooltipNumbers\">124~~0.04~~</c> damage to nearby enemies. Grenades can ricochet off of terrain. Deals <c val=\"#TooltipNumbers\">50%</c> less damage to Structures.<n/><n/>Stores up to <c val=\"#TooltipNumbers\">4</c> charges. Frag Launcher's cooldown replenishes all charges at the same time.");
+    }
+
+    [TestMethod]
+    public void ParseTooltipDescription_ConditionalEventsIsAnArray_ParsedGameString()
+    {
+        // arrange
+        string description = "<img path=\"@UI/StormTalentInTextQuestIcon\" alignment=\"uppermiddle\" color=\"B48E4C\" width=\"20\" height=\"22\"/><c val=\"#TooltipQuest\">Repeatable Quest:</c> Basic Attacks against Heroes while Windfury's Movement Speed bonus is active increase Attack Damage by <c val=\"#TooltipNumbers\"><d ref=\"Accumulator,ThrallMaelstromWeaponDamageAccumulator,Scale\"precision=\"2\"/></c>.<n/><n/><img path=\"@UI/StormTalentInTextQuestIcon\" alignment=\"uppermiddle\" color=\"B48E4C\" width=\"20\" height=\"22\"/><c val=\"#TooltipQuest\">Reward:</c> After gaining <c val=\"#TooltipNumbers\"><d ref=\"Behavior,ThrallMaelstromWeaponTokenCounter,ConditionalEvents[0].CompareValue*Accumulator,ThrallMaelstromWeaponDamageAccumulator,Scale\"/></c> Attack Damage, increase the Movement Speed bonus of Windfury to <c val=\"#TooltipNumbers\"><d ref=\"100*Effect,ThrallWindfuryMaelstromWeaponTalent1stQuestCompletionModifyPlayer,EffectArray[0].Value\"/>%</c>.<n/><n/><img path=\"@UI/StormTalentInTextQuestIcon\" alignment=\"uppermiddle\" color=\"B48E4C\" width=\"20\" height=\"22\"/><c val=\"#TooltipQuest\">Reward:</c> After gaining <c val=\"#TooltipNumbers\"><d ref=\"Behavior,ThrallMaelstromWeaponTokenCounter,ConditionalEvents[1].CompareValue\"/></c> Attack Damage, Thrall permanently gains <c val=\"#TooltipNumbers\"><d ref=\"100*Behavior,ThrallWindfuryMaelstromWeapon2ndQuestCompletionMoveSpeedCarry,Modification.UnifiedMoveSpeedFactor\"/>%</c> increased Movement Speed.";
+
+        HeroesXmlLoader loader = HeroesXmlLoader.LoadAsEmpty()
+            .LoadCustomMod(new ManualModLoader("custom")
+                .AddBaseElementTypes(new List<(string, string)>()
+                {
+                    ("Accumulator", "CAccumulatorToken"),
+                    ("Behavior", "CBehaviorTokenCounter"),
+                    ("Behavior", "CBehaviorBuff"),
+                    ("Effect", "CEffectModifyPlayer"),
+                })
+                .AddElements(new List<XElement>()
+                {
+                    new(
+                        "CAccumulatorToken",
+                        new XAttribute("default", "1"),
+                        new XAttribute("id", "BaseTokenAccumulator"),
+                        new XElement(
+                            "Scale",
+                            new XAttribute("value", "1"))),
+                    new(
+                        "CAccumulatorToken",
+                        new XAttribute("id", "ThrallMaelstromWeaponDamageAccumulator"),
+                        new XAttribute("parent", "BaseTokenAccumulator"),
+                        new XElement(
+                            "MinAccumulation",
+                            new XAttribute("value", "0")),
+                        new XElement(
+                            "MaxAccumulation",
+                            new XAttribute("value", "3000"))),
+                    new(
+                        "CBehaviorTokenCounter",
+                        new XAttribute("id", "ThrallMaelstromWeaponTokenCounter"),
+                        new XElement(
+                            "ConditionalEvents",
+                            new XAttribute("CompareValue", "20"),
+                            new XElement(
+                                "Event",
+                                new XAttribute("Effect", "ThrallWindfuryMaelstromWeaponTalent1stQuestCompletionModifyPlayer"))),
+                        new XElement(
+                            "ConditionalEvents",
+                            new XAttribute("CompareValue", "40"),
+                            new XElement(
+                                "Event",
+                                new XAttribute("Effect", "ThrallWindfuryMaelstromWeaponTalent2ndQuestCompletionApplyCarry")))),
+                    new(
+                        "CEffectModifyPlayer",
+                        new XAttribute("id", "ThrallWindfuryMaelstromWeaponTalent1stQuestCompletionModifyPlayer"),
+                        new XElement(
+                            "EffectArray",
+                            new XAttribute("Reference", "Behavior,WindfurySpeedBuff,Modification.UnifiedMoveSpeedFactor"),
+                            new XAttribute("Value", ".4"))),
+                    new(
+                        "CBehaviorBuff",
+                        new XAttribute("id", "ThrallWindfuryMaelstromWeapon2ndQuestCompletionMoveSpeedCarry"),
+                        new XElement(
+                            "Modification",
+                            new XElement(
+                                "UnifiedMoveSpeedFactor",
+                                new XAttribute("value", "0.15")))),
+                }));
+
+        HeroesData heroesData = loader.HeroesData;
+
+        // act
+        string parsed = GameStringParser.ParseTooltipDescription(description, heroesData);
+
+        // assert
+        parsed.Should().Be("<img path=\"@UI/StormTalentInTextQuestIcon\" alignment=\"uppermiddle\" color=\"B48E4C\" width=\"20\" height=\"22\"/><c val=\"#TooltipQuest\">Repeatable Quest:</c> Basic Attacks against Heroes while Windfury's Movement Speed bonus is active increase Attack Damage by <c val=\"#TooltipNumbers\">1</c>.<n/><n/><img path=\"@UI/StormTalentInTextQuestIcon\" alignment=\"uppermiddle\" color=\"B48E4C\" width=\"20\" height=\"22\"/><c val=\"#TooltipQuest\">Reward:</c> After gaining <c val=\"#TooltipNumbers\">20</c> Attack Damage, increase the Movement Speed bonus of Windfury to <c val=\"#TooltipNumbers\">40%</c>.<n/><n/><img path=\"@UI/StormTalentInTextQuestIcon\" alignment=\"uppermiddle\" color=\"B48E4C\" width=\"20\" height=\"22\"/><c val=\"#TooltipQuest\">Reward:</c> After gaining <c val=\"#TooltipNumbers\">40</c> Attack Damage, Thrall permanently gains <c val=\"#TooltipNumbers\">15%</c> increased Movement Speed.");
+    }
+
+    [TestMethod]
+    public void ParseTooltipDescription_DRefExpressionTrailingCommandAndQuote_ParsedGameString()
+    {
+        // arrange
+        string description = "Increase the Slow amount of each Twin Cleave axe by <c val=\"#TooltipNumbers\"><d ref=\"(Behavior,ZuljinTwinCleaveLacerateFirstHitSlow,Modification.UnifiedMoveSpeedFactor-Behavior,ZuljinTwinCleaveFirstHitSlow,Modification.UnifiedMoveSpeedFactor)*(-100)\" player=\"0\" precision=\"2\"/>%</c> and its duration by <c val=\"#TooltipNumbers\"><d ref=\"Behavior,ZuljinTwinCleaveLacerateFirstHitSlow,Duration-Behavior,ZuljinTwinCleaveFirstHitSlow,Duration,\"player=\"0\"precision=\"1\"/></c> seconds.";
+
+        HeroesXmlLoader loader = HeroesXmlLoader.LoadAsEmpty()
+            .LoadCustomMod(new ManualModLoader("custom")
+                .AddBaseElementTypes(new List<(string, string)>()
+                {
+                    ("Behavior", "CBehaviorBuff"),
+                    ("Abil", "CAbilEffectTarget"),
+                })
+                .AddElements(new List<XElement>()
+                {
+                    new(
+                        "CBehaviorBuff",
+                        new XAttribute("id", "ZuljinTwinCleaveFirstHitSlow"),
+                        new XAttribute("Duration", "2"),
+                        new XElement(
+                            "Modification",
+                            new XElement(
+                                "UnifiedMoveSpeedFactor",
+                                new XAttribute("value", "-0.15")))),
+                    new(
+                        "CBehaviorBuff",
+                        new XAttribute("id", "ZuljinTwinCleaveLacerateFirstHitSlow"),
+                        new XAttribute("Duration", "2.5"),
+                        new XElement(
+                            "Modification",
+                            new XElement(
+                                "UnifiedMoveSpeedFactor",
+                                new XAttribute("value", "-0.25")))),
+                }));
+
+        HeroesData heroesData = loader.HeroesData;
+
+        // act
+        string parsed = GameStringParser.ParseTooltipDescription(description, heroesData);
+
+        // assert
+        parsed.Should().Be("Increase the Slow amount of each Twin Cleave axe by <c val=\"#TooltipNumbers\">10%</c> and its duration by <c val=\"#TooltipNumbers\">0.5</c> seconds.");
+    }
+
+    [TestMethod]
+    public void ParseTooltipDescription__ParsedGameString()
+    {
+        // arrange
+        string description = "Probius gains permanent Shields equal to <c val=\"#TooltipNumbers\"><d ref=\"(Behavior,ProbiusShieldCapacitorPassiveShieldBuff,Modification.VitalMaxArray[Shields] / Unit,HeroProbius,LifeMax) * 100\"/>% </c>of his max Health. Shields regenerate quickly as long as he hasn't taken damage recently.";
+
+        HeroesXmlLoader loader = HeroesXmlLoader.LoadAsEmpty()
+            .LoadCustomMod(new ManualModLoader("custom")
+                .AddBaseElementTypes(new List<(string, string)>()
+                {
+                    ("Behavior", "CBehaviorBuff"),
+                    ("Unit", "CUnit"),
+                })
+                .AddElements(new List<XElement>()
+                {
+                    new(
+                        "CBehaviorBuff",
+                        new XAttribute("id", "ProbiusShieldCapacitorPassiveShieldBuff"),
+                        new XAttribute("Duration", "2"),
+                        new XElement(
+                            "Modification",
+                            new XElement(
+                                "VitalMaxArray",
+                                new XAttribute("index", "Shields"),
+                                new XAttribute("value", "126")))),
+                    new(
+                        "CUnit",
+                        new XAttribute("id", "HeroProbius"),
+                        new XElement(
+                            "LifeMax",
+                            new XAttribute("value", "1260"))),
+                })
+                .AddLevelScalingArrayElements(new List<XElement>()
+                {
+                    new(
+                        "LevelScalingArray",
+                        new XElement(
+                            "Modifications",
+                            new XElement(
+                                "Catalog",
+                                new XAttribute("value", "Behavior")),
+                            new XElement(
+                                "Entry",
+                                new XAttribute("value", "ProbiusShieldCapacitorPassiveShieldBuff")),
+                            new XElement(
+                                "Field",
+                                new XAttribute("value", "Modification.VitalMaxArray[1]")),
+                            new XElement(
+                                "Value",
+                                new XAttribute("value", "0.040000"))),
+                        new XElement(
+                            "Modifications",
+                            new XElement(
+                                "Catalog",
+                                new XAttribute("value", "Unit")),
+                            new XElement(
+                                "Entry",
+                                new XAttribute("value", "HeroProbius")),
+                            new XElement(
+                                "Field",
+                                new XAttribute("value", "LifeMax")),
+                            new XElement(
+                                "Value",
+                                new XAttribute("value", "0.040000")))),
+                }));
+
+        HeroesData heroesData = loader.HeroesData;
+
+        // act
+        string parsed = GameStringParser.ParseTooltipDescription(description, heroesData);
+
+        // assert
+        parsed.Should().Be("Probius gains permanent Shields equal to <c val=\"#TooltipNumbers\">10% </c>of his max Health. Shields regenerate quickly as long as he hasn't taken damage recently.");
     }
 }

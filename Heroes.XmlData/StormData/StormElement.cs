@@ -2,6 +2,9 @@
 
 public class StormElement
 {
+    private const string _idAttribute = "id";
+    private const string _parentAttribute = "parent";
+
     public StormElement(StormXElementValuePath baseValue)
     {
         OriginalStormXElementValues.Add(baseValue);
@@ -21,6 +24,34 @@ public class StormElement
     public StormElementData DataValues { get; private set; }
 
     public List<StormXElementValuePath> OriginalStormXElementValues { get; } = [];
+
+    [MemberNotNullWhen(true, nameof(Id))]
+    public bool HasId => DataValues.KeyValueDataPairs.ContainsKey(_idAttribute);
+
+    [MemberNotNullWhen(true, nameof(ParentId))]
+    public bool HasParentId => DataValues.KeyValueDataPairs.ContainsKey(_parentAttribute);
+
+    public string? Id
+    {
+        get
+        {
+            if (HasId)
+                return DataValues.KeyValueDataPairs[_idAttribute].Value;
+            else
+                return null;
+        }
+    }
+
+    public string? ParentId
+    {
+        get
+        {
+            if (HasParentId)
+                return DataValues.KeyValueDataPairs[_parentAttribute].Value;
+            else
+                return null;
+        }
+    }
 
     public void AddValue(StormXElementValuePath stormXElementValue)
     {

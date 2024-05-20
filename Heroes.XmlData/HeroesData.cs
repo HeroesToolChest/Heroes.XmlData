@@ -34,6 +34,11 @@ public class HeroesData
 
     //public int? GetBuildNumber() => _stormStorage.GetBuildId();
 
+    public List<GameStringText> Test()
+    {
+        return _stormStorageCacheData.Test();
+    }
+
     /// <summary>
     /// Checks if the gamestring id exists.
     /// </summary>

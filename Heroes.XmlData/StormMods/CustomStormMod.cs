@@ -1,6 +1,4 @@
-﻿using System.Xml.Linq;
-
-namespace Heroes.XmlData.StormMods;
+﻿namespace Heroes.XmlData.StormMods;
 
 internal class CustomStormMod : IStormMod
 {

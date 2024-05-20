@@ -1,9 +1,7 @@
-﻿using Heroes.XmlData.StormData;
-
-namespace Heroes.XmlData.Tests.StormData;
+﻿namespace Heroes.XmlData.StormData.Tests;
 
 [TestClass]
-public class StormXElementIdTests
+public class StormElementIdTests
 {
     [TestMethod]
     [DataRow("CEffectDamage", "effect1", "CEffectDamage", "effect1")]
@@ -12,11 +10,11 @@ public class StormXElementIdTests
     public void Equals_AreEquals_ReturnsTrue(string elementName1, string id1, string elementName2, string id2)
     {
         // arrange
-        StormElementId stormXElementId1 = new(elementName1, id1);
-        StormElementId stormXElementId2 = new(elementName2, id2);
+        StormElementId stormElementId1 = new(elementName1, id1);
+        StormElementId stormElementId2 = new(elementName2, id2);
 
         // act
-        bool result = stormXElementId1.Equals(stormXElementId2);
+        bool result = stormElementId1.Equals(stormElementId2);
 
         // assert
         result.Should().BeTrue();
@@ -29,11 +27,11 @@ public class StormXElementIdTests
     public void Equals_AreNotEquals_ReturnsFalse(string elementName1, string id1, string elementName2, string id2)
     {
         // arrange
-        StormElementId stormXElementId1 = new(elementName1, id1);
-        StormElementId stormXElementId2 = new(elementName2, id2);
+        StormElementId stormElementId1 = new(elementName1, id1);
+        StormElementId stormElementId2 = new(elementName2, id2);
 
         // act
-        bool result = stormXElementId1.Equals(stormXElementId2);
+        bool result = stormElementId1.Equals(stormElementId2);
 
         // assert
         result.Should().BeFalse();

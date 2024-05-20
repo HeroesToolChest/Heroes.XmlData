@@ -23,4 +23,6 @@ internal interface IStormStorageCacheData
     bool TryGetStormStyleConstantsHexColorValue(string name, [NotNullWhen(true)] out StormStringValue? stormStringValue);
 
     double GetValueFromConstElementAsNumber(XElement constElement);
+
+    List<GameStringText> Test();
 }
