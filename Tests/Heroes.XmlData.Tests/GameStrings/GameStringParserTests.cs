@@ -33,7 +33,7 @@ public class GameStringParserTests
     }
 
     [TestMethod]
-    public void ParseTooltipDescription_NormalGamestring_ParsedGameString()
+    public void ParseTooltipDescription_CastIntroTimeHasDefaultValue_ParsedGameString()
     {
         // arrange
         string description = "After <c val=\"#TooltipNumbers\"><d ref=\"Abil,GuldanHorrify, CastIntroTime + Effect,GuldanHorrifyAbilityStartCreatePersistent,PeriodicPeriodArray[0]\" precision=\"2\"/></c> seconds, deal <c val=\"#TooltipNumbers\"><d ref=\"Effect,GuldanHorrifyDamage,Amount\"/></c> damage to enemy Heroes in an area and Fear them for <c val=\"#TooltipNumbers\"><d ref=\"Behavior,GuldanHorrifyFearDuration,Duration\"/></c> seconds. While Feared, Heroes are Silenced and are forced to run away from Horrify's center.";
@@ -49,6 +49,12 @@ public class GameStringParserTests
                 })
                 .AddElements(new List<XElement>()
                 {
+                    new(
+                        "CAbil",
+                        new XAttribute("default", "1")),
+                    new(
+                        "CAbilEffectTarget",
+                        new XAttribute("default", "1")),
                     new(
                         "CAbilEffectTarget",
                         new XAttribute("id", "GuldanHorrify")),
@@ -925,20 +931,6 @@ public class GameStringParserTests
                             "Modifications",
                             new XElement(
                                 "Catalog",
-                                new XAttribute("value", "Effect")),
-                            new XElement(
-                                "Entry",
-                                new XAttribute("value", "DVaMechSelfDestructDetonationSearchDamage")),
-                            new XElement(
-                                "Field",
-                                new XAttribute("value", "Amount")),
-                            new XElement(
-                                "Value",
-                                new XAttribute("value", "0.040000"))),
-                        new XElement(
-                            "Modifications",
-                            new XElement(
-                                "Catalog",
                                 new XAttribute("value", "Accumulator")),
                             new XElement(
                                 "Entry",
@@ -1460,7 +1452,7 @@ public class GameStringParserTests
     }
 
     [TestMethod]
-    public void ParseTooltipDescription__ParsedGameString()
+    public void ParseTooltipDescription_LevelScalingArrayIsUsingNumericalIndexInsteadOfText_ParsedGameString()
     {
         // arrange
         string description = "Probius gains permanent Shields equal to <c val=\"#TooltipNumbers\"><d ref=\"(Behavior,ProbiusShieldCapacitorPassiveShieldBuff,Modification.VitalMaxArray[Shields] / Unit,HeroProbius,LifeMax) * 100\"/>% </c>of his max Health. Shields regenerate quickly as long as he hasn't taken damage recently.";

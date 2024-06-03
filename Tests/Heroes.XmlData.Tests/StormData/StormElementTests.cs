@@ -56,6 +56,61 @@ public class StormElementTests
     }
 
     [TestMethod]
+    public void AddValue_MergingOtherStormElement_DataValuesAreMerged()
+    {
+        XElement element = XElement.Parse(@"
+<CAbil default=""1"">
+  <Name value=""Abil/Name/##id##"" />
+  <TechPlayer value=""Upkeep"" />
+  <TargetMessage value=""Abil/TargetMessage/DefaultTargetMessage"" />
+  <OrderArray>
+    <Color value=""255,0,255,0"" />
+    <Model value=""Assets\UI\Feedback\WayPointConfirm\WayPointConfirm.m3"" />
+    <LineTexture value=""Assets\Textures\WayPointLine.dds"" />
+  </OrderArray>
+  <SharedFlags index=""DisableWhileDead"" value=""1"" />
+  <SharedFlags index=""AllowQuickCastCustomization"" value=""1"" />
+  <SharedFlags index=""TargetCursorVisibleInBlackMask"" value=""1"" />
+</CAbil>
+");
+
+        XElement mergingElement = XElement.Parse(@"
+<CAbilEffectInstant default=""1"">
+  <CmdButtonArray index=""Execute"" AutoQueueId=""Spell"">
+    <Flags index=""Continuous"" value=""1"" />
+  </CmdButtonArray>
+  <OrderArray index=""0"" LineTexture=""Assets\Textures\Storm_WayPointLine.dds"" />
+  <Flags index=""AllowMovement"" value=""1"" />
+  <Flags index=""WaitToSpend"" value=""0"" />
+  <Flags index=""ValidateButtonState"" value=""1"" />
+  <SharedFlags index=""DisableWhileDead"" value=""0"" />
+</CAbilEffectInstant>
+");
+        StormElement stormElement = new(new StormXElementValuePath(element, "some\\path"));
+        StormElement otherStormElement = new(new StormXElementValuePath(mergingElement, "some\\path\\two"));
+
+        // act
+        stormElement.AddValue(otherStormElement);
+
+        // assert
+        stormElement.DataValues.KeyValueDataPairs["default"].Value.Should().Be("1");
+        stormElement.DataValues.KeyValueDataPairs["name"].Value.Should().Be("Abil/Name/##id##");
+        stormElement.DataValues.KeyValueDataPairs["OrderArray"].KeyValueDataPairs["0"].KeyValueDataPairs["color"].KeyValueDataPairs["0"].Value.Should().Be("255,0,255,0");
+        stormElement.DataValues.KeyValueDataPairs["OrderArray"].KeyValueDataPairs["0"].KeyValueDataPairs["Model"].KeyValueDataPairs["0"].Value.Should().Be("Assets\\UI\\Feedback\\WayPointConfirm\\WayPointConfirm.m3");
+        stormElement.DataValues.KeyValueDataPairs["OrderArray"].KeyValueDataPairs["0"].KeyValueDataPairs["LineTexture"].KeyValueDataPairs["0"].Value.Should().Be("Assets\\Textures\\Storm_WayPointLine.dds");
+        stormElement.DataValues.KeyValueDataPairs["SharedFlags"].KeyValueDataPairs["disableWhileDead"].Value.Should().Be("0");
+        stormElement.DataValues.KeyValueDataPairs["SharedFlags"].KeyValueDataPairs["AllowQuickCastCustomization"].Value.Should().Be("1");
+        stormElement.DataValues.KeyValueDataPairs["SharedFlags"].KeyValueDataPairs["TargetCursorVisibleInBlackMask"].Value.Should().Be("1");
+        stormElement.DataValues.KeyValueDataPairs["Flags"].KeyValueDataPairs["AllowMovement"].Value.Should().Be("1");
+        stormElement.DataValues.KeyValueDataPairs["Flags"].KeyValueDataPairs["WaitToSpend"].Value.Should().Be("0");
+        stormElement.DataValues.KeyValueDataPairs["Flags"].KeyValueDataPairs["ValidateButtonState"].Value.Should().Be("1");
+        stormElement.DataValues.KeyValueDataPairs["CmdButtonArray"].KeyValueDataPairs["Execute"].KeyValueDataPairs["AutoQueueId"].KeyValueDataPairs["0"].Value.Should().Be("Spell");
+        stormElement.DataValues.KeyValueDataPairs["CmdButtonArray"].KeyValueDataPairs["Execute"].KeyValueDataPairs["Flags"].KeyValueDataPairs["Continuous"].Value.Should().Be("1");
+
+        stormElement.OriginalStormXElementValues.Count.Should().Be(2);
+    }
+
+    [TestMethod]
     public void AddValue_AddMultipleValuesWithIdThatHasParents_DataValuesAreMerged()
     {
         XElement element = XElement.Parse(@"

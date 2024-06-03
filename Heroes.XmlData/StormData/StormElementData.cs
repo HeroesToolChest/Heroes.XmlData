@@ -1,5 +1,8 @@
-﻿namespace Heroes.XmlData.StormData;
+﻿using System.Diagnostics;
 
+namespace Heroes.XmlData.StormData;
+
+[DebuggerDisplay("{DebuggerDisplay,nq}")]
 public class StormElementData
 {
     private static readonly HashSet<string> _otherElementArrays = ["On", "Cost", "CatalogModifications", "ConditionalEvents"];
@@ -12,39 +15,74 @@ public class StormElementData
         Parse(rootElement);
     }
 
-    public StormElementData(string value)
+    internal StormElementData(StormElementData parent, string field, bool isArray = false)
+    {
+        Parent = parent;
+
+        if (!string.IsNullOrWhiteSpace(parent.Field))
+        {
+            if (isArray)
+                Field = $"{parent.Field}[{field}]";
+            else
+                Field = $"{parent.Field}.{field}";
+        }
+        else
+        {
+            Field = field;
+        }
+    }
+
+    internal StormElementData(StormElementData parent, string field, XElement rootElement)
+        : this(parent, field)
+    {
+        Parse(rootElement);
+    }
+
+    internal StormElementData(StormElementData parent, string field, string value, bool isIndex = false)
+        : this(parent, field, isIndex)
     {
         Value = value;
     }
 
-    public StormElementData(string value, string constValue)
+    internal StormElementData(StormElementData parent, string field, string value, string constValue)
+        : this(parent, field)
     {
         Value = value;
         ConstValue = constValue;
     }
 
-    public StormElementData(XElement rootElement, bool isInnerArray = false)
+    internal StormElementData(StormElementData parent, string field, XElement rootElement, bool isInnerArray = false, bool isIndex = false)
+        : this(parent, field, isIndex)
     {
         Parse(rootElement, isInnerArray);
     }
 
-    public StormElementData(XElement element, string index, bool isInnerArray = false)
+    internal StormElementData(StormElementData parent, string field, XElement element, string index, bool isInnerArray = false)
+        : this(parent, field)
     {
-        KeyValueDataPairs[index] = new StormElementData(element, isInnerArray);
+        KeyValueDataPairs[index] = new StormElementData(this, index, element, isInnerArray, true);
     }
 
-    public StormElementData(XAttribute attribute, string index)
+    internal StormElementData(StormElementData parent, string field, XAttribute attribute, string index)
+        : this(parent, field)
     {
-        KeyValueDataPairs[index] = new StormElementData(attribute.Value);
+        KeyValueDataPairs[index] = new StormElementData(this, index, attribute.Value, true);
     }
 
     public Dictionary<string, StormElementData> KeyValueDataPairs { get; } = new(StringComparer.OrdinalIgnoreCase);
+
+    public StormElementData? Parent { get; }
+
+    public string? Field { get; }
 
     [MemberNotNullWhen(true, nameof(Value))]
     public bool HasValue => Value is not null;
 
     [MemberNotNullWhen(true, nameof(ConstValue))]
     public bool HasConstValue => ConstValue is not null;
+
+    [MemberNotNullWhen(true, nameof(ScaleValue))]
+    public bool HasHxdScale => KeyValueDataPairs.Count == 1 && KeyValueDataPairs.ContainsKey(ScaleValueParser.ScaleAttributeName);
 
     public string? Value
     {
@@ -63,7 +101,6 @@ public class StormElementData
                 else if (HasTextIndex)
                 {
                     StormElementData firstElementData = KeyValueDataPairs.First().Value;
-
                     if (firstElementData.HasValue)
                         return firstElementData.Value;
                 }
@@ -80,18 +117,71 @@ public class StormElementData
         get
         {
             if (_constValue is not null)
+            {
                 return _constValue;
-            else if (KeyValueDataPairs.Keys.Count == 1 && KeyValueDataPairs.TryGetValue("0", out StormElementData? data) && data.HasConstValue)
-                return data.ConstValue;
-            else
-                return null;
+            }
+            else if (KeyValueDataPairs.Keys.Count == 1)
+            {
+                if (HasNumericalIndex && KeyValueDataPairs.TryGetValue("0", out StormElementData? data) && data.HasConstValue)
+                {
+                    return data.ConstValue;
+                }
+                else if (HasTextIndex)
+                {
+                    StormElementData firstElementData = KeyValueDataPairs.First().Value;
+                    if (firstElementData.HasConstValue)
+                        return firstElementData.ConstValue;
+                }
+            }
+
+            return null;
         }
         private set => _constValue = value;
+    }
+
+    public string? ScaleValue
+    {
+        get
+        {
+            if (HasHxdScale)
+            {
+                return KeyValueDataPairs[ScaleValueParser.ScaleAttributeName].Value;
+            }
+
+            return null;
+        }
     }
 
     public bool HasNumericalIndex { get; init; }
 
     public bool HasTextIndex { get; init; }
+
+    [DebuggerBrowsable(DebuggerBrowsableState.RootHidden)]
+    private string DebuggerDisplay
+    {
+        get
+        {
+            string display = $"Count = {KeyValueDataPairs.Count}";
+
+            if (HasValue)
+            {
+                return $"Value = \"{Value}\", {display}";
+            }
+            else if (HasConstValue)
+            {
+                return $"ConstValue = \"{ConstValue}\", {display}";
+            }
+            else
+            {
+                if (HasNumericalIndex)
+                    return $"{display}, IsNumericalIndex";
+                else if (HasTextIndex)
+                    return $"{display}, IsTextIndex";
+                else
+                    return $"{display}";
+            }
+        }
+    }
 
     public void AddXElement(XElement element, bool isInnerArray = false)
     {
@@ -122,14 +212,14 @@ public class StormElementData
 
             if (isInnerArray)
             {
-                KeyValueDataPairs[attribute.Name.LocalName] = new StormElementData(attribute, "0")
+                KeyValueDataPairs[attribute.Name.LocalName] = new StormElementData(this, attribute.Name.LocalName, attribute, "0")
                 {
                     HasNumericalIndex = true,
                 };
             }
             else
             {
-                KeyValueDataPairs[attribute.Name.LocalName] = new StormElementData(attribute.Value);
+                KeyValueDataPairs[attribute.Name.LocalName] = new StormElementData(this, attribute.Name.LocalName, attribute.Value);
             }
         }
 
@@ -141,7 +231,6 @@ public class StormElementData
 
             if (!string.IsNullOrEmpty(indexAtt))
             {
-                bool numericalIndex = int.TryParse(indexAtt, out _);
                 if (KeyValueDataPairs.TryGetValue(elementName, out StormElementData? existingElementData))
                 {
                     if (existingElementData.KeyValueDataPairs.TryGetValue(indexAtt, out StormElementData? existingIndexedData))
@@ -150,12 +239,14 @@ public class StormElementData
                     }
                     else
                     {
-                        existingElementData.KeyValueDataPairs[indexAtt] = new StormElementData(element, true);
+                        existingElementData.KeyValueDataPairs[indexAtt] = new StormElementData(existingElementData, indexAtt, element, true, true);
                     }
                 }
                 else
                 {
-                    KeyValueDataPairs[elementName] = new StormElementData(element, indexAtt, true)
+                    bool numericalIndex = int.TryParse(indexAtt, out _);
+
+                    KeyValueDataPairs[elementName] = new StormElementData(this, element.Name.LocalName, element, indexAtt, true)
                     {
                         HasNumericalIndex = numericalIndex,
                         HasTextIndex = !numericalIndex,
@@ -168,11 +259,11 @@ public class StormElementData
                 {
                     string nextIndex = existingData.KeyValueDataPairs.Keys.Count.ToString();
 
-                    existingData.KeyValueDataPairs[nextIndex] = new StormElementData(element, true);
+                    existingData.KeyValueDataPairs[nextIndex] = new StormElementData(existingData, nextIndex, element, true, true);
                 }
                 else
                 {
-                    KeyValueDataPairs[elementName] = new StormElementData(element, "0", true)
+                    KeyValueDataPairs[elementName] = new StormElementData(this, element.Name.LocalName, element, "0", true)
                     {
                         HasNumericalIndex = true,
                     };
@@ -184,161 +275,17 @@ public class StormElementData
             }
             else if (string.IsNullOrEmpty(valueAtt))
             {
-                KeyValueDataPairs[elementName] = new StormElementData(element);
+                KeyValueDataPairs[elementName] = new StormElementData(this, element.Name.LocalName, element);
             }
             else
             {
                 string? constValueAtt = element.Attribute($"{StormModStorage.SelfNameConst}value")?.Value ?? element.Attribute($"{StormModStorage.SelfNameConst}Value")?.Value;
 
                 if (string.IsNullOrEmpty(constValueAtt))
-                    KeyValueDataPairs[elementName] = new StormElementData(valueAtt);
+                    KeyValueDataPairs[elementName] = new StormElementData(this, elementName, valueAtt);
                 else
-                    KeyValueDataPairs[elementName] = new StormElementData(valueAtt, constValueAtt);
+                    KeyValueDataPairs[elementName] = new StormElementData(this, elementName, valueAtt, constValueAtt);
             }
         }
     }
 }
-//[DebuggerDisplay("{DebuggerDisplay,nq}")]
-//public class StormElementData
-//{
-//    private static readonly HashSet<string> _otherElementArrays = ["On", "Cost", "CatalogModifications"];
-
-//    public StormElementData(string value)
-//    {
-//        Value = value;
-//    }
-
-//    public StormElementData(XElement rootElement)
-//    {
-//       Parse(rootElement);
-//    }
-
-//    public StormElementData(XElement rootElement, bool innerArray)
-//    {
-//        Parse(rootElement, innerArray);
-//    }
-
-//    public StormElementData(string index, XElement element)
-//    {
-//        KeyValueDataPairs[index] = new StormElementData(element);
-//    }
-
-//    public StormElementData(string index, XElement element, bool innerArray)
-//    {
-//        KeyValueDataPairs[index] = new StormElementData(element, innerArray);
-//    }
-
-//    public Dictionary<string, StormElementData> KeyValueDataPairs { get; } = new(StringComparer.OrdinalIgnoreCase);
-
-//    [MemberNotNullWhen(true, nameof(Value))]
-//    public bool HasValue => Value is not null;
-
-//    [MemberNotNullWhen(true, nameof(ConstValue))]
-//    public bool HasConstValue => ConstValue is not null;
-
-//    public string? Value { get; private set; }
-
-//    public string? ConstValue { get; private set; }
-
-//    public bool IsArray { get; private set; }
-
-//    [DebuggerBrowsable(DebuggerBrowsableState.RootHidden)]
-//    private string DebuggerDisplay
-//    {
-//        get
-//        {
-//            string display = $"Count = {KeyValueDataPairs.Count}";
-
-//            if (HasValue)
-//                return $"Value = \"{Value}\", {display}";
-//            else
-//                return display;
-//        }
-//    }
-
-//    public void AddXElement(XElement element)
-//    {
-//        Parse(element);
-//    }
-
-//    private void Parse(XElement rootElement, bool innerArray = false)
-//    {
-//        IEnumerable<XAttribute> attributes = rootElement.Attributes();
-//        IEnumerable<XElement> elements = rootElement.Elements();
-
-//        foreach (XAttribute attribute in attributes)
-//        {
-//            if (attribute.Name.LocalName.Equals("index", StringComparison.OrdinalIgnoreCase) || string.IsNullOrEmpty(attribute.Value))
-//                continue;
-
-//            if (attribute.Name.LocalName.Equals("value", StringComparison.OrdinalIgnoreCase))
-//            {
-//                Value = attribute.Value;
-//                continue;
-//            }
-
-//            if (attribute.Name.LocalName.Equals($"{StormModStorage.SelfNameConst}value", StringComparison.OrdinalIgnoreCase))
-//            {
-//                ConstValue = attribute.Value;
-//                continue;
-//            }
-
-//            KeyValueDataPairs[attribute.Name.LocalName] = new StormElementData(attribute.Value);
-//        }
-
-//        foreach (XElement element in elements)
-//        {
-//            string elementName = element.Name.LocalName;
-//            string? indexAtt = element.Attribute("index")?.Value ?? element.Attribute("Index")?.Value;
-
-//            if (!string.IsNullOrEmpty(indexAtt))
-//            {
-//                if (KeyValueDataPairs.TryGetValue(elementName, out StormElementData? outerValue))
-//                {
-//                    if (outerValue.KeyValueDataPairs.TryGetValue(indexAtt, out StormElementData? innerValue))
-//                        innerValue.AddXElement(element);
-//                    else
-//                        outerValue.KeyValueDataPairs[indexAtt] = new StormElementData(element);
-//                }
-//                else
-//                {
-//                    KeyValueDataPairs[elementName] = new StormElementData(indexAtt, element, true)
-//                    {
-//                        IsArray = true,
-//                    };
-//                }
-//            }
-//            else
-//            {
-//                // check if existing
-//                if (KeyValueDataPairs.TryGetValue(elementName, out StormElementData? value))
-//                {
-//                    if (value.IsArray)
-//                    {
-//                        string nextIndex = value.KeyValueDataPairs.Keys.Count.ToString();
-
-//                        value.KeyValueDataPairs[nextIndex] = new StormElementData(element);
-//                    }
-//                    else
-//                    {
-//                        value.AddXElement(element);
-//                    }
-//                }
-//                else
-//                {
-//                    if (innerArray || elementName.EndsWith("array", StringComparison.OrdinalIgnoreCase) || _otherElementArrays.Contains(elementName))
-//                    {
-//                        KeyValueDataPairs[elementName] = new StormElementData("0", element, true)
-//                        {
-//                            IsArray = true,
-//                        };
-//                    }
-//                    else
-//                    {
-//                        KeyValueDataPairs[elementName] = new StormElementData(element);
-//                    }
-//                }
-//            }
-//        }
-//    }
-//}

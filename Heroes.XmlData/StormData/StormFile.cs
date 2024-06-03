@@ -21,6 +21,30 @@ public record StormFile
     public required string Path { get; init; } = string.Empty;
 
     /// <inheritdoc/>
+    public virtual bool Equals(StormFile? other)
+    {
+        if (other is null)
+            return false;
+
+        if (StormModName.AsSpan().Equals(other.StormModName.AsSpan(), StringComparison.OrdinalIgnoreCase) &&
+            StormModDirectoryPath.AsSpan().Equals(other.StormModDirectoryPath.AsSpan(), StringComparison.OrdinalIgnoreCase) &&
+            Path.AsSpan().Equals(other.Path.AsSpan(), StringComparison.OrdinalIgnoreCase))
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
+
+    /// <inheritdoc/>
+    public override int GetHashCode()
+    {
+        return HashCode.Combine(StormModName?.ToUpperInvariant(), StormModDirectoryPath?.ToUpperInvariant(), Path.ToUpperInvariant());
+    }
+
+    /// <inheritdoc/>
     public override string ToString()
     {
         return Path;

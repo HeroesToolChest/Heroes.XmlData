@@ -22,7 +22,7 @@ internal class CustomStormMod : IStormMod
 
     public StormModStorage StormModStorage { get; }
 
-    internal string CustomFilePath => $"hxd-{Name}";
+    internal string CustomFilePath => $"{HxdConstants.Name}-{Name}";
 
     public IEnumerable<IStormMod> GetStormMapMods(S2MAProperties s2maProperties)
     {

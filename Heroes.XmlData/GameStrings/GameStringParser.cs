@@ -40,42 +40,51 @@ internal class GameStringParser
         double resultValue = 0;
         double? scaling = null;
 
-        using XmlObject xmlDataTag = XmlParser.Parse(dataTag);
-        XmlNode xmlRoot = xmlDataTag.Root;
-        XmlAttributeList xmlAttributes = xmlRoot.Attributes;
-
-        if (!((xmlAttributes.TryFind("precision", out XmlAttribute precisionAttribute) || xmlAttributes.TryFind("Precision", out precisionAttribute)) &&
-            precisionAttribute.Value.TryToInt32(out int precision)))
+        try
         {
-            precision = 0;
-        }
+            using XmlObject xmlDataTag = XmlParser.Parse(dataTag);
+            XmlNode xmlRoot = xmlDataTag.Root;
+            XmlAttributeList xmlAttributes = xmlRoot.Attributes;
 
-        if (xmlAttributes.TryFind("const", out XmlAttribute constAttribute))
-        {
-            Span<char> buffer = stackalloc char[constAttribute.Value.GetCharCount()];
-
-            Encoding.UTF8.TryGetChars(constAttribute.Value.AsSpan(), buffer, out int charsWritten);
-
-            if (_heroesData.TryGetConstantXElement(buffer, out StormXElementValuePath? stormXElementValue))
+            if (!((xmlAttributes.TryFind("precision", out XmlAttribute precisionAttribute) || xmlAttributes.TryFind("Precision", out precisionAttribute)) &&
+                precisionAttribute.Value.TryToInt32(out int precision)))
             {
-                resultValue = _heroesData.EvaluateConstantElement(stormXElementValue.Value);
+                precision = 0;
             }
+
+            if (xmlAttributes.TryFind("const", out XmlAttribute constAttribute))
+            {
+                Span<char> buffer = stackalloc char[constAttribute.Value.GetCharCount()];
+
+                Encoding.UTF8.TryGetChars(constAttribute.Value.AsSpan(), buffer, out int charsWritten);
+
+                StormXElementValuePath? stormXElementValue = _heroesData.GetConstantXElement(buffer);
+
+                if (stormXElementValue is not null)
+                {
+                    resultValue = _heroesData.EvaluateConstantElement(stormXElementValue.Value);
+                }
+            }
+            else if (xmlAttributes.TryFind("ref", out XmlAttribute refAttribute))
+            {
+                Span<char> buffer = stackalloc char[refAttribute.Value.GetCharCount()];
+
+                Encoding.UTF8.TryGetChars(refAttribute.Value.AsSpan(), buffer, out int charsWritten);
+
+                ValueScale valueScale = _dataRefParser.Parse(buffer);
+                resultValue = valueScale.Value;
+                scaling = valueScale.Scaling;
+            }
+
+            if (scaling.HasValue)
+                return new ValueScale(Math.Round(resultValue, precision), Math.Round(scaling.Value, MaxScalingLength));
+            else
+                return new ValueScale(Math.Round(resultValue, precision));
         }
-        else if (xmlAttributes.TryFind("ref", out XmlAttribute refAttribute))
+        catch (Exception ex)
         {
-            Span<char> buffer = stackalloc char[refAttribute.Value.GetCharCount()];
-
-            Encoding.UTF8.TryGetChars(refAttribute.Value.AsSpan(), buffer, out int charsWritten);
-
-            ValueScale valueScale = _dataRefParser.Parse(buffer);
-            resultValue = valueScale.Value;
-            scaling = valueScale.Scaling;
+            throw;
         }
-
-        if (scaling.HasValue)
-            return new ValueScale(Math.Round(resultValue, precision), Math.Round(scaling.Value, MaxScalingLength));
-        else
-            return new ValueScale(Math.Round(resultValue, precision));
     }
 
     // <c val=\"#TooltipNumbers\">
@@ -147,7 +156,7 @@ internal class GameStringParser
 
         while (_index < description.Length)
         {
-            if (description[_index] == '<' && _index + 1 < description.Length && description[_index + 1] == 'd')
+            if (description[_index] == '<' && _index + 2 < description.Length && description[_index + 1] == 'd' && description[_index + 2] == ' ')
             {
 #if DEBUG
                 PushNormalText(description);

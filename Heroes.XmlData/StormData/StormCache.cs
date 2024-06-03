@@ -15,6 +15,8 @@ internal class StormCache
     /// </summary>
     public HashSet<StormFile> NotFoundFilesList { get; } = [];
 
+    public HashSet<KeyValuePair<LevelScalingEntry, StormStringValue>> ScaleValuesNotFoundList { get; } = [];
+
     /// <summary>
     /// Gets a dictionary of gamestrings by id.
     /// </summary>
@@ -45,6 +47,8 @@ internal class StormCache
     /// </summary>
     public Dictionary<string, Dictionary<string, StormElement>> StormElementsByDataObjectType { get; } = new(StringComparer.OrdinalIgnoreCase);
 
+    public Dictionary<string, Dictionary<string, StormElement>> ScaleValueStormElementsByDataObjectType { get; } = new(StringComparer.OrdinalIgnoreCase);
+
     /// <summary>
     /// Gets the font style cache. Used to determine color hex values.
     /// </summary>
@@ -59,6 +63,8 @@ internal class StormCache
     /// Gets the level scaling cache. Used to determine the scaling value of damage abilities.
     /// </summary>
     public Dictionary<LevelScalingEntry, StormStringValue> ScaleValueByEntry { get; } = [];
+
+
 
     public void Clear()
     {

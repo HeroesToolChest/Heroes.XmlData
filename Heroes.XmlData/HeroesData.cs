@@ -10,8 +10,6 @@ public class HeroesData
 {
     private readonly IStormStorage _stormStorage;
 
-    private readonly IStormStorageCacheData _stormStorageCacheData;
-
     //private readonly HashSet<RequiredStormFile> _notFoundDirectoriesList = [];
     //private readonly HashSet<RequiredStormFile> _notFoundFilesList = [];
 
@@ -20,11 +18,6 @@ public class HeroesData
     internal HeroesData(IStormStorage stormStorage)
     {
         _stormStorage = stormStorage;
-    }
-
-    internal HeroesData(IStormStorageCacheData stormStorageCacheData)
-    {
-        _stormStorageCacheData = stormStorageCacheData;
     }
 
     /// <summary>
@@ -36,7 +29,7 @@ public class HeroesData
 
     public List<GameStringText> Test()
     {
-        return _stormStorageCacheData.Test();
+        return _stormStorage.Test();
     }
 
     /// <summary>
@@ -292,40 +285,15 @@ public class HeroesData
     /// <exception cref="ArgumentNullException"><paramref name="name"/> is <see langword="null"/>.</exception>
     public bool TryGetStormStyleHexColorValue(string name, out StormStringValue? stormStringValue)
     {
-        return _stormStorageCacheData.TryGetStormStyleHexColorValue(name, out stormStringValue);
-    }
-
-    /// <summary>
-    /// Checks if the constant id exists.
-    /// </summary>
-    /// <param name="id">A character span that contains the constant id.</param>
-    /// <returns><see langword="true"/> if the constant id is found, otherwise <see langword="false"/>.</returns>
-    public bool IsConstantXElementExists(ReadOnlySpan<char> id)
-    {
-        return IsConstantXElementExists(id.ToString());
-    }
-
-    /// <summary>
-    /// Checks if the constant id exists.
-    /// </summary>
-    /// <param name="id">The constant id.</param>
-    /// <returns><see langword="true"/> if the constant id is found, otherwise <see langword="false"/>.</returns>
-    public bool IsConstantXElementExists(string id)
-    {
-        ArgumentNullException.ThrowIfNull(id);
-
-        return _stormStorage.StormCustomCache.ConstantXElementById.ContainsKey(id) ||
-            _stormStorage.StormMapCache.ConstantXElementById.ContainsKey(id) ||
-            _stormStorage.StormCache.ConstantXElementById.ContainsKey(id);
+        return _stormStorage.TryGetStormStyleHexColorValue(name, out stormStringValue);
     }
 
     /// <summary>
     /// Gets the <see cref="XElement"/> from the constant id.
     /// </summary>
     /// <param name="id">A character span that contains the constant id.</param>
-    /// <returns>The <see cref="StormXElementValuePath"/>.</returns>
-    /// <exception cref="KeyNotFoundException"><paramref name="id"/> was not found.</exception>
-    public StormXElementValuePath GetConstantXElement(ReadOnlySpan<char> id)
+    /// <returns>The <see cref="StormXElementValuePath"/> or <see langword="null"/> if not found.</returns>
+    public StormXElementValuePath? GetConstantXElement(ReadOnlySpan<char> id)
     {
         return GetConstantXElement(id.ToString());
     }
@@ -334,70 +302,143 @@ public class HeroesData
     /// Gets the <see cref="XElement"/> from the constant id.
     /// </summary>
     /// <param name="id">The constant id.</param>
-    /// <returns>The <see cref="StormXElementValuePath"/>.</returns>
+    /// <returns>The <see cref="StormXElementValuePath"/> or <see langword="null"/> if not found.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="id"/> is <see langword="null"/>.</exception>
-    /// <exception cref="KeyNotFoundException"><paramref name="id"/> was not found.</exception>
-    public StormXElementValuePath GetConstantXElement(string id)
+    public StormXElementValuePath? GetConstantXElement(string id)
     {
         ArgumentNullException.ThrowIfNull(id);
 
-        // custom cache always first
-        if (_stormStorage.StormCustomCache.ConstantXElementById.TryGetValue(id, out StormXElementValuePath? stormXElementValue))
-            return stormXElementValue;
-
-        // map cache second
-        if (_stormStorage.StormMapCache.ConstantXElementById.TryGetValue(id, out stormXElementValue))
-            return stormXElementValue;
-
-        return _stormStorage.StormCache.ConstantXElementById[id];
+        return _stormStorage.GetConstantXElementById(id);
     }
 
-    /// <summary>
-    /// Looks up a constant element from the given <paramref name="id"/>, returning a value that indicates whether such value exists.
-    /// </summary>
-    /// <param name="id">A character span that contains the constant id.</param>
-    /// <param name="stormXElementValue">The returning <see cref="StormXElementValuePath"/> if <paramref name="id"/> is found.</param>
-    /// <returns><see langword="true"/> if the value was found; otherwise <see langword="false"/>.</returns>
-    public bool TryGetConstantXElement(ReadOnlySpan<char> id, [NotNullWhen(true)] out StormXElementValuePath? stormXElementValue)
+    public StormElement? GetBaseStormElement(ReadOnlySpan<char> elementType)
     {
-        return _stormStorageCacheData.TryGetConstantXElementById(id, out stormXElementValue);
+        return _stormStorage.GetBaseStormElement(elementType);
     }
 
-    /// <summary>
-    /// Looks up a constant element from the given <paramref name="id"/>, returning a value that indicates whether such value exists.
-    /// </summary>
-    /// <param name="id">The constant id.</param>
-    /// <param name="stormXElementValue">The returning <see cref="StormXElementValuePath"/> if <paramref name="id"/> is found.</param>
-    /// <returns><see langword="true"/> if the value was found; otherwise <see langword="false"/>.</returns>
-    /// <exception cref="ArgumentNullException"><paramref name="id"/> is <see langword="null"/>.</exception>
-    public bool TryGetConstantXElement(string id, [NotNullWhen(true)] out StormXElementValuePath? stormXElementValue)
+    public StormElement? GetBaseStormElement(string elementType)
     {
-        return _stormStorageCacheData.TryGetConstantXElementById(id, out stormXElementValue);
+        return _stormStorage.GetBaseStormElement(elementType);
     }
 
-    public bool TryGetStormElement(ReadOnlySpan<char> dataObjectType, ReadOnlySpan<char> id, [NotNullWhen(true)] out StormElement? stormElement)
+    public StormElement? GetStormElement(ReadOnlySpan<char> elementType)
     {
-        return _stormStorageCacheData.TryGetStormElementsByDataObjectType(dataObjectType, id, out stormElement);
+        return _stormStorage.GetStormElementByElementType(elementType);
     }
 
-    public bool TryGetStormElement(string dataObjectType, string id, [NotNullWhen(true)] out StormElement? stormElement)
+    public StormElement? GetStormElement(string elementType)
     {
-        return _stormStorageCacheData.TryGetStormElementsByDataObjectType(dataObjectType, id, out stormElement);
+        return _stormStorage.GetStormElementByElementType(elementType);
     }
+
+    public StormElement? GetStormElement(ReadOnlySpan<char> dataObjectType, ReadOnlySpan<char> id)
+    {
+        return _stormStorage.GetStormElementByDataObjectType(dataObjectType, id);
+    }
+
+    public StormElement? GetStormElement(string dataObjectType, string id)
+    {
+        return _stormStorage.GetStormElementByDataObjectType(dataObjectType, id);
+    }
+
+    public StormElement? GetScalingStormElement(ReadOnlySpan<char> dataObjectType, ReadOnlySpan<char> id)
+    {
+        return _stormStorage.GetScaleValueStormElementByDataObjectType(dataObjectType, id);
+    }
+
+    public StormElement? GetScalingStormElement(string dataObjectType, string id)
+    {
+        return _stormStorage.GetScaleValueStormElementByDataObjectType(dataObjectType, id);
+    }
+
+    public StormElement? GetCompleteStormElement(ReadOnlySpan<char> dataObjectType, ReadOnlySpan<char> id)
+    {
+        return _stormStorage.GetCompleteStormElement(dataObjectType, id);
+    }
+
+    public StormElement? GetCompleteStormElement(string dataObjectType, string id)
+    {
+        return _stormStorage.GetCompleteStormElement(dataObjectType, id);
+    }
+
+    //private StormElement? MergeUpStormElement(string dataObjectType, string? id, ElementType currentElementType)
+    //{
+    //    StormElement? stormElement = null;
+
+    //    if (currentElementType == ElementType.Normal && id is not null)
+    //        stormElement = GetStormElement(dataObjectType, id);
+    //    else if (currentElementType == ElementType.Type)
+    //        stormElement = GetStormElement(dataObjectType);
+    //    else if (currentElementType == ElementType.Base)
+    //        stormElement = GetBaseStormElement(dataObjectType);
+
+    //    if (stormElement is null)
+    //        return stormElement;
+
+    //    if (stormElement.HasParentId)
+    //    {
+    //        // parents
+    //        StormElement? parentElement = MergeUpStormElement(dataObjectType, stormElement.ParentId, ElementType.Normal);
+    //        parentElement?.AddValue(stormElement);
+
+    //        return parentElement ?? stormElement;
+    //    }
+    //    else if (currentElementType == ElementType.Normal)
+    //    {
+    //        // then check the element type, which has no id attribute
+    //        StormElement? typeElement = MergeUpStormElement(stormElement.ElementType, null, ElementType.Type);
+    //        typeElement?.AddValue(stormElement);
+
+    //        return typeElement ?? stormElement;
+    //    }
+    //    else if (currentElementType == ElementType.Type)
+    //    {
+    //        // then check the base element type, may not be the correct one, but close enough
+    //        StormElement? baseElement = MergeUpStormElement(stormElement.ElementType, null, ElementType.Base);
+    //        baseElement?.AddValue(stormElement);
+
+    //        return baseElement ?? stormElement;
+    //    }
+
+    //    return stormElement;
+    //}
+
+
+    //public bool TryGetStormElement(ReadOnlySpan<char> dataObjectType, ReadOnlySpan<char> id, [NotNullWhen(true)] out StormElement? stormElement)
+    //{
+    //    return _stormStorage.TryGetExistingStormElementsByDataObjectType(dataObjectType, id, out stormElement);
+    //}
+
+    //public bool TryGetStormElement(string dataObjectType, string id, [NotNullWhen(true)] out StormElement? stormElement)
+    //{
+    //    return _stormStorage.TryGetExistingStormElementsByDataObjectType(dataObjectType, id, out stormElement);
+    //}
+
+    //public bool TryGetStormElement(ReadOnlySpan<char> elementType, [NotNullWhen(true)] out StormElement? stormElement)
+    //{
+    //    return _stormStorage.TryGetExistingStormElementByElementType(elementType, out stormElement);
+    //}
+
+    //public bool TryGetStormElement(string elementType, [NotNullWhen(true)] out StormElement? stormElement)
+    //{
+    //    return _stormStorage.TryGetExistingStormElementByElementType(elementType, out stormElement);
+    //}
 
     public bool TryGetLevelScalingValue(ReadOnlySpan<char> catalog, ReadOnlySpan<char> entry, ReadOnlySpan<char> field, [NotNullWhen(true)] out StormStringValue? stormStringValue)
     {
-        return _stormStorageCacheData.TryGetLevelScalingArrayElement(catalog, entry, field, out stormStringValue);
+        return _stormStorage.TryGetLevelScalingArrayElement(catalog, entry, field, out stormStringValue);
     }
 
     public bool TryGetLevelScalingValue(string catalog, string entry, string field, [NotNullWhen(true)] out StormStringValue? stormStringValue)
     {
-        return _stormStorageCacheData.TryGetLevelScalingArrayElement(catalog, entry, field, out stormStringValue);
+        return _stormStorage.TryGetLevelScalingArrayElement(catalog, entry, field, out stormStringValue);
     }
+
+
 
     public double EvaluateConstantElement(XElement constElement)
     {
-        return _stormStorageCacheData.GetValueFromConstElementAsNumber(constElement);
+        return _stormStorage.GetValueFromConstElementAsNumber(constElement);
     }
 
     public TooltipDescription ParseGameString(string gameString, StormLocale stormLocale)

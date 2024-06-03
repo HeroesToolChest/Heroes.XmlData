@@ -18,7 +18,9 @@ public class StormElementDataTests
         StormElementData stormElementData = new(xElement);
 
         // assert
+        stormElementData.KeyValueDataPairs["default"].HasValue.Should().BeTrue();
         stormElementData.KeyValueDataPairs["default"].Value.Should().Be("1");
+        stormElementData.KeyValueDataPairs["name"].HasValue.Should().BeTrue();
         stormElementData.KeyValueDataPairs["name"].Value.Should().Be("Abil/Name/abil1");
     }
 
@@ -46,7 +48,7 @@ public class StormElementDataTests
     }
 
     [TestMethod]
-    public void StormElementDataTest_EquivalentArrayAttributAndElement_SameKeyValuePairs()
+    public void StormElementData_EquivalentArrayAttributAndElement_SameKeyValuePairs()
     {
         // arrange
         XElement withAttributes = new(
@@ -175,7 +177,7 @@ public class StormElementDataTests
     }
 
     [TestMethod]
-    public void StormElementDataTest_NumbericalIndexes_ShouldReturnTrue()
+    public void StormElementData_NumbericalIndexes_ShouldReturnTrue()
     {
         // arrange
         XElement element = new(
@@ -212,7 +214,7 @@ public class StormElementDataTests
     }
 
     [TestMethod]
-    public void StormElementDataTest_HasTextInnerArray_IndexedArrayShouldHaveTextIndex()
+    public void StormElementData_HasTextInnerArray_IndexedArrayShouldHaveTextIndex()
     {
         // arrange
         XElement element = XElement.Parse(@"
@@ -256,7 +258,7 @@ public class StormElementDataTests
     }
 
     [TestMethod]
-    public void StormElementDataTest_HasNumericalIndexInnerArray_IndexedArrayShouldHaveNumericalIndex()
+    public void StormElementData_HasNumericalIndexInnerArray_IndexedArrayShouldHaveNumericalIndex()
     {
         // arrange
         XElement element = XElement.Parse(@"
@@ -299,5 +301,207 @@ public class StormElementDataTests
         data.KeyValueDataPairs["HeroAbilArray"].KeyValueDataPairs["2"].KeyValueDataPairs["Flags"].KeyValueDataPairs["2"].Value.Should().Be("3");
         data.KeyValueDataPairs["HeroAbilArray"].KeyValueDataPairs["2"].KeyValueDataPairs["Flags"].HasNumericalIndex.Should().BeTrue();
         data.KeyValueDataPairs["HeroAbilArray"].KeyValueDataPairs["2"].KeyValueDataPairs["Flags"].HasTextIndex.Should().BeFalse();
+    }
+
+    [TestMethod]
+    public void StormElementData_ElementHasConstAttribute_ReturnsConstValue()
+    {
+        // arrange
+        XElement xElement = new(
+            "CAbil",
+            new XAttribute("default", "1"),
+            new XElement(
+                "Name",
+                new XAttribute("value", "$Name"),
+                new XAttribute($"{StormModStorage.SelfNameConst}value", "SomeValue")));
+
+        // act
+        StormElementData stormElementData = new(xElement);
+
+        // assert
+        stormElementData.KeyValueDataPairs["Name"].HasConstValue.Should().BeTrue();
+        stormElementData.KeyValueDataPairs["Name"].ConstValue.Should().Be("SomeValue");
+    }
+
+    [TestMethod]
+    public void StormElementData_ElementHasConstAttributeThatIsEmtpy_ReturnsNoConstValue()
+    {
+        // arrange
+        XElement xElement = new(
+            "CAbil",
+            new XAttribute("default", "1"),
+            new XElement(
+                "Name",
+                new XAttribute("value", "$Name"),
+                new XAttribute($"{StormModStorage.SelfNameConst}value", string.Empty)));
+
+        // act
+        StormElementData stormElementData = new(xElement);
+
+        // assert
+        stormElementData.KeyValueDataPairs["Name"].HasConstValue.Should().BeFalse();
+    }
+
+    [TestMethod]
+    public void StormElementData_HasScalingElement_ReturnsTrueForHasScale()
+    {
+        // arrange
+        XElement xElement = new(
+            "CAbil",
+            new XAttribute("default", "1"),
+            new XElement(
+                "Damage",
+                new XElement(
+                    ScaleValueParser.ScaleAttributeName,
+                    new XAttribute("Value", "0.1"))));
+
+        // act
+        StormElementData stormElementData = new(xElement);
+
+        // assert
+        stormElementData.KeyValueDataPairs["Damage"].HasHxdScale.Should().BeTrue();
+        stormElementData.KeyValueDataPairs["Damage"].ScaleValue.Should().Be("0.1");
+    }
+
+    [TestMethod]
+    public void Field_NumbericalIndexes_ReturnsCorrectFields()
+    {
+        // arrange
+        XElement element = new(
+            "CAbil",
+            new XElement(
+                "OrderArray",
+                new XAttribute("index", "0"),
+                new XAttribute("LineTexture", "Assets\\Textures\\Storm_WayPointLine0.dds")),
+            new XElement(
+                "OrderArray",
+                new XAttribute("LineTexture", "Assets\\Textures\\Storm_WayPointLine1.dds")),
+            new XElement(
+                "OrderArray",
+                new XAttribute("index", "2"),
+                new XAttribute("LineTexture", "Assets\\Textures\\Storm_WayPointLine2.dds")));
+
+        // act
+        StormElementData data = new(element);
+
+        // assert
+        data.KeyValueDataPairs["OrderArray"].Field.Should().Be("OrderArray");
+        data.KeyValueDataPairs["OrderArray"].KeyValueDataPairs["0"].Field.Should().Be("OrderArray[0]");
+        data.KeyValueDataPairs["OrderArray"].KeyValueDataPairs["0"].KeyValueDataPairs["LineTexture"].Field.Should().Be("OrderArray[0].LineTexture");
+        data.KeyValueDataPairs["OrderArray"].KeyValueDataPairs["1"].Field.Should().Be("OrderArray[1]");
+        data.KeyValueDataPairs["OrderArray"].KeyValueDataPairs["1"].KeyValueDataPairs["LineTexture"].Field.Should().Be("OrderArray[1].LineTexture");
+        data.KeyValueDataPairs["OrderArray"].KeyValueDataPairs["2"].Field.Should().Be("OrderArray[2]");
+        data.KeyValueDataPairs["OrderArray"].KeyValueDataPairs["2"].KeyValueDataPairs["LineTexture"].Field.Should().Be("OrderArray[2].LineTexture");
+    }
+
+    [TestMethod]
+    public void Field_HasTextInnerArray_ReturnsCorrectFields()
+    {
+        // arrange
+        XElement element = XElement.Parse(@"
+<CHero id=""KelThuzad"">
+  <HeroAbilArray Abil=""KelThuzadDeathAndDecay"" Button=""KelThuzadDeathAndDecay"">
+    <Flags index=""ShowInHeroSelect"" value=""1"" />
+    <Flags index=""AffectedByCooldownReduction"" value=""1"" />
+    <Flags index=""AffectedByOverdrive"" value=""1"" />
+  </HeroAbilArray>
+  <HeroAbilArray Abil=""KelThuzadFrostNova"" Button=""KelThuzadFrostNova"">
+    <Flags index=""ShowInHeroSelect"" value=""1"" />
+    <Flags index=""AffectedByCooldownReduction"" value=""1"" />
+    <Flags index=""AffectedByOverdrive"" value=""1"" />
+  </HeroAbilArray>
+  <HeroAbilArray Abil=""KelThuzadChains"" Button=""KelThuzadChains"">
+    <Flags index=""ShowInHeroSelect"" value=""1"" />
+    <Flags index=""AffectedByCooldownReduction"" value=""1"" />
+    <Flags index=""AffectedByOverdrive"" value=""1"" />
+  </HeroAbilArray>
+</CHero>
+
+");
+
+        // act
+        StormElementData data = new(element);
+
+        // assert
+        data.KeyValueDataPairs["HeroAbilArray"].Field.Should().Be("HeroAbilArray");
+        data.KeyValueDataPairs["HeroAbilArray"].KeyValueDataPairs["0"].KeyValueDataPairs["Abil"].KeyValueDataPairs["0"].Field.Should().Be("HeroAbilArray[0].Abil[0]");
+        data.KeyValueDataPairs["HeroAbilArray"].KeyValueDataPairs["0"].KeyValueDataPairs["Flags"].KeyValueDataPairs["ShowInHeroSelect"].Field.Should().Be("HeroAbilArray[0].Flags[ShowInHeroSelect]");
+        data.KeyValueDataPairs["HeroAbilArray"].KeyValueDataPairs["0"].KeyValueDataPairs["Flags"].KeyValueDataPairs["AffectedByCooldownReduction"].Field.Should().Be("HeroAbilArray[0].Flags[AffectedByCooldownReduction]");
+        data.KeyValueDataPairs["HeroAbilArray"].KeyValueDataPairs["0"].KeyValueDataPairs["Flags"].KeyValueDataPairs["AffectedByOverdrive"].Field.Should().Be("HeroAbilArray[0].Flags[AffectedByOverdrive]");
+
+        data.KeyValueDataPairs["HeroAbilArray"].KeyValueDataPairs["1"].KeyValueDataPairs["Abil"].KeyValueDataPairs["0"].Field.Should().Be("HeroAbilArray[1].Abil[0]");
+        data.KeyValueDataPairs["HeroAbilArray"].KeyValueDataPairs["1"].KeyValueDataPairs["Flags"].KeyValueDataPairs["ShowInHeroSelect"].Field.Should().Be("HeroAbilArray[1].Flags[ShowInHeroSelect]");
+        data.KeyValueDataPairs["HeroAbilArray"].KeyValueDataPairs["1"].KeyValueDataPairs["Flags"].KeyValueDataPairs["AffectedByCooldownReduction"].Field.Should().Be("HeroAbilArray[1].Flags[AffectedByCooldownReduction]");
+        data.KeyValueDataPairs["HeroAbilArray"].KeyValueDataPairs["1"].KeyValueDataPairs["Flags"].KeyValueDataPairs["AffectedByOverdrive"].Field.Should().Be("HeroAbilArray[1].Flags[AffectedByOverdrive]");
+
+        data.KeyValueDataPairs["HeroAbilArray"].KeyValueDataPairs["2"].KeyValueDataPairs["Abil"].KeyValueDataPairs["0"].Field.Should().Be("HeroAbilArray[2].Abil[0]");
+        data.KeyValueDataPairs["HeroAbilArray"].KeyValueDataPairs["2"].KeyValueDataPairs["Flags"].KeyValueDataPairs["ShowInHeroSelect"].Field.Should().Be("HeroAbilArray[2].Flags[ShowInHeroSelect]");
+        data.KeyValueDataPairs["HeroAbilArray"].KeyValueDataPairs["2"].KeyValueDataPairs["Flags"].KeyValueDataPairs["AffectedByCooldownReduction"].Field.Should().Be("HeroAbilArray[2].Flags[AffectedByCooldownReduction]");
+        data.KeyValueDataPairs["HeroAbilArray"].KeyValueDataPairs["2"].KeyValueDataPairs["Flags"].KeyValueDataPairs["AffectedByOverdrive"].Field.Should().Be("HeroAbilArray[2].Flags[AffectedByOverdrive]");
+    }
+
+    [TestMethod]
+    public void Field_HasNumericalIndexInnerArray_ReturnsCorrectFields()
+    {
+        // arrange
+        XElement element = XElement.Parse(@"
+<CHero id=""KelThuzad"">
+  <HeroAbilArray Abil=""KelThuzadDeathAndDecay"" Button=""KelThuzadDeathAndDecay"">
+    <Flags index=""0"" value=""1"" />
+    <Flags value=""2"" />
+    <Flags value=""3"" />
+  </HeroAbilArray>
+  <HeroAbilArray Abil=""KelThuzadFrostNova"" Button=""KelThuzadFrostNova"">
+    <Flags index=""0"" value=""1"" />
+    <Flags value=""2"" />
+    <Flags value=""3"" />
+  </HeroAbilArray>
+  <HeroAbilArray Abil=""KelThuzadChains"" Button=""KelThuzadChains"">
+    <Flags index=""0"" value=""1"" />
+    <Flags value=""2"" />
+    <Flags value=""3"" />
+  </HeroAbilArray>
+</CHero>
+
+");
+
+        // act
+        StormElementData data = new(element);
+
+        // assert
+        data.KeyValueDataPairs["HeroAbilArray"].Field.Should().Be("HeroAbilArray");
+        data.KeyValueDataPairs["HeroAbilArray"].KeyValueDataPairs["0"].KeyValueDataPairs["Abil"].KeyValueDataPairs["0"].Field.Should().Be("HeroAbilArray[0].Abil[0]");
+        data.KeyValueDataPairs["HeroAbilArray"].KeyValueDataPairs["0"].KeyValueDataPairs["Flags"].KeyValueDataPairs["0"].Field.Should().Be("HeroAbilArray[0].Flags[0]");
+        data.KeyValueDataPairs["HeroAbilArray"].KeyValueDataPairs["0"].KeyValueDataPairs["Flags"].KeyValueDataPairs["1"].Field.Should().Be("HeroAbilArray[0].Flags[1]");
+        data.KeyValueDataPairs["HeroAbilArray"].KeyValueDataPairs["0"].KeyValueDataPairs["Flags"].KeyValueDataPairs["2"].Field.Should().Be("HeroAbilArray[0].Flags[2]");
+
+        data.KeyValueDataPairs["HeroAbilArray"].KeyValueDataPairs["1"].KeyValueDataPairs["Abil"].KeyValueDataPairs["0"].Field.Should().Be("HeroAbilArray[1].Abil[0]");
+        data.KeyValueDataPairs["HeroAbilArray"].KeyValueDataPairs["1"].KeyValueDataPairs["Flags"].KeyValueDataPairs["0"].Field.Should().Be("HeroAbilArray[1].Flags[0]");
+        data.KeyValueDataPairs["HeroAbilArray"].KeyValueDataPairs["1"].KeyValueDataPairs["Flags"].KeyValueDataPairs["1"].Field.Should().Be("HeroAbilArray[1].Flags[1]");
+        data.KeyValueDataPairs["HeroAbilArray"].KeyValueDataPairs["1"].KeyValueDataPairs["Flags"].KeyValueDataPairs["2"].Field.Should().Be("HeroAbilArray[1].Flags[2]");
+
+        data.KeyValueDataPairs["HeroAbilArray"].KeyValueDataPairs["2"].KeyValueDataPairs["Abil"].KeyValueDataPairs["0"].Field.Should().Be("HeroAbilArray[2].Abil[0]");
+        data.KeyValueDataPairs["HeroAbilArray"].KeyValueDataPairs["2"].KeyValueDataPairs["Flags"].KeyValueDataPairs["0"].Field.Should().Be("HeroAbilArray[2].Flags[0]");
+        data.KeyValueDataPairs["HeroAbilArray"].KeyValueDataPairs["2"].KeyValueDataPairs["Flags"].KeyValueDataPairs["1"].Field.Should().Be("HeroAbilArray[2].Flags[1]");
+        data.KeyValueDataPairs["HeroAbilArray"].KeyValueDataPairs["2"].KeyValueDataPairs["Flags"].KeyValueDataPairs["2"].Field.Should().Be("HeroAbilArray[2].Flags[2]");
+    }
+
+    [TestMethod]
+    public void Field_ElementHasConstAttribute_ReturnsCorrectField()
+    {
+        // arrange
+        XElement xElement = new(
+            "CAbil",
+            new XAttribute("default", "1"),
+            new XElement(
+                "Name",
+                new XAttribute("value", "$Name"),
+                new XAttribute($"{StormModStorage.SelfNameConst}value", "SomeValue")));
+
+        // act
+        StormElementData stormElementData = new(xElement);
+
+        // assert
+        stormElementData.KeyValueDataPairs["Name"].Field.Should().Be("Name");
     }
 }

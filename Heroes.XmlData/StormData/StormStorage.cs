@@ -1,4 +1,5 @@
-﻿using Heroes.XmlData.StormMath;
+﻿using Heroes.XmlData.GameStrings;
+using Heroes.XmlData.StormMath;
 
 namespace Heroes.XmlData.StormData;
 
@@ -7,9 +8,16 @@ namespace Heroes.XmlData.StormData;
 /// </summary>
 internal partial class StormStorage : IStormStorage
 {
+    private const string _rootFilePath = $"{HxdConstants.Name}-root";
+
     private readonly List<StormModStorage> _stormModStorages = [];
 
     private int _loadedMapMods;
+
+    public StormStorage()
+    {
+        AddRootDefaults();
+    }
 
     public StormCache StormCache { get; } = new();
 
@@ -133,7 +141,7 @@ internal partial class StormStorage : IStormStorage
 
         if (text[0] == '$')
         {
-            if (TryGetConstantXElementById(text, out StormXElementValuePath? stormXElementValuePath))
+            if (TryGetExistingConstantXElementById(text, out StormXElementValuePath? stormXElementValuePath))
             {
                 return GetValueFromConstElement(stormXElementValuePath.Value);
             }
@@ -153,7 +161,7 @@ internal partial class StormStorage : IStormStorage
 
         if (text[0] == '$')
         {
-            if (TryGetConstantXElementById(text, out StormXElementValuePath? stormXElementValuePath))
+            if (TryGetExistingConstantXElementById(text, out StormXElementValuePath? stormXElementValuePath))
             {
                 return GetValueFromConstElementAsNumber(stormXElementValuePath.Value);
             }
@@ -166,29 +174,27 @@ internal partial class StormStorage : IStormStorage
         return 0;
     }
 
-    public bool AddBaseElementTypes(StormModType stormModType, string dataObjectType, string elementName)
+    public void AddBaseElementTypes(StormModType stormModType, string dataObjectType, string elementName)
     {
         if (!elementName.StartsWith('C'))
-            return false;
+            return;
 
         StormCache currentStormCache = GetCurrentStormCache(stormModType);
 
-        if (TryGetElementTypesByDataObjectType(dataObjectType, out HashSet<string>? elementTypes))
+        if (TryGetExistingElementTypesByDataObjectType(dataObjectType, out HashSet<string>? elementTypes))
             elementTypes.Add(elementName);
         else
             currentStormCache.ElementTypesByDataObjectType.Add(dataObjectType, new HashSet<string>(StringComparer.OrdinalIgnoreCase) { elementName });
 
         currentStormCache.DataObjectTypeByElementType.TryAdd(elementName, dataObjectType);
-
-        return true;
     }
 
-    public bool AddElement(StormModType stormModType, XElement element, string filePath)
+    public void AddElement(StormModType stormModType, XElement element, string filePath)
     {
         string elementName = element.Name.LocalName;
 
         if (elementName.StartsWith('S'))
-            return false;
+            return;
 
         string? idAtt = element.Attribute("id")?.Value;
 
@@ -197,14 +203,14 @@ internal partial class StormStorage : IStormStorage
 
         if (string.IsNullOrEmpty(idAtt))
         {
-            if (TryGetStormElementByElementType(elementName, out StormElement? stormElement))
+            if (TryGetExistingStormElementByElementType(elementName, out StormElement? stormElement))
                 stormElement.AddValue(stormXElementValuePath);
             else
                 currentStormCache.StormElementByElementType.Add(elementName, new StormElement(stormXElementValuePath));
         }
         else
         {
-            if (!TryGetDataObjectTypeByElementType(elementName, out string? dataObjectType))
+            if (!TryGetExistingDataObjectTypeByElementType(elementName, out string? dataObjectType))
             {
                 // didnt find one, so look for an existing match
                 string foundExistingDataObjectType = FindExistingDataObjectType(elementName);
@@ -217,13 +223,12 @@ internal partial class StormStorage : IStormStorage
             if (!currentStormCache.StormElementsByDataObjectType.ContainsKey(dataObjectType))
                 currentStormCache.StormElementsByDataObjectType.Add(dataObjectType, []);
 
-            if (TryGetStormElementsByDataObjectType(dataObjectType, idAtt, out StormElement? stormElement))
+            if (TryGetExistingStormElementByDataObjectType(dataObjectType, idAtt, out StormElement? stormElement))
                 stormElement.AddValue(stormXElementValuePath);
             else
                 currentStormCache.StormElementsByDataObjectType[dataObjectType].Add(idAtt, new StormElement(stormXElementValuePath));
         }
 
-        return true;
     }
 
     public void SetFontStyleCache(StormModType stormModType, XDocument document, string filePath)
@@ -299,12 +304,82 @@ internal partial class StormStorage : IStormStorage
 
                 currentStormCache.ScaleValueByEntry[new(catalog, entry, field)] = stormStringValue;
 
-                string? newField = AddDefaultIndexerToMultiFields(field);
+                //string? newField = AddDefaultIndexerToMultiFields(field);
 
-                if (!string.IsNullOrWhiteSpace(newField))
-                {
-                    currentStormCache.ScaleValueByEntry[new(catalog, entry, newField)] = stormStringValue;
-                }
+                //if (!string.IsNullOrWhiteSpace(newField))
+                //{
+                //    currentStormCache.ScaleValueByEntry[new(catalog, entry, newField)] = stormStringValue;
+                //}
+
+
+
+                //AddScaleValueData(currentStormCache, catalog, entry, field, stormStringValue);
+
+                //string? newField = AddDefaultIndexerToMultiFields(field);
+
+                //if (!string.IsNullOrWhiteSpace(newField))
+                //{
+                //    AddScaleValueData(currentStormCache, catalog, entry, newField, stormStringValue);
+                //}
+            }
+        }
+
+
+    }
+
+    public void BuildDataForScalingAttributes(StormModType stormModType)
+    {
+        StormCache currentStormCache = GetCurrentStormCache(stormModType);
+
+
+        //var scalingStormElements = currentStormCache.ScaleValueStormElementsByDataObjectType;
+
+        //foreach (var scalingElement in scalingStormElements)
+        //{
+        //    foreach (var stormElmement in scalingElement.Value)
+        //    {
+
+        //    }
+        //}
+        Dictionary<LevelScalingEntry, StormStringValue> scaleValuesByEntry = currentStormCache.ScaleValueByEntry;
+
+        foreach (var scaling in scaleValuesByEntry)
+        {
+            LevelScalingEntry levelScalingEntry = scaling.Key;
+            StormStringValue stormStringValue = scaling.Value;
+
+            AddScaleValueData(currentStormCache, levelScalingEntry, stormStringValue);
+
+
+
+            //string? newField = AddDefaultIndexerToMultiFields(levelScalingEntry.Field);
+
+            //if (!string.IsNullOrWhiteSpace(newField))
+            //{
+            //    AddScaleValueData(currentStormCache, new LevelScalingEntry(levelScalingEntry.Catalog, levelScalingEntry.Entry, newField), stormStringValue);
+            //}
+
+            //if (!_scaleValueParser.CreateStormElement(item.Key, item.Value))
+            //{
+            //    currentStormCache.ScaleValuesNotFoundList.Add(item);
+            //}
+        }
+
+        //currentStormCache.ScaleValueByEntry.Clear();
+
+        void AddScaleValueData(StormCache currentStormCache, LevelScalingEntry levelScalingEntry, StormStringValue stormStringValue)
+        {
+            StormElement? stormElement = ScaleValueParser.CreateStormElement(this, new LevelScalingEntry(levelScalingEntry.Catalog, levelScalingEntry.Entry, levelScalingEntry.Field), stormStringValue);
+
+            if (stormElement is not null)
+            {
+                if (!currentStormCache.ScaleValueStormElementsByDataObjectType.ContainsKey(levelScalingEntry.Catalog))
+                    currentStormCache.ScaleValueStormElementsByDataObjectType.Add(levelScalingEntry.Catalog, []);
+
+                if (TryGetExistingScaleValueStormElementByDataObjectType(levelScalingEntry.Catalog, levelScalingEntry.Entry, out StormElement? existingStormElement))
+                    existingStormElement.AddValue(stormElement);
+                else
+                    currentStormCache.ScaleValueStormElementsByDataObjectType[levelScalingEntry.Catalog].Add(levelScalingEntry.Entry, stormElement);
             }
         }
     }
@@ -329,6 +404,76 @@ internal partial class StormStorage : IStormStorage
         return _stormModStorages.FirstOrDefault()?.BuildId;
     }
 
+    //private static void AddScalingValue(LevelScalingEntry levelScalingEntry, StormElement stormElement, StormStringValue stormStringValue)
+    //{
+    //    StormElementData currentElementData = stormElement.DataValues;
+    //    ReadOnlySpan<char> fieldSpan = levelScalingEntry.Field;
+    //    int splitterCount = fieldSpan.Count('.');
+
+    //    Span<Range> xmlParts = stackalloc Range[splitterCount + 1];
+
+    //    fieldSpan.Split(xmlParts, '.', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+
+    //    DataRefParser.UpdateStormElementDataToLastFieldPart(currentElementData, levelScalingEntry.Field, xmlParts);
+
+    //    if (currentElementData.HasConstValue)
+    //    {
+    //        //return GetValueScale(currentElementData.ConstValue, fullPartSpan, xmlParts);
+    //    }
+    //    else if (currentElementData.HasValue)
+    //    {
+    //        if (currentElementData.HasTextIndex)
+    //            return GetValueScale(currentElementData.Value, fullPartSpan, xmlParts, currentElementData.KeyValueDataPairs.First().Key);
+    //        else
+    //            return GetValueScale(currentElementData.Value, fullPartSpan, xmlParts);
+    //    }
+    //    else if (stormElement.HasParentId)
+    //    {
+    //        // check the parents
+    //        return ParseStormElement(fullPartSpan, stormElement.ParentId, xmlParts);
+    //    }
+    //    else if (currentElementType == ElementType.Normal)
+    //    {
+    //        // then check the element type, which has no id attribute
+    //        return ParseStormElementType(stormElement.ElementType, fullPartSpan, xmlParts);
+    //    }
+    //    else if (currentElementType == ElementType.Type)
+    //    {
+    //        // then check the base element type, may not be the correct one, but close enough
+    //        return ParseBaseElementType(stormElement.ElementType, fullPartSpan, xmlParts);
+    //    }
+
+    //    stormElement.DataValues.KeyValueDataPairs.Add(_scaleAttributeName, new StormElementData(stormStringValue.Value));
+    //}
+
+    private void AddRootDefaults()
+    {
+        List<(string DataObjectType, string ElementName)> defaultBaseElementTypes = StormDefaultData.DefaultBaseElementsTypes;
+        List<XElement> defaultXElements = StormDefaultData.DefaultXElements;
+
+        foreach ((string dataObjectType, string elementName) in defaultBaseElementTypes)
+        {
+            AddBaseElementTypes(StormModType.Normal, dataObjectType, elementName);
+        }
+
+        foreach (XElement element in defaultXElements)
+        {
+            AddElement(StormModType.Normal, element, _rootFilePath);
+        }
+    }
+
+    private string FindExistingDataObjectType(string elementName)
+    {
+        // normal cache first
+        string? foundExistingDataObjectType = StormCache.ElementTypesByDataObjectType.Keys.FirstOrDefault(x => elementName.AsSpan()[1..].StartsWith(x));
+
+        foundExistingDataObjectType ??= StormMapCache.ElementTypesByDataObjectType.Keys.FirstOrDefault(x => elementName.AsSpan()[1..].StartsWith(x));
+        foundExistingDataObjectType ??= StormCustomCache.ElementTypesByDataObjectType.Keys.FirstOrDefault(x => elementName.AsSpan()[1..].StartsWith(x)) ??
+            throw new Exception("TODO");
+
+        return foundExistingDataObjectType;
+    }
+
     // DamageResponse.ModifyLimit
     private string? AddDefaultIndexerToMultiFields(ReadOnlySpan<char> field)
     {
@@ -350,18 +495,21 @@ internal partial class StormStorage : IStormStorage
             fieldPart.CopyTo(newFieldBuffer[currentIndex..]);
             currentIndex += fieldPart.Length;
 
-            if (i + 1 < ranges.Length)
+            if (fieldPart[^1] != ']')
             {
-                "[0].".CopyTo(newFieldBuffer[currentIndex..]);
-                currentIndex += 4;
-            }
-            else
-            {
-                "[0]".CopyTo(newFieldBuffer[currentIndex..]);
+                if (i + 1 < ranges.Length)
+                {
+                    "[0].".CopyTo(newFieldBuffer[currentIndex..]);
+                    currentIndex += 4;
+                }
+                else
+                {
+                    "[0]".CopyTo(newFieldBuffer[currentIndex..]);
+                }
             }
         }
 
-        return newFieldBuffer.TrimEnd('.').ToString();
+        return newFieldBuffer.TrimEnd('\0').ToString();
     }
 
     private StormCache GetCurrentStormCache(StormModType stormModType) => stormModType switch

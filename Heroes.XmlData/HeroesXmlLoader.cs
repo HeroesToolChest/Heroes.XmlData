@@ -20,14 +20,14 @@ public class HeroesXmlLoader
     {
         StormStorage stormStorage = new();
         _heroesSource = new FileHeroesSource(stormStorage, new StormModFactory(), new DepotCacheFactory(), pathToModsDirectory);
-        HeroesData = new HeroesData((IStormStorageCacheData)stormStorage);
+        HeroesData = new HeroesData(stormStorage);
     }
 
     private HeroesXmlLoader(CASCHeroesStorage cascHeroesStorage)
     {
         StormStorage stormStorage = new();
         _heroesSource = new CASCHeroesSource(stormStorage, new StormModFactory(), new DepotCacheFactory(), cascHeroesStorage);
-        HeroesData = new HeroesData((IStormStorageCacheData)stormStorage);
+        HeroesData = new HeroesData(stormStorage);
     }
 
     /// <summary>

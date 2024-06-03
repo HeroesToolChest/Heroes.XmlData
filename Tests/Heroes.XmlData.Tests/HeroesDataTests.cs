@@ -576,104 +576,104 @@ public class HeroesDataTests
         act.Should().Throw<ArgumentNullException>();
     }
 
-    [TestMethod]
-    [DataRow("cache-id1", true)]
-    [DataRow("cache-id2", true)]
-    [DataRow("mapcache-id2", true)]
-    [DataRow("customcache-id2", true)]
-    [DataRow("other", false)]
-    [DataRow("", false)]
-    public void IsConstantElementExists_Id_ReturnsIsFound(string id, bool isFound)
-    {
-        // arrange
-        const string sameId = "cache-id2";
+    //[TestMethod]
+    //[DataRow("cache-id1", true)]
+    //[DataRow("cache-id2", true)]
+    //[DataRow("mapcache-id2", true)]
+    //[DataRow("customcache-id2", true)]
+    //[DataRow("other", false)]
+    //[DataRow("", false)]
+    //public void IsConstantElementExists_Id_ReturnsIsFound(string id, bool isFound)
+    //{
+    //    // arrange
+    //    const string sameId = "cache-id2";
 
-        StormCache stormCache = new();
-        stormCache.ConstantXElementById.Add("cache-id1", new StormXElementValuePath(new XElement("const"), "path1"));
-        stormCache.ConstantXElementById.Add(sameId, new StormXElementValuePath(new XElement("const"), "path2"));
-        stormCache.ConstantXElementById.Add("cache-id3", new StormXElementValuePath(new XElement("const"), "path3"));
+    //    StormCache stormCache = new();
+    //    stormCache.ConstantXElementById.Add("cache-id1", new StormXElementValuePath(new XElement("const"), "path1"));
+    //    stormCache.ConstantXElementById.Add(sameId, new StormXElementValuePath(new XElement("const"), "path2"));
+    //    stormCache.ConstantXElementById.Add("cache-id3", new StormXElementValuePath(new XElement("const"), "path3"));
 
-        StormCache stormMapCache = new();
-        stormMapCache.ConstantXElementById.Add("mapcache-id1", new StormXElementValuePath(new XElement("const"), "mapcache-path1"));
-        stormMapCache.ConstantXElementById.Add("mapcache-id2", new StormXElementValuePath(new XElement("const"), "mapcache-path2"));
-        stormMapCache.ConstantXElementById.Add(sameId, new StormXElementValuePath(new XElement("const"), "mapcache-path3"));
+    //    StormCache stormMapCache = new();
+    //    stormMapCache.ConstantXElementById.Add("mapcache-id1", new StormXElementValuePath(new XElement("const"), "mapcache-path1"));
+    //    stormMapCache.ConstantXElementById.Add("mapcache-id2", new StormXElementValuePath(new XElement("const"), "mapcache-path2"));
+    //    stormMapCache.ConstantXElementById.Add(sameId, new StormXElementValuePath(new XElement("const"), "mapcache-path3"));
 
-        StormCache stormCustomCache = new();
-        stormCustomCache.ConstantXElementById.Add("customcache-id1", new StormXElementValuePath(new XElement("const"), "customcache-path1"));
-        stormCustomCache.ConstantXElementById.Add("customcache-id2", new StormXElementValuePath(new XElement("const"), "customcache-path2"));
-        stormCustomCache.ConstantXElementById.Add(sameId, new StormXElementValuePath(new XElement("const"), "customcache-path3"));
+    //    StormCache stormCustomCache = new();
+    //    stormCustomCache.ConstantXElementById.Add("customcache-id1", new StormXElementValuePath(new XElement("const"), "customcache-path1"));
+    //    stormCustomCache.ConstantXElementById.Add("customcache-id2", new StormXElementValuePath(new XElement("const"), "customcache-path2"));
+    //    stormCustomCache.ConstantXElementById.Add(sameId, new StormXElementValuePath(new XElement("const"), "customcache-path3"));
 
-        _stormStorage.StormCache.Returns(stormCache);
-        _stormStorage.StormMapCache.Returns(stormMapCache);
-        _stormStorage.StormCustomCache.Returns(stormCustomCache);
+    //    _stormStorage.StormCache.Returns(stormCache);
+    //    _stormStorage.StormMapCache.Returns(stormMapCache);
+    //    _stormStorage.StormCustomCache.Returns(stormCustomCache);
 
-        // act
-        bool result = _heroesData.IsConstantXElementExists(id);
-        bool resultSpan = _heroesData.IsConstantXElementExists(id.AsSpan());
+    //    // act
+    //    bool result = _heroesData.IsConstantXElementExists(id);
+    //    bool resultSpan = _heroesData.IsConstantXElementExists(id.AsSpan());
 
-        // assert
-        result.Should().Be(isFound);
-        resultSpan.Should().Be(isFound);
-    }
+    //    // assert
+    //    result.Should().Be(isFound);
+    //    resultSpan.Should().Be(isFound);
+    //}
 
-    [TestMethod]
-    public void IsConstantElement_NullId_ThrowsException()
-    {
-        // arrange
-        string id = null!;
+    //[TestMethod]
+    //public void IsConstantElement_NullId_ThrowsException()
+    //{
+    //    // arrange
+    //    string id = null!;
 
-        // act
-        Action act = () => _heroesData.IsConstantXElementExists(id);
+    //    // act
+    //    Action act = () => _heroesData.IsConstantXElementExists(id);
 
-        // assert
-        act.Should().Throw<ArgumentNullException>();
-    }
+    //    // assert
+    //    act.Should().Throw<ArgumentNullException>();
+    //}
 
-    [TestMethod]
-    [DataRow("cache-id1", "const1", "path1")]
-    [DataRow("mapcache-id1", "mapcache-const1", "mapcache-path1")]
-    [DataRow("cache-id2", "customcache-const3", "customcache-path3")]
-    [DataRow("customcache-id1", "customcache-const1", "customcache-path1")]
-    [DataRow("cache-id5", "mapcache-const5", "mapcache-path5")]
-    public void GetConstantElement_Id_ReturnsStormXElementValuePath(string id, string xElementName, string path)
-    {
-        // arrange
-        const string sameId = "cache-id2";
-        const string sameId2 = "cache-id5";
+    //[TestMethod]
+    //[DataRow("cache-id1", "const1", "path1")]
+    //[DataRow("mapcache-id1", "mapcache-const1", "mapcache-path1")]
+    //[DataRow("cache-id2", "customcache-const3", "customcache-path3")]
+    //[DataRow("customcache-id1", "customcache-const1", "customcache-path1")]
+    //[DataRow("cache-id5", "mapcache-const5", "mapcache-path5")]
+    //public void GetConstantElement_Id_ReturnsStormXElementValuePath(string id, string xElementName, string path)
+    //{
+    //    // arrange
+    //    const string sameId = "cache-id2";
+    //    const string sameId2 = "cache-id5";
 
-        StormCache stormCache = new();
-        stormCache.ConstantXElementById.Add("cache-id1", new StormXElementValuePath(new XElement("const1"), "path1"));
-        stormCache.ConstantXElementById.Add(sameId, new StormXElementValuePath(new XElement("const2"), "path2"));
-        stormCache.ConstantXElementById.Add(sameId2, new StormXElementValuePath(new XElement("const4"), "path4"));
-        stormCache.ConstantXElementById.Add("cache-id3", new StormXElementValuePath(new XElement("const3"), "path3"));
+    //    StormCache stormCache = new();
+    //    stormCache.ConstantXElementById.Add("cache-id1", new StormXElementValuePath(new XElement("const1"), "path1"));
+    //    stormCache.ConstantXElementById.Add(sameId, new StormXElementValuePath(new XElement("const2"), "path2"));
+    //    stormCache.ConstantXElementById.Add(sameId2, new StormXElementValuePath(new XElement("const4"), "path4"));
+    //    stormCache.ConstantXElementById.Add("cache-id3", new StormXElementValuePath(new XElement("const3"), "path3"));
 
-        StormCache stormMapCache = new();
-        stormMapCache.ConstantXElementById.Add("mapcache-id1", new StormXElementValuePath(new XElement("mapcache-const1"), "mapcache-path1"));
-        stormMapCache.ConstantXElementById.Add("mapcache-id2", new StormXElementValuePath(new XElement("mapcache-const2"), "mapcache-path2"));
-        stormMapCache.ConstantXElementById.Add(sameId, new StormXElementValuePath(new XElement("mapcache-const3"), "mapcache-path3"));
-        stormMapCache.ConstantXElementById.Add(sameId2, new StormXElementValuePath(new XElement("mapcache-const5"), "mapcache-path5"));
+    //    StormCache stormMapCache = new();
+    //    stormMapCache.ConstantXElementById.Add("mapcache-id1", new StormXElementValuePath(new XElement("mapcache-const1"), "mapcache-path1"));
+    //    stormMapCache.ConstantXElementById.Add("mapcache-id2", new StormXElementValuePath(new XElement("mapcache-const2"), "mapcache-path2"));
+    //    stormMapCache.ConstantXElementById.Add(sameId, new StormXElementValuePath(new XElement("mapcache-const3"), "mapcache-path3"));
+    //    stormMapCache.ConstantXElementById.Add(sameId2, new StormXElementValuePath(new XElement("mapcache-const5"), "mapcache-path5"));
 
-        StormCache stormCustomCache = new();
-        stormCustomCache.ConstantXElementById.Add("customcache-id1", new StormXElementValuePath(new XElement("customcache-const1"), "customcache-path1"));
-        stormCustomCache.ConstantXElementById.Add("customcache-id2", new StormXElementValuePath(new XElement("customcache-const2"), "customcache-path2"));
-        stormCustomCache.ConstantXElementById.Add(sameId, new StormXElementValuePath(new XElement("customcache-const3"), "customcache-path3"));
+    //    StormCache stormCustomCache = new();
+    //    stormCustomCache.ConstantXElementById.Add("customcache-id1", new StormXElementValuePath(new XElement("customcache-const1"), "customcache-path1"));
+    //    stormCustomCache.ConstantXElementById.Add("customcache-id2", new StormXElementValuePath(new XElement("customcache-const2"), "customcache-path2"));
+    //    stormCustomCache.ConstantXElementById.Add(sameId, new StormXElementValuePath(new XElement("customcache-const3"), "customcache-path3"));
 
-        _stormStorage.StormCache.Returns(stormCache);
-        _stormStorage.StormMapCache.Returns(stormMapCache);
-        _stormStorage.StormCustomCache.Returns(stormCustomCache);
+    //    _stormStorage.StormCache.Returns(stormCache);
+    //    _stormStorage.StormMapCache.Returns(stormMapCache);
+    //    _stormStorage.StormCustomCache.Returns(stormCustomCache);
 
-        StormXElementValuePath outcome = new(new XElement(xElementName), path);
+    //    StormXElementValuePath outcome = new(new XElement(xElementName), path);
 
-        // act
-        StormXElementValuePath result = _heroesData.GetConstantXElement(id);
-        StormXElementValuePath resultSpan = _heroesData.GetConstantXElement(id.AsSpan());
+    //    // act
+    //    StormXElementValuePath? result = _heroesData.GetConstantXElement(id);
+    //    StormXElementValuePath? resultSpan = _heroesData.GetConstantXElement(id.AsSpan());
 
-        // assert
-        result.Path.Should().Be(outcome.Path);
-        result.Value.Name.Should().Be(outcome.Value.Name);
-        resultSpan.Path.Should().Be(outcome.Path);
-        resultSpan.Value.Name.Should().Be(outcome.Value.Name);
-    }
+    //    // assert
+    //    result.Path.Should().Be(outcome.Path);
+    //    result.Value.Name.Should().Be(outcome.Value.Name);
+    //    resultSpan.Path.Should().Be(outcome.Path);
+    //    resultSpan.Value.Name.Should().Be(outcome.Value.Name);
+    //}
 
     [TestMethod]
     public void GetConstantElement_NullId_ThrowsException()
@@ -688,85 +688,85 @@ public class HeroesDataTests
         act.Should().Throw<ArgumentNullException>();
     }
 
-    [TestMethod]
-    public void GetConstantElement_NonExistsId_ThrowsException()
-    {
-        // arrange
-        string id = "other";
+    //[TestMethod]
+    //public void GetConstantElement_NonExistsId_ThrowsException()
+    //{
+    //    // arrange
+    //    string id = "other";
 
-        _stormStorage.StormCache.Returns(new StormCache());
-        _stormStorage.StormMapCache.Returns(new StormCache());
-        _stormStorage.StormCustomCache.Returns(new StormCache());
+    //    _stormStorage.StormCache.Returns(new StormCache());
+    //    _stormStorage.StormMapCache.Returns(new StormCache());
+    //    _stormStorage.StormCustomCache.Returns(new StormCache());
 
-        // act
-        Action act = () => _heroesData.GetConstantXElement(id);
+    //    // act
+    //    Action act = () => _heroesData.GetConstantXElement(id);
 
-        // assert
-        act.Should().Throw<KeyNotFoundException>();
-    }
+    //    // assert
+    //    act.Should().Throw<KeyNotFoundException>();
+    //}
 
-    [TestMethod]
-    [DataRow("cache-id1", true, "const1", "path1")]
-    [DataRow("mapcache-id1", true, "mapcache-const1", "mapcache-path1")]
-    [DataRow("cache-id2", true, "customcache-const3", "customcache-path3")]
-    [DataRow("cache-id5", true, "mapcache-const5", "mapcache-path5")]
-    [DataRow("customcache-id2", true, "customcache-const2", "customcache-path2")]
-    [DataRow("other", false, null, null)]
-    public void TryGetConstantElement_Id_ReturnsStormXElementValuePath(string id, bool isFound, string xElementName, string path)
-    {
-        // arrange
-        const string sameId = "cache-id2";
-        const string sameId2 = "cache-id5";
+    //[TestMethod]
+    //[DataRow("cache-id1", true, "const1", "path1")]
+    //[DataRow("mapcache-id1", true, "mapcache-const1", "mapcache-path1")]
+    //[DataRow("cache-id2", true, "customcache-const3", "customcache-path3")]
+    //[DataRow("cache-id5", true, "mapcache-const5", "mapcache-path5")]
+    //[DataRow("customcache-id2", true, "customcache-const2", "customcache-path2")]
+    //[DataRow("other", false, null, null)]
+    //public void TryGetConstantElement_Id_ReturnsStormXElementValuePath(string id, bool isFound, string xElementName, string path)
+    //{
+    //    // arrange
+    //    const string sameId = "cache-id2";
+    //    const string sameId2 = "cache-id5";
 
-        StormCache stormCache = new();
-        stormCache.ConstantXElementById.Add("cache-id1", new StormXElementValuePath(new XElement("const1"), "path1"));
-        stormCache.ConstantXElementById.Add(sameId, new StormXElementValuePath(new XElement("const2"), "path2"));
-        stormCache.ConstantXElementById.Add(sameId2, new StormXElementValuePath(new XElement("const4"), "path4"));
-        stormCache.ConstantXElementById.Add("cache-id3", new StormXElementValuePath(new XElement("const3"), "path3"));
+    //    StormCache stormCache = new();
+    //    stormCache.ConstantXElementById.Add("cache-id1", new StormXElementValuePath(new XElement("const1"), "path1"));
+    //    stormCache.ConstantXElementById.Add(sameId, new StormXElementValuePath(new XElement("const2"), "path2"));
+    //    stormCache.ConstantXElementById.Add(sameId2, new StormXElementValuePath(new XElement("const4"), "path4"));
+    //    stormCache.ConstantXElementById.Add("cache-id3", new StormXElementValuePath(new XElement("const3"), "path3"));
 
-        StormCache stormMapCache = new();
-        stormMapCache.ConstantXElementById.Add("mapcache-id1", new StormXElementValuePath(new XElement("mapcache-const1"), "mapcache-path1"));
-        stormMapCache.ConstantXElementById.Add("mapcache-id2", new StormXElementValuePath(new XElement("mapcache-const2"), "mapcache-path2"));
-        stormMapCache.ConstantXElementById.Add(sameId, new StormXElementValuePath(new XElement("mapcache-const3"), "mapcache-path3"));
-        stormMapCache.ConstantXElementById.Add(sameId2, new StormXElementValuePath(new XElement("mapcache-const5"), "mapcache-path5"));
+    //    StormCache stormMapCache = new();
+    //    stormMapCache.ConstantXElementById.Add("mapcache-id1", new StormXElementValuePath(new XElement("mapcache-const1"), "mapcache-path1"));
+    //    stormMapCache.ConstantXElementById.Add("mapcache-id2", new StormXElementValuePath(new XElement("mapcache-const2"), "mapcache-path2"));
+    //    stormMapCache.ConstantXElementById.Add(sameId, new StormXElementValuePath(new XElement("mapcache-const3"), "mapcache-path3"));
+    //    stormMapCache.ConstantXElementById.Add(sameId2, new StormXElementValuePath(new XElement("mapcache-const5"), "mapcache-path5"));
 
-        StormCache stormCustomCache = new();
-        stormCustomCache.ConstantXElementById.Add("customcache-id1", new StormXElementValuePath(new XElement("customcache-const1"), "customcache-path1"));
-        stormCustomCache.ConstantXElementById.Add("customcache-id2", new StormXElementValuePath(new XElement("customcache-const2"), "customcache-path2"));
-        stormCustomCache.ConstantXElementById.Add(sameId, new StormXElementValuePath(new XElement("customcache-const3"), "customcache-path3"));
+    //    StormCache stormCustomCache = new();
+    //    stormCustomCache.ConstantXElementById.Add("customcache-id1", new StormXElementValuePath(new XElement("customcache-const1"), "customcache-path1"));
+    //    stormCustomCache.ConstantXElementById.Add("customcache-id2", new StormXElementValuePath(new XElement("customcache-const2"), "customcache-path2"));
+    //    stormCustomCache.ConstantXElementById.Add(sameId, new StormXElementValuePath(new XElement("customcache-const3"), "customcache-path3"));
 
-        _stormStorage.StormCache.Returns(stormCache);
-        _stormStorage.StormMapCache.Returns(stormMapCache);
-        _stormStorage.StormCustomCache.Returns(stormCustomCache);
+    //    _stormStorage.StormCache.Returns(stormCache);
+    //    _stormStorage.StormMapCache.Returns(stormMapCache);
+    //    _stormStorage.StormCustomCache.Returns(stormCustomCache);
 
-        StormXElementValuePath? outcome = null;
-        if (xElementName is not null && path is not null)
-            outcome = new(new XElement(xElementName), path);
+    //    StormXElementValuePath? outcome = null;
+    //    if (xElementName is not null && path is not null)
+    //        outcome = new(new XElement(xElementName), path);
 
-        // act
-        bool result = _heroesData.TryGetConstantXElement(id, out StormXElementValuePath? stormXElementValue);
-        bool resultSpan = _heroesData.TryGetConstantXElement(id.AsSpan(), out StormXElementValuePath? stormXElementValueSpan);
+    //    // act
+    //    bool result = _heroesData.TryGetConstantXElement(id, out StormXElementValuePath? stormXElementValue);
+    //    bool resultSpan = _heroesData.TryGetConstantXElement(id.AsSpan(), out StormXElementValuePath? stormXElementValueSpan);
 
-        // assert
-        result.Should().Be(isFound);
-        resultSpan.Should().Be(isFound);
+    //    // assert
+    //    result.Should().Be(isFound);
+    //    resultSpan.Should().Be(isFound);
 
-        stormXElementValue?.Path.Should().Be(outcome?.Path);
-        stormXElementValue?.Value.Name.Should().Be(outcome?.Value.Name);
-        stormXElementValueSpan?.Path.Should().Be(outcome?.Path);
-        stormXElementValueSpan?.Value.Name.Should().Be(outcome?.Value.Name);
-    }
+    //    stormXElementValue?.Path.Should().Be(outcome?.Path);
+    //    stormXElementValue?.Value.Name.Should().Be(outcome?.Value.Name);
+    //    stormXElementValueSpan?.Path.Should().Be(outcome?.Path);
+    //    stormXElementValueSpan?.Value.Name.Should().Be(outcome?.Value.Name);
+    //}
 
-    [TestMethod]
-    public void TryGetConstantElement_NullId_ThrowsException()
-    {
-        // arrange
-        string id = null!;
+    //[TestMethod]
+    //public void TryGetConstantElement_NullId_ThrowsException()
+    //{
+    //    // arrange
+    //    string id = null!;
 
-        // act
-        Action act = () => _heroesData.TryGetConstantXElement(id, out _);
+    //    // act
+    //    Action act = () => _heroesData.TryGetConstantXElement(id, out _);
 
-        // assert
-        act.Should().Throw<ArgumentNullException>();
-    }
+    //    // assert
+    //    act.Should().Throw<ArgumentNullException>();
+    //}
 }

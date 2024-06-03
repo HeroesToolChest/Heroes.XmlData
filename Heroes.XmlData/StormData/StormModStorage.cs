@@ -5,7 +5,7 @@
 /// </summary>
 internal class StormModStorage
 {
-    public const string SelfNameConst = "HXDconst-";
+    public const string SelfNameConst = $"{HxdConstants.Name}const-";
 
     private readonly IStormMod _stormMod;
     private readonly IStormStorage _stormStorage;
@@ -17,6 +17,8 @@ internal class StormModStorage
 
     private readonly HashSet<StormFile> _addedXmlDataFilePathsList = [];
     private readonly HashSet<StormFile> _addedXmlFontStyleFilePathsList = [];
+    private readonly HashSet<string> _addedGameStringFilePathsList = new(StringComparer.OrdinalIgnoreCase);
+
     private readonly Dictionary<string, GameStringText> _gameStringsById = [];
 
     internal StormModStorage(IStormMod stormMod, IStormStorage stormStorage, string modsBaseDirectoryPath)
@@ -53,6 +55,9 @@ internal class StormModStorage
     {
         using StreamReader reader = new(stream);
 
+        if (!_addedGameStringFilePathsList.Add(filePath.ToString()))
+            return;
+
         while (!reader.EndOfStream)
         {
             ReadOnlySpan<char> lineSpan = reader.ReadLine().AsSpan();
@@ -74,14 +79,15 @@ internal class StormModStorage
         if (document.Root is null)
             return;
 
+        if (!_addedXmlDataFilePathsList.Add(stormFile))
+            return;
+
         string modlessPath = GetModlessPath(stormFile.Path);
 
         if (isBaseGameDataDirectory)
             SetElementsForDataObjectTypes(document, modlessPath);
         else
             SetElements(document, modlessPath);
-
-        _addedXmlDataFilePathsList.Add(stormFile);
     }
 
     public void AddXmlFontStyleFile(XDocument document, StormFile stormFile)
@@ -89,11 +95,12 @@ internal class StormModStorage
         if (document.Root is null)
             return;
 
+        if (!_addedXmlFontStyleFilePathsList.Add(stormFile))
+            return;
+
         string modlessPath = GetModlessPath(stormFile.Path);
 
         _stormStorage.SetFontStyleCache(StormModType, document, modlessPath);
-
-        _addedXmlFontStyleFilePathsList.Add(stormFile);
     }
 
     public void AddBuildIdFile(Stream stream)

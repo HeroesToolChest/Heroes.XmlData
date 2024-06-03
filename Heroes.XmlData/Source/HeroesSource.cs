@@ -106,6 +106,8 @@ internal abstract class HeroesSource : IHeroesSource
 
             stormMod.LoadStormData();
         }
+
+        StormStorage.BuildDataForScalingAttributes(StormModType.Normal);
     }
 
     public void LoadGamestrings(StormLocale stormLocale)
@@ -151,6 +153,8 @@ internal abstract class HeroesSource : IHeroesSource
 
             StormStorage.AddModStorage(stormMapMod.StormModStorage);
         }
+
+        StormStorage.BuildDataForScalingAttributes(StormModType.Map);
     }
 
     public void LoadCustomMod(IStormMod stormMod)
@@ -158,6 +162,8 @@ internal abstract class HeroesSource : IHeroesSource
         _stormCustomMods.Add(stormMod);
 
         stormMod.LoadStormData();
+
+        StormStorage.BuildDataForScalingAttributes(StormModType.Custom);
     }
 
     public void LoadCustomMod(string directoryPath)
@@ -166,6 +172,8 @@ internal abstract class HeroesSource : IHeroesSource
         _stormCustomMods.Add(stormMod);
 
         stormMod.LoadStormData();
+
+        StormStorage.BuildDataForScalingAttributes(StormModType.Custom);
     }
 
     public void UnloadCustomMods()
