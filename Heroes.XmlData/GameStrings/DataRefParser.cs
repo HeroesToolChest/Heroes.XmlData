@@ -8,12 +8,80 @@ internal class DataRefParser
     private static readonly SearchValues<char> _gameStringOps = SearchValues.Create("+-*/()");
 
     private readonly GameStringParser _gameStringParser;
-    private readonly HeroesData _heroesData;
+    private readonly IStormStorage _stormStorage;
 
-    public DataRefParser(GameStringParser gameStringParser, HeroesData heroesData)
+    public DataRefParser(GameStringParser gameStringParser, IStormStorage stormStorage)
     {
         _gameStringParser = gameStringParser;
-        _heroesData = heroesData;
+        _stormStorage = stormStorage;
+    }
+
+    public static StormElementData GetStormElementDataFromLastFieldPart(StormElementData currentElementData, ReadOnlySpan<char> fullPartSpan, ReadOnlySpan<Range> fieldParts)
+    {
+        foreach (Range fieldPartRange in fieldParts)
+        {
+            ReadOnlySpan<char> fieldPartSpan = fullPartSpan[fieldPartRange];
+
+            if (fieldPartSpan.IsEmpty)
+                continue;
+
+            if (fieldPartSpan[^1] == ']')
+            {
+                // PeriodicPeriodArray[0]
+                int indexOfStartBracket = fieldPartSpan.LastIndexOf("[");
+
+                // the value of the index, e.g. 0
+                ReadOnlySpan<char> fieldPartIndexValue = fieldPartSpan.Slice(indexOfStartBracket + 1, fieldPartSpan.Length - indexOfStartBracket - 2);
+                bool numericalIndex = int.TryParse(fieldPartIndexValue, out int indexAsNumber);
+
+                // the part with out the indexer, e.g. PeriodicPeriodArray
+                ReadOnlySpan<char> fieldPartSpanWithoutIndexer = fieldPartSpan[..indexOfStartBracket];
+
+                if (currentElementData.KeyValueDataPairs.TryGetValue(fieldPartSpanWithoutIndexer.ToString(), out StormElementData? withoutIndexerStormElementData))
+                {
+                    if (((numericalIndex is true && withoutIndexerStormElementData.HasNumericalIndex is true) ||
+                        (numericalIndex is false && withoutIndexerStormElementData.HasTextIndex is true)) && withoutIndexerStormElementData.KeyValueDataPairs.TryGetValue(fieldPartIndexValue.ToString(), out StormElementData? indexStormElementData))
+                    {
+                        currentElementData = indexStormElementData;
+                    }
+                    else if (numericalIndex is true && withoutIndexerStormElementData.HasTextIndex is true &&
+                        withoutIndexerStormElementData.KeyValueDataPairs.Keys.Count > 0 && indexAsNumber < withoutIndexerStormElementData.KeyValueDataPairs.Keys.Count)
+                    {
+                        currentElementData = withoutIndexerStormElementData.KeyValueDataPairs.ElementAt(indexAsNumber).Value;
+                    }
+                    else if (numericalIndex is true)
+                    {
+                        if (indexAsNumber == 0)
+                        {
+                            currentElementData = withoutIndexerStormElementData;
+                        }
+                        else
+                        {
+                            return currentElementData;
+                        }
+                    }
+                    else if (withoutIndexerStormElementData.HasValue || withoutIndexerStormElementData.HasConstValue)
+                    {
+                        currentElementData = withoutIndexerStormElementData;
+                    }
+                    else if (withoutIndexerStormElementData.HasHxdScale)
+                    {
+                        currentElementData = withoutIndexerStormElementData;
+                    }
+                }
+            }
+            else if (currentElementData.KeyValueDataPairs.TryGetValue(fieldPartSpan.ToString(), out StormElementData? stormElementData) ||
+                ((currentElementData.HasNumericalIndex || currentElementData.HasTextIndex) && currentElementData.KeyValueDataPairs.First().Value.KeyValueDataPairs.TryGetValue(fieldPartSpan.ToString(), out stormElementData)))
+            {
+                currentElementData = stormElementData;
+            }
+            else
+            {
+                return currentElementData;
+            }
+        }
+
+        return currentElementData;
     }
 
     // Abil,GuldanHorrify,CastIntroTime+Effect,GuldanHorrifyAbilityStartCreatePersistent,PeriodicPeriodArray[0]
@@ -50,74 +118,6 @@ internal class DataRefParser
         }
 
         return CalculateExpression(dRefSpan, dataRefParts);
-    }
-
-    public static StormElementData GetStormElementDataFromLastFieldPart(StormElementData currentElementData, ReadOnlySpan<char> fullPartSpan, ReadOnlySpan<Range> fieldParts)
-    {
-        foreach (Range fieldPartRange in fieldParts)
-        {
-            ReadOnlySpan<char> fieldPartSpan = fullPartSpan[fieldPartRange];
-
-            if (fieldPartSpan.IsEmpty)
-                continue;
-
-            if (fieldPartSpan[^1] == ']')
-            {
-                // PeriodicPeriodArray[0]
-                int indexOfStartBracket = fieldPartSpan.LastIndexOf("[");
-
-                // the value of the index, e.g. 0
-                ReadOnlySpan<char> fieldPartIndexValue = fieldPartSpan.Slice(indexOfStartBracket + 1, fieldPartSpan.Length - indexOfStartBracket - 2);
-                bool numericalIndex = int.TryParse(fieldPartIndexValue, out int indexAsNumber);
-
-                // the part with out the indexer, e.g. PeriodicPeriodArray
-                ReadOnlySpan<char> fieldPartSpanWithoutIndexer = fieldPartSpan[..indexOfStartBracket];
-
-                if (currentElementData.KeyValueDataPairs.TryGetValue(fieldPartSpanWithoutIndexer.ToString(), out StormElementData? withoutIndexerStormElementData))
-                {
-                    if (((numericalIndex is true && withoutIndexerStormElementData.HasNumericalIndex is true) ||
-                        (numericalIndex is false && withoutIndexerStormElementData.HasTextIndex is true)) && withoutIndexerStormElementData.KeyValueDataPairs.TryGetValue(fieldPartIndexValue.ToString(), out StormElementData? indexStormElementData))
-                    {
-                        currentElementData = indexStormElementData;
-                    }
-                    else if (numericalIndex is true && withoutIndexerStormElementData.HasTextIndex is true &&
-                        withoutIndexerStormElementData.KeyValueDataPairs.Keys.Count > 0 && indexAsNumber < withoutIndexerStormElementData.KeyValueDataPairs.Keys.Count)
-                    {
-                        currentElementData = withoutIndexerStormElementData.KeyValueDataPairs.ElementAt(indexAsNumber).Value;
-                    }
-                    else if (numericalIndex is true) //withoutIndexerStormElementData.KeyValueDataPairs.Count > 1)
-                    {
-                        if (indexAsNumber == 0)
-                        {
-                            currentElementData = withoutIndexerStormElementData;
-                        }
-                        else
-                        {
-                            return currentElementData;
-                        }
-                    }
-                    else if (withoutIndexerStormElementData.HasValue || withoutIndexerStormElementData.HasConstValue)
-                    {
-                        currentElementData = withoutIndexerStormElementData;
-                    }
-                    else if (withoutIndexerStormElementData.HasHxdScale)
-                    {
-                        currentElementData = withoutIndexerStormElementData;
-                    }
-                }
-            }
-            else if (currentElementData.KeyValueDataPairs.TryGetValue(fieldPartSpan.ToString(), out StormElementData? stormElementData) ||
-                ((currentElementData.HasNumericalIndex || currentElementData.HasTextIndex) && currentElementData.KeyValueDataPairs.First().Value.KeyValueDataPairs.TryGetValue(fieldPartSpan.ToString(), out stormElementData)))
-            {
-                currentElementData = stormElementData;
-            }
-            else
-            {
-                return currentElementData;
-            }
-        }
-
-        return currentElementData;
     }
 
     private static (int Size, int SizeScaling) GetSizeOfBuffer(ReadOnlySpan<char> dRefSpan, List<ITextSection> dataRefParts)
@@ -230,7 +230,7 @@ internal class DataRefParser
 
     private ValueScale ParseStormElement(ReadOnlySpan<char> fullPartSpan, ReadOnlySpan<char> entry, ReadOnlySpan<Range> xmlParts)
     {
-        StormElement? stormElement = _heroesData.GetCompleteStormElement(fullPartSpan[xmlParts[0]].ToString(), entry.ToString());
+        StormElement? stormElement = _stormStorage.GetCompleteStormElement(fullPartSpan[xmlParts[0]], entry);
         //StormElement? stormElement = _heroesData.GetStormElement(fullPartSpan[xmlParts[0]], entry);
 
         return ParseFields(stormElement, fullPartSpan, xmlParts); //, ElementType.Normal);
@@ -302,7 +302,7 @@ internal class DataRefParser
     {
         if (double.TryParse(stormElementDataValue, out double dataValue))
         {
-            StormElement? scalingStormElement = _heroesData.GetScalingStormElement(fullSpan[xmlParts[0]], fullSpan[xmlParts[1]]);
+            StormElement? scalingStormElement = _stormStorage.GetScaleValueStormElementByDataObjectType(fullSpan[xmlParts[0]], fullSpan[xmlParts[1]]);
             if (scalingStormElement is null)
                 return new ValueScale(dataValue);
 

@@ -2,15 +2,18 @@
 
 namespace Heroes.XmlData.StormData;
 
+/// <summary>
+/// Contains the data that represents an <see cref="XElement"/>.
+/// </summary>
 [DebuggerDisplay("{DebuggerDisplay,nq}")]
 public class StormElementData
 {
-    private static readonly HashSet<string> _otherElementArrays = ["On", "Cost", "CatalogModifications", "ConditionalEvents"];
+    private static readonly HashSet<string> _otherElementArrays = ["On", "Cost", "CatalogModifications", "ConditionalEvents", "CardLayouts"];
 
     private string? _value;
     private string? _constValue;
 
-    public StormElementData(XElement rootElement)
+    internal StormElementData(XElement rootElement)
     {
         Parse(rootElement);
     }
@@ -69,21 +72,39 @@ public class StormElementData
         KeyValueDataPairs[index] = new StormElementData(this, index, attribute.Value, true);
     }
 
+    /// <summary>
+    /// Gets the inner data.
+    /// </summary>
     public Dictionary<string, StormElementData> KeyValueDataPairs { get; } = new(StringComparer.OrdinalIgnoreCase);
 
+    /// <summary>
+    /// Gets the parent data.
+    /// </summary>
     public StormElementData? Parent { get; }
 
+    /// <summary>
+    /// Gets the representation of the current data reference field.
+    /// </summary>
     public string? Field { get; }
 
+    /// <summary>
+    /// Gets a value indicating whether <see cref="Value"/> is not <see langword="null"/>.
+    /// </summary>
     [MemberNotNullWhen(true, nameof(Value))]
     public bool HasValue => Value is not null;
 
+    /// <summary>
+    /// Gets a value indicating whether <see cref="ConstValue"/> is not <see langword="null"/>.
+    /// </summary>
     [MemberNotNullWhen(true, nameof(ConstValue))]
     public bool HasConstValue => ConstValue is not null;
 
     [MemberNotNullWhen(true, nameof(ScaleValue))]
-    public bool HasHxdScale => KeyValueDataPairs.Count == 1 && KeyValueDataPairs.ContainsKey(ScaleValueParser.ScaleAttributeName);
+    internal bool HasHxdScale => KeyValueDataPairs.Count == 1 && KeyValueDataPairs.ContainsKey(ScaleValueParser.ScaleAttributeName);
 
+    /// <summary>
+    /// Gets the value which represents a value of an <see cref="XAttribute"/>.
+    /// </summary>
     public string? Value
     {
         get
@@ -112,6 +133,9 @@ public class StormElementData
         private set => _value = value;
     }
 
+    /// <summary>
+    /// If <see cref="Value"/> contains a constant (starts with $), then this property will contain the evaluated value of the constant.
+    /// </summary>
     public string? ConstValue
     {
         get
@@ -139,7 +163,7 @@ public class StormElementData
         private set => _constValue = value;
     }
 
-    public string? ScaleValue
+    internal string? ScaleValue
     {
         get
         {
@@ -152,8 +176,14 @@ public class StormElementData
         }
     }
 
+    /// <summary>
+    /// Gets a value indicating whether the inner data, <see cref="KeyValueDataPairs"/> consists of numerical keys.
+    /// </summary>
     public bool HasNumericalIndex { get; init; }
 
+    /// <summary>
+    /// Gets a value indicating whether the inner data, <see cref="KeyValueDataPairs"/> consists of text keys.
+    /// </summary>
     public bool HasTextIndex { get; init; }
 
     [DebuggerBrowsable(DebuggerBrowsableState.RootHidden)]
@@ -183,7 +213,7 @@ public class StormElementData
         }
     }
 
-    public void AddXElement(XElement element, bool isInnerArray = false)
+    internal void AddXElement(XElement element, bool isInnerArray = false)
     {
         Parse(element, isInnerArray);
     }

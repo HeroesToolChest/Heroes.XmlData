@@ -19,16 +19,4 @@ internal static class StormDefaultData
 </CBehaviorBuff>
 "),
         ];
-
-    //public static Dictionary<string, Dictionary<string, string>> Data => new(StringComparer.OrdinalIgnoreCase)
-    //{
-    //    {
-    //        "Behavior", new(StringComparer.OrdinalIgnoreCase)
-    //        {
-    //            { "Modification.VitalMaxArray[0]", "Modification.VitalMaxArray[Life]" },
-    //            { "Modification.VitalMaxArray[1]", "Modification.VitalMaxArray[Shields]" },
-    //            { "Modification.VitalMaxArray[2]", "Modification.VitalMaxArray[Energy]" },
-    //        }
-    //    },
-    //};
 }

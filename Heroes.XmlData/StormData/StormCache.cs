@@ -28,7 +28,7 @@ internal class StormCache
     public Dictionary<string, HashSet<string>> ElementTypesByDataObjectType { get; } = new(StringComparer.OrdinalIgnoreCase);
 
     /// <summary>
-    /// Gets a data object type (e.g. Effect) from a given element type (e.g CEffectDamage).
+    /// Gets a data object type (e.g. Effect) from a given element type (e.g. CEffectDamage).
     /// </summary>
     public Dictionary<string, string> DataObjectTypeByElementType { get; } = [];
 
@@ -63,8 +63,6 @@ internal class StormCache
     /// Gets the level scaling cache. Used to determine the scaling value of damage abilities.
     /// </summary>
     public Dictionary<LevelScalingEntry, StormStringValue> ScaleValueByEntry { get; } = [];
-
-
 
     public void Clear()
     {

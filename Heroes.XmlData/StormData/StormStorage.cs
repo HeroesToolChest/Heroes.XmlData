@@ -1,5 +1,4 @@
-﻿using Heroes.XmlData.GameStrings;
-using Heroes.XmlData.StormMath;
+﻿using Heroes.XmlData.StormMath;
 
 namespace Heroes.XmlData.StormData;
 
@@ -14,9 +13,10 @@ internal partial class StormStorage : IStormStorage
 
     private int _loadedMapMods;
 
-    public StormStorage()
+    public StormStorage(bool hasRootDefaults = true)
     {
-        AddRootDefaults();
+        if (hasRootDefaults)
+            AddRootDefaults();
     }
 
     public StormCache StormCache { get; } = new();
@@ -223,7 +223,7 @@ internal partial class StormStorage : IStormStorage
             if (!currentStormCache.StormElementsByDataObjectType.ContainsKey(dataObjectType))
                 currentStormCache.StormElementsByDataObjectType.Add(dataObjectType, []);
 
-            if (TryGetExistingStormElementByDataObjectType(dataObjectType, idAtt, out StormElement? stormElement))
+            if (TryGetExistingStormElementById(idAtt, dataObjectType, out StormElement? stormElement))
                 stormElement.AddValue(stormXElementValuePath);
             else
                 currentStormCache.StormElementsByDataObjectType[dataObjectType].Add(idAtt, new StormElement(stormXElementValuePath));
@@ -348,9 +348,20 @@ internal partial class StormStorage : IStormStorage
             LevelScalingEntry levelScalingEntry = scaling.Key;
             StormStringValue stormStringValue = scaling.Value;
 
-            AddScaleValueData(currentStormCache, levelScalingEntry, stormStringValue);
+            //AddScaleValueData(currentStormCache, levelScalingEntry, stormStringValue);
 
+            StormElement? stormElement = ScaleValueParser.CreateStormElement(this, new LevelScalingEntry(levelScalingEntry.Catalog, levelScalingEntry.Entry, levelScalingEntry.Field), stormStringValue);
 
+            if (stormElement is not null)
+            {
+                if (!currentStormCache.ScaleValueStormElementsByDataObjectType.ContainsKey(levelScalingEntry.Catalog))
+                    currentStormCache.ScaleValueStormElementsByDataObjectType.Add(levelScalingEntry.Catalog, []);
+
+                if (TryGetExistingScaleValueStormElementByDataObjectType(levelScalingEntry.Catalog, levelScalingEntry.Entry, out StormElement? existingStormElement))
+                    existingStormElement.AddValue(stormElement);
+                else
+                    currentStormCache.ScaleValueStormElementsByDataObjectType[levelScalingEntry.Catalog].Add(levelScalingEntry.Entry, stormElement);
+            }
 
             //string? newField = AddDefaultIndexerToMultiFields(levelScalingEntry.Field);
 
@@ -367,21 +378,21 @@ internal partial class StormStorage : IStormStorage
 
         //currentStormCache.ScaleValueByEntry.Clear();
 
-        void AddScaleValueData(StormCache currentStormCache, LevelScalingEntry levelScalingEntry, StormStringValue stormStringValue)
-        {
-            StormElement? stormElement = ScaleValueParser.CreateStormElement(this, new LevelScalingEntry(levelScalingEntry.Catalog, levelScalingEntry.Entry, levelScalingEntry.Field), stormStringValue);
+        //void AddScaleValueData(StormCache currentStormCache, LevelScalingEntry levelScalingEntry, StormStringValue stormStringValue)
+        //{
+        //    StormElement? stormElement = ScaleValueParser.CreateStormElement(this, new LevelScalingEntry(levelScalingEntry.Catalog, levelScalingEntry.Entry, levelScalingEntry.Field), stormStringValue);
 
-            if (stormElement is not null)
-            {
-                if (!currentStormCache.ScaleValueStormElementsByDataObjectType.ContainsKey(levelScalingEntry.Catalog))
-                    currentStormCache.ScaleValueStormElementsByDataObjectType.Add(levelScalingEntry.Catalog, []);
+        //    if (stormElement is not null)
+        //    {
+        //        if (!currentStormCache.ScaleValueStormElementsByDataObjectType.ContainsKey(levelScalingEntry.Catalog))
+        //            currentStormCache.ScaleValueStormElementsByDataObjectType.Add(levelScalingEntry.Catalog, []);
 
-                if (TryGetExistingScaleValueStormElementByDataObjectType(levelScalingEntry.Catalog, levelScalingEntry.Entry, out StormElement? existingStormElement))
-                    existingStormElement.AddValue(stormElement);
-                else
-                    currentStormCache.ScaleValueStormElementsByDataObjectType[levelScalingEntry.Catalog].Add(levelScalingEntry.Entry, stormElement);
-            }
-        }
+        //        if (TryGetExistingScaleValueStormElementByDataObjectType(levelScalingEntry.Catalog, levelScalingEntry.Entry, out StormElement? existingStormElement))
+        //            existingStormElement.AddValue(stormElement);
+        //        else
+        //            currentStormCache.ScaleValueStormElementsByDataObjectType[levelScalingEntry.Catalog].Add(levelScalingEntry.Entry, stormElement);
+        //    }
+        //}
     }
 
     public void ClearGamestrings()
@@ -474,7 +485,7 @@ internal partial class StormStorage : IStormStorage
         return foundExistingDataObjectType;
     }
 
-    // DamageResponse.ModifyLimit
+    // i.e DamageResponse.ModifyLimit
     private string? AddDefaultIndexerToMultiFields(ReadOnlySpan<char> field)
     {
         int splitterCount = field.Count('.');

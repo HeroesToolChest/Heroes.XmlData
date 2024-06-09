@@ -5,6 +5,9 @@ namespace Heroes.XmlData.StormData;
 /// <content>
 /// Contains the methods for obtaining data from the caches.
 /// </content>
+/// <remarks>
+/// The TryGet methods get a reference to a single cache, where as the Get methods merges the data from all caches.
+/// </remarks>
 internal partial class StormStorage
 {
     public bool TryGetExistingConstantXElementById(ReadOnlySpan<char> id, [NotNullWhen(true)] out StormXElementValuePath? stormXElementValuePath)
@@ -27,21 +30,6 @@ internal partial class StormStorage
             return true;
 
         return false;
-    }
-
-    public StormXElementValuePath? GetConstantXElementById(ReadOnlySpan<char> id)
-    {
-        return GetConstantXElementById(id.ToString());
-    }
-
-    public StormXElementValuePath? GetConstantXElementById(string id)
-    {
-        ArgumentNullException.ThrowIfNull(id);
-
-        if (TryGetExistingConstantXElementById(id, out StormXElementValuePath? stormXElementValuePath))
-            return new StormXElementValuePath(stormXElementValuePath.Value, stormXElementValuePath.Path);
-
-        return null;
     }
 
     public bool TryGetExistingElementTypesByDataObjectType(ReadOnlySpan<char> dataObjectType, [NotNullWhen(true)] out HashSet<string>? elementTypes)
@@ -195,12 +183,12 @@ internal partial class StormStorage
         return stormElement;
     }
 
-    public bool TryGetExistingStormElementByDataObjectType(ReadOnlySpan<char> dataObjectType, ReadOnlySpan<char> id, [NotNullWhen(true)] out StormElement? stormElement)
+    public bool TryGetExistingStormElementById(ReadOnlySpan<char> id, ReadOnlySpan<char> dataObjectType, [NotNullWhen(true)] out StormElement? stormElement)
     {
-        return TryGetExistingStormElementByDataObjectType(dataObjectType.ToString(), id.ToString(), out stormElement);
+        return TryGetExistingStormElementById(id.ToString(), dataObjectType.ToString(), out stormElement);
     }
 
-    public bool TryGetExistingStormElementByDataObjectType(string dataObjectType, string id, [NotNullWhen(true)] out StormElement? stormElement)
+    public bool TryGetExistingStormElementById(string id, string dataObjectType, [NotNullWhen(true)] out StormElement? stormElement)
     {
         ArgumentNullException.ThrowIfNull(dataObjectType);
         ArgumentNullException.ThrowIfNull(id);
@@ -223,12 +211,12 @@ internal partial class StormStorage
         return false;
     }
 
-    public StormElement? GetStormElementByDataObjectType(ReadOnlySpan<char> dataObjectType, ReadOnlySpan<char> id)
+    public StormElement? GetStormElementById(ReadOnlySpan<char> id, ReadOnlySpan<char> dataObjectType)
     {
-        return GetStormElementByDataObjectType(dataObjectType.ToString(), id.ToString());
+        return GetStormElementById(id.ToString(), dataObjectType.ToString());
     }
 
-    public StormElement? GetStormElementByDataObjectType(string dataObjectType, string id)
+    public StormElement? GetStormElementById(string id, string dataObjectType)
     {
         ArgumentNullException.ThrowIfNull(dataObjectType);
         ArgumentNullException.ThrowIfNull(id);
@@ -437,7 +425,7 @@ internal partial class StormStorage
         StormElement? stormElement = null;
 
         if (currentElementType == ElementType.Normal && id is not null)
-            stormElement = GetStormElementByDataObjectType(dataObjectType, id);
+            stormElement = GetStormElementById(id, dataObjectType);
         else if (currentElementType == ElementType.Type)
             stormElement = GetStormElementByElementType(dataObjectType);
         else if (currentElementType == ElementType.Base)
@@ -466,7 +454,9 @@ internal partial class StormStorage
         {
             // then check the base element type, may not be the correct one, but close enough
             StormElement? baseElement = MergeUpStormElement(stormElement.ElementType, null, ElementType.Base);
-            baseElement?.AddValue(stormElement);
+
+            if (baseElement is not null && !baseElement.ElementType.Equals(stormElement.ElementType, StringComparison.OrdinalIgnoreCase))
+                baseElement.AddValue(stormElement);
 
             return baseElement ?? stormElement;
         }

@@ -10,23 +10,23 @@ internal class GameStringParser
     public const int MaxScalingLength = 6;
     public const double MaxValueSize = 999_999_999;
 
-    private readonly HeroesData _heroesData;
+    private readonly IStormStorage _stormStorage;
     private readonly DataRefParser _dataRefParser;
 
     private readonly List<ITextSection> _textStack = [];
     private int _startingIndex = 0;
     private int _index = 0;
 
-    private GameStringParser(HeroesData heroesData)
+    private GameStringParser(IStormStorage stormStorage)
     {
-        _heroesData = heroesData;
+        _stormStorage = stormStorage;
 
-        _dataRefParser = new DataRefParser(this, _heroesData);
+        _dataRefParser = new DataRefParser(this, _stormStorage);
     }
 
-    public static string ParseTooltipDescription(ReadOnlySpan<char> description, HeroesData heroesData)
+    public static string ParseTooltipDescription(IStormStorage stormStorage, ReadOnlySpan<char> description)
     {
-        GameStringParser gameStringParser = new(heroesData);
+        GameStringParser gameStringParser = new(stormStorage);
 
         gameStringParser.ConstructTextStack(description);
 
@@ -58,11 +58,9 @@ internal class GameStringParser
 
                 Encoding.UTF8.TryGetChars(constAttribute.Value.AsSpan(), buffer, out int charsWritten);
 
-                StormXElementValuePath? stormXElementValue = _heroesData.GetConstantXElement(buffer);
-
-                if (stormXElementValue is not null)
+                if (_stormStorage.TryGetExistingConstantXElementById(buffer, out StormXElementValuePath? stormXElementValue))
                 {
-                    resultValue = _heroesData.EvaluateConstantElement(stormXElementValue.Value);
+                    resultValue = _stormStorage.GetValueFromConstElementAsNumber(stormXElementValue.Value);
                 }
             }
             else if (xmlAttributes.TryFind("ref", out XmlAttribute refAttribute))

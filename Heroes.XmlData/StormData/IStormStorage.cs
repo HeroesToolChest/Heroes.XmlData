@@ -50,10 +50,6 @@ internal interface IStormStorage
 
     bool TryGetExistingConstantXElementById(string id, [NotNullWhen(true)] out StormXElementValuePath? stormXElementValuePath);
 
-    StormXElementValuePath? GetConstantXElementById(ReadOnlySpan<char> id);
-
-    StormXElementValuePath? GetConstantXElementById(string id);
-
     bool TryGetExistingElementTypesByDataObjectType(ReadOnlySpan<char> dataObjectType, [NotNullWhen(true)] out HashSet<string>? elementTypes);
 
     bool TryGetExistingElementTypesByDataObjectType(string dataObjectType, [NotNullWhen(true)] out HashSet<string>? elementTypes);
@@ -78,13 +74,13 @@ internal interface IStormStorage
 
     StormElement? GetStormElementByElementType(string elementType);
 
-    bool TryGetExistingStormElementByDataObjectType(ReadOnlySpan<char> dataObjectType, ReadOnlySpan<char> id, [NotNullWhen(true)] out StormElement? stormElement);
+    bool TryGetExistingStormElementById(ReadOnlySpan<char> id, ReadOnlySpan<char> dataObjectType, [NotNullWhen(true)] out StormElement? stormElement);
 
-    bool TryGetExistingStormElementByDataObjectType(string dataObjectType, string id, [NotNullWhen(true)] out StormElement? stormElement);
+    bool TryGetExistingStormElementById(string id, string dataObjectType, [NotNullWhen(true)] out StormElement? stormElement);
 
-    StormElement? GetStormElementByDataObjectType(ReadOnlySpan<char> dataObjectType, ReadOnlySpan<char> id);
+    StormElement? GetStormElementById(ReadOnlySpan<char> id, ReadOnlySpan<char> dataObjectType);
 
-    StormElement? GetStormElementByDataObjectType(string dataObjectType, string id);
+    StormElement? GetStormElementById(string id, string dataObjectType);
 
     bool TryGetExistingScaleValueStormElementByDataObjectType(ReadOnlySpan<char> dataObjectType, ReadOnlySpan<char> id, [NotNullWhen(true)] out StormElement? stormElement);
 
