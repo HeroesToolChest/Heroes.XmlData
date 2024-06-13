@@ -133,188 +133,168 @@ public class HeroesData
         return false;
     }
 
-    /// <summary>
-    /// Checks if the level scaling entry exists.
-    /// </summary>
-    /// <param name="catalog">The value of the Catalog element.</param>
-    /// <param name="entry">The value of the Entry element.</param>
-    /// <param name="field">The value of the Field element.</param>
-    /// <returns><see langword="true"/> if the entry is found, otherwise <see langword="false"/>.</returns>
-    /// <exception cref="ArgumentNullException"><paramref name="catalog"/> is <see langword="null"/>.</exception>
-    /// <exception cref="ArgumentNullException"><paramref name="entry"/> is <see langword="null"/>.</exception>
-    /// <exception cref="ArgumentNullException"><paramref name="field"/> is <see langword="null"/>.</exception>
-    public bool IsLevelScalingEntryExists(string catalog, string entry, string field)
-    {
-        ArgumentNullException.ThrowIfNull(catalog);
-        ArgumentNullException.ThrowIfNull(entry);
-        ArgumentNullException.ThrowIfNull(field);
+    ///// <summary>
+    ///// Checks if the level scaling entry exists.
+    ///// </summary>
+    ///// <param name="catalog">The value of the Catalog element.</param>
+    ///// <param name="entry">The value of the Entry element.</param>
+    ///// <param name="field">The value of the Field element.</param>
+    ///// <returns><see langword="true"/> if the entry is found, otherwise <see langword="false"/>.</returns>
+    ///// <exception cref="ArgumentNullException"><paramref name="catalog"/> is <see langword="null"/>.</exception>
+    ///// <exception cref="ArgumentNullException"><paramref name="entry"/> is <see langword="null"/>.</exception>
+    ///// <exception cref="ArgumentNullException"><paramref name="field"/> is <see langword="null"/>.</exception>
+    //public bool IsLevelScalingEntryExists(string catalog, string entry, string field)
+    //{
+    //    ArgumentNullException.ThrowIfNull(catalog);
+    //    ArgumentNullException.ThrowIfNull(entry);
+    //    ArgumentNullException.ThrowIfNull(field);
 
-        LevelScalingEntry levelScalingEntry = new(catalog, entry, field);
+    //    LevelScalingEntry levelScalingEntry = new(catalog, entry, field);
 
-        return _stormStorage.StormCustomCache.ScaleValueByEntry.ContainsKey(levelScalingEntry) ||
-            _stormStorage.StormMapCache.ScaleValueByEntry.ContainsKey(levelScalingEntry) ||
-            _stormStorage.StormCache.ScaleValueByEntry.ContainsKey(levelScalingEntry);
-    }
+    //    return _stormStorage.StormCustomCache.ScaleValueByEntry.ContainsKey(levelScalingEntry) ||
+    //        _stormStorage.StormMapCache.ScaleValueByEntry.ContainsKey(levelScalingEntry) ||
+    //        _stormStorage.StormCache.ScaleValueByEntry.ContainsKey(levelScalingEntry);
+    //}
 
-    /// <summary>
-    /// Gets the value of the level scaling entry.
-    /// </summary>
-    /// <param name="catalog">The value of the Catalog element.</param>
-    /// <param name="entry">The value of the Entry element.</param>
-    /// <param name="field">The value of the Field element.</param>
-    /// <returns>The <see cref="StormStringValue"/>.</returns>
-    /// <exception cref="ArgumentNullException"><paramref name="catalog"/> is <see langword="null"/>.</exception>
-    /// <exception cref="ArgumentNullException"><paramref name="entry"/> is <see langword="null"/>.</exception>
-    /// <exception cref="ArgumentNullException"><paramref name="field"/> is <see langword="null"/>.</exception>
-    /// <exception cref="KeyNotFoundException">The combination of <paramref name="catalog"/>, <paramref name="entry"/>, and <paramref name="field"/> was not found.</exception>
-    public StormStringValue GetLevelScalingEntryExists(string catalog, string entry, string field)
-    {
-        ArgumentNullException.ThrowIfNull(catalog);
-        ArgumentNullException.ThrowIfNull(entry);
-        ArgumentNullException.ThrowIfNull(field);
+    ///// <summary>
+    ///// Gets the value of the level scaling entry.
+    ///// </summary>
+    ///// <param name="catalog">The value of the Catalog element.</param>
+    ///// <param name="entry">The value of the Entry element.</param>
+    ///// <param name="field">The value of the Field element.</param>
+    ///// <returns>The <see cref="StormStringValue"/>.</returns>
+    ///// <exception cref="ArgumentNullException"><paramref name="catalog"/> is <see langword="null"/>.</exception>
+    ///// <exception cref="ArgumentNullException"><paramref name="entry"/> is <see langword="null"/>.</exception>
+    ///// <exception cref="ArgumentNullException"><paramref name="field"/> is <see langword="null"/>.</exception>
+    ///// <exception cref="KeyNotFoundException">The combination of <paramref name="catalog"/>, <paramref name="entry"/>, and <paramref name="field"/> was not found.</exception>
+    //public StormStringValue GetLevelScalingEntryExists(string catalog, string entry, string field)
+    //{
+    //    ArgumentNullException.ThrowIfNull(catalog);
+    //    ArgumentNullException.ThrowIfNull(entry);
+    //    ArgumentNullException.ThrowIfNull(field);
 
-        LevelScalingEntry levelScalingEntry = new(catalog, entry, field);
+    //    LevelScalingEntry levelScalingEntry = new(catalog, entry, field);
 
-        if (_stormStorage.StormCustomCache.ScaleValueByEntry.TryGetValue(levelScalingEntry, out StormStringValue? stormStringValue))
-            return stormStringValue;
+    //    if (_stormStorage.StormCustomCache.ScaleValueByEntry.TryGetValue(levelScalingEntry, out StormStringValue? stormStringValue))
+    //        return stormStringValue;
 
-        if (_stormStorage.StormMapCache.ScaleValueByEntry.TryGetValue(levelScalingEntry, out stormStringValue))
-            return stormStringValue;
+    //    if (_stormStorage.StormMapCache.ScaleValueByEntry.TryGetValue(levelScalingEntry, out stormStringValue))
+    //        return stormStringValue;
 
-        return _stormStorage.StormCache.ScaleValueByEntry[levelScalingEntry];
-    }
+    //    return _stormStorage.StormCache.ScaleValueByEntry[levelScalingEntry];
+    //}
 
-    /// <summary>
-    /// Looks up a level scaling entry from the given parameters, returning a value that indicates whether such value exists.
-    /// </summary>
-    /// <param name="catalog">The value of the Catalog element.</param>
-    /// <param name="entry">The value of the Entry element.</param>
-    /// <param name="field">The value of the Field element.</param>
-    /// <param name="stormStringValue">The returning <see cref="StormStringValue"/> if the entry is found.</param>
-    /// <returns><see langword="true"/> if the entry is found, otherwise <see langword="false"/>.</returns>
-    /// <exception cref="ArgumentNullException"><paramref name="catalog"/> is <see langword="null"/>.</exception>
-    /// <exception cref="ArgumentNullException"><paramref name="entry"/> is <see langword="null"/>.</exception>
-    /// <exception cref="ArgumentNullException"><paramref name="field"/> is <see langword="null"/>.</exception>
-    public bool TryGetLevelScalingEntryExists(string catalog, string entry, string field, out StormStringValue? stormStringValue)
-    {
-        ArgumentNullException.ThrowIfNull(catalog);
-        ArgumentNullException.ThrowIfNull(entry);
-        ArgumentNullException.ThrowIfNull(field);
+    ///// <summary>
+    ///// Looks up a level scaling entry from the given parameters, returning a value that indicates whether such value exists.
+    ///// </summary>
+    ///// <param name="catalog">The value of the Catalog element.</param>
+    ///// <param name="entry">The value of the Entry element.</param>
+    ///// <param name="field">The value of the Field element.</param>
+    ///// <param name="stormStringValue">The returning <see cref="StormStringValue"/> if the entry is found.</param>
+    ///// <returns><see langword="true"/> if the entry is found, otherwise <see langword="false"/>.</returns>
+    ///// <exception cref="ArgumentNullException"><paramref name="catalog"/> is <see langword="null"/>.</exception>
+    ///// <exception cref="ArgumentNullException"><paramref name="entry"/> is <see langword="null"/>.</exception>
+    ///// <exception cref="ArgumentNullException"><paramref name="field"/> is <see langword="null"/>.</exception>
+    //public bool TryGetLevelScalingEntryExists(string catalog, string entry, string field, out StormStringValue? stormStringValue)
+    //{
+    //    ArgumentNullException.ThrowIfNull(catalog);
+    //    ArgumentNullException.ThrowIfNull(entry);
+    //    ArgumentNullException.ThrowIfNull(field);
 
-        LevelScalingEntry levelScalingEntry = new(catalog, entry, field);
+    //    LevelScalingEntry levelScalingEntry = new(catalog, entry, field);
 
-        if (_stormStorage.StormCustomCache.ScaleValueByEntry.TryGetValue(levelScalingEntry, out stormStringValue))
-            return true;
+    //    if (_stormStorage.StormCustomCache.ScaleValueByEntry.TryGetValue(levelScalingEntry, out stormStringValue))
+    //        return true;
 
-        if (_stormStorage.StormMapCache.ScaleValueByEntry.TryGetValue(levelScalingEntry, out stormStringValue))
-            return true;
+    //    if (_stormStorage.StormMapCache.ScaleValueByEntry.TryGetValue(levelScalingEntry, out stormStringValue))
+    //        return true;
 
-        if (_stormStorage.StormCache.ScaleValueByEntry.TryGetValue(levelScalingEntry, out stormStringValue))
-            return true;
+    //    if (_stormStorage.StormCache.ScaleValueByEntry.TryGetValue(levelScalingEntry, out stormStringValue))
+    //        return true;
 
-        return false;
-    }
+    //    return false;
+    //}
 
-    /// <summary>
-    /// Checks if the style name exists.
-    /// </summary>
-    /// <param name="name">A character span that contains the style or constanst name.</param>
-    /// <returns><see langword="true"/> if the style name is found, otherwise <see langword="false"/>.</returns>
-    public bool IsStormStyleHexColorValueExists(ReadOnlySpan<char> name)
-    {
-        return IsStormStyleHexColorValueExists(name.ToString());
-    }
+    ///// <summary>
+    ///// Checks if the style name exists.
+    ///// </summary>
+    ///// <param name="name">A character span that contains the style or constanst name.</param>
+    ///// <returns><see langword="true"/> if the style name is found, otherwise <see langword="false"/>.</returns>
+    //public bool IsStormStyleHexColorValueExists(ReadOnlySpan<char> name)
+    //{
+    //    return IsStormStyleHexColorValueExists(name.ToString());
+    //}
 
-    /// <summary>
-    /// Checks if the style name of a StyleFile exists.
-    /// </summary>
-    /// <param name="name">The style or constanst name.</param>
-    /// <returns><see langword="true"/> if the style name is found, otherwise <see langword="false"/>.</returns>
-    public bool IsStormStyleHexColorValueExists(string name)
-    {
-        ArgumentNullException.ThrowIfNull(name);
+    ///// <summary>
+    ///// Checks if the style name of a StyleFile exists.
+    ///// </summary>
+    ///// <param name="name">The style or constanst name.</param>
+    ///// <returns><see langword="true"/> if the style name is found, otherwise <see langword="false"/>.</returns>
+    //public bool IsStormStyleHexColorValueExists(string name)
+    //{
+    //    ArgumentNullException.ThrowIfNull(name);
 
-        return _stormStorage.StormCustomCache.StormStyleHexColorValueByName.ContainsKey(name) ||
-            _stormStorage.StormMapCache.StormStyleHexColorValueByName.ContainsKey(name) ||
-            _stormStorage.StormCache.StormStyleHexColorValueByName.ContainsKey(name);
-    }
+    //    return _stormStorage.StormCustomCache.StormStyleHexColorValueByName.ContainsKey(name) ||
+    //        _stormStorage.StormMapCache.StormStyleHexColorValueByName.ContainsKey(name) ||
+    //        _stormStorage.StormCache.StormStyleHexColorValueByName.ContainsKey(name);
+    //}
 
-    /// <summary>
-    /// Gets the value from the style name of a StyleFile. The value could be another name that required another lookup.
-    /// </summary>
-    /// <param name="name">A character span that contains the style or constanst name.</param>
-    /// <returns>The <see cref="StormStringValue"/>.</returns>
-    /// <exception cref="KeyNotFoundException"><paramref name="name"/> was not found.</exception>
-    public StormStringValue GetStormStyleHexColorValue(ReadOnlySpan<char> name)
-    {
-        return GetStormStyleHexColorValue(name.ToString());
-    }
+    ///// <summary>
+    ///// Gets the value from the style name of a StyleFile. The value could be another name that required another lookup.
+    ///// </summary>
+    ///// <param name="name">A character span that contains the style or constanst name.</param>
+    ///// <returns>The <see cref="StormStringValue"/>.</returns>
+    ///// <exception cref="KeyNotFoundException"><paramref name="name"/> was not found.</exception>
+    //public StormStringValue GetStormStyleHexColorValue(ReadOnlySpan<char> name)
+    //{
+    //    return GetStormStyleHexColorValue(name.ToString());
+    //}
 
-    /// <summary>
-    /// Gets the value from the style name of a StyleFile. The value could be another name that required another lookup.
-    /// </summary>
-    /// <param name="name">The style or constanst name.</param>
-    /// <returns>The <see cref="StormStringValue"/>.</returns>
-    /// <exception cref="ArgumentNullException"><paramref name="name"/> is <see langword="null"/>.</exception>
-    /// <exception cref="KeyNotFoundException"><paramref name="name"/> was not found.</exception>
-    public StormStringValue GetStormStyleHexColorValue(string name)
-    {
-        ArgumentNullException.ThrowIfNull(name);
+    ///// <summary>
+    ///// Gets the value from the style name of a StyleFile. The value could be another name that required another lookup.
+    ///// </summary>
+    ///// <param name="name">The style or constanst name.</param>
+    ///// <returns>The <see cref="StormStringValue"/>.</returns>
+    ///// <exception cref="ArgumentNullException"><paramref name="name"/> is <see langword="null"/>.</exception>
+    ///// <exception cref="KeyNotFoundException"><paramref name="name"/> was not found.</exception>
+    //public StormStringValue GetStormStyleHexColorValue(string name)
+    //{
+    //    ArgumentNullException.ThrowIfNull(name);
 
-        // custom cache always first
-        if (_stormStorage.StormCustomCache.StormStyleHexColorValueByName.TryGetValue(name, out StormStringValue? stormStringValue))
-            return stormStringValue;
+    //    // custom cache always first
+    //    if (_stormStorage.StormCustomCache.StormStyleHexColorValueByName.TryGetValue(name, out StormStringValue? stormStringValue))
+    //        return stormStringValue;
 
-        // map cache second
-        if (_stormStorage.StormMapCache.StormStyleHexColorValueByName.TryGetValue(name, out stormStringValue))
-            return stormStringValue;
+    //    // map cache second
+    //    if (_stormStorage.StormMapCache.StormStyleHexColorValueByName.TryGetValue(name, out stormStringValue))
+    //        return stormStringValue;
 
-        return _stormStorage.StormCache.StormStyleHexColorValueByName[name];
-    }
+    //    return _stormStorage.StormCache.StormStyleHexColorValueByName[name];
+    //}
 
-    /// <summary>
-    /// Looks up a value from the style name of a StyleFile, returning a value that indicates whether such value exists.
-    /// </summary>
-    /// <param name="name">A character span that contains the style or constanst name.</param>
-    /// <param name="stormStringValue">The returning <see cref="StormStringValue"/> if the name is found.</param>
-    /// <returns><see langword="true"/> if the name is found, otherwise <see langword="false"/>.</returns>
-    /// <exception cref="ArgumentNullException"><paramref name="name"/> is <see langword="null"/>.</exception>
-    public bool TryGetStormStyleHexColorValue(ReadOnlySpan<char> name, out StormStringValue? stormStringValue)
-    {
-        return TryGetStormStyleHexColorValue(name.ToString(), out stormStringValue);
-    }
+    ///// <summary>
+    ///// Looks up a value from the style name of a StyleFile, returning a value that indicates whether such value exists.
+    ///// </summary>
+    ///// <param name="name">A character span that contains the style or constanst name.</param>
+    ///// <param name="stormStringValue">The returning <see cref="StormStringValue"/> if the name is found.</param>
+    ///// <returns><see langword="true"/> if the name is found, otherwise <see langword="false"/>.</returns>
+    ///// <exception cref="ArgumentNullException"><paramref name="name"/> is <see langword="null"/>.</exception>
+    //public bool TryGetStormStyleHexColorValue(ReadOnlySpan<char> name, out StormStringValue? stormStringValue)
+    //{
+    //    return TryGetStormStyleHexColorValue(name.ToString(), out stormStringValue);
+    //}
 
-    /// <summary>
-    /// Looks up a value from the style name of a StyleFile, returning a value that indicates whether such value exists.
-    /// </summary>
-    /// <param name="name">The style or constanst name.</param>
-    /// <param name="stormStringValue">The returning <see cref="StormStringValue"/> if the name is found.</param>
-    /// <returns><see langword="true"/> if the name is found, otherwise <see langword="false"/>.</returns>
-    /// <exception cref="ArgumentNullException"><paramref name="name"/> is <see langword="null"/>.</exception>
-    public bool TryGetStormStyleHexColorValue(string name, out StormStringValue? stormStringValue)
-    {
-        return _stormStorage.TryGetStormStyleHexColorValue(name, out stormStringValue);
-    }
-
-    public StormElement? GetBaseStormElement(ReadOnlySpan<char> elementType)
-    {
-        return _stormStorage.GetBaseStormElement(elementType);
-    }
-
-    public StormElement? GetBaseStormElement(string elementType)
-    {
-        return _stormStorage.GetBaseStormElement(elementType);
-    }
-
-    public StormElement? GetScalingStormElement(ReadOnlySpan<char> dataObjectType, ReadOnlySpan<char> id)
-    {
-        return _stormStorage.GetScaleValueStormElementByDataObjectType(dataObjectType, id);
-    }
-
-    public StormElement? GetScalingStormElement(string dataObjectType, string id)
-    {
-        return _stormStorage.GetScaleValueStormElementByDataObjectType(dataObjectType, id);
-    }
+    ///// <summary>
+    ///// Looks up a value from the style name of a StyleFile, returning a value that indicates whether such value exists.
+    ///// </summary>
+    ///// <param name="name">The style or constanst name.</param>
+    ///// <param name="stormStringValue">The returning <see cref="StormStringValue"/> if the name is found.</param>
+    ///// <returns><see langword="true"/> if the name is found, otherwise <see langword="false"/>.</returns>
+    ///// <exception cref="ArgumentNullException"><paramref name="name"/> is <see langword="null"/>.</exception>
+    //public bool TryGetStormStyleHexColorValue(string name, out StormStringValue? stormStringValue)
+    //{
+    //    return _stormStorage.TryGetStormStyleHexColorValue(name, out stormStringValue);
+    //}
 
     /// <summary>
     /// Get a collection of all the element types (e.g. CEffectDamage) associated with the data object type (e.g. Effect).
@@ -357,7 +337,7 @@ public class HeroesData
     }
 
     /// <summary>
-    /// Gets a <see cref="StormElement"/> that does not have an id attribute value.
+    /// Gets a <see cref="StormElement"/> that represents an element that does not have an id attribute value.
     /// </summary>
     /// <param name="elementType">A character span that contains the name of the element.</param>
     /// <returns>A <see cref="StormElement"/>.</returns>
@@ -367,7 +347,7 @@ public class HeroesData
     }
 
     /// <summary>
-    /// Gets a <see cref="StormElement"/> that does not have an id attribute value.
+    /// Gets a <see cref="StormElement"/> that represents an element that does not have an id attribute value.
     /// </summary>
     /// <param name="elementType">The name of the element.</param>
     /// <returns>A <see cref="StormElement"/>.</returns>
@@ -377,9 +357,9 @@ public class HeroesData
     }
 
     /// <summary>
-    /// Gets a <see cref="StormElement"/> that has an id attribute value.
+    /// Gets a <see cref="StormElement"/> that represents an element that has an id attribute value.
     /// </summary>
-    /// <param name="id">The id of element.</param>
+    /// <param name="id">A character span that contains the id of element.</param>
     /// <param name="dataObjectType">The type of the element name (e.g. Effect).</param>
     /// <returns>A <see cref="StormElement"/>.</returns>
     public StormElement? GetStormElement(ReadOnlySpan<char> id, ReadOnlySpan<char> dataObjectType)
@@ -388,14 +368,36 @@ public class HeroesData
     }
 
     /// <summary>
-    /// Gets a <see cref="StormElement"/> that has an id attribute value.
+    /// Gets a <see cref="StormElement"/> that represents an element that has an id attribute value.
     /// </summary>
-    /// <param name="id">A character span that contains the id of element.</param>
+    /// <param name="id">The id of element.</param>
     /// <param name="dataObjectType">The type of the element name (e.g. Effect).</param>
     /// <returns>A <see cref="StormElement"/>.</returns>
     public StormElement? GetStormElement(string id, string dataObjectType)
     {
         return _stormStorage.GetStormElementById(id, dataObjectType);
+    }
+
+    /// <summary>
+    /// Gets a <see cref="StormElement"/> that is created from a level scaling array element that contains the scaling attribute value.
+    /// </summary>
+    /// <param name="id">A character span that contains the id of element.</param>
+    /// <param name="dataObjectType">The type of the element name (e.g. Effect).</param>
+    /// <returns>A <see cref="StormElement"/> that contains a scaling value.</returns>
+    public StormElement? GetScaleValueStormElement(ReadOnlySpan<char> id, ReadOnlySpan<char> dataObjectType)
+    {
+        return _stormStorage.GetScaleValueStormElementById(id, dataObjectType);
+    }
+
+    /// <summary>
+    /// Gets a <see cref="StormElement"/> that is created from a level scaling array element that contains the scaling attribute value.
+    /// </summary>
+    /// <param name="id">The id of element.</param>
+    /// <param name="dataObjectType">The type of the element name (e.g. Effect).</param>
+    /// <returns>A <see cref="StormElement"/> that contains a scaling value.</returns>
+    public StormElement? GetScaleValueStormElement(string id, string dataObjectType)
+    {
+        return _stormStorage.GetScaleValueStormElementById(id, dataObjectType);
     }
 
     /// <summary>
@@ -406,7 +408,7 @@ public class HeroesData
     /// <returns>A merged from base element <see cref="StormElement"/>.</returns>
     public StormElement? GetCompleteStormElement(ReadOnlySpan<char> dataObjectType, ReadOnlySpan<char> id)
     {
-        return _stormStorage.GetCompleteStormElement(dataObjectType, id);
+        return _stormStorage.GetCompleteStormElement(id, dataObjectType);
     }
 
     /// <summary>
@@ -417,7 +419,47 @@ public class HeroesData
     /// <returns>A merged from base element <see cref="StormElement"/>.</returns>
     public StormElement? GetCompleteStormElement(string dataObjectType, string id)
     {
-        return _stormStorage.GetCompleteStormElement(dataObjectType, id);
+        return _stormStorage.GetCompleteStormElement(id, dataObjectType);
+    }
+
+    /// <summary>
+    /// Gets <see cref="StormElement"/> that represents a storm style Constant element.
+    /// </summary>
+    /// <param name="name">The name of the Constant element.</param>
+    /// <returns>A StormStyle Constant <see cref="StormElement"/>.</returns>
+    public StormElement? GetStormStyleConstantStormElement(ReadOnlySpan<char> name)
+    {
+        return _stormStorage.GetStormStyleConstantsByName(name);
+    }
+
+    /// <summary>
+    /// Gets <see cref="StormElement"/> that represents a StormStyle Constant element.
+    /// </summary>
+    /// <param name="name">A character span that contains the name of the Constant element.</param>
+    /// <returns>A StormStyle Constant <see cref="StormElement"/>.</returns>
+    public StormElement? GetStormStyleConstantStormElement(string name)
+    {
+        return _stormStorage.GetStormStyleConstantsByName(name);
+    }
+
+    /// <summary>
+    /// Gets <see cref="StormElement"/> that represents a StormStyle Style element.
+    /// </summary>
+    /// <param name="name">The name of the Style element.</param>
+    /// <returns>A StormStyle Style <see cref="StormElement"/>.</returns>
+    public StormElement? GetStormStyleStyleStormElement(ReadOnlySpan<char> name)
+    {
+        return _stormStorage.GetStormStyleStylesByName(name);
+    }
+
+    /// <summary>
+    /// Gets <see cref="StormElement"/> that represents a StormStyle Style element.
+    /// </summary>
+    /// <param name="name">A character span that contains the name of the Style element.</param>
+    /// <returns>A StormStyle Style <see cref="StormElement"/>.</returns>
+    public StormElement? GetStormStyleStyleStormElement(string name)
+    {
+        return _stormStorage.GetStormStyleStylesByName(name);
     }
 
     //private StormElement? MergeUpStormElement(string dataObjectType, string? id, ElementType currentElementType)
@@ -483,15 +525,15 @@ public class HeroesData
     //    return _stormStorage.TryGetExistingStormElementByElementType(elementType, out stormElement);
     //}
 
-    public bool TryGetLevelScalingValue(ReadOnlySpan<char> catalog, ReadOnlySpan<char> entry, ReadOnlySpan<char> field, [NotNullWhen(true)] out StormStringValue? stormStringValue)
-    {
-        return _stormStorage.TryGetLevelScalingArrayElement(catalog, entry, field, out stormStringValue);
-    }
+    //public bool TryGetLevelScalingValue(ReadOnlySpan<char> catalog, ReadOnlySpan<char> entry, ReadOnlySpan<char> field, [NotNullWhen(true)] out StormStringValue? stormStringValue)
+    //{
+    //    return _stormStorage.TryGetLevelScalingArrayElement(catalog, entry, field, out stormStringValue);
+    //}
 
-    public bool TryGetLevelScalingValue(string catalog, string entry, string field, [NotNullWhen(true)] out StormStringValue? stormStringValue)
-    {
-        return _stormStorage.TryGetLevelScalingArrayElement(catalog, entry, field, out stormStringValue);
-    }
+    //public bool TryGetLevelScalingValue(string catalog, string entry, string field, [NotNullWhen(true)] out StormStringValue? stormStringValue)
+    //{
+    //    return _stormStorage.TryGetLevelScalingArrayElement(catalog, entry, field, out stormStringValue);
+    //}
 
 
 
@@ -500,9 +542,9 @@ public class HeroesData
     //    return _stormStorage.GetValueFromConstElementAsNumber(constElement);
     //}
 
-    public TooltipDescription ParseGameString(string gameString, StormLocale stormLocale)
+    public TooltipDescription ParseGameString(string gameString, StormLocale stormLocale, bool extractFontValues = false)
     {
-        return new TooltipDescription(GameStringParser.ParseTooltipDescription(_stormStorage, gameString), stormLocale);
+        return new TooltipDescription(GameStringParser.ParseTooltipDescription(_stormStorage, gameString), stormLocale, extractFontValues);
     }
 
     internal void SetHeroesLocalization(StormLocale stormLocale)

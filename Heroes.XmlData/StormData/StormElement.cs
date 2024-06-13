@@ -3,7 +3,7 @@
 namespace Heroes.XmlData.StormData;
 
 /// <summary>
-/// Contains the data for a top level <see cref="XElement"/>.
+/// Contains the data for an <see cref="XElement"/>.
 /// </summary>
 [DebuggerDisplay("{DebuggerDisplay,nq}")]
 public class StormElement
@@ -15,7 +15,7 @@ public class StormElement
     /// <summary>
     /// Initializes a new instance of the <see cref="StormElement"/> class.
     /// </summary>
-    /// <param name="baseValue"></param>
+    /// <param name="baseValue">A <see cref="StormXElementValuePath"/>.</param>
     public StormElement(StormXElementValuePath baseValue)
     {
         _originalStormXElementValues.Add(baseValue);
@@ -27,7 +27,7 @@ public class StormElement
     /// <summary>
     /// Initializes a new instance of the <see cref="StormElement"/> class.
     /// </summary>
-    /// <param name="baseValue"></param>
+    /// <param name="baseValue">Another <see cref="StormElement"/> instance.</param>
     public StormElement(StormElement baseValue)
     {
         _originalStormXElementValues = [.. baseValue.OriginalStormXElementValues];
@@ -47,8 +47,8 @@ public class StormElement
     public IReadOnlyList<StormXElementValuePath> OriginalStormXElementValues => _originalStormXElementValues;
 
     /// <summary>
-    /// 
-    /// </summary> 
+    /// Gets the data values.
+    /// </summary>
     public StormElementData DataValues { get; private set; }
 
     /// <summary>

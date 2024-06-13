@@ -82,33 +82,29 @@ internal interface IStormStorage
 
     StormElement? GetStormElementById(string id, string dataObjectType);
 
-    bool TryGetExistingScaleValueStormElementByDataObjectType(ReadOnlySpan<char> dataObjectType, ReadOnlySpan<char> id, [NotNullWhen(true)] out StormElement? stormElement);
+    bool TryGetExistingScaleValueStormElementById(ReadOnlySpan<char> id, ReadOnlySpan<char> dataObjectType, [NotNullWhen(true)] out StormElement? stormElement);
 
-    bool TryGetExistingScaleValueStormElementByDataObjectType(string dataObjectType, string id, [NotNullWhen(true)] out StormElement? stormElement);
+    bool TryGetExistingScaleValueStormElementById(string id, string dataObjectType, [NotNullWhen(true)] out StormElement? stormElement);
 
-    StormElement? GetScaleValueStormElementByDataObjectType(ReadOnlySpan<char> dataObjectType, ReadOnlySpan<char> id);
+    StormElement? GetScaleValueStormElementById(ReadOnlySpan<char> id, ReadOnlySpan<char> dataObjectType);
 
-    StormElement? GetScaleValueStormElementByDataObjectType(string dataObjectType, string id);
+    StormElement? GetScaleValueStormElementById(string id, string dataObjectType);
 
-    StormElement? GetCompleteStormElement(ReadOnlySpan<char> dataObjectType, ReadOnlySpan<char> id);
+    StormElement? GetCompleteStormElement(ReadOnlySpan<char> id, ReadOnlySpan<char> dataObjectType);
 
-    StormElement? GetCompleteStormElement(string dataObjectType, string id);
+    StormElement? GetCompleteStormElement(string id, string dataObjectType);
 
     StormElement? GetBaseStormElement(ReadOnlySpan<char> elementType);
 
     StormElement? GetBaseStormElement(string elementType);
 
-    bool TryGetStormStyleHexColorValue(ReadOnlySpan<char> name, [NotNullWhen(true)] out StormStringValue? stormStringValue);
+    StormElement? GetStormStyleConstantsByName(ReadOnlySpan<char> name);
 
-    bool TryGetStormStyleHexColorValue(string name, [NotNullWhen(true)] out StormStringValue? stormStringValue);
+    StormElement? GetStormStyleConstantsByName(string name);
 
-    bool TryGetStormStyleConstantsHexColorValue(ReadOnlySpan<char> name, [NotNullWhen(true)] out StormStringValue? stormStringValue);
+    StormElement? GetStormStyleStylesByName(ReadOnlySpan<char> name);
 
-    bool TryGetStormStyleConstantsHexColorValue(string name, [NotNullWhen(true)] out StormStringValue? stormStringValue);
-
-    bool TryGetLevelScalingArrayElement(ReadOnlySpan<char> catalog, ReadOnlySpan<char> entry, ReadOnlySpan<char> field, [NotNullWhen(true)] out StormStringValue? stormStringValue);
-
-    bool TryGetLevelScalingArrayElement(string catalog, string entry, string field, [NotNullWhen(true)] out StormStringValue? stormStringValue);
+    StormElement? GetStormStyleStylesByName(string name);
 
     List<GameStringText> Test();
 }

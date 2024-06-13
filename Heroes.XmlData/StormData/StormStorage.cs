@@ -247,19 +247,19 @@ internal partial class StormStorage : IStormStorage
         if (elementName.Equals("Constant", StringComparison.OrdinalIgnoreCase))
         {
             string? name = element.Attribute("name")?.Value;
-            string? val = element.Attribute("val")?.Value;
 
-            if (string.IsNullOrEmpty(name) || string.IsNullOrEmpty(val))
+            if (string.IsNullOrEmpty(name))
                 return;
 
-            currentStormCache.StormStyleConstantsHexColorValueByName[name] = new StormStringValue(val, filePath);
+            currentStormCache.StormStyleConstantsByName[name] = new StormElement(new StormXElementValuePath(element, filePath));
+
+            //currentStormCache.StormStyleConstantsHexColorValueByName[name] = new StormStringValue(val, filePath);
         }
         else if (elementName.Equals("Style", StringComparison.OrdinalIgnoreCase))
         {
             string? name = element.Attribute("name")?.Value;
-            string? textColor = element.Attribute("textcolor")?.Value;
 
-            if (string.IsNullOrEmpty(textColor) || string.IsNullOrEmpty(name))
+            if (string.IsNullOrEmpty(name))
                 return;
 
             //if (textColor[0] == '#')
@@ -273,7 +273,9 @@ internal partial class StormStorage : IStormStorage
             //}
             //else
             //{
-            currentStormCache.StormStyleHexColorValueByName[name] = new StormStringValue(textColor, filePath);
+
+            currentStormCache.StormStyleStylesByName[name] = new StormElement(new StormXElementValuePath(element, filePath));
+            //currentStormCache.StormStyleHexColorValueByName[name] = new StormStringValue(textColor, filePath);
             //}
 
             // TODO: needed anymore?
@@ -357,7 +359,7 @@ internal partial class StormStorage : IStormStorage
                 if (!currentStormCache.ScaleValueStormElementsByDataObjectType.ContainsKey(levelScalingEntry.Catalog))
                     currentStormCache.ScaleValueStormElementsByDataObjectType.Add(levelScalingEntry.Catalog, []);
 
-                if (TryGetExistingScaleValueStormElementByDataObjectType(levelScalingEntry.Catalog, levelScalingEntry.Entry, out StormElement? existingStormElement))
+                if (TryGetExistingScaleValueStormElementById(levelScalingEntry.Entry, levelScalingEntry.Catalog, out StormElement? existingStormElement))
                     existingStormElement.AddValue(stormElement);
                 else
                     currentStormCache.ScaleValueStormElementsByDataObjectType[levelScalingEntry.Catalog].Add(levelScalingEntry.Entry, stormElement);

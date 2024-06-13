@@ -6,7 +6,7 @@ namespace Heroes.XmlData.StormData;
 /// Contains the methods for obtaining data from the caches.
 /// </content>
 /// <remarks>
-/// The TryGet methods get a reference to a single cache, where as the Get methods merges the data from all caches.
+/// The TryGet methods get a reference to a single cache, where as the Get methods merges the data from all caches (if it can).
 /// </remarks>
 internal partial class StormStorage
 {
@@ -251,12 +251,12 @@ internal partial class StormStorage
         return stormElement;
     }
 
-    public bool TryGetExistingScaleValueStormElementByDataObjectType(ReadOnlySpan<char> dataObjectType, ReadOnlySpan<char> id, [NotNullWhen(true)] out StormElement? stormElement)
+    public bool TryGetExistingScaleValueStormElementById(ReadOnlySpan<char> id, ReadOnlySpan<char> dataObjectType, [NotNullWhen(true)] out StormElement? stormElement)
     {
-        return TryGetExistingScaleValueStormElementByDataObjectType(dataObjectType.ToString(), id.ToString(), out stormElement);
+        return TryGetExistingScaleValueStormElementById(id.ToString(), dataObjectType.ToString(), out stormElement);
     }
 
-    public bool TryGetExistingScaleValueStormElementByDataObjectType(string dataObjectType, string id, [NotNullWhen(true)] out StormElement? stormElement)
+    public bool TryGetExistingScaleValueStormElementById(string id, string dataObjectType, [NotNullWhen(true)] out StormElement? stormElement)
     {
         ArgumentNullException.ThrowIfNull(dataObjectType);
         ArgumentNullException.ThrowIfNull(id);
@@ -279,12 +279,12 @@ internal partial class StormStorage
         return false;
     }
 
-    public StormElement? GetScaleValueStormElementByDataObjectType(ReadOnlySpan<char> dataObjectType, ReadOnlySpan<char> id)
+    public StormElement? GetScaleValueStormElementById(ReadOnlySpan<char> id, ReadOnlySpan<char> dataObjectType)
     {
-        return GetScaleValueStormElementByDataObjectType(dataObjectType.ToString(), id.ToString());
+        return GetScaleValueStormElementById(id.ToString(), dataObjectType.ToString());
     }
 
-    public StormElement? GetScaleValueStormElementByDataObjectType(string dataObjectType, string id)
+    public StormElement? GetScaleValueStormElementById(string id, string dataObjectType)
     {
         ArgumentNullException.ThrowIfNull(dataObjectType);
         ArgumentNullException.ThrowIfNull(id);
@@ -319,12 +319,12 @@ internal partial class StormStorage
         return stormElement;
     }
 
-    public StormElement? GetCompleteStormElement(ReadOnlySpan<char> dataObjectType, ReadOnlySpan<char> id)
+    public StormElement? GetCompleteStormElement(ReadOnlySpan<char> id, ReadOnlySpan<char> dataObjectType)
     {
-        return GetCompleteStormElement(dataObjectType.ToString(), id.ToString());
+        return GetCompleteStormElement(id.ToString(), dataObjectType.ToString());
     }
 
-    public StormElement? GetCompleteStormElement(string dataObjectType, string id)
+    public StormElement? GetCompleteStormElement(string id, string dataObjectType)
     {
         return MergeUpStormElement(dataObjectType, id, ElementType.Normal);
     }
@@ -347,72 +347,76 @@ internal partial class StormStorage
         return null;
     }
 
-    public bool TryGetStormStyleHexColorValue(ReadOnlySpan<char> name, [NotNullWhen(true)] out StormStringValue? stormStringValue)
+    public StormElement? GetStormStyleConstantsByName(ReadOnlySpan<char> name)
     {
-        return TryGetStormStyleHexColorValue(name.ToString(), out stormStringValue);
+        return GetStormStyleConstantsByName(name.ToString());
     }
 
-    public bool TryGetStormStyleHexColorValue(string name, [NotNullWhen(true)] out StormStringValue? stormStringValue)
+    public StormElement? GetStormStyleConstantsByName(string name)
     {
         ArgumentNullException.ThrowIfNull(name);
 
-        // custom cache always first
-        if (StormCustomCache.StormStyleHexColorValueByName.TryGetValue(name, out stormStringValue))
-            return true;
+        StormElement? stormElement = null;
 
-        if (StormMapCache.StormStyleHexColorValueByName.TryGetValue(name, out stormStringValue))
-            return true;
+        // normal cache first
+        if (StormCache.StormStyleConstantsByName.TryGetValue(name, out StormElement? foundStormElement))
+        {
+            stormElement ??= new StormElement(foundStormElement);
+        }
 
-        if (StormCache.StormStyleHexColorValueByName.TryGetValue(name, out stormStringValue))
-            return true;
+        if (StormMapCache.StormStyleConstantsByName.TryGetValue(name, out foundStormElement))
+        {
+            if (stormElement is null)
+                stormElement = new StormElement(foundStormElement);
+            else
+                stormElement.AddValue(foundStormElement);
+        }
 
-        return false;
+        if (StormCustomCache.StormStyleConstantsByName.TryGetValue(name, out foundStormElement))
+        {
+            if (stormElement is null)
+                stormElement = new StormElement(foundStormElement);
+            else
+                stormElement.AddValue(foundStormElement);
+        }
+
+        return stormElement;
     }
 
-    public bool TryGetStormStyleConstantsHexColorValue(ReadOnlySpan<char> name, [NotNullWhen(true)] out StormStringValue? stormStringValue)
+    public StormElement? GetStormStyleStylesByName(ReadOnlySpan<char> name)
     {
-        return TryGetStormStyleConstantsHexColorValue(name.ToString(), out stormStringValue);
+        return GetStormStyleStylesByName(name.ToString());
     }
 
-    public bool TryGetStormStyleConstantsHexColorValue(string name, [NotNullWhen(true)] out StormStringValue? stormStringValue)
+    public StormElement? GetStormStyleStylesByName(string name)
     {
         ArgumentNullException.ThrowIfNull(name);
 
-        // custom cache always first
-        if (StormCustomCache.StormStyleConstantsHexColorValueByName.TryGetValue(name, out stormStringValue))
-            return true;
+        StormElement? stormElement = null;
 
-        if (StormMapCache.StormStyleConstantsHexColorValueByName.TryGetValue(name, out stormStringValue))
-            return true;
+        // normal cache first
+        if (StormCache.StormStyleStylesByName.TryGetValue(name, out StormElement? foundStormElement))
+        {
+            stormElement ??= new StormElement(foundStormElement);
+        }
 
-        if (StormCache.StormStyleConstantsHexColorValueByName.TryGetValue(name, out stormStringValue))
-            return true;
+        if (StormMapCache.StormStyleStylesByName.TryGetValue(name, out foundStormElement))
+        {
+            if (stormElement is null)
+                stormElement = new StormElement(foundStormElement);
+            else
+                stormElement.AddValue(foundStormElement);
+        }
 
-        return false;
-    }
+        if (StormCustomCache.StormStyleStylesByName.TryGetValue(name, out foundStormElement))
+        {
+            if (stormElement is null)
+                stormElement = new StormElement(foundStormElement);
+            else
+                stormElement.AddValue(foundStormElement);
+        }
 
-    public bool TryGetLevelScalingArrayElement(ReadOnlySpan<char> catalog, ReadOnlySpan<char> entry, ReadOnlySpan<char> field, [NotNullWhen(true)] out StormStringValue? stormStringValue)
-    {
-        return TryGetLevelScalingArrayElement(catalog.ToString(), entry.ToString(), field.ToString(), out stormStringValue);
-    }
-
-    public bool TryGetLevelScalingArrayElement(string catalog, string entry, string field, [NotNullWhen(true)] out StormStringValue? stormStringValue)
-    {
-        ArgumentNullException.ThrowIfNull(catalog);
-        ArgumentNullException.ThrowIfNull(entry);
-        ArgumentNullException.ThrowIfNull(field);
-
-        // custom cache always first
-        if (StormCustomCache.ScaleValueByEntry.TryGetValue(new(catalog, entry, field), out stormStringValue))
-            return true;
-
-        if (StormMapCache.ScaleValueByEntry.TryGetValue(new(catalog, entry, field), out stormStringValue))
-            return true;
-
-        if (StormCache.ScaleValueByEntry.TryGetValue(new(catalog, entry, field), out stormStringValue))
-            return true;
-
-        return false;
+        return stormElement;
     }
 
     public List<GameStringText> Test()

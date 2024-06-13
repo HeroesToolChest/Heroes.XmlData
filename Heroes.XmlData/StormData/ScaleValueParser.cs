@@ -42,7 +42,7 @@ internal static class ScaleValueParser
         fieldSpan.Split(fieldParts, '.', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
 
         // check if the entry exists and get the storm element
-        StormElement? completeStormElement = stormStorage.GetCompleteStormElement(levelScalingEntry.Catalog, levelScalingEntry.Entry);
+        StormElement? completeStormElement = stormStorage.GetCompleteStormElement(levelScalingEntry.Entry, levelScalingEntry.Catalog);
 
         // doesn't exist
         if (completeStormElement is null)

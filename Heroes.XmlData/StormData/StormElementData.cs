@@ -99,8 +99,11 @@ public class StormElementData
     [MemberNotNullWhen(true, nameof(ConstValue))]
     public bool HasConstValue => ConstValue is not null;
 
+    /// <summary>
+    /// Gets a value indicating whether <see cref="ScaleValue"/> is not <see langword="null"/>.
+    /// </summary>
     [MemberNotNullWhen(true, nameof(ScaleValue))]
-    internal bool HasHxdScale => KeyValueDataPairs.Count == 1 && KeyValueDataPairs.ContainsKey(ScaleValueParser.ScaleAttributeName);
+    public bool HasHxdScale => KeyValueDataPairs.Count == 1 && KeyValueDataPairs.ContainsKey(ScaleValueParser.ScaleAttributeName);
 
     /// <summary>
     /// Gets the value which represents a value of an <see cref="XAttribute"/>.
@@ -134,7 +137,7 @@ public class StormElementData
     }
 
     /// <summary>
-    /// If <see cref="Value"/> contains a constant (starts with $), then this property will contain the evaluated value of the constant.
+    /// Gets the evaluated value of the constant if <see cref="Value"/> contains a constant (starts with $).
     /// </summary>
     public string? ConstValue
     {
@@ -163,7 +166,10 @@ public class StormElementData
         private set => _constValue = value;
     }
 
-    internal string? ScaleValue
+    /// <summary>
+    /// Gets the scaling value.
+    /// </summary>
+    public string? ScaleValue
     {
         get
         {

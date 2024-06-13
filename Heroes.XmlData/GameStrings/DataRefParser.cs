@@ -230,7 +230,7 @@ internal class DataRefParser
 
     private ValueScale ParseStormElement(ReadOnlySpan<char> fullPartSpan, ReadOnlySpan<char> entry, ReadOnlySpan<Range> xmlParts)
     {
-        StormElement? stormElement = _stormStorage.GetCompleteStormElement(fullPartSpan[xmlParts[0]], entry);
+        StormElement? stormElement = _stormStorage.GetCompleteStormElement(entry, fullPartSpan[xmlParts[0]]);
         //StormElement? stormElement = _heroesData.GetStormElement(fullPartSpan[xmlParts[0]], entry);
 
         return ParseFields(stormElement, fullPartSpan, xmlParts); //, ElementType.Normal);
@@ -302,7 +302,7 @@ internal class DataRefParser
     {
         if (double.TryParse(stormElementDataValue, out double dataValue))
         {
-            StormElement? scalingStormElement = _stormStorage.GetScaleValueStormElementByDataObjectType(fullSpan[xmlParts[0]], fullSpan[xmlParts[1]]);
+            StormElement? scalingStormElement = _stormStorage.GetScaleValueStormElementById(fullSpan[xmlParts[1]], fullSpan[xmlParts[0]]);
             if (scalingStormElement is null)
                 return new ValueScale(dataValue);
 
