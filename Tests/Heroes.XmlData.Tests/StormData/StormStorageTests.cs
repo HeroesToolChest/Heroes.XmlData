@@ -1853,4 +1853,172 @@ public class StormStorageTests
         stormStorage.StormMapCache.StormStyleStylesByName["ReticleEnemy"].DataValues.KeyValueDataPairs.Count.Should().Be(4);
         stormStorage.StormCustomCache.StormStyleStylesByName["ReticleEnemy"].DataValues.KeyValueDataPairs.Count.Should().Be(5);
     }
+
+    [TestMethod]
+    public void GetStormGameString_AllThreeCaches_MergesFromAll()
+    {
+        // arrange
+        StormStorage stormStorage = new(false);
+
+        // act
+        stormStorage.StormCache.GameStringsById.Add("id1", new GameStringText("If Chomp hits a Hero", "normal"));
+        stormStorage.StormMapCache.GameStringsById.Add("id1", new GameStringText("Shadow Waltz deals an increased", "map"));
+        stormStorage.StormCustomCache.GameStringsById.Add("id1", new GameStringText("After a short delay", "custom"));
+
+        // assert
+        StormGameString? stormGameString = stormStorage.GetStormGameString("id1".AsSpan());
+
+        stormGameString.Should().NotBeNull();
+        stormGameString!.Id.Should().Be("id1");
+        stormGameString.Value.Should().Be("After a short delay");
+        stormGameString.Paths.Count.Should().Be(3);
+        stormGameString.Paths[^1].Should().Be("custom");
+    }
+
+    [TestMethod]
+    public void GetStormGameString_InNormalCache_ReturnsFromNormal()
+    {
+        // arrange
+        StormStorage stormStorage = new(false);
+
+        // act
+        stormStorage.StormCache.GameStringsById.Add("id1", new GameStringText("If Chomp hits a Hero", "normal"));
+
+        // assert
+        StormGameString? stormGameString = stormStorage.GetStormGameString("id1".AsSpan());
+
+        stormGameString.Should().NotBeNull();
+        stormGameString!.Id.Should().Be("id1");
+        stormGameString.Value.Should().Be("If Chomp hits a Hero");
+        stormGameString.Paths.Count.Should().Be(1);
+        stormGameString.Paths[^1].Should().Be("normal");
+    }
+
+    [TestMethod]
+    public void GetStormGameString_InMapCache_ReturnsFromMap()
+    {
+        // arrange
+        StormStorage stormStorage = new(false);
+
+        // act
+        stormStorage.StormMapCache.GameStringsById.Add("id1", new GameStringText("Shadow Waltz deals an increased", "map"));
+
+        // assert
+        StormGameString? stormGameString = stormStorage.GetStormGameString("id1".AsSpan());
+
+        stormGameString.Should().NotBeNull();
+        stormGameString!.Id.Should().Be("id1");
+        stormGameString.Value.Should().Be("Shadow Waltz deals an increased");
+        stormGameString.Paths.Count.Should().Be(1);
+        stormGameString.Paths[^1].Should().Be("map");
+    }
+
+    [TestMethod]
+    public void GetStormGameString_InCustomCache_ReturnsFromCustom()
+    {
+        // arrange
+        StormStorage stormStorage = new(false);
+
+        // act
+        stormStorage.StormCustomCache.GameStringsById.Add("id1", new GameStringText("After a short delay", "custom"));
+
+        // assert
+        StormGameString? stormGameString = stormStorage.GetStormGameString("id1".AsSpan());
+
+        stormGameString.Should().NotBeNull();
+        stormGameString!.Id.Should().Be("id1");
+        stormGameString.Value.Should().Be("After a short delay");
+        stormGameString.Paths.Count.Should().Be(1);
+        stormGameString.Paths[^1].Should().Be("custom");
+    }
+
+    [TestMethod]
+    public void GetStormGameString_NormalAndMapCache_MergeFromNormalAndMap()
+    {
+        // arrange
+        StormStorage stormStorage = new(false);
+
+        // act
+        stormStorage.StormCache.GameStringsById.Add("id1", new GameStringText("If Chomp hits a Hero", "normal"));
+        stormStorage.StormMapCache.GameStringsById.Add("id1", new GameStringText("Shadow Waltz deals an increased", "map"));
+
+        // assert
+        StormGameString? stormGameString = stormStorage.GetStormGameString("id1".AsSpan());
+
+        stormGameString.Should().NotBeNull();
+        stormGameString!.Id.Should().Be("id1");
+        stormGameString.Value.Should().Be("Shadow Waltz deals an increased");
+        stormGameString.Paths.Count.Should().Be(2);
+        stormGameString.Paths[^1].Should().Be("map");
+    }
+
+    [TestMethod]
+    public void GetStormGameStrings_AllThreeCaches_ReturnsFromAll()
+    {
+        // arrange
+        StormStorage stormStorage = new(false);
+
+        // act
+        stormStorage.StormCache.GameStringsById.Add("id1", new GameStringText("If Chomp hits a Hero", "normal"));
+        stormStorage.StormCache.GameStringsById.Add("id2", new GameStringText("Spawn an Overgrowth that", "normal"));
+
+        stormStorage.StormMapCache.GameStringsById.Add("id1", new GameStringText("Shadow Waltz deals an increased", "map"));
+        stormStorage.StormMapCache.GameStringsById.Add("id3", new GameStringText("Hitting a Warp Rift", "map"));
+
+        stormStorage.StormCustomCache.GameStringsById.Add("id1", new GameStringText("After a short delay", "custom"));
+        stormStorage.StormCustomCache.GameStringsById.Add("id4", new GameStringText("Raynor and all nearby allied", "custom"));
+
+        // assert
+        List<StormGameString> stormGameString = stormStorage.GetStormGameStrings();
+
+        stormGameString.Should().SatisfyRespectively(
+            first =>
+            {
+                first.Id.Should().Be("id1");
+                first.Value.Should().Be("After a short delay");
+                first.Paths.Should().SatisfyRespectively(
+                    firstPath =>
+                    {
+                        firstPath.Should().Be("normal");
+                    },
+                    secondPath =>
+                    {
+                        secondPath.Should().Be("map");
+                    },
+                    thirdPath =>
+                    {
+                        thirdPath.Should().Be("custom");
+                    });
+            },
+            second =>
+            {
+                second.Id.Should().Be("id2");
+                second.Value.Should().Be("Spawn an Overgrowth that");
+                second.Paths.Should().SatisfyRespectively(
+                    firstPath =>
+                    {
+                        firstPath.Should().Be("normal");
+                    });
+            },
+            third =>
+            {
+                third.Id.Should().Be("id3");
+                third.Value.Should().Be("Hitting a Warp Rift");
+                third.Paths.Should().SatisfyRespectively(
+                    firstPath =>
+                    {
+                        firstPath.Should().Be("map");
+                    });
+            },
+            fourth =>
+            {
+                fourth.Id.Should().Be("id4");
+                fourth.Value.Should().Be("Raynor and all nearby allied");
+                fourth.Paths.Should().SatisfyRespectively(
+                    firstPath =>
+                    {
+                        firstPath.Should().Be("custom");
+                    });
+            });
+    }
 }

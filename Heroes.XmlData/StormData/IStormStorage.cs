@@ -106,5 +106,9 @@ internal interface IStormStorage
 
     StormElement? GetStormStyleStylesByName(string name);
 
-    List<GameStringText> Test();
+    StormGameString? GetStormGameString(ReadOnlySpan<char> id);
+
+    StormGameString? GetStormGameString(string id);
+
+    List<StormGameString> GetStormGameStrings();
 }

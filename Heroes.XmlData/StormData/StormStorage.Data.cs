@@ -1,4 +1,5 @@
 ﻿using Heroes.XmlData.GameStrings;
+using System.Xml.Linq;
 
 namespace Heroes.XmlData.StormData;
 
@@ -419,9 +420,76 @@ internal partial class StormStorage
         return stormElement;
     }
 
-    public List<GameStringText> Test()
+    public StormGameString? GetStormGameString(ReadOnlySpan<char> id)
     {
-        return StormCache.GameStringsById.Values.ToList();
+        return GetStormGameString(id.ToString());
+    }
+
+    public StormGameString? GetStormGameString(string id)
+    {
+        ArgumentNullException.ThrowIfNull(id);
+
+        StormGameString? stormGameString = null;
+
+        // normal cache first
+        if (StormCache.GameStringsById.TryGetValue(id, out GameStringText? gameStringText))
+            stormGameString = Get(id, stormGameString, gameStringText);
+
+        if (StormMapCache.GameStringsById.TryGetValue(id, out gameStringText))
+            stormGameString = Get(id, stormGameString, gameStringText);
+
+        if (StormCustomCache.GameStringsById.TryGetValue(id, out gameStringText))
+            stormGameString = Get(id, stormGameString, gameStringText);
+
+        static StormGameString Get(string id, StormGameString? stormGameString, GameStringText gameStringText)
+        {
+            stormGameString ??= new StormGameString(id, gameStringText.Value);
+            stormGameString.AddPath(gameStringText.Path);
+            stormGameString.Value = gameStringText.Value;
+
+            return stormGameString;
+        }
+
+        return stormGameString;
+    }
+
+    public List<StormGameString> GetStormGameStrings()
+    {
+        Dictionary<string, StormGameString> stormGameStrings = [];
+
+        foreach (var item in StormCache.GameStringsById)
+        {
+            AddStormGameString(stormGameStrings, item);
+        }
+
+        foreach (var item in StormMapCache.GameStringsById)
+        {
+            AddStormGameString(stormGameStrings, item);
+        }
+
+        foreach (var item in StormCustomCache.GameStringsById)
+        {
+            AddStormGameString(stormGameStrings, item);
+        }
+
+        return stormGameStrings.Select(x => x.Value).ToList();
+    }
+
+    private static void AddStormGameString(Dictionary<string, StormGameString> stormGameStrings, KeyValuePair<string, GameStringText> item)
+    {
+        if (stormGameStrings.TryGetValue(item.Key, out StormGameString? existingStormGameString))
+        {
+            existingStormGameString.Value = item.Value.Value;
+            existingStormGameString.AddPath(item.Value.Path);
+        }
+        else
+        {
+            StormGameString stormGameString = new(item.Key, item.Value.Value);
+
+            stormGameString.AddPath(item.Value.Path);
+
+            stormGameStrings.Add(item.Key, stormGameString);
+        }
     }
 
     private StormElement? MergeUpStormElement(string dataObjectType, string? id, ElementType currentElementType)

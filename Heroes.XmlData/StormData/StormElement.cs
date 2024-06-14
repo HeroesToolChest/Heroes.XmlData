@@ -44,7 +44,7 @@ public class StormElement
     /// <summary>
     /// Gets a collection of all the original <see cref="XElement"/>s.
     /// </summary>
-    public IReadOnlyList<StormXElementValuePath> OriginalStormXElementValues => _originalStormXElementValues;
+    public IReadOnlyList<StormXElementValuePath> OriginalStormXElementValues => _originalStormXElementValues.AsReadOnly();
 
     /// <summary>
     /// Gets the data values.
