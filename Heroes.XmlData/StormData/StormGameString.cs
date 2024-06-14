@@ -28,6 +28,12 @@ public class StormGameString
     /// </summary>
     public IReadOnlyList<string> Paths => _paths;
 
+    /// <inheritdoc/>
+    public override string ToString()
+    {
+        return $"{Id}={Value}";
+    }
+
     internal void AddPath(string path)
     {
         _paths.Add(path);
