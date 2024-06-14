@@ -8,19 +8,19 @@ internal interface IStormStorage
 
     StormCache StormCustomCache { get; }
 
-    StormModStorage CreateModStorage(IStormMod stormMod, string modsDirectoryPath);
+    StormModStorage CreateModStorage(IStormMod stormMod);
 
     void AddModStorage(StormModStorage stormModStorage);
 
-    void AddDirectoryNotFound(StormModType stormModType, StormFile stormDirectory);
+    void AddDirectoryNotFound(StormModType stormModType, StormPath stormDirectory);
 
-    void AddFileNotFound(StormModType stormModType, StormFile stormFile);
+    void AddFileNotFound(StormModType stormModType, StormPath stormFile);
 
     void AddGameString(StormModType stormModType, string id, GameStringText gameStringText);
 
-    (string Id, GameStringText GameStringText)? GetGameStringWithId(ReadOnlySpan<char> gamestring, ReadOnlySpan<char> path);
+    (string Id, GameStringText GameStringText)? GetGameStringWithId(ReadOnlySpan<char> gamestring, StormPath stormPath);
 
-    bool AddConstantXElement(StormModType stormModType, XElement element, string path);
+    bool AddConstantXElement(StormModType stormModType, XElement element, StormPath stormPath);
 
     double GetValueFromConstElementAsNumber(XElement constElement);
 
@@ -30,13 +30,13 @@ internal interface IStormStorage
 
     void AddBaseElementTypes(StormModType stormModType, string dataObjectType, string elementName);
 
-    void AddElement(StormModType stormModType, XElement element, string filePath);
+    void AddElement(StormModType stormModType, XElement element, StormPath stormPath);
 
-    void SetFontStyleCache(StormModType stormModType, XDocument document, string filePath);
+    void SetFontStyleCache(StormModType stormModType, XDocument document, StormPath stormPath);
 
-    void AddLevelScalingArrayElement(StormModType stormModType, XElement element, string filePath);
+    void AddLevelScalingArrayElement(StormModType stormModType, XElement element, StormPath stormPath);
 
-    void AddStormStyleHexColor(StormModType stormModType, XElement element, string filePath);
+    void AddStormStyleHexColor(StormModType stormModType, XElement element, StormPath stormPath);
 
     void BuildDataForScalingAttributes(StormModType stormModType);
 

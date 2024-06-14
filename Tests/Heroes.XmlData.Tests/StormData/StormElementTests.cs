@@ -1,4 +1,6 @@
-﻿namespace Heroes.XmlData.StormData.Tests;
+﻿using Heroes.XmlData.Tests;
+
+namespace Heroes.XmlData.StormData.Tests;
 
 [TestClass]
 public class StormElementTests
@@ -34,10 +36,10 @@ public class StormElementTests
   <SharedFlags index=""DisableWhileDead"" value=""0"" />
 </CAbilEffectInstant>
 ");
-        StormElement stormElement = new(new StormXElementValuePath(element, "some\\path"));
+        StormElement stormElement = new(new StormXElementValuePath(element, TestHelpers.GetStormPath("some\\path")));
 
         // act
-        stormElement.AddValue(new StormXElementValuePath(mergingElement, "some\\other\\path"));
+        stormElement.AddValue(new StormXElementValuePath(mergingElement, TestHelpers.GetStormPath("some\\other\\path")));
 
         // assert
         stormElement.DataValues.KeyValueDataPairs["default"].Value.Should().Be("1");
@@ -86,8 +88,8 @@ public class StormElementTests
   <SharedFlags index=""DisableWhileDead"" value=""0"" />
 </CAbilEffectInstant>
 ");
-        StormElement stormElement = new(new StormXElementValuePath(element, "some\\path"));
-        StormElement otherStormElement = new(new StormXElementValuePath(mergingElement, "some\\path\\two"));
+        StormElement stormElement = new(new StormXElementValuePath(element, TestHelpers.GetStormPath("some\\path")));
+        StormElement otherStormElement = new(new StormXElementValuePath(mergingElement, TestHelpers.GetStormPath("some\\path\\two")));
 
         // act
         stormElement.AddValue(otherStormElement);
@@ -172,13 +174,13 @@ public class StormElementTests
   <MultiplicativeModifierArray index=""MuradinStormboltSledgehammer"" Validator=""HasMuradinStormhammerSledgehammerAndTargetNotHeroic"" Modifier=""2.5"" />
 </CEffectDamage>
 ");
-        StormElement stormElement = new(new StormXElementValuePath(element, "some\\path"));
+        StormElement stormElement = new(new StormXElementValuePath(element, TestHelpers.GetStormPath("some\\path")));
 
         // act
-        stormElement.AddValue(new StormXElementValuePath(mergingElement1, "some\\other1\\path"));
-        stormElement.AddValue(new StormXElementValuePath(mergingElement2, "some\\other2\\path"));
-        stormElement.AddValue(new StormXElementValuePath(mergingElement3, "some\\other3\\path"));
-        stormElement.AddValue(new StormXElementValuePath(mergingElement4, "some\\other4\\path"));
+        stormElement.AddValue(new StormXElementValuePath(mergingElement1, TestHelpers.GetStormPath("some\\other1\\path")));
+        stormElement.AddValue(new StormXElementValuePath(mergingElement2, TestHelpers.GetStormPath("some\\other2\\path")));
+        stormElement.AddValue(new StormXElementValuePath(mergingElement3, TestHelpers.GetStormPath("some\\other3\\path")));
+        stormElement.AddValue(new StormXElementValuePath(mergingElement4, TestHelpers.GetStormPath("some\\other4\\path")));
 
         // assert
         stormElement.DataValues.KeyValueDataPairs["ResponseFlags"].KeyValueDataPairs["Acquire"].Value.Should().Be("1");
@@ -224,16 +226,16 @@ public class StormElementTests
   <SharedFlags index=""DisableWhileDead"" value=""0"" />
 </CAbilEffectInstant>
 ");
-        StormElement stormElement = new(new StormXElementValuePath(element, "some\\path"));
+        StormElement stormElement = new(new StormXElementValuePath(element, TestHelpers.GetStormPath("some\\path")));
 
         // act
-        stormElement.AddValue(new StormXElementValuePath(mergingElement, "some\\other\\path"));
+        stormElement.AddValue(new StormXElementValuePath(mergingElement, TestHelpers.GetStormPath("some\\other\\path")));
 
         // assert
         stormElement.OriginalStormXElementValues.Should().HaveCount(2);
 
         stormElement.OriginalStormXElementValues[0].Value.Equals(element);
-        stormElement.OriginalStormXElementValues[0].Path.Equals("some\\path");
+        stormElement.OriginalStormXElementValues[0].StormPath.Path.Equals("some\\path");
 
         stormElement.OriginalStormXElementValues[1].Value.Equals(mergingElement);
         stormElement.OriginalStormXElementValues[1].Value.Equals("some\\other\\path");
@@ -250,7 +252,7 @@ public class StormElementTests
 ");
 
         // act
-        StormElement stormElement = new(new StormXElementValuePath(element, "some\\path"));
+        StormElement stormElement = new(new StormXElementValuePath(element, TestHelpers.GetStormPath("some\\path")));
 
         // assert
         stormElement.HasId.Should().BeTrue();
@@ -268,7 +270,7 @@ public class StormElementTests
 ");
 
         // act
-        StormElement stormElement = new(new StormXElementValuePath(element, "some\\path"));
+        StormElement stormElement = new(new StormXElementValuePath(element, TestHelpers.GetStormPath("some\\path")));
 
         // assert
         stormElement.HasId.Should().BeFalse();
@@ -286,7 +288,7 @@ public class StormElementTests
 ");
 
         // act
-        StormElement stormElement = new(new StormXElementValuePath(element, "some\\path"));
+        StormElement stormElement = new(new StormXElementValuePath(element, TestHelpers.GetStormPath("some\\path")));
 
         // assert
         stormElement.HasParentId.Should().BeTrue();
@@ -304,7 +306,7 @@ public class StormElementTests
 ");
 
         // act
-        StormElement stormElement = new(new StormXElementValuePath(element, "some\\path"));
+        StormElement stormElement = new(new StormXElementValuePath(element, TestHelpers.GetStormPath("some\\path")));
 
         // assert
         stormElement.HasParentId.Should().BeFalse();

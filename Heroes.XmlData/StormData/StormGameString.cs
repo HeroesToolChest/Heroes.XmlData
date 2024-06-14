@@ -5,7 +5,7 @@
 /// </summary>
 public class StormGameString
 {
-    private readonly List<string> _paths = [];
+    private readonly List<StormPath> _stormPaths = [];
 
     internal StormGameString(string id, string value)
     {
@@ -24,9 +24,9 @@ public class StormGameString
     public string Value { get; internal set; }
 
     /// <summary>
-    /// Gets a collection of file paths where the gamestring resides. <see cref="Value"/> is set from the last path.
+    /// Gets a collection of paths where the gamestring resides. <see cref="Value"/> is set from the last path.
     /// </summary>
-    public IReadOnlyList<string> Paths => _paths;
+    public IReadOnlyList<StormPath> StormPaths => _stormPaths;
 
     /// <inheritdoc/>
     public override string ToString()
@@ -34,8 +34,8 @@ public class StormGameString
         return $"{Id}={Value}";
     }
 
-    internal void AddPath(string path)
+    internal void AddPath(StormPath stormPath)
     {
-        _paths.Add(path);
+        _stormPaths.Add(stormPath);
     }
 }

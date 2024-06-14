@@ -5,13 +5,23 @@ internal class CustomStormMod : IStormMod
     private readonly IHeroesSource _heroesSource;
     private readonly ManualModLoader _manualModLoader;
 
+    private readonly StormPath _stormPath;
+
     public CustomStormMod(IHeroesSource heroesSource, ManualModLoader manualModLoader)
     {
         Name = manualModLoader.Name;
         _heroesSource = heroesSource;
         _manualModLoader = manualModLoader;
 
-        StormModStorage = heroesSource.StormStorage.CreateModStorage(this, _heroesSource.ModsBaseDirectoryPath);
+        StormModStorage = heroesSource.StormStorage.CreateModStorage(this);
+
+        _stormPath = new StormPath()
+        {
+            StormModName = $"custom-{Name}",
+            StormModDirectoryPath = CustomPath,
+            Path = CustomPath,
+            PathType = StormPathType.File,
+        };
     }
 
     public string Name { get; }
@@ -22,7 +32,7 @@ internal class CustomStormMod : IStormMod
 
     public StormModStorage StormModStorage { get; }
 
-    internal string CustomFilePath => $"{HxdConstants.Name}-{Name}";
+    internal string CustomPath => Path.Join(HxdConstants.Name, "custom", Name);
 
     public IEnumerable<IStormMod> GetStormMapMods(S2MAProperties s2maProperties)
     {
@@ -38,7 +48,7 @@ internal class CustomStormMod : IStormMod
     {
         foreach (XElement constantXElement in _manualModLoader.ConstantXElements)
         {
-            _heroesSource.StormStorage.AddConstantXElement(StormModType, constantXElement, CustomFilePath);
+            _heroesSource.StormStorage.AddConstantXElement(StormModType, constantXElement, _stormPath);
         }
 
         foreach (var items in _manualModLoader.ElementNamesByDataObjectType)
@@ -52,17 +62,17 @@ internal class CustomStormMod : IStormMod
         StormModStorage.UpdateConstantAttributes(_manualModLoader.Elements.DescendantsAndSelf());
         foreach (XElement element in _manualModLoader.Elements)
         {
-            _heroesSource.StormStorage.AddElement(StormModType, element, CustomFilePath);
+            _heroesSource.StormStorage.AddElement(StormModType, element, _stormPath);
         }
 
         foreach (XElement element in _manualModLoader.LevelScalingArrayElements)
         {
-            _heroesSource.StormStorage.AddLevelScalingArrayElement(StormModType, element, CustomFilePath);
+            _heroesSource.StormStorage.AddLevelScalingArrayElement(StormModType, element, _stormPath);
         }
 
         foreach (XElement element in _manualModLoader.StormStyleHexColorElements)
         {
-            _heroesSource.StormStorage.AddStormStyleHexColor(StormModType, element, CustomFilePath);
+            _heroesSource.StormStorage.AddStormStyleHexColor(StormModType, element, _stormPath);
         }
     }
 
@@ -72,7 +82,7 @@ internal class CustomStormMod : IStormMod
         {
             foreach (string gameString in gameStrings)
             {
-                var gamestring = _heroesSource.StormStorage.GetGameStringWithId(gameString, CustomFilePath);
+                var gamestring = _heroesSource.StormStorage.GetGameStringWithId(gameString, _stormPath);
 
                 if (gamestring is not null)
                     StormModStorage.AddGameString(gamestring.Value.Id, gamestring.Value.GameStringText);

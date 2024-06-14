@@ -8,12 +8,12 @@ internal class StormCache
     /// <summary>
     /// Gets a collection of directories that were not found.
     /// </summary>
-    public HashSet<StormFile> NotFoundDirectoriesList { get; } = [];
+    public HashSet<StormPath> NotFoundDirectoriesList { get; } = [];
 
     /// <summary>
     /// Gets a collection of files that were not found.
     /// </summary>
-    public HashSet<StormFile> NotFoundFilesList { get; } = [];
+    public HashSet<StormPath> NotFoundFilesList { get; } = [];
 
     public HashSet<KeyValuePair<LevelScalingEntry, StormStringValue>> ScaleValuesNotFoundList { get; } = [];
 

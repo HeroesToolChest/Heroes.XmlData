@@ -7,7 +7,7 @@ namespace Heroes.XmlData.StormData;
 /// </summary>
 internal partial class StormStorage : IStormStorage
 {
-    private const string _rootFilePath = $"{HxdConstants.Name}-root";
+    private readonly StormPath _rootFilePath;
 
     private readonly List<StormModStorage> _stormModStorages = [];
 
@@ -15,6 +15,14 @@ internal partial class StormStorage : IStormStorage
 
     public StormStorage(bool hasRootDefaults = true)
     {
+        _rootFilePath = new StormPath()
+        {
+            StormModName = HxdConstants.Name,
+            StormModDirectoryPath = string.Empty,
+            Path = $"{HxdConstants.Name}-root",
+            PathType = StormPathType.HxD,
+        };
+
         if (hasRootDefaults)
             AddRootDefaults();
     }
@@ -25,9 +33,9 @@ internal partial class StormStorage : IStormStorage
 
     public StormCache StormCustomCache { get; } = new();
 
-    public StormModStorage CreateModStorage(IStormMod stormMod, string modsDirectoryPath)
+    public StormModStorage CreateModStorage(IStormMod stormMod)
     {
-        return new(stormMod, this, modsDirectoryPath);
+        return new(stormMod, this);
     }
 
     public void AddModStorage(StormModStorage stormModStorage)
@@ -38,14 +46,14 @@ internal partial class StormStorage : IStormStorage
             _loadedMapMods++;
     }
 
-    public void AddDirectoryNotFound(StormModType stormModType, StormFile stormDirectory)
+    public void AddDirectoryNotFound(StormModType stormModType, StormPath stormDirectory)
     {
         StormCache currentStormCache = GetCurrentStormCache(stormModType);
 
         currentStormCache.NotFoundDirectoriesList.Add(stormDirectory);
     }
 
-    public void AddFileNotFound(StormModType stormModType, StormFile stormFile)
+    public void AddFileNotFound(StormModType stormModType, StormPath stormFile)
     {
         StormCache currentStormCache = GetCurrentStormCache(stormModType);
 
@@ -59,7 +67,7 @@ internal partial class StormStorage : IStormStorage
         currentStormCache.GameStringsById[id] = gameStringText;
     }
 
-    public (string Id, GameStringText GameStringText)? GetGameStringWithId(ReadOnlySpan<char> gamestring, ReadOnlySpan<char> path)
+    public (string Id, GameStringText GameStringText)? GetGameStringWithId(ReadOnlySpan<char> gamestring, StormPath stormPath)
     {
         Span<Range> ranges = stackalloc Range[2];
 
@@ -68,14 +76,14 @@ internal partial class StormStorage : IStormStorage
         if (gamestring[ranges[0]].IsEmpty || gamestring[ranges[0]].IsWhiteSpace())
             return null;
 
-        GameStringText gameStringText = new(gamestring[ranges[1]].ToString(), path.ToString());
+        GameStringText gameStringText = new(gamestring[ranges[1]].ToString(), stormPath);
 
         string id = gamestring[ranges[0]].ToString();
 
         return (id, gameStringText);
     }
 
-    public bool AddConstantXElement(StormModType stormModType, XElement element, string path)
+    public bool AddConstantXElement(StormModType stormModType, XElement element, StormPath stormPath)
     {
         StormCache currentStormCache = GetCurrentStormCache(stormModType);
 
@@ -86,7 +94,7 @@ internal partial class StormStorage : IStormStorage
             if (string.IsNullOrEmpty(id))
                 return false;
 
-            currentStormCache.ConstantXElementById.TryAdd(id, new StormXElementValuePath(element, path));
+            currentStormCache.ConstantXElementById.TryAdd(id, new StormXElementValuePath(element, stormPath));
 
             return true;
         }
@@ -189,7 +197,7 @@ internal partial class StormStorage : IStormStorage
         currentStormCache.DataObjectTypeByElementType.TryAdd(elementName, dataObjectType);
     }
 
-    public void AddElement(StormModType stormModType, XElement element, string filePath)
+    public void AddElement(StormModType stormModType, XElement element, StormPath stormPath)
     {
         string elementName = element.Name.LocalName;
 
@@ -199,7 +207,7 @@ internal partial class StormStorage : IStormStorage
         string? idAtt = element.Attribute("id")?.Value;
 
         StormCache currentStormCache = GetCurrentStormCache(stormModType);
-        StormXElementValuePath stormXElementValuePath = new(element, filePath);
+        StormXElementValuePath stormXElementValuePath = new(element, stormPath);
 
         if (string.IsNullOrEmpty(idAtt))
         {
@@ -231,15 +239,15 @@ internal partial class StormStorage : IStormStorage
 
     }
 
-    public void SetFontStyleCache(StormModType stormModType, XDocument document, string filePath)
+    public void SetFontStyleCache(StormModType stormModType, XDocument document, StormPath stormPath)
     {
         foreach (XElement element in document.Root!.Elements())
         {
-            AddStormStyleHexColor(stormModType, element, filePath);
+            AddStormStyleHexColor(stormModType, element, stormPath);
         }
     }
 
-    public void AddStormStyleHexColor(StormModType stormModType, XElement element, string filePath)
+    public void AddStormStyleHexColor(StormModType stormModType, XElement element, StormPath stormPath)
     {
         StormCache currentStormCache = GetCurrentStormCache(stormModType);
 
@@ -251,7 +259,7 @@ internal partial class StormStorage : IStormStorage
             if (string.IsNullOrEmpty(name))
                 return;
 
-            currentStormCache.StormStyleConstantsByName[name] = new StormElement(new StormXElementValuePath(element, filePath));
+            currentStormCache.StormStyleConstantsByName[name] = new StormElement(new StormXElementValuePath(element, stormPath));
 
             //currentStormCache.StormStyleConstantsHexColorValueByName[name] = new StormStringValue(val, filePath);
         }
@@ -274,7 +282,7 @@ internal partial class StormStorage : IStormStorage
             //else
             //{
 
-            currentStormCache.StormStyleStylesByName[name] = new StormElement(new StormXElementValuePath(element, filePath));
+            currentStormCache.StormStyleStylesByName[name] = new StormElement(new StormXElementValuePath(element, stormPath));
             //currentStormCache.StormStyleHexColorValueByName[name] = new StormStringValue(textColor, filePath);
             //}
 
@@ -286,7 +294,7 @@ internal partial class StormStorage : IStormStorage
         }
     }
 
-    public void AddLevelScalingArrayElement(StormModType stormModType, XElement element, string filePath)
+    public void AddLevelScalingArrayElement(StormModType stormModType, XElement element, StormPath stormPath)
     {
         StormCache currentStormCache = GetCurrentStormCache(stormModType);
 
@@ -302,7 +310,7 @@ internal partial class StormStorage : IStormStorage
                 if (string.IsNullOrEmpty(value) || catalog is null || entry is null || field is null)
                     continue;
 
-                StormStringValue stormStringValue = new(value, filePath);
+                StormStringValue stormStringValue = new(value, stormPath);
 
                 currentStormCache.ScaleValueByEntry[new(catalog, entry, field)] = stormStringValue;
 
@@ -399,7 +407,8 @@ internal partial class StormStorage : IStormStorage
 
     public void ClearGamestrings()
     {
-        _stormModStorages.ForEach(x => x.ClearGameStrings());
+        foreach (StormModStorage stormModStorage in _stormModStorages)
+            stormModStorage.ClearGameStrings();
 
         StormCache.GameStringsById.Clear();
         StormMapCache.GameStringsById.Clear();

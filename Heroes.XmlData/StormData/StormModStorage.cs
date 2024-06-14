@@ -10,35 +10,32 @@ internal class StormModStorage
     private readonly IStormMod _stormMod;
     private readonly IStormStorage _stormStorage;
 
-    private readonly string _modsBaseDirectoryPath; // base directory of selected mods, C:\path\to\mods_11111
+    private readonly HashSet<StormPath> _notFoundDirectoriesList = [];
+    private readonly HashSet<StormPath> _notFoundFilesList = [];
 
-    private readonly HashSet<StormFile> _notFoundDirectoriesList = [];
-    private readonly HashSet<StormFile> _notFoundFilesList = [];
-
-    private readonly HashSet<StormFile> _addedXmlDataFilePathsList = [];
-    private readonly HashSet<StormFile> _addedXmlFontStyleFilePathsList = [];
-    private readonly HashSet<string> _addedGameStringFilePathsList = new(StringComparer.OrdinalIgnoreCase);
+    private readonly HashSet<StormPath> _addedXmlDataFilePathsList = [];
+    private readonly HashSet<StormPath> _addedXmlFontStyleFilePathsList = [];
+    private readonly HashSet<StormPath> _addedGameStringFilePathsList = [];
 
     private readonly Dictionary<string, GameStringText> _gameStringsById = [];
 
-    internal StormModStorage(IStormMod stormMod, IStormStorage stormStorage, string modsBaseDirectoryPath)
+    internal StormModStorage(IStormMod stormMod, IStormStorage stormStorage)
     {
         _stormMod = stormMod;
         _stormStorage = stormStorage;
-        _modsBaseDirectoryPath = modsBaseDirectoryPath;
     }
 
     public int? BuildId { get; private set; }
 
     public StormModType StormModType => _stormMod.StormModType;
 
-    public void AddDirectoryNotFound(StormFile requiredStormDirectory)
+    public void AddDirectoryNotFound(StormPath requiredStormDirectory)
     {
         _notFoundDirectoriesList.Add(requiredStormDirectory);
         _stormStorage.AddDirectoryNotFound(StormModType, requiredStormDirectory);
     }
 
-    public void AddFileNotFound(StormFile requiredStormFile)
+    public void AddFileNotFound(StormPath requiredStormFile)
     {
         _notFoundFilesList.Add(requiredStormFile);
         _stormStorage.AddFileNotFound(StormModType, requiredStormFile);
@@ -51,11 +48,11 @@ internal class StormModStorage
         _stormStorage.AddGameString(StormModType, id, gameStringText);
     }
 
-    public void AddGameStringFile(Stream stream, ReadOnlySpan<char> filePath)
+    public void AddGameStringFile(Stream stream, StormPath stormPath)
     {
         using StreamReader reader = new(stream);
 
-        if (!_addedGameStringFilePathsList.Add(filePath.ToString()))
+        if (!_addedGameStringFilePathsList.Add(stormPath))
             return;
 
         while (!reader.EndOfStream)
@@ -65,7 +62,7 @@ internal class StormModStorage
             if (lineSpan.IsEmpty || lineSpan.IsWhiteSpace())
                 continue;
 
-            (string Id, GameStringText GameStringText)? gameStringWithId = _stormStorage.GetGameStringWithId(lineSpan, GetModlessPath(filePath));
+            (string Id, GameStringText GameStringText)? gameStringWithId = _stormStorage.GetGameStringWithId(lineSpan, stormPath);
 
             if (gameStringWithId is not null)
             {
@@ -74,33 +71,33 @@ internal class StormModStorage
         }
     }
 
-    public void AddXmlDataFile(XDocument document, StormFile stormFile, bool isBaseGameDataDirectory)
+    public void AddXmlDataFile(XDocument document, StormPath stormPath, bool isBaseGameDataDirectory)
     {
         if (document.Root is null)
             return;
 
-        if (!_addedXmlDataFilePathsList.Add(stormFile))
+        if (!_addedXmlDataFilePathsList.Add(stormPath))
             return;
 
-        string modlessPath = GetModlessPath(stormFile.Path);
+        //string modlessPath = GetModlessPath(stormFile.Path);
 
         if (isBaseGameDataDirectory)
-            SetElementsForDataObjectTypes(document, modlessPath);
+            SetElementsForDataObjectTypes(document, stormPath);
         else
-            SetElements(document, modlessPath);
+            SetElements(document, stormPath);
     }
 
-    public void AddXmlFontStyleFile(XDocument document, StormFile stormFile)
+    public void AddXmlFontStyleFile(XDocument document, StormPath stormPath)
     {
         if (document.Root is null)
             return;
 
-        if (!_addedXmlFontStyleFilePathsList.Add(stormFile))
+        if (!_addedXmlFontStyleFilePathsList.Add(stormPath))
             return;
 
-        string modlessPath = GetModlessPath(stormFile.Path);
+        //string modlessPath = GetModlessPath(stormFile.Path);
 
-        _stormStorage.SetFontStyleCache(StormModType, document, modlessPath);
+        _stormStorage.SetFontStyleCache(StormModType, document, stormPath);
     }
 
     public void AddBuildIdFile(Stream stream)
@@ -169,12 +166,12 @@ internal class StormModStorage
         return null;
     }
 
-    private void SetElementsForDataObjectTypes(XDocument document, string filePath)
+    private void SetElementsForDataObjectTypes(XDocument document, StormPath stormPath)
     {
         if (document.Root is null)
             return;
 
-        string? dataObjectType = SetDataObjectTypes(filePath);
+        string? dataObjectType = SetDataObjectTypes(stormPath.Path);
 
         if (string.IsNullOrWhiteSpace(dataObjectType))
             return;
@@ -183,14 +180,14 @@ internal class StormModStorage
 
         foreach (XElement element in document.Root.Elements())
         {
-            if (_stormStorage.AddConstantXElement(StormModType, element, filePath))
+            if (_stormStorage.AddConstantXElement(StormModType, element, stormPath))
                 continue;
 
             UpdateConstantAttributes(element.DescendantsAndSelf());
             string elementName = element.Name.LocalName;
 
             _stormStorage.AddBaseElementTypes(StormModType, dataObjectType, elementName);
-            _stormStorage.AddElement(StormModType, element, filePath);
+            _stormStorage.AddElement(StormModType, element, stormPath);
 
             count++;
         }
@@ -200,7 +197,7 @@ internal class StormModStorage
             _stormStorage.AddBaseElementTypes(StormModType, dataObjectType, $"C{dataObjectType}");
     }
 
-    private void SetElements(XDocument document, string filePath)
+    private void SetElements(XDocument document, StormPath filePath)
     {
         foreach (XElement element in document.Root!.Elements())
         {
@@ -212,19 +209,5 @@ internal class StormModStorage
             _stormStorage.AddLevelScalingArrayElement(StormModType, element, filePath);
             _stormStorage.AddElement(StormModType, element, filePath);
         }
-    }
-
-    private string GetModlessPath(string path)
-    {
-        return GetModlessPath(path.AsSpan()).ToString();
-    }
-
-    private ReadOnlySpan<char> GetModlessPath(ReadOnlySpan<char> path)
-    {
-        int indexOfMods = path.IndexOf(_modsBaseDirectoryPath);
-        if (indexOfMods < 0)
-            return path;
-
-        return path[(indexOfMods + _modsBaseDirectoryPath.Length)..];
     }
 }

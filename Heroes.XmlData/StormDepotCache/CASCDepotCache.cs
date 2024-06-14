@@ -11,11 +11,12 @@ internal class CASCDepotCache : DepotCache<ICASCHeroesSource>
     {
         if (!HeroesSource.CASCHeroesStorage.CASCFolderRoot.TryGetLastDirectory(DepotCacheDirectoryPath, out CASCFolder? depotCacheFolder))
         {
-            StormStorage.AddDirectoryNotFound(StormModType.Normal, new StormFile()
+            StormStorage.AddDirectoryNotFound(StormModType.Normal, new StormPath()
             {
-                Path = DepotCacheDirectoryPath,
                 StormModDirectoryPath = string.Empty,
                 StormModName = Name,
+                Path = DepotCacheDirectoryPath,
+                PathType = StormPathType.CASC,
             });
 
             return;

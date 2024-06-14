@@ -11,11 +11,12 @@ internal class FileDepotCache : DepotCache<IFileHeroesSource>
     {
         if (!Directory.Exists(DepotCacheDirectoryPath))
         {
-            StormStorage.AddDirectoryNotFound(StormModType.Normal, new StormFile()
+            StormStorage.AddDirectoryNotFound(StormModType.Normal, new StormPath()
             {
-                Path = DepotCacheDirectoryPath,
                 StormModDirectoryPath = string.Empty,
                 StormModName = Name,
+                Path = DepotCacheDirectoryPath,
+                PathType = StormPathType.File,
             });
 
             return;

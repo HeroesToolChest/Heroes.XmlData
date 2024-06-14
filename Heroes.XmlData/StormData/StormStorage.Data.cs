@@ -444,7 +444,7 @@ internal partial class StormStorage
         static StormGameString Get(string id, StormGameString? stormGameString, GameStringText gameStringText)
         {
             stormGameString ??= new StormGameString(id, gameStringText.Value);
-            stormGameString.AddPath(gameStringText.Path);
+            stormGameString.AddPath(gameStringText.StormPath);
             stormGameString.Value = gameStringText.Value;
 
             return stormGameString;
@@ -480,13 +480,13 @@ internal partial class StormStorage
         if (stormGameStrings.TryGetValue(item.Key, out StormGameString? existingStormGameString))
         {
             existingStormGameString.Value = item.Value.Value;
-            existingStormGameString.AddPath(item.Value.Path);
+            existingStormGameString.AddPath(item.Value.StormPath);
         }
         else
         {
             StormGameString stormGameString = new(item.Key, item.Value.Value);
 
-            stormGameString.AddPath(item.Value.Path);
+            stormGameString.AddPath(item.Value.StormPath);
 
             stormGameStrings.Add(item.Key, stormGameString);
         }

@@ -3,12 +3,12 @@
 internal class FileStormMod : StormMod<IFileHeroesSource>
 {
     public FileStormMod(IFileHeroesSource heroesSource, string directoryPath, StormModType stormModType)
-        : base(heroesSource, directoryPath, stormModType)
+        : base(heroesSource, directoryPath, stormModType, StormPathType.File)
     {
     }
 
     public FileStormMod(IFileHeroesSource heroesSource, string name, string directoryPath, StormModType stormModType)
-        : base(heroesSource, name, directoryPath, stormModType)
+        : base(heroesSource, name, directoryPath, stormModType, StormPathType.File)
     {
     }
 
@@ -30,11 +30,12 @@ internal class FileStormMod : StormMod<IFileHeroesSource>
     {
         if (!Directory.Exists(GameDataDirectoryPath))
         {
-            StormModStorage.AddDirectoryNotFound(new StormFile()
+            StormModStorage.AddDirectoryNotFound(new StormPath()
             {
-                Path = GameDataDirectoryPath,
                 StormModDirectoryPath = DirectoryPath,
                 StormModName = Name,
+                Path = GameDataDirectoryPath,
+                PathType = StormPathType.File,
             });
 
             return;

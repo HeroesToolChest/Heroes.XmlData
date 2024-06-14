@@ -3,12 +3,12 @@
 internal class CASCStormMod : StormMod<ICASCHeroesSource>, IStormMod
 {
     public CASCStormMod(ICASCHeroesSource cascHeroesSource, string directoryPath, StormModType stormModType)
-        : base(cascHeroesSource, directoryPath, stormModType)
+        : base(cascHeroesSource, directoryPath, stormModType, StormPathType.CASC)
     {
     }
 
     public CASCStormMod(ICASCHeroesSource cascHeroesSource, string name, string directoryPath, StormModType stormModType)
-    : base(cascHeroesSource, name, directoryPath, stormModType)
+    : base(cascHeroesSource, name, directoryPath, stormModType, StormPathType.CASC)
     {
     }
 
@@ -28,11 +28,12 @@ internal class CASCStormMod : StormMod<ICASCHeroesSource>, IStormMod
     {
         if (!HeroesSource.CASCHeroesStorage.CASCFolderRoot.TryGetLastDirectory(GameDataDirectoryPath, out CASCFolder? gameDataFolder))
         {
-            StormModStorage.AddDirectoryNotFound(new StormFile()
+            StormModStorage.AddDirectoryNotFound(new StormPath()
             {
-                Path = GameDataDirectoryPath,
                 StormModDirectoryPath = DirectoryPath,
                 StormModName = Name,
+                Path = GameDataDirectoryPath,
+                PathType = StormPathType.CASC,
             });
 
             return;

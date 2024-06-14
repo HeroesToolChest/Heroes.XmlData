@@ -24,7 +24,7 @@ internal static class ScaleValueParser
             XElement newScalingElement = CreateXElement(levelScalingEntry, stormStringValue, fieldSpan, fieldParts);
 
             // creates a storm element from the internal field
-            StormElement stormScalingElement = new(new StormXElementValuePath(newScalingElement, stormStringValue.Path));
+            StormElement stormScalingElement = new(new StormXElementValuePath(newScalingElement, stormStringValue.StormPath));
 
             return stormScalingElement;
         }

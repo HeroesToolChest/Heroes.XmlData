@@ -1,4 +1,6 @@
-﻿namespace Heroes.XmlData.StormData.Tests;
+﻿using Heroes.XmlData.Tests;
+
+namespace Heroes.XmlData.StormData.Tests;
 
 [TestClass]
 public class StormStorageTests
@@ -12,17 +14,17 @@ public class StormStorageTests
         // arrange
         string path = "custom";
         StormStorage stormStorage = new();
-        stormStorage.StormCache.ConstantXElementById.Add("$ZagaraHunterKillerDamage", new StormXElementValuePath(XElement.Parse(@"<const id=""$ZagaraHunterKillerDamage"" value=""71"" />"), path));
-        stormStorage.StormMapCache.ConstantXElementById.Add("$ChromieBasicAttackRange", new StormXElementValuePath(XElement.Parse(@"<const id=""$ChromieBasicAttackRange"" value=""7"" />"), path));
-        stormStorage.StormMapCache.ConstantXElementById.Add("$AzmodanAllShallBurnCastRange", new StormXElementValuePath(XElement.Parse(@"<const id=""$AzmodanAllShallBurnCastRange"" value=""6"" />"), path));
-        stormStorage.StormCustomCache.ConstantXElementById.Add("$AzmodanAllShallBurnCastRange", new StormXElementValuePath(XElement.Parse(@"<const id=""$AzmodanAllShallBurnCastRange"" value=""666"" />"), path));
+        stormStorage.StormCache.ConstantXElementById.Add("$ZagaraHunterKillerDamage", new StormXElementValuePath(XElement.Parse(@"<const id=""$ZagaraHunterKillerDamage"" value=""71"" />"), TestHelpers.GetStormPath(path)));
+        stormStorage.StormMapCache.ConstantXElementById.Add("$ChromieBasicAttackRange", new StormXElementValuePath(XElement.Parse(@"<const id=""$ChromieBasicAttackRange"" value=""7"" />"), TestHelpers.GetStormPath(path)));
+        stormStorage.StormMapCache.ConstantXElementById.Add("$AzmodanAllShallBurnCastRange", new StormXElementValuePath(XElement.Parse(@"<const id=""$AzmodanAllShallBurnCastRange"" value=""6"" />"), TestHelpers.GetStormPath(path)));
+        stormStorage.StormCustomCache.ConstantXElementById.Add("$AzmodanAllShallBurnCastRange", new StormXElementValuePath(XElement.Parse(@"<const id=""$AzmodanAllShallBurnCastRange"" value=""666"" />"), TestHelpers.GetStormPath(path)));
 
         // act
         bool result = stormStorage.TryGetExistingConstantXElementById(id.AsSpan(), out StormXElementValuePath? resultPath);
 
         // assert
         result.Should().BeTrue();
-        resultPath!.Path.Should().Be(path);
+        resultPath!.StormPath.Path.Should().Be(path);
         resultPath.Value.Attribute("value")!.Value.Should().Be(value);
     }
 
@@ -316,7 +318,7 @@ public class StormStorageTests
   <Name value=""Unit/Name/##id##"" />
 </CUnit>
 "),
-            "normal")));
+            TestHelpers.GetStormPath("normal"))));
 
         stormStorage.StormCache.StormElementByElementType.Add("CAbil", new StormElement(new StormXElementValuePath(
             XElement.Parse(@"
@@ -326,7 +328,7 @@ public class StormStorageTests
   <Element3 value=""value3"" />
 </CAbil>
 "),
-            "normal")));
+            TestHelpers.GetStormPath("normal"))));
 
         stormStorage.StormCache.StormElementByElementType.Add("CEffect", new StormElement(new StormXElementValuePath(
             XElement.Parse(@"
@@ -336,7 +338,7 @@ public class StormStorageTests
   <Element3 value=""value3"" />
 </CEffect>
 "),
-            "normal")));
+            TestHelpers.GetStormPath("normal"))));
 
         stormStorage.StormMapCache.StormElementByElementType.Add("CEffect", new StormElement(new StormXElementValuePath(
             XElement.Parse(@"
@@ -344,7 +346,7 @@ public class StormStorageTests
   <Chance value=""1"" />
 </CEffect>
 "),
-            "map")));
+            TestHelpers.GetStormPath("map"))));
 
         stormStorage.StormCustomCache.StormElementByElementType.Add("CAbil", new StormElement(new StormXElementValuePath(
             XElement.Parse(@"
@@ -352,7 +354,7 @@ public class StormStorageTests
   <Name value=""Abil/Name/##id##"" />
 </CAbil>
 "),
-            "custom")));
+            TestHelpers.GetStormPath("custom"))));
 
         // act
         bool result = stormStorage.TryGetExistingStormElementByElementType(elementType.AsSpan(), out StormElement? resultStormElement);
@@ -360,7 +362,7 @@ public class StormStorageTests
         // assert
         result.Should().BeTrue();
         resultStormElement!.ParentId.Should().Be(parent);
-        resultStormElement.DataValues.KeyValueDataPairs.Count().Should().Be(3);
+        resultStormElement.DataValues.KeyValueDataPairs.Should().HaveCount(3);
     }
 
     [TestMethod]
@@ -402,7 +404,7 @@ public class StormStorageTests
   <Name value=""Unit/Name/##id##"" />
 </CUnit>
 "),
-            "normal")));
+            TestHelpers.GetStormPath("normal"))));
 
         stormStorage.StormMapCache.StormElementByElementType.Add("CUnit", new StormElement(new StormXElementValuePath(
             XElement.Parse(@"
@@ -411,7 +413,7 @@ public class StormStorageTests
   <Element2 value=""value2"" />
 </CUnit>
 "),
-            "map")));
+            TestHelpers.GetStormPath("map"))));
 
         stormStorage.StormCustomCache.StormElementByElementType.Add("CUnit", new StormElement(new StormXElementValuePath(
             XElement.Parse(@"
@@ -420,7 +422,7 @@ public class StormStorageTests
   <Element3 value=""value3"" />
 </CUnit>
 "),
-            "custom")));
+            TestHelpers.GetStormPath("custom"))));
 
         // act
         StormElement? result = stormStorage.GetStormElementByElementType("CUnit".AsSpan());
@@ -429,7 +431,7 @@ public class StormStorageTests
         result!.DataValues.KeyValueDataPairs["Name"].HasValue.Should().BeTrue();
         result.DataValues.KeyValueDataPairs["Element2"].HasValue.Should().BeTrue();
         result.DataValues.KeyValueDataPairs["Element3"].HasValue.Should().BeTrue();
-        result.DataValues.KeyValueDataPairs.Count.Should().Be(5);
+        result.DataValues.KeyValueDataPairs.Should().HaveCount(5);
     }
 
     [TestMethod]
@@ -444,7 +446,7 @@ public class StormStorageTests
   <Name value=""Unit/Name/##id##"" />
 </CUnit>
 "),
-            "normal")));
+            TestHelpers.GetStormPath("normal"))));
 
         stormStorage.StormMapCache.StormElementByElementType.Add("CUnit", new StormElement(new StormXElementValuePath(
             XElement.Parse(@"
@@ -453,7 +455,7 @@ public class StormStorageTests
   <Element2 value=""value2"" />
 </CUnit>
 "),
-            "map")));
+            TestHelpers.GetStormPath("map"))));
 
         // act
         StormElement? result = stormStorage.GetStormElementByElementType("CUnit".AsSpan());
@@ -461,7 +463,7 @@ public class StormStorageTests
         // assert
         result!.DataValues.KeyValueDataPairs["Name"].HasValue.Should().BeTrue();
         result.DataValues.KeyValueDataPairs["Element2"].HasValue.Should().BeTrue();
-        result.DataValues.KeyValueDataPairs.Count.Should().Be(4);
+        result.DataValues.KeyValueDataPairs.Should().HaveCount(4);
     }
 
     [TestMethod]
@@ -476,14 +478,14 @@ public class StormStorageTests
   <Name value=""Unit/Name/##id##"" />
 </CUnit>
 "),
-            "normal")));
+            TestHelpers.GetStormPath("normal"))));
 
         // act
         StormElement? result = stormStorage.GetStormElementByElementType("CUnit".AsSpan());
 
         // assert
         result!.DataValues.KeyValueDataPairs["Name"].HasValue.Should().BeTrue();
-        result.DataValues.KeyValueDataPairs.Count.Should().Be(3);
+        result.DataValues.KeyValueDataPairs.Should().HaveCount(3);
     }
 
     [TestMethod]
@@ -499,7 +501,7 @@ public class StormStorageTests
   <Element2 value=""value2"" />
 </CUnit>
 "),
-            "map")));
+            TestHelpers.GetStormPath("map"))));
 
         // act
         StormElement? result = stormStorage.GetStormElementByElementType("CUnit".AsSpan());
@@ -507,7 +509,7 @@ public class StormStorageTests
         // assert
         result!.DataValues.KeyValueDataPairs["Name"].HasValue.Should().BeTrue();
         result.DataValues.KeyValueDataPairs["Element2"].HasValue.Should().BeTrue();
-        result.DataValues.KeyValueDataPairs.Count.Should().Be(4);
+        result.DataValues.KeyValueDataPairs.Should().HaveCount(4);
     }
 
     [TestMethod]
@@ -535,7 +537,7 @@ public class StormStorageTests
   <Name value=""Unit/Name/##id##"" />
 </CUnit>
 "),
-            "normal")));
+            TestHelpers.GetStormPath("normal"))));
 
         stormStorage.StormMapCache.StormElementByElementType.Add("CUnit", new StormElement(new StormXElementValuePath(
             XElement.Parse(@"
@@ -544,7 +546,7 @@ public class StormStorageTests
   <Element2 value=""value2"" />
 </CUnit>
 "),
-            "map")));
+            TestHelpers.GetStormPath("map"))));
 
         stormStorage.StormCustomCache.StormElementByElementType.Add("CUnit", new StormElement(new StormXElementValuePath(
             XElement.Parse(@"
@@ -554,7 +556,7 @@ public class StormStorageTests
   <Element4 value=""value4"" />
 </CUnit>
 "),
-            "custom")));
+            TestHelpers.GetStormPath("custom"))));
 
         // act
         StormElement? result = stormStorage.GetStormElementByElementType("CUnit".AsSpan());
@@ -569,7 +571,7 @@ public class StormStorageTests
   <Element6 value=""value6"" />
 </CUnit>
 "),
-            "custom")));
+            TestHelpers.GetStormPath("custom"))));
 
         // assert
         stormStorage.StormCache.StormElementByElementType["CUnit"].DataValues.KeyValueDataPairs.Count.Should().Be(3);
@@ -595,7 +597,7 @@ public class StormStorageTests
   <Name value=""Unit/Name/##id##"" />
 </CUnit>
 "),
-                    "normal"))
+                    TestHelpers.GetStormPath("normal")))
             },
         });
 
@@ -608,7 +610,7 @@ public class StormStorageTests
   <Name value=""Unit/Name/##id##"" />
 </CUnit>
 "),
-                    "map"))
+                    TestHelpers.GetStormPath("map")))
             },
         });
 
@@ -621,7 +623,7 @@ public class StormStorageTests
   <Name value=""Unit/Name/##id##"" />
 </CUnit>
 "),
-                    "custom"))
+                    TestHelpers.GetStormPath("custom")))
             },
         });
 
@@ -631,7 +633,7 @@ public class StormStorageTests
         // assert
         result.Should().BeTrue();
         resultStormElement!.Id.Should().Be(id);
-        resultStormElement.DataValues.KeyValueDataPairs.Count().Should().Be(2);
+        resultStormElement.DataValues.KeyValueDataPairs.Should().HaveCount(2);
     }
 
     [TestMethod]
@@ -690,7 +692,7 @@ public class StormStorageTests
   <Element1 value=""value1"" />
 </CUnit>
 "),
-                    "normal"))
+                    TestHelpers.GetStormPath("normal")))
             },
         });
 
@@ -704,7 +706,7 @@ public class StormStorageTests
   <Element2 value=""value2"" />
 </CUnit>
 "),
-                    "map"))
+                    TestHelpers.GetStormPath("map")))
             },
         });
 
@@ -718,7 +720,7 @@ public class StormStorageTests
   <Element3 value=""value3"" />
 </CUnit>
 "),
-                    "custom"))
+                    TestHelpers.GetStormPath("custom")))
             },
         });
 
@@ -730,7 +732,7 @@ public class StormStorageTests
         result.DataValues.KeyValueDataPairs["Element1"].HasValue.Should().BeTrue();
         result.DataValues.KeyValueDataPairs["Element2"].HasValue.Should().BeTrue();
         result.DataValues.KeyValueDataPairs["Element3"].HasValue.Should().BeTrue();
-        result.DataValues.KeyValueDataPairs.Count.Should().Be(5);
+        result.DataValues.KeyValueDataPairs.Should().HaveCount(5);
     }
 
     [TestMethod]
@@ -749,7 +751,7 @@ public class StormStorageTests
   <Element1 value=""value1"" />
 </CUnit>
 "),
-                    "normal"))
+                    TestHelpers.GetStormPath("normal")))
             },
         });
 
@@ -759,7 +761,7 @@ public class StormStorageTests
         // assert
         result!.DataValues.KeyValueDataPairs["Name"].HasValue.Should().BeTrue();
         result.DataValues.KeyValueDataPairs["Element1"].HasValue.Should().BeTrue();
-        result.DataValues.KeyValueDataPairs.Count.Should().Be(3);
+        result.DataValues.KeyValueDataPairs.Should().HaveCount(3);
     }
 
     [TestMethod]
@@ -778,7 +780,7 @@ public class StormStorageTests
   <Element2 value=""value2"" />
 </CUnit>
 "),
-                    "map"))
+                    TestHelpers.GetStormPath("map")))
             },
         });
 
@@ -788,7 +790,7 @@ public class StormStorageTests
         // assert
         result!.DataValues.KeyValueDataPairs["Name"].HasValue.Should().BeTrue();
         result.DataValues.KeyValueDataPairs["Element2"].HasValue.Should().BeTrue();
-        result.DataValues.KeyValueDataPairs.Count.Should().Be(3);
+        result.DataValues.KeyValueDataPairs.Should().HaveCount(3);
     }
 
     [TestMethod]
@@ -807,7 +809,7 @@ public class StormStorageTests
   <Element1 value=""value1"" />
 </CUnit>
 "),
-                    "normal"))
+                    TestHelpers.GetStormPath("normal")))
             },
         });
 
@@ -821,7 +823,7 @@ public class StormStorageTests
   <Element2 value=""value2"" />
 </CUnit>
 "),
-                    "map"))
+                    TestHelpers.GetStormPath("map")))
             },
         });
 
@@ -832,7 +834,7 @@ public class StormStorageTests
         result!.DataValues.KeyValueDataPairs["Name"].HasValue.Should().BeTrue();
         result.DataValues.KeyValueDataPairs["Element1"].HasValue.Should().BeTrue();
         result.DataValues.KeyValueDataPairs["Element2"].HasValue.Should().BeTrue();
-        result.DataValues.KeyValueDataPairs.Count.Should().Be(4);
+        result.DataValues.KeyValueDataPairs.Should().HaveCount(4);
     }
 
     [TestMethod]
@@ -864,7 +866,7 @@ public class StormStorageTests
   <Element1 value=""value1"" />
 </CUnit>
 "),
-                    "normal"))
+                    TestHelpers.GetStormPath("normal")))
             },
         });
 
@@ -879,7 +881,7 @@ public class StormStorageTests
   <Element3 value=""value3"" />
 </CUnit>
 "),
-                    "map"))
+                    TestHelpers.GetStormPath("map")))
             },
         });
 
@@ -895,7 +897,7 @@ public class StormStorageTests
   <Element5 value=""value5"" />
 </CUnit>
 "),
-                    "custom"))
+                    TestHelpers.GetStormPath("custom")))
             },
         });
 
@@ -912,7 +914,7 @@ public class StormStorageTests
   <Element6 value=""value6"" />
 </CUnit>
 "),
-            "custom")));
+            TestHelpers.GetStormPath("custom"))));
 
         // assert
         stormStorage.StormCache.StormElementsByDataObjectType["Unit"]["Hero1"].DataValues.KeyValueDataPairs.Count.Should().Be(3);
@@ -938,7 +940,7 @@ public class StormStorageTests
   <Name value=""Unit/Name/##id##"" />
 </CUnit>
 "),
-                    "normal"))
+                    TestHelpers.GetStormPath("normal")))
             },
         });
 
@@ -951,7 +953,7 @@ public class StormStorageTests
   <Name value=""Unit/Name/##id##"" />
 </CUnit>
 "),
-                    "map"))
+                    TestHelpers.GetStormPath("map")))
             },
         });
 
@@ -964,7 +966,7 @@ public class StormStorageTests
   <Name value=""Unit/Name/##id##"" />
 </CUnit>
 "),
-                    "custom"))
+                    TestHelpers.GetStormPath("custom")))
             },
         });
 
@@ -974,7 +976,7 @@ public class StormStorageTests
         // assert
         result.Should().BeTrue();
         resultStormElement!.Id.Should().Be(id);
-        resultStormElement.DataValues.KeyValueDataPairs.Count().Should().Be(2);
+        resultStormElement.DataValues.KeyValueDataPairs.Should().HaveCount(2);
     }
 
     [TestMethod]
@@ -1033,7 +1035,7 @@ public class StormStorageTests
   <Element1 value=""value1"" />
 </CUnit>
 "),
-                    "normal"))
+                    TestHelpers.GetStormPath("normal")))
             },
         });
 
@@ -1047,7 +1049,7 @@ public class StormStorageTests
   <Element2 value=""value2"" />
 </CUnit>
 "),
-                    "map"))
+                    TestHelpers.GetStormPath("map")))
             },
         });
 
@@ -1061,7 +1063,7 @@ public class StormStorageTests
   <Element3 value=""value3"" />
 </CUnit>
 "),
-                    "custom"))
+                    TestHelpers.GetStormPath("custom")))
             },
         });
 
@@ -1073,7 +1075,7 @@ public class StormStorageTests
         result.DataValues.KeyValueDataPairs["Element1"].HasValue.Should().BeTrue();
         result.DataValues.KeyValueDataPairs["Element2"].HasValue.Should().BeTrue();
         result.DataValues.KeyValueDataPairs["Element3"].HasValue.Should().BeTrue();
-        result.DataValues.KeyValueDataPairs.Count.Should().Be(5);
+        result.DataValues.KeyValueDataPairs.Should().HaveCount(5);
     }
 
     [TestMethod]
@@ -1092,7 +1094,7 @@ public class StormStorageTests
   <Element1 value=""value1"" />
 </CUnit>
 "),
-                    "normal"))
+                    TestHelpers.GetStormPath("normal")))
             },
         });
 
@@ -1102,7 +1104,7 @@ public class StormStorageTests
         // assert
         result!.DataValues.KeyValueDataPairs["Name"].HasValue.Should().BeTrue();
         result.DataValues.KeyValueDataPairs["Element1"].HasValue.Should().BeTrue();
-        result.DataValues.KeyValueDataPairs.Count.Should().Be(3);
+        result.DataValues.KeyValueDataPairs.Should().HaveCount(3);
     }
 
     [TestMethod]
@@ -1121,7 +1123,7 @@ public class StormStorageTests
   <Element2 value=""value2"" />
 </CUnit>
 "),
-                    "map"))
+                    TestHelpers.GetStormPath("map")))
             },
         });
 
@@ -1131,7 +1133,7 @@ public class StormStorageTests
         // assert
         result!.DataValues.KeyValueDataPairs["Name"].HasValue.Should().BeTrue();
         result.DataValues.KeyValueDataPairs["Element2"].HasValue.Should().BeTrue();
-        result.DataValues.KeyValueDataPairs.Count.Should().Be(3);
+        result.DataValues.KeyValueDataPairs.Should().HaveCount(3);
     }
 
     [TestMethod]
@@ -1150,7 +1152,7 @@ public class StormStorageTests
   <Element1 value=""value1"" />
 </CUnit>
 "),
-                    "normal"))
+                    TestHelpers.GetStormPath("normal")))
             },
         });
 
@@ -1164,7 +1166,7 @@ public class StormStorageTests
   <Element2 value=""value2"" />
 </CUnit>
 "),
-                    "map"))
+                    TestHelpers.GetStormPath("map")))
             },
         });
 
@@ -1175,7 +1177,7 @@ public class StormStorageTests
         result!.DataValues.KeyValueDataPairs["Name"].HasValue.Should().BeTrue();
         result.DataValues.KeyValueDataPairs["Element1"].HasValue.Should().BeTrue();
         result.DataValues.KeyValueDataPairs["Element2"].HasValue.Should().BeTrue();
-        result.DataValues.KeyValueDataPairs.Count.Should().Be(4);
+        result.DataValues.KeyValueDataPairs.Should().HaveCount(4);
     }
 
     [TestMethod]
@@ -1207,7 +1209,7 @@ public class StormStorageTests
   <Element1 value=""value1"" />
 </CUnit>
 "),
-                    "normal"))
+                    TestHelpers.GetStormPath("normal")))
             },
         });
 
@@ -1222,7 +1224,7 @@ public class StormStorageTests
   <Element3 value=""value3"" />
 </CUnit>
 "),
-                    "map"))
+                    TestHelpers.GetStormPath("map")))
             },
         });
 
@@ -1238,7 +1240,7 @@ public class StormStorageTests
   <Element5 value=""value5"" />
 </CUnit>
 "),
-                    "custom"))
+                    TestHelpers.GetStormPath("custom")))
             },
         });
 
@@ -1255,7 +1257,7 @@ public class StormStorageTests
   <Element6 value=""value6"" />
 </CUnit>
 "),
-            "custom")));
+            TestHelpers.GetStormPath("custom"))));
 
         // assert
         stormStorage.StormCache.ScaleValueStormElementsByDataObjectType["Unit"]["Hero1"].DataValues.KeyValueDataPairs.Count.Should().Be(3);
@@ -1291,7 +1293,7 @@ public class StormStorageTests
   <Chance value=""1"" />
 </CEffect>
 "),
-            "custom")));
+            TestHelpers.GetStormPath("custom"))));
 
         stormStorage.StormCustomCache.StormElementByElementType.Add("CEffectApplyBehavior", new StormElement(new StormXElementValuePath(
             XElement.Parse(@"
@@ -1300,7 +1302,7 @@ public class StormStorageTests
   <ValidatorArray value=""##id##TargetFilters"" />
 </CEffectApplyBehavior>
 "),
-            "custom")));
+            TestHelpers.GetStormPath("custom"))));
 
         stormStorage.StormCustomCache.StormElementsByDataObjectType.Add("Effect", new Dictionary<string, StormElement>()
         {
@@ -1311,7 +1313,7 @@ public class StormStorageTests
   <ValidatorArray index=""0"" value=""IsRangedMinion"" />
 </CEffectApplyBehavior>
 "),
-                    "custom"))
+                    TestHelpers.GetStormPath("custom")))
             },
         });
 
@@ -1320,7 +1322,7 @@ public class StormStorageTests
 
         // assert
         stormElement.Should().NotBeNull();
-        stormElement!.OriginalStormXElementValues.Count.Should().Be(3);
+        stormElement!.OriginalStormXElementValues.Should().HaveCount(3);
     }
 
     [TestMethod]
@@ -1340,7 +1342,7 @@ public class StormStorageTests
   <Value value=""1"" />
 </CEffectModifyTokenCount>
 "),
-                    "custom"))
+                    TestHelpers.GetStormPath("custom")))
             },
         });
 
@@ -1351,14 +1353,14 @@ public class StormStorageTests
   <ValidatorArray value=""TargetIsHero"" />
 </CEffectModifyTokenCount>
 "),
-                "custom")));
+                TestHelpers.GetStormPath("custom"))));
 
         // act
         StormElement? stormElement = stormStorage.GetCompleteStormElement("KelThuzadMasterOfTheColdDarkModifyToken".AsSpan(), "Effect".AsSpan());
 
         // assert
         stormElement.Should().NotBeNull();
-        stormElement!.OriginalStormXElementValues.Count.Should().Be(2);
+        stormElement!.OriginalStormXElementValues.Should().HaveCount(2);
     }
 
     [TestMethod]
@@ -1378,7 +1380,7 @@ public class StormStorageTests
   <ValidatorArray value=""TargetIsHero"" />
 </CEffectModifyTokenCount>
 "),
-                    "custom"))
+                    TestHelpers.GetStormPath("custom")))
             },
         });
 
@@ -1387,7 +1389,7 @@ public class StormStorageTests
 
         // assert
         stormElement.Should().NotBeNull();
-        stormElement!.OriginalStormXElementValues.Count.Should().Be(1);
+        stormElement!.OriginalStormXElementValues.Should().ContainSingle();
     }
 
     [TestMethod]
@@ -1404,7 +1406,7 @@ public class StormStorageTests
   <Name value=""Unit/Name/##id##"" />
 </CUnit>
 "),
-            "custom"));
+            TestHelpers.GetStormPath("custom")));
 
         baseStormElement.AddValue(new StormElement(new StormXElementValuePath(
             XElement.Parse(@"
@@ -1412,7 +1414,7 @@ public class StormStorageTests
   <TauntDoesntStopUnit index=""Cheer"" value=""1"" />
 </CUnit>
 "),
-            "custom")));
+            TestHelpers.GetStormPath("custom"))));
         stormStorage.StormCustomCache.StormElementByElementType.Add("CUnit", baseStormElement);
 
         stormStorage.StormCustomCache.StormElementsByDataObjectType.Add("Unit", new Dictionary<string, StormElement>()
@@ -1424,7 +1426,7 @@ public class StormStorageTests
   <FlagArray index=""Unclickable"" value=""0"" />
 </CUnit>
 "),
-                    "custom"))
+                    TestHelpers.GetStormPath("custom")))
             },
         });
 
@@ -1433,7 +1435,7 @@ public class StormStorageTests
 
         // assert
         stormElement.Should().NotBeNull();
-        stormElement!.OriginalStormXElementValues.Count.Should().Be(3);
+        stormElement!.OriginalStormXElementValues.Should().HaveCount(3);
     }
 
     [TestMethod]
@@ -1450,14 +1452,14 @@ public class StormStorageTests
   <Chance value=""1"" />
 </CEffect>
 "),
-            "custom")));
+            TestHelpers.GetStormPath("custom"))));
 
         // act
         StormElement? stormElement = stormStorage.GetBaseStormElement("CEffectApplyBehavior".AsSpan());
 
         // assert
         stormElement.Should().NotBeNull();
-        stormElement!.DataValues.KeyValueDataPairs.Count.Should().Be(2);
+        stormElement!.DataValues.KeyValueDataPairs.Should().HaveCount(2);
     }
 
     [TestMethod]
@@ -1498,26 +1500,26 @@ public class StormStorageTests
             XElement.Parse(@"
 <Constant name=""TooltipNumbers"" val=""bfd4fd"" />
 "),
-            "normal")));
+            TestHelpers.GetStormPath("normal"))));
 
         stormStorage.StormMapCache.StormStyleConstantsByName.Add("TooltipNumbers", new StormElement(new StormXElementValuePath(
             XElement.Parse(@"
 <Constant name=""TooltipNumbers"" val=""bfd4fd"" other=""value"" />
 "),
-            "map")));
+            TestHelpers.GetStormPath("map"))));
 
         stormStorage.StormCustomCache.StormStyleConstantsByName.Add("TooltipNumbers", new StormElement(new StormXElementValuePath(
             XElement.Parse(@"
 <Constant name=""TooltipNumbers"" val=""bfd4fd"" other2=""value2"" />
 "),
-            "custom")));
+            TestHelpers.GetStormPath("custom"))));
 
         // act
         StormElement? stormElement = stormStorage.GetStormStyleConstantsByName("TooltipNumbers".AsSpan());
 
         // assert
         stormElement.Should().NotBeNull();
-        stormElement!.DataValues.KeyValueDataPairs.Count.Should().Be(4);
+        stormElement!.DataValues.KeyValueDataPairs.Should().HaveCount(4);
     }
 
     [TestMethod]
@@ -1530,14 +1532,14 @@ public class StormStorageTests
             XElement.Parse(@"
 <Constant name=""TooltipNumbers"" val=""bfd4fd"" />
 "),
-            "normal")));
+            TestHelpers.GetStormPath("normal"))));
 
         // act
         StormElement? stormElement = stormStorage.GetStormStyleConstantsByName("TooltipNumbers".AsSpan());
 
         // assert
         stormElement.Should().NotBeNull();
-        stormElement!.DataValues.KeyValueDataPairs.Count.Should().Be(2);
+        stormElement!.DataValues.KeyValueDataPairs.Should().HaveCount(2);
     }
 
     [TestMethod]
@@ -1550,14 +1552,14 @@ public class StormStorageTests
             XElement.Parse(@"
 <Constant name=""TooltipNumbers"" val=""bfd4fd"" />
 "),
-            "map")));
+            TestHelpers.GetStormPath("map"))));
 
         // act
         StormElement? stormElement = stormStorage.GetStormStyleConstantsByName("TooltipNumbers".AsSpan());
 
         // assert
         stormElement.Should().NotBeNull();
-        stormElement!.DataValues.KeyValueDataPairs.Count.Should().Be(2);
+        stormElement!.DataValues.KeyValueDataPairs.Should().HaveCount(2);
     }
 
     [TestMethod]
@@ -1570,14 +1572,14 @@ public class StormStorageTests
             XElement.Parse(@"
 <Constant name=""TooltipNumbers"" val=""bfd4fd"" />
 "),
-            "map")));
+            TestHelpers.GetStormPath("map"))));
 
         // act
         StormElement? stormElement = stormStorage.GetStormStyleConstantsByName("TooltipNumbers".AsSpan());
 
         // assert
         stormElement.Should().NotBeNull();
-        stormElement!.DataValues.KeyValueDataPairs.Count.Should().Be(2);
+        stormElement!.DataValues.KeyValueDataPairs.Should().HaveCount(2);
     }
 
     [TestMethod]
@@ -1590,20 +1592,20 @@ public class StormStorageTests
             XElement.Parse(@"
 <Constant name=""TooltipNumbers"" val=""bfd4fd"" />
 "),
-            "normal")));
+            TestHelpers.GetStormPath("normal"))));
 
         stormStorage.StormMapCache.StormStyleConstantsByName.Add("TooltipNumbers", new StormElement(new StormXElementValuePath(
             XElement.Parse(@"
 <Constant name=""TooltipNumbers"" val=""bfd4fd"" other=""value"" />
 "),
-            "map")));
+            TestHelpers.GetStormPath("map"))));
 
         // act
         StormElement? stormElement = stormStorage.GetStormStyleConstantsByName("TooltipNumbers".AsSpan());
 
         // assert
         stormElement.Should().NotBeNull();
-        stormElement!.DataValues.KeyValueDataPairs.Count.Should().Be(3);
+        stormElement!.DataValues.KeyValueDataPairs.Should().HaveCount(3);
     }
 
     [TestMethod]
@@ -1642,19 +1644,19 @@ public class StormStorageTests
             XElement.Parse(@"
 <Constant name=""TooltipNumbers"" val=""bfd4fd"" />
 "),
-            "normal")));
+            TestHelpers.GetStormPath("normal"))));
 
         stormStorage.StormMapCache.StormStyleConstantsByName.Add("TooltipNumbers", new StormElement(new StormXElementValuePath(
             XElement.Parse(@"
 <Constant name=""TooltipNumbers"" val=""bfd4fd"" other=""value"" />
 "),
-            "map")));
+            TestHelpers.GetStormPath("map"))));
 
         stormStorage.StormCustomCache.StormStyleConstantsByName.Add("TooltipNumbers", new StormElement(new StormXElementValuePath(
             XElement.Parse(@"
 <Constant name=""TooltipNumbers"" val=""bfd4fd"" other=""value"" other2=""value2"" />
 "),
-            "custom")));
+            TestHelpers.GetStormPath("custom"))));
 
         // act
         StormElement? result = stormStorage.GetStormStyleConstantsByName("TooltipNumbers".AsSpan());
@@ -1663,12 +1665,12 @@ public class StormStorageTests
             XElement.Parse(@"
 <Constant name=""TooltipNumbers"" val=""bfd4fd"" other2=""value2"" other3=""value3"" other4=""value4"" other5=""value5"" />
 "),
-            "custom")));
+            TestHelpers.GetStormPath("custom"))));
 
         // assert
-        stormStorage.StormCache.StormStyleConstantsByName["TooltipNumbers"].DataValues.KeyValueDataPairs.Count.Should().Be(2);
-        stormStorage.StormMapCache.StormStyleConstantsByName["TooltipNumbers"].DataValues.KeyValueDataPairs.Count.Should().Be(3);
-        stormStorage.StormCustomCache.StormStyleConstantsByName["TooltipNumbers"].DataValues.KeyValueDataPairs.Count.Should().Be(4);
+        stormStorage.StormCache.StormStyleConstantsByName["TooltipNumbers"].DataValues.KeyValueDataPairs.Should().HaveCount(2);
+        stormStorage.StormMapCache.StormStyleConstantsByName["TooltipNumbers"].DataValues.KeyValueDataPairs.Should().HaveCount(3);
+        stormStorage.StormCustomCache.StormStyleConstantsByName["TooltipNumbers"].DataValues.KeyValueDataPairs.Should().HaveCount(4);
     }
 
     [TestMethod]
@@ -1681,26 +1683,26 @@ public class StormStorageTests
             XElement.Parse(@"
 <Style name=""ReticleEnemy"" template=""Storm_Tutorial_Reticle_Text"" textcolor=""255,255,255,255"" />
 "),
-            "normal")));
+            TestHelpers.GetStormPath("normal"))));
 
         stormStorage.StormMapCache.StormStyleStylesByName.Add("ReticleEnemy", new StormElement(new StormXElementValuePath(
             XElement.Parse(@"
 <Style name=""ReticleEnemy"" template=""Storm_Tutorial_Reticle_Text"" textcolor=""255,255,255,255"" height=""80"" />
 "),
-            "map")));
+            TestHelpers.GetStormPath("map"))));
 
         stormStorage.StormCustomCache.StormStyleStylesByName.Add("ReticleEnemy", new StormElement(new StormXElementValuePath(
             XElement.Parse(@"
 <Style name=""ReticleEnemy"" template=""Storm_Tutorial_Reticle_Text"" textcolor=""255,255,255,255"" styleflags=""Shadow"" />
 "),
-            "custom")));
+            TestHelpers.GetStormPath("custom"))));
 
         // act
         StormElement? stormElement = stormStorage.GetStormStyleStylesByName("ReticleEnemy".AsSpan());
 
         // assert
         stormElement.Should().NotBeNull();
-        stormElement!.DataValues.KeyValueDataPairs.Count.Should().Be(5);
+        stormElement!.DataValues.KeyValueDataPairs.Should().HaveCount(5);
     }
 
     [TestMethod]
@@ -1713,14 +1715,14 @@ public class StormStorageTests
             XElement.Parse(@"
 <Style name=""ReticleEnemy"" template=""Storm_Tutorial_Reticle_Text"" textcolor=""255,255,255,255"" />
 "),
-            "normal")));
+            TestHelpers.GetStormPath("normal"))));
 
         // act
         StormElement? stormElement = stormStorage.GetStormStyleStylesByName("ReticleEnemy".AsSpan());
 
         // assert
         stormElement.Should().NotBeNull();
-        stormElement!.DataValues.KeyValueDataPairs.Count.Should().Be(3);
+        stormElement!.DataValues.KeyValueDataPairs.Should().HaveCount(3);
     }
 
     [TestMethod]
@@ -1733,14 +1735,14 @@ public class StormStorageTests
             XElement.Parse(@"
 <Style name=""ReticleEnemy"" template=""Storm_Tutorial_Reticle_Text"" textcolor=""255,255,255,255"" height=""80"" />
 "),
-            "map")));
+            TestHelpers.GetStormPath("map"))));
 
         // act
         StormElement? stormElement = stormStorage.GetStormStyleStylesByName("ReticleEnemy".AsSpan());
 
         // assert
         stormElement.Should().NotBeNull();
-        stormElement!.DataValues.KeyValueDataPairs.Count.Should().Be(4);
+        stormElement!.DataValues.KeyValueDataPairs.Should().HaveCount(4);
     }
 
     [TestMethod]
@@ -1753,14 +1755,14 @@ public class StormStorageTests
             XElement.Parse(@"
 <Style name=""ReticleEnemy"" template=""Storm_Tutorial_Reticle_Text"" textcolor=""255,255,255,255"" styleflags=""Shadow"" />
 "),
-            "custom")));
+            TestHelpers.GetStormPath("custom"))));
 
         // act
         StormElement? stormElement = stormStorage.GetStormStyleStylesByName("ReticleEnemy".AsSpan());
 
         // assert
         stormElement.Should().NotBeNull();
-        stormElement!.DataValues.KeyValueDataPairs.Count.Should().Be(4);
+        stormElement!.DataValues.KeyValueDataPairs.Should().HaveCount(4);
     }
 
     [TestMethod]
@@ -1773,20 +1775,20 @@ public class StormStorageTests
             XElement.Parse(@"
 <Style name=""ReticleEnemy"" template=""Storm_Tutorial_Reticle_Text"" textcolor=""255,255,255,255"" />
 "),
-            "normal")));
+            TestHelpers.GetStormPath("normal"))));
 
         stormStorage.StormMapCache.StormStyleStylesByName.Add("ReticleEnemy", new StormElement(new StormXElementValuePath(
             XElement.Parse(@"
 <Style name=""ReticleEnemy"" template=""Storm_Tutorial_Reticle_Text"" textcolor=""255,255,255,255"" height=""80"" />
 "),
-            "map")));
+            TestHelpers.GetStormPath("map"))));
 
         // act
         StormElement? stormElement = stormStorage.GetStormStyleStylesByName("ReticleEnemy".AsSpan());
 
         // assert
         stormElement.Should().NotBeNull();
-        stormElement!.DataValues.KeyValueDataPairs.Count.Should().Be(4);
+        stormElement!.DataValues.KeyValueDataPairs.Should().HaveCount(4);
     }
 
     [TestMethod]
@@ -1825,19 +1827,19 @@ public class StormStorageTests
             XElement.Parse(@"
 <Style name=""ReticleEnemy"" template=""Storm_Tutorial_Reticle_Text"" textcolor=""255,255,255,255"" />
 "),
-            "normal")));
+            TestHelpers.GetStormPath("normal"))));
 
         stormStorage.StormMapCache.StormStyleStylesByName.Add("ReticleEnemy", new StormElement(new StormXElementValuePath(
             XElement.Parse(@"
 <Style name=""ReticleEnemy"" template=""Storm_Tutorial_Reticle_Text"" textcolor=""255,255,255,255"" height=""80"" />
 "),
-            "map")));
+            TestHelpers.GetStormPath("map"))));
 
         stormStorage.StormCustomCache.StormStyleStylesByName.Add("ReticleEnemy", new StormElement(new StormXElementValuePath(
             XElement.Parse(@"
 <Style name=""ReticleEnemy"" template=""Storm_Tutorial_Reticle_Text"" textcolor=""255,255,255,255"" styleflags=""Shadow"" height=""80"" />
 "),
-            "custom")));
+            TestHelpers.GetStormPath("custom"))));
 
         // act
         StormElement? result = stormStorage.GetStormStyleStylesByName("ReticleEnemy".AsSpan());
@@ -1846,12 +1848,12 @@ public class StormStorageTests
             XElement.Parse(@"
 <Style name=""ReticleEnemy"" template=""Storm_Tutorial_Reticle_Text"" textcolor=""255,255,255,255"" styleflags=""Shadow"" shadowoffset=""3"" />
 "),
-            "custom")));
+            TestHelpers.GetStormPath("custom"))));
 
         // assert
-        stormStorage.StormCache.StormStyleStylesByName["ReticleEnemy"].DataValues.KeyValueDataPairs.Count.Should().Be(3);
-        stormStorage.StormMapCache.StormStyleStylesByName["ReticleEnemy"].DataValues.KeyValueDataPairs.Count.Should().Be(4);
-        stormStorage.StormCustomCache.StormStyleStylesByName["ReticleEnemy"].DataValues.KeyValueDataPairs.Count.Should().Be(5);
+        stormStorage.StormCache.StormStyleStylesByName["ReticleEnemy"].DataValues.KeyValueDataPairs.Should().HaveCount(3);
+        stormStorage.StormMapCache.StormStyleStylesByName["ReticleEnemy"].DataValues.KeyValueDataPairs.Should().HaveCount(4);
+        stormStorage.StormCustomCache.StormStyleStylesByName["ReticleEnemy"].DataValues.KeyValueDataPairs.Should().HaveCount(5);
     }
 
     [TestMethod]
@@ -1861,9 +1863,9 @@ public class StormStorageTests
         StormStorage stormStorage = new(false);
 
         // act
-        stormStorage.StormCache.GameStringsById.Add("id1", new GameStringText("If Chomp hits a Hero", "normal"));
-        stormStorage.StormMapCache.GameStringsById.Add("id1", new GameStringText("Shadow Waltz deals an increased", "map"));
-        stormStorage.StormCustomCache.GameStringsById.Add("id1", new GameStringText("After a short delay", "custom"));
+        stormStorage.StormCache.GameStringsById.Add("id1", new GameStringText("If Chomp hits a Hero", TestHelpers.GetStormPath("normal")));
+        stormStorage.StormMapCache.GameStringsById.Add("id1", new GameStringText("Shadow Waltz deals an increased", TestHelpers.GetStormPath("map")));
+        stormStorage.StormCustomCache.GameStringsById.Add("id1", new GameStringText("After a short delay", TestHelpers.GetStormPath("custom")));
 
         // assert
         StormGameString? stormGameString = stormStorage.GetStormGameString("id1".AsSpan());
@@ -1871,8 +1873,8 @@ public class StormStorageTests
         stormGameString.Should().NotBeNull();
         stormGameString!.Id.Should().Be("id1");
         stormGameString.Value.Should().Be("After a short delay");
-        stormGameString.Paths.Count.Should().Be(3);
-        stormGameString.Paths[^1].Should().Be("custom");
+        stormGameString.StormPaths.Should().HaveCount(3);
+        stormGameString.StormPaths[^1].Path.Should().Be("custom");
     }
 
     [TestMethod]
@@ -1882,7 +1884,7 @@ public class StormStorageTests
         StormStorage stormStorage = new(false);
 
         // act
-        stormStorage.StormCache.GameStringsById.Add("id1", new GameStringText("If Chomp hits a Hero", "normal"));
+        stormStorage.StormCache.GameStringsById.Add("id1", new GameStringText("If Chomp hits a Hero", TestHelpers.GetStormPath("normal")));
 
         // assert
         StormGameString? stormGameString = stormStorage.GetStormGameString("id1".AsSpan());
@@ -1890,8 +1892,8 @@ public class StormStorageTests
         stormGameString.Should().NotBeNull();
         stormGameString!.Id.Should().Be("id1");
         stormGameString.Value.Should().Be("If Chomp hits a Hero");
-        stormGameString.Paths.Count.Should().Be(1);
-        stormGameString.Paths[^1].Should().Be("normal");
+        stormGameString.StormPaths.Should().ContainSingle();
+        stormGameString.StormPaths[^1].Path.Should().Be("normal");
     }
 
     [TestMethod]
@@ -1901,7 +1903,7 @@ public class StormStorageTests
         StormStorage stormStorage = new(false);
 
         // act
-        stormStorage.StormMapCache.GameStringsById.Add("id1", new GameStringText("Shadow Waltz deals an increased", "map"));
+        stormStorage.StormMapCache.GameStringsById.Add("id1", new GameStringText("Shadow Waltz deals an increased", TestHelpers.GetStormPath("map")));
 
         // assert
         StormGameString? stormGameString = stormStorage.GetStormGameString("id1".AsSpan());
@@ -1909,8 +1911,8 @@ public class StormStorageTests
         stormGameString.Should().NotBeNull();
         stormGameString!.Id.Should().Be("id1");
         stormGameString.Value.Should().Be("Shadow Waltz deals an increased");
-        stormGameString.Paths.Count.Should().Be(1);
-        stormGameString.Paths[^1].Should().Be("map");
+        stormGameString.StormPaths.Should().ContainSingle();
+        stormGameString.StormPaths[^1].Path.Should().Be("map");
     }
 
     [TestMethod]
@@ -1920,7 +1922,7 @@ public class StormStorageTests
         StormStorage stormStorage = new(false);
 
         // act
-        stormStorage.StormCustomCache.GameStringsById.Add("id1", new GameStringText("After a short delay", "custom"));
+        stormStorage.StormCustomCache.GameStringsById.Add("id1", new GameStringText("After a short delay", TestHelpers.GetStormPath("custom")));
 
         // assert
         StormGameString? stormGameString = stormStorage.GetStormGameString("id1".AsSpan());
@@ -1928,8 +1930,8 @@ public class StormStorageTests
         stormGameString.Should().NotBeNull();
         stormGameString!.Id.Should().Be("id1");
         stormGameString.Value.Should().Be("After a short delay");
-        stormGameString.Paths.Count.Should().Be(1);
-        stormGameString.Paths[^1].Should().Be("custom");
+        stormGameString.StormPaths.Should().ContainSingle();
+        stormGameString.StormPaths[^1].Path.Should().Be("custom");
     }
 
     [TestMethod]
@@ -1939,8 +1941,8 @@ public class StormStorageTests
         StormStorage stormStorage = new(false);
 
         // act
-        stormStorage.StormCache.GameStringsById.Add("id1", new GameStringText("If Chomp hits a Hero", "normal"));
-        stormStorage.StormMapCache.GameStringsById.Add("id1", new GameStringText("Shadow Waltz deals an increased", "map"));
+        stormStorage.StormCache.GameStringsById.Add("id1", new GameStringText("If Chomp hits a Hero", TestHelpers.GetStormPath("normal")));
+        stormStorage.StormMapCache.GameStringsById.Add("id1", new GameStringText("Shadow Waltz deals an increased", TestHelpers.GetStormPath("map")));
 
         // assert
         StormGameString? stormGameString = stormStorage.GetStormGameString("id1".AsSpan());
@@ -1948,8 +1950,8 @@ public class StormStorageTests
         stormGameString.Should().NotBeNull();
         stormGameString!.Id.Should().Be("id1");
         stormGameString.Value.Should().Be("Shadow Waltz deals an increased");
-        stormGameString.Paths.Count.Should().Be(2);
-        stormGameString.Paths[^1].Should().Be("map");
+        stormGameString.StormPaths.Should().HaveCount(2);
+        stormGameString.StormPaths[^1].Path.Should().Be("map");
     }
 
     [TestMethod]
@@ -1959,14 +1961,14 @@ public class StormStorageTests
         StormStorage stormStorage = new(false);
 
         // act
-        stormStorage.StormCache.GameStringsById.Add("id1", new GameStringText("If Chomp hits a Hero", "normal"));
-        stormStorage.StormCache.GameStringsById.Add("id2", new GameStringText("Spawn an Overgrowth that", "normal"));
+        stormStorage.StormCache.GameStringsById.Add("id1", new GameStringText("If Chomp hits a Hero", TestHelpers.GetStormPath("normal")));
+        stormStorage.StormCache.GameStringsById.Add("id2", new GameStringText("Spawn an Overgrowth that", TestHelpers.GetStormPath("normal")));
 
-        stormStorage.StormMapCache.GameStringsById.Add("id1", new GameStringText("Shadow Waltz deals an increased", "map"));
-        stormStorage.StormMapCache.GameStringsById.Add("id3", new GameStringText("Hitting a Warp Rift", "map"));
+        stormStorage.StormMapCache.GameStringsById.Add("id1", new GameStringText("Shadow Waltz deals an increased", TestHelpers.GetStormPath("map")));
+        stormStorage.StormMapCache.GameStringsById.Add("id3", new GameStringText("Hitting a Warp Rift", TestHelpers.GetStormPath("map")));
 
-        stormStorage.StormCustomCache.GameStringsById.Add("id1", new GameStringText("After a short delay", "custom"));
-        stormStorage.StormCustomCache.GameStringsById.Add("id4", new GameStringText("Raynor and all nearby allied", "custom"));
+        stormStorage.StormCustomCache.GameStringsById.Add("id1", new GameStringText("After a short delay", TestHelpers.GetStormPath("custom")));
+        stormStorage.StormCustomCache.GameStringsById.Add("id4", new GameStringText("Raynor and all nearby allied", TestHelpers.GetStormPath("custom")));
 
         // assert
         List<StormGameString> stormGameString = stormStorage.GetStormGameStrings();
@@ -1976,48 +1978,48 @@ public class StormStorageTests
             {
                 first.Id.Should().Be("id1");
                 first.Value.Should().Be("After a short delay");
-                first.Paths.Should().SatisfyRespectively(
+                first.StormPaths.Should().SatisfyRespectively(
                     firstPath =>
                     {
-                        firstPath.Should().Be("normal");
+                        firstPath.Path.Should().Be("normal");
                     },
                     secondPath =>
                     {
-                        secondPath.Should().Be("map");
+                        secondPath.Path.Should().Be("map");
                     },
                     thirdPath =>
                     {
-                        thirdPath.Should().Be("custom");
+                        thirdPath.Path.Should().Be("custom");
                     });
             },
             second =>
             {
                 second.Id.Should().Be("id2");
                 second.Value.Should().Be("Spawn an Overgrowth that");
-                second.Paths.Should().SatisfyRespectively(
+                second.StormPaths.Should().SatisfyRespectively(
                     firstPath =>
                     {
-                        firstPath.Should().Be("normal");
+                        firstPath.Path.Should().Be("normal");
                     });
             },
             third =>
             {
                 third.Id.Should().Be("id3");
                 third.Value.Should().Be("Hitting a Warp Rift");
-                third.Paths.Should().SatisfyRespectively(
+                third.StormPaths.Should().SatisfyRespectively(
                     firstPath =>
                     {
-                        firstPath.Should().Be("map");
+                        firstPath.Path.Should().Be("map");
                     });
             },
             fourth =>
             {
                 fourth.Id.Should().Be("id4");
                 fourth.Value.Should().Be("Raynor and all nearby allied");
-                fourth.Paths.Should().SatisfyRespectively(
+                fourth.StormPaths.Should().SatisfyRespectively(
                     firstPath =>
                     {
-                        firstPath.Should().Be("custom");
+                        firstPath.Path.Should().Be("custom");
                     });
             });
     }

@@ -1,5 +1,6 @@
 using Heroes.XmlData.StormData;
 using Heroes.XmlData.StormMods;
+using Heroes.XmlData.Tests;
 using System.Collections.Concurrent;
 using System.Data;
 
@@ -88,7 +89,7 @@ public class HeroesPrefixNotationTests
                 "const",
                 new XAttribute("id", "$GazloweDethLazorLeechAmount"),
                 new XAttribute("value", "0.25")),
-            "custom");
+            TestHelpers.GetStormPath("custom"));
 
         // act
         double result = HeroesPrefixNotation.Compute(stormStorage, expression);
@@ -111,7 +112,7 @@ public class HeroesPrefixNotationTests
                 "const",
                 new XAttribute("id", "$GazloweDethLazorLeechAmount"),
                 new XAttribute("value", "0.25")),
-            "custom");
+            TestHelpers.GetStormPath("custom"));
 
         // act
         double result = HeroesPrefixNotation.Compute(stormStorage, expression);
