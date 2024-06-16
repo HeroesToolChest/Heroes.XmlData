@@ -236,7 +236,6 @@ internal partial class StormStorage : IStormStorage
             else
                 currentStormCache.StormElementsByDataObjectType[dataObjectType].Add(idAtt, new StormElement(stormXElementValuePath));
         }
-
     }
 
     public void SetFontStyleCache(StormModType stormModType, XDocument document, StormPath stormPath)
@@ -260,8 +259,6 @@ internal partial class StormStorage : IStormStorage
                 return;
 
             currentStormCache.StormStyleConstantsByName[name] = new StormElement(new StormXElementValuePath(element, stormPath));
-
-            //currentStormCache.StormStyleConstantsHexColorValueByName[name] = new StormStringValue(val, filePath);
         }
         else if (elementName.Equals("Style", StringComparison.OrdinalIgnoreCase))
         {
@@ -270,27 +267,7 @@ internal partial class StormStorage : IStormStorage
             if (string.IsNullOrEmpty(name))
                 return;
 
-            //if (textColor[0] == '#')
-            //{
-            //    if (TryGetStormStyleHexColorValue(textColor[1..], out StormStringValue? stormStringValue))
-            //    {
-
-            //    }
-            //   // if (TryGetStormStyleConstantsHexColorValue(textColor[1..], out StormStringValue? stormStringValue))
-            //   //     currentStormCache.StormStyleHexColorValueByName[name] = new StormStringValue(stormStringValue.Value, filePath);
-            //}
-            //else
-            //{
-
             currentStormCache.StormStyleStylesByName[name] = new StormElement(new StormXElementValuePath(element, stormPath));
-            //currentStormCache.StormStyleHexColorValueByName[name] = new StormStringValue(textColor, filePath);
-            //}
-
-            // TODO: needed anymore?
-            // else if (!textColor.Contains(',', StringComparison.OrdinalIgnoreCase))
-            // {
-            //     _stormStyleHexColorValueByName.TryAdd(name, textColor);
-            // }
         }
     }
 
@@ -313,52 +290,20 @@ internal partial class StormStorage : IStormStorage
                 StormStringValue stormStringValue = new(value, stormPath);
 
                 currentStormCache.ScaleValueByEntry[new(catalog, entry, field)] = stormStringValue;
-
-                //string? newField = AddDefaultIndexerToMultiFields(field);
-
-                //if (!string.IsNullOrWhiteSpace(newField))
-                //{
-                //    currentStormCache.ScaleValueByEntry[new(catalog, entry, newField)] = stormStringValue;
-                //}
-
-
-
-                //AddScaleValueData(currentStormCache, catalog, entry, field, stormStringValue);
-
-                //string? newField = AddDefaultIndexerToMultiFields(field);
-
-                //if (!string.IsNullOrWhiteSpace(newField))
-                //{
-                //    AddScaleValueData(currentStormCache, catalog, entry, newField, stormStringValue);
-                //}
             }
         }
-
-
     }
 
     public void BuildDataForScalingAttributes(StormModType stormModType)
     {
         StormCache currentStormCache = GetCurrentStormCache(stormModType);
 
-
-        //var scalingStormElements = currentStormCache.ScaleValueStormElementsByDataObjectType;
-
-        //foreach (var scalingElement in scalingStormElements)
-        //{
-        //    foreach (var stormElmement in scalingElement.Value)
-        //    {
-
-        //    }
-        //}
         Dictionary<LevelScalingEntry, StormStringValue> scaleValuesByEntry = currentStormCache.ScaleValueByEntry;
 
         foreach (var scaling in scaleValuesByEntry)
         {
             LevelScalingEntry levelScalingEntry = scaling.Key;
             StormStringValue stormStringValue = scaling.Value;
-
-            //AddScaleValueData(currentStormCache, levelScalingEntry, stormStringValue);
 
             StormElement? stormElement = ScaleValueParser.CreateStormElement(this, new LevelScalingEntry(levelScalingEntry.Catalog, levelScalingEntry.Entry, levelScalingEntry.Field), stormStringValue);
 
@@ -372,37 +317,7 @@ internal partial class StormStorage : IStormStorage
                 else
                     currentStormCache.ScaleValueStormElementsByDataObjectType[levelScalingEntry.Catalog].Add(levelScalingEntry.Entry, stormElement);
             }
-
-            //string? newField = AddDefaultIndexerToMultiFields(levelScalingEntry.Field);
-
-            //if (!string.IsNullOrWhiteSpace(newField))
-            //{
-            //    AddScaleValueData(currentStormCache, new LevelScalingEntry(levelScalingEntry.Catalog, levelScalingEntry.Entry, newField), stormStringValue);
-            //}
-
-            //if (!_scaleValueParser.CreateStormElement(item.Key, item.Value))
-            //{
-            //    currentStormCache.ScaleValuesNotFoundList.Add(item);
-            //}
         }
-
-        //currentStormCache.ScaleValueByEntry.Clear();
-
-        //void AddScaleValueData(StormCache currentStormCache, LevelScalingEntry levelScalingEntry, StormStringValue stormStringValue)
-        //{
-        //    StormElement? stormElement = ScaleValueParser.CreateStormElement(this, new LevelScalingEntry(levelScalingEntry.Catalog, levelScalingEntry.Entry, levelScalingEntry.Field), stormStringValue);
-
-        //    if (stormElement is not null)
-        //    {
-        //        if (!currentStormCache.ScaleValueStormElementsByDataObjectType.ContainsKey(levelScalingEntry.Catalog))
-        //            currentStormCache.ScaleValueStormElementsByDataObjectType.Add(levelScalingEntry.Catalog, []);
-
-        //        if (TryGetExistingScaleValueStormElementByDataObjectType(levelScalingEntry.Catalog, levelScalingEntry.Entry, out StormElement? existingStormElement))
-        //            existingStormElement.AddValue(stormElement);
-        //        else
-        //            currentStormCache.ScaleValueStormElementsByDataObjectType[levelScalingEntry.Catalog].Add(levelScalingEntry.Entry, stormElement);
-        //    }
-        //}
     }
 
     public void ClearGamestrings()
@@ -425,48 +340,6 @@ internal partial class StormStorage : IStormStorage
     {
         return _stormModStorages.FirstOrDefault()?.BuildId;
     }
-
-    //private static void AddScalingValue(LevelScalingEntry levelScalingEntry, StormElement stormElement, StormStringValue stormStringValue)
-    //{
-    //    StormElementData currentElementData = stormElement.DataValues;
-    //    ReadOnlySpan<char> fieldSpan = levelScalingEntry.Field;
-    //    int splitterCount = fieldSpan.Count('.');
-
-    //    Span<Range> xmlParts = stackalloc Range[splitterCount + 1];
-
-    //    fieldSpan.Split(xmlParts, '.', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
-
-    //    DataRefParser.UpdateStormElementDataToLastFieldPart(currentElementData, levelScalingEntry.Field, xmlParts);
-
-    //    if (currentElementData.HasConstValue)
-    //    {
-    //        //return GetValueScale(currentElementData.ConstValue, fullPartSpan, xmlParts);
-    //    }
-    //    else if (currentElementData.HasValue)
-    //    {
-    //        if (currentElementData.HasTextIndex)
-    //            return GetValueScale(currentElementData.Value, fullPartSpan, xmlParts, currentElementData.KeyValueDataPairs.First().Key);
-    //        else
-    //            return GetValueScale(currentElementData.Value, fullPartSpan, xmlParts);
-    //    }
-    //    else if (stormElement.HasParentId)
-    //    {
-    //        // check the parents
-    //        return ParseStormElement(fullPartSpan, stormElement.ParentId, xmlParts);
-    //    }
-    //    else if (currentElementType == ElementType.Normal)
-    //    {
-    //        // then check the element type, which has no id attribute
-    //        return ParseStormElementType(stormElement.ElementType, fullPartSpan, xmlParts);
-    //    }
-    //    else if (currentElementType == ElementType.Type)
-    //    {
-    //        // then check the base element type, may not be the correct one, but close enough
-    //        return ParseBaseElementType(stormElement.ElementType, fullPartSpan, xmlParts);
-    //    }
-
-    //    stormElement.DataValues.KeyValueDataPairs.Add(_scaleAttributeName, new StormElementData(stormStringValue.Value));
-    //}
 
     private void AddRootDefaults()
     {

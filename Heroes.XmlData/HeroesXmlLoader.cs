@@ -169,8 +169,8 @@ public class HeroesXmlLoader
     /// <returns>The current <see cref="HeroesXmlLoader"/> instance.</returns>
     public HeroesXmlLoader AddGameStrings(IEnumerable<string> gameStrings)
     {
-       // foreach (string item in gameStrings)
-          //  _stormStorage.StormCustomCache.AddGameString(item, _customPath);
+        // foreach (string item in gameStrings)
+        //  _stormStorage.StormCustomCache.AddGameString(item, _customPath);
 
         return this;
     }
@@ -184,7 +184,7 @@ public class HeroesXmlLoader
     public HeroesXmlLoader AddConstantElements(IEnumerable<XElement> elements)
     {
         //foreach (XElement item in elements)
-          //  _stormStorage.StormCustomCache.AddConstantElement(item, _customPath);
+        //  _stormStorage.StormCustomCache.AddConstantElement(item, _customPath);
 
         return this;
     }

@@ -40,49 +40,42 @@ internal class GameStringParser
         double resultValue = 0;
         double? scaling = null;
 
-        try
+        using XmlObject xmlDataTag = XmlParser.Parse(dataTag);
+        XmlNode xmlRoot = xmlDataTag.Root;
+        XmlAttributeList xmlAttributes = xmlRoot.Attributes;
+
+        if (!((xmlAttributes.TryFind("precision", out XmlAttribute precisionAttribute) || xmlAttributes.TryFind("Precision", out precisionAttribute)) &&
+            precisionAttribute.Value.TryToInt32(out int precision)))
         {
-            using XmlObject xmlDataTag = XmlParser.Parse(dataTag);
-            XmlNode xmlRoot = xmlDataTag.Root;
-            XmlAttributeList xmlAttributes = xmlRoot.Attributes;
-
-            if (!((xmlAttributes.TryFind("precision", out XmlAttribute precisionAttribute) || xmlAttributes.TryFind("Precision", out precisionAttribute)) &&
-                precisionAttribute.Value.TryToInt32(out int precision)))
-            {
-                precision = 0;
-            }
-
-            if (xmlAttributes.TryFind("const", out XmlAttribute constAttribute))
-            {
-                Span<char> buffer = stackalloc char[constAttribute.Value.GetCharCount()];
-
-                Encoding.UTF8.TryGetChars(constAttribute.Value.AsSpan(), buffer, out int charsWritten);
-
-                if (_stormStorage.TryGetExistingConstantXElementById(buffer, out StormXElementValuePath? stormXElementValue))
-                {
-                    resultValue = _stormStorage.GetValueFromConstElementAsNumber(stormXElementValue.Value);
-                }
-            }
-            else if (xmlAttributes.TryFind("ref", out XmlAttribute refAttribute))
-            {
-                Span<char> buffer = stackalloc char[refAttribute.Value.GetCharCount()];
-
-                Encoding.UTF8.TryGetChars(refAttribute.Value.AsSpan(), buffer, out int charsWritten);
-
-                ValueScale valueScale = _dataRefParser.Parse(buffer);
-                resultValue = valueScale.Value;
-                scaling = valueScale.Scaling;
-            }
-
-            if (scaling.HasValue)
-                return new ValueScale(Math.Round(resultValue, precision), Math.Round(scaling.Value, MaxScalingLength));
-            else
-                return new ValueScale(Math.Round(resultValue, precision));
+            precision = 0;
         }
-        catch (Exception ex)
+
+        if (xmlAttributes.TryFind("const", out XmlAttribute constAttribute))
         {
-            throw;
+            Span<char> buffer = stackalloc char[constAttribute.Value.GetCharCount()];
+
+            Encoding.UTF8.TryGetChars(constAttribute.Value.AsSpan(), buffer, out int charsWritten);
+
+            if (_stormStorage.TryGetExistingConstantXElementById(buffer, out StormXElementValuePath? stormXElementValue))
+            {
+                resultValue = _stormStorage.GetValueFromConstElementAsNumber(stormXElementValue.Value);
+            }
         }
+        else if (xmlAttributes.TryFind("ref", out XmlAttribute refAttribute))
+        {
+            Span<char> buffer = stackalloc char[refAttribute.Value.GetCharCount()];
+
+            Encoding.UTF8.TryGetChars(refAttribute.Value.AsSpan(), buffer, out int charsWritten);
+
+            ValueScale valueScale = _dataRefParser.Parse(buffer);
+            resultValue = valueScale.Value;
+            scaling = valueScale.Scaling;
+        }
+
+        if (scaling.HasValue)
+            return new ValueScale(Math.Round(resultValue, precision), Math.Round(scaling.Value, MaxScalingLength));
+        else
+            return new ValueScale(Math.Round(resultValue, precision));
     }
 
     // <c val=\"#TooltipNumbers\">

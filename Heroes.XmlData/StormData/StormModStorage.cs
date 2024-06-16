@@ -79,8 +79,6 @@ internal class StormModStorage
         if (!_addedXmlDataFilePathsList.Add(stormPath))
             return;
 
-        //string modlessPath = GetModlessPath(stormFile.Path);
-
         if (isBaseGameDataDirectory)
             SetElementsForDataObjectTypes(document, stormPath);
         else
@@ -94,8 +92,6 @@ internal class StormModStorage
 
         if (!_addedXmlFontStyleFilePathsList.Add(stormPath))
             return;
-
-        //string modlessPath = GetModlessPath(stormFile.Path);
 
         _stormStorage.SetFontStyleCache(StormModType, document, stormPath);
     }
@@ -112,7 +108,7 @@ internal class StormModStorage
 
     public void ClearGameStrings()
     {
-       _gameStringsById.Clear();
+        _gameStringsById.Clear();
     }
 
     /// <inheritdoc/>

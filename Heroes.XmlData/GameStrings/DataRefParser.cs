@@ -37,17 +37,17 @@ internal class DataRefParser
                 // the part with out the indexer, e.g. PeriodicPeriodArray
                 ReadOnlySpan<char> fieldPartSpanWithoutIndexer = fieldPartSpan[..indexOfStartBracket];
 
-                if (currentElementData.KeyValueDataPairs.TryGetValue(fieldPartSpanWithoutIndexer.ToString(), out StormElementData? withoutIndexerStormElementData))
+                if (currentElementData.TryGetXmlData(fieldPartSpanWithoutIndexer.ToString(), out StormElementData? withoutIndexerStormElementData))
                 {
                     if (((numericalIndex is true && withoutIndexerStormElementData.HasNumericalIndex is true) ||
-                        (numericalIndex is false && withoutIndexerStormElementData.HasTextIndex is true)) && withoutIndexerStormElementData.KeyValueDataPairs.TryGetValue(fieldPartIndexValue.ToString(), out StormElementData? indexStormElementData))
+                        (numericalIndex is false && withoutIndexerStormElementData.HasTextIndex is true)) && withoutIndexerStormElementData.TryGetXmlData(fieldPartIndexValue.ToString(), out StormElementData? indexStormElementData))
                     {
                         currentElementData = indexStormElementData;
                     }
                     else if (numericalIndex is true && withoutIndexerStormElementData.HasTextIndex is true &&
-                        withoutIndexerStormElementData.KeyValueDataPairs.Keys.Count > 0 && indexAsNumber < withoutIndexerStormElementData.KeyValueDataPairs.Keys.Count)
+                        withoutIndexerStormElementData.XmlDataCount > 0 && indexAsNumber < withoutIndexerStormElementData.XmlDataCount)
                     {
-                        currentElementData = withoutIndexerStormElementData.KeyValueDataPairs.ElementAt(indexAsNumber).Value;
+                        currentElementData = withoutIndexerStormElementData.ElementDataPairs.ElementAt(indexAsNumber).Value;
                     }
                     else if (numericalIndex is true)
                     {
@@ -70,8 +70,8 @@ internal class DataRefParser
                     }
                 }
             }
-            else if (currentElementData.KeyValueDataPairs.TryGetValue(fieldPartSpan.ToString(), out StormElementData? stormElementData) ||
-                ((currentElementData.HasNumericalIndex || currentElementData.HasTextIndex) && currentElementData.KeyValueDataPairs.First().Value.KeyValueDataPairs.TryGetValue(fieldPartSpan.ToString(), out stormElementData)))
+            else if (currentElementData.TryGetXmlData(fieldPartSpan.ToString(), out StormElementData? stormElementData) ||
+                ((currentElementData.HasNumericalIndex || currentElementData.HasTextIndex) && currentElementData.ElementDataPairs.First().Value.TryGetXmlData(fieldPartSpan.ToString(), out stormElementData)))
             {
                 currentElementData = stormElementData;
             }
@@ -231,26 +231,11 @@ internal class DataRefParser
     private ValueScale ParseStormElement(ReadOnlySpan<char> fullPartSpan, ReadOnlySpan<char> entry, ReadOnlySpan<Range> xmlParts)
     {
         StormElement? stormElement = _stormStorage.GetCompleteStormElement(entry, fullPartSpan[xmlParts[0]]);
-        //StormElement? stormElement = _heroesData.GetStormElement(fullPartSpan[xmlParts[0]], entry);
 
-        return ParseFields(stormElement, fullPartSpan, xmlParts); //, ElementType.Normal);
+        return ParseFields(stormElement, fullPartSpan, xmlParts);
     }
 
-    //private ValueScale ParseStormElementType(ReadOnlySpan<char> elementType, ReadOnlySpan<char> fullPartSpan, ReadOnlySpan<Range> xmlParts)
-    //{
-    //    StormElement? stormElement = _heroesData.GetStormElement(elementType);
-
-    //    return ParseFields(stormElement, fullPartSpan, xmlParts, ElementType.Type);
-    //}
-
-    //private ValueScale ParseBaseElementType(ReadOnlySpan<char> elementType, ReadOnlySpan<char> fullPartSpan, ReadOnlySpan<Range> xmlParts)
-    //{
-    //    StormElement? stormElement = _heroesData.GetBaseStormElement(elementType);
-
-    //    return ParseFields(stormElement, fullPartSpan, xmlParts, ElementType.Base);
-    //}
-
-    private ValueScale ParseFields(StormElement? stormElement, ReadOnlySpan<char> fullPartSpan, ReadOnlySpan<Range> xmlParts) //, ElementType parseAs)
+    private ValueScale ParseFields(StormElement? stormElement, ReadOnlySpan<char> fullPartSpan, ReadOnlySpan<Range> xmlParts)
     {
         if (stormElement is not null)
         {
@@ -260,7 +245,7 @@ internal class DataRefParser
         return new ValueScale(0);
     }
 
-    private ValueScale ParseFieldParts(StormElement stormElement, ReadOnlySpan<char> fullPartSpan, ReadOnlySpan<Range> xmlParts) //, ElementType currentElementType)
+    private ValueScale ParseFieldParts(StormElement stormElement, ReadOnlySpan<char> fullPartSpan, ReadOnlySpan<Range> xmlParts)
     {
         StormElementData currentElementData = stormElement.DataValues;
 
@@ -275,25 +260,10 @@ internal class DataRefParser
         else if (currentElementData.HasValue)
         {
             if (currentElementData.HasTextIndex)
-                return GetValueScale(currentElementData.Value, fullPartSpan, xmlParts, currentElementData.KeyValueDataPairs.First().Key);
+                return GetValueScale(currentElementData.Value, fullPartSpan, xmlParts, currentElementData.ElementDataPairs.First().Key);
             else
                 return GetValueScale(currentElementData.Value, fullPartSpan, xmlParts);
         }
-        //else if (stormElement.HasParentId)
-        //{
-        //    // check the parents
-        //    return ParseStormElement(fullPartSpan, stormElement.ParentId, xmlParts);
-        //}
-        //else if (currentElementType == ElementType.Normal)
-        //{
-        //    // then check the element type, which has no id attribute
-        //    return ParseStormElementType(stormElement.ElementType, fullPartSpan, xmlParts);
-        //}
-        //else if (currentElementType == ElementType.Type)
-        //{
-        //    // then check the base element type, may not be the correct one, but close enough
-        //    return ParseBaseElementType(stormElement.ElementType, fullPartSpan, xmlParts);
-        //}
 
         return new ValueScale(0);
     }
@@ -309,7 +279,7 @@ internal class DataRefParser
             StormElementData stormElementData = GetStormElementDataFromLastFieldPart(scalingStormElement.DataValues, fullSpan, xmlParts[2..]);
 
             // AmountArray[Quest]
-            if (!fieldIndexer.IsEmpty && stormElementData.KeyValueDataPairs.TryGetValue(fieldIndexer.ToString(), out StormElementData? innerIndexData))
+            if (!fieldIndexer.IsEmpty && stormElementData.TryGetXmlData(fieldIndexer.ToString(), out StormElementData? innerIndexData))
             {
                 stormElementData = innerIndexData;
             }

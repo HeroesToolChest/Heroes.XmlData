@@ -140,7 +140,6 @@ public class StormElement : IXmlData
     /// <inheritdoc/>
     public bool TryGetXmlData(string index, [NotNullWhen(true)] out StormElementData? stormElementData)
     {
-
         return DataValues.TryGetXmlData(index.ToString(), out stormElementData);
     }
 
