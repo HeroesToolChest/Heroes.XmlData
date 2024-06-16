@@ -6,7 +6,7 @@ namespace Heroes.XmlData.StormData;
 /// Contains the data for an <see cref="XElement"/>.
 /// </summary>
 [DebuggerDisplay("{DebuggerDisplay,nq}")]
-public class StormElement
+public class StormElement : IXmlData
 {
     private const string _idAttribute = "id";
     private const string _parentAttribute = "parent";
@@ -64,7 +64,7 @@ public class StormElement
         get
         {
             if (HasId)
-                return DataValues.KeyValueDataPairs[_idAttribute].Value;
+                return DataValues.ElementDataPairs[_idAttribute].Value;
             else
                 return null;
         }
@@ -78,7 +78,7 @@ public class StormElement
         get
         {
             if (HasParentId)
-                return DataValues.KeyValueDataPairs[_parentAttribute].Value;
+                return DataValues.ElementDataPairs[_parentAttribute].Value;
             else
                 return null;
         }
@@ -88,13 +88,16 @@ public class StormElement
     /// Gets a value indicating whether <see cref="Id"/> exists or not.
     /// </summary>
     [MemberNotNullWhen(true, nameof(Id))]
-    public bool HasId => DataValues.KeyValueDataPairs.ContainsKey(_idAttribute);
+    public bool HasId => DataValues.ElementDataPairs.ContainsKey(_idAttribute);
 
     /// <summary>
     /// Gets a value indicating whether <see cref="ParentId"/> exists or not.
     /// </summary>
     [MemberNotNullWhen(true, nameof(ParentId))]
-    public bool HasParentId => DataValues.KeyValueDataPairs.ContainsKey(_parentAttribute);
+    public bool HasParentId => DataValues.ElementDataPairs.ContainsKey(_parentAttribute);
+
+    /// <inheritdoc/>
+    public int XmlDataCount => DataValues.ElementDataPairs.Count;
 
     [DebuggerBrowsable(DebuggerBrowsableState.RootHidden)]
     private string DebuggerDisplay
@@ -113,6 +116,40 @@ public class StormElement
                 display = $"<{ElementType}>";
 
             return display;
+        }
+    }
+
+    /// <inheritdoc/>
+    public StormElementData GetXmlData(ReadOnlySpan<char> index)
+    {
+        return DataValues.GetXmlData(index);
+    }
+
+    /// <inheritdoc/>
+    public StormElementData GetXmlData(string index)
+    {
+        return DataValues.GetXmlData(index);
+    }
+
+    /// <inheritdoc/>
+    public bool TryGetXmlData(ReadOnlySpan<char> index, [NotNullWhen(true)] out StormElementData? stormElementData)
+    {
+        return DataValues.TryGetXmlData(index, out stormElementData);
+    }
+
+    /// <inheritdoc/>
+    public bool TryGetXmlData(string index, [NotNullWhen(true)] out StormElementData? stormElementData)
+    {
+
+        return DataValues.TryGetXmlData(index.ToString(), out stormElementData);
+    }
+
+    /// <inheritdoc/>
+    public IEnumerable<StormElementData> GetXmlData()
+    {
+        foreach (StormElementData data in DataValues.ElementDataPairs.Values)
+        {
+            yield return data;
         }
     }
 

@@ -4,7 +4,7 @@
 public class StormElementDataTests
 {
     [TestMethod]
-    public void StormElementData_AttributesAndElements_ShouldBeSavedAsSameLevelPair()
+    public void StormElementData_AttributesAndElements_ShouldBeSavedAsSameLevelXmlData()
     {
         // arrange
         XElement xElement = new(
@@ -18,14 +18,14 @@ public class StormElementDataTests
         StormElementData stormElementData = new(xElement);
 
         // assert
-        stormElementData.KeyValueDataPairs["default"].HasValue.Should().BeTrue();
-        stormElementData.KeyValueDataPairs["default"].Value.Should().Be("1");
-        stormElementData.KeyValueDataPairs["name"].HasValue.Should().BeTrue();
-        stormElementData.KeyValueDataPairs["name"].Value.Should().Be("Abil/Name/abil1");
+        stormElementData.GetXmlData("default").HasValue.Should().BeTrue();
+        stormElementData.GetXmlData("default").Value.Should().Be("1");
+        stormElementData.GetXmlData("name").HasValue.Should().BeTrue();
+        stormElementData.GetXmlData("name").Value.Should().Be("Abil/Name/abil1");
     }
 
     [TestMethod]
-    public void StormElementData_EquivalentAttributAndElement_SameKeyValuePair()
+    public void StormElementData_EquivalentAttributAndElement_SameXmlData()
     {
         // arrange
         XElement withAttributes = new(
@@ -43,12 +43,12 @@ public class StormElementDataTests
         StormElementData asElement = new(withElement);
 
         // assert
-        asAttributes.KeyValueDataPairs["default"].Value.Should().Be("1");
-        asElement.KeyValueDataPairs["default"].Value.Should().Be("1");
+        asAttributes.GetXmlData("default").Value.Should().Be("1");
+        asElement.GetXmlData("default").Value.Should().Be("1");
     }
 
     [TestMethod]
-    public void StormElementData_EquivalentArrayAttributAndElement_SameKeyValuePairs()
+    public void StormElementData_EquivalentArrayAttributAndElement_SameXmlData()
     {
         // arrange
         XElement withAttributes = new(
@@ -71,15 +71,15 @@ public class StormElementDataTests
         StormElementData stormElementDataAsElements = new(withElements);
 
         // assert
-        stormElementDataAsAttributes.KeyValueDataPairs["OrderArray"].KeyValueDataPairs["0"].KeyValueDataPairs["LineTexture"].KeyValueDataPairs["0"].Value.Should().Be("Assets\\Textures\\Storm_WayPointLine.dds");
-        stormElementDataAsElements.KeyValueDataPairs["OrderArray"].KeyValueDataPairs["0"].KeyValueDataPairs["LineTexture"].KeyValueDataPairs["0"].Value.Should().Be("Assets\\Textures\\Storm_WayPointLine.dds");
+        stormElementDataAsAttributes.GetXmlData("OrderArray").GetXmlData("0").GetXmlData("LineTexture").GetXmlData("0").Value.Should().Be("Assets\\Textures\\Storm_WayPointLine.dds");
+        stormElementDataAsElements.GetXmlData("OrderArray").GetXmlData("0").GetXmlData("LineTexture").GetXmlData("0").Value.Should().Be("Assets\\Textures\\Storm_WayPointLine.dds");
 
-        stormElementDataAsAttributes.KeyValueDataPairs["OrderArray"].KeyValueDataPairs["0"].KeyValueDataPairs["LineTexture"].KeyValueDataPairs["0"].KeyValueDataPairs.Count.Should().Be(0);
-        stormElementDataAsElements.KeyValueDataPairs["OrderArray"].KeyValueDataPairs["0"].KeyValueDataPairs["LineTexture"].KeyValueDataPairs["0"].KeyValueDataPairs.Count.Should().Be(0);
+        stormElementDataAsAttributes.GetXmlData("OrderArray").GetXmlData("0").GetXmlData("LineTexture").GetXmlData("0").XmlDataCount.Should().Be(0);
+        stormElementDataAsElements.GetXmlData("OrderArray").GetXmlData("0").GetXmlData("LineTexture").GetXmlData("0").XmlDataCount.Should().Be(0);
     }
 
     [TestMethod]
-    public void StormElementData_ArrayWithTextIndex_InnerDataHasSharedKey()
+    public void StormElementData_ArrayWithTextIndex_InnerDataHasSharedIndex()
     {
         // arrange
         XElement element = new(
@@ -98,12 +98,12 @@ public class StormElementDataTests
         StormElementData data = new(element);
 
         // assert
-        data.KeyValueDataPairs["SharedFlags"].KeyValueDataPairs["DisableWhileDead"].Value.Should().Be("1");
-        data.KeyValueDataPairs["SharedFlags"].KeyValueDataPairs["AllowQuickCastCustomization"].Value.Should().Be("1");
+        data.GetXmlData("SharedFlags").GetXmlData("DisableWhileDead").Value.Should().Be("1");
+        data.GetXmlData("SharedFlags").GetXmlData("AllowQuickCastCustomization").Value.Should().Be("1");
     }
 
     [TestMethod]
-    public void StormElementData_ElementWithNoIndexHasAttributesAndElement_AttributeAndElementOnSameLevelKey()
+    public void StormElementData_ElementWithNoIndexHasAttributesAndElement_AttributeAndElementOnSameLevelIndex()
     {
         // arrange
         XElement element = new(
@@ -124,9 +124,9 @@ public class StormElementDataTests
         StormElementData data = new(element);
 
         // assert
-        data.KeyValueDataPairs["ConditionalEvents"].KeyValueDataPairs["0"].KeyValueDataPairs["Compare"].Value.Should().Be("GE");
-        data.KeyValueDataPairs["ConditionalEvents"].KeyValueDataPairs["0"].KeyValueDataPairs["CompareValue"].Value.Should().Be("15");
-        data.KeyValueDataPairs["ConditionalEvents"].KeyValueDataPairs["0"].KeyValueDataPairs["Event"].KeyValueDataPairs["0"].KeyValueDataPairs["Effect"].Value.Should().Be("KelThuzadMasterOfTheColdDarkTier1ModifyPlayer");
+        data.GetXmlData("ConditionalEvents").GetXmlData("0").GetXmlData("Compare").Value.Should().Be("GE");
+        data.GetXmlData("ConditionalEvents").GetXmlData("0").GetXmlData("CompareValue").Value.Should().Be("15");
+        data.GetXmlData("ConditionalEvents").GetXmlData("0").GetXmlData("Event").GetXmlData("0").GetXmlData("Effect").Value.Should().Be("KelThuzadMasterOfTheColdDarkTier1ModifyPlayer");
     }
 
     [TestMethod]
@@ -167,17 +167,17 @@ public class StormElementDataTests
         StormElementData data = new(element);
 
         // assert
-        data.KeyValueDataPairs["AbilityModificationArray"].KeyValueDataPairs["0"].KeyValueDataPairs["Modifications"].KeyValueDataPairs["0"].KeyValueDataPairs["Field"].Value.Should().Be("AreaArray[0].Radius");
-        data.KeyValueDataPairs["AbilityModificationArray"].KeyValueDataPairs["0"].KeyValueDataPairs["Modifications"].KeyValueDataPairs["0"].KeyValueDataPairs["Value"].Value.Should().Be("1.600000");
-        data.KeyValueDataPairs["AbilityModificationArray"].KeyValueDataPairs["0"].KeyValueDataPairs["Modifications"].KeyValueDataPairs["0"].KeyValueDataPairs["Value"].KeyValueDataPairs["0"].Value.Should().Be("1.600000");
+        data.GetXmlData("AbilityModificationArray").GetXmlData("0").GetXmlData("Modifications").GetXmlData("0").GetXmlData("Field").Value.Should().Be("AreaArray[0].Radius");
+        data.GetXmlData("AbilityModificationArray").GetXmlData("0").GetXmlData("Modifications").GetXmlData("0").GetXmlData("Value").Value.Should().Be("1.600000");
+        data.GetXmlData("AbilityModificationArray").GetXmlData("0").GetXmlData("Modifications").GetXmlData("0").GetXmlData("Value").GetXmlData("0").Value.Should().Be("1.600000");
 
-        data.KeyValueDataPairs["AbilityModificationArray"].KeyValueDataPairs["0"].KeyValueDataPairs["Modifications"].KeyValueDataPairs["2"].KeyValueDataPairs["Field"].Value.Should().Be("AnubarakBurrowChargeCursorSplat");
-        data.KeyValueDataPairs["AbilityModificationArray"].KeyValueDataPairs["0"].KeyValueDataPairs["Modifications"].KeyValueDataPairs["2"].KeyValueDataPairs["Value"].Value.Should().Be("0.600000");
-        data.KeyValueDataPairs["AbilityModificationArray"].KeyValueDataPairs["0"].KeyValueDataPairs["Modifications"].KeyValueDataPairs["2"].KeyValueDataPairs["Value"].KeyValueDataPairs["0"].Value.Should().Be("0.600000");
+        data.GetXmlData("AbilityModificationArray").GetXmlData("0").GetXmlData("Modifications").GetXmlData("2").GetXmlData("Field").Value.Should().Be("AnubarakBurrowChargeCursorSplat");
+        data.GetXmlData("AbilityModificationArray").GetXmlData("0").GetXmlData("Modifications").GetXmlData("2").GetXmlData("Value").Value.Should().Be("0.600000");
+        data.GetXmlData("AbilityModificationArray").GetXmlData("0").GetXmlData("Modifications").GetXmlData("2").GetXmlData("Value").GetXmlData("0").Value.Should().Be("0.600000");
     }
 
     [TestMethod]
-    public void StormElementData_NumbericalIndexes_ShouldReturnTrue()
+    public void StormElementData_NumericalIndexes_ShouldReturnTrue()
     {
         // arrange
         XElement element = new(
@@ -198,19 +198,19 @@ public class StormElementDataTests
         StormElementData data = new(element);
 
         // assert
-        data.KeyValueDataPairs["OrderArray"].HasNumericalIndex.Should().BeTrue();
+        data.GetXmlData("OrderArray").HasNumericalIndex.Should().BeTrue();
 
-        data.KeyValueDataPairs["OrderArray"].KeyValueDataPairs["0"].HasNumericalIndex.Should().BeFalse();
-        data.KeyValueDataPairs["OrderArray"].KeyValueDataPairs["0"].KeyValueDataPairs["LineTexture"].HasNumericalIndex.Should().BeTrue();
-        data.KeyValueDataPairs["OrderArray"].KeyValueDataPairs["0"].KeyValueDataPairs["LineTexture"].KeyValueDataPairs["0"].Value.Should().Be("Assets\\Textures\\Storm_WayPointLine0.dds");
+        data.GetXmlData("OrderArray").GetXmlData("0").HasNumericalIndex.Should().BeFalse();
+        data.GetXmlData("OrderArray").GetXmlData("0").GetXmlData("LineTexture").HasNumericalIndex.Should().BeTrue();
+        data.GetXmlData("OrderArray").GetXmlData("0").GetXmlData("LineTexture").GetXmlData("0").Value.Should().Be("Assets\\Textures\\Storm_WayPointLine0.dds");
 
-        data.KeyValueDataPairs["OrderArray"].KeyValueDataPairs["1"].HasNumericalIndex.Should().BeFalse();
-        data.KeyValueDataPairs["OrderArray"].KeyValueDataPairs["1"].KeyValueDataPairs["LineTexture"].HasNumericalIndex.Should().BeTrue();
-        data.KeyValueDataPairs["OrderArray"].KeyValueDataPairs["1"].KeyValueDataPairs["LineTexture"].KeyValueDataPairs["0"].Value.Should().Be("Assets\\Textures\\Storm_WayPointLine1.dds");
+        data.GetXmlData("OrderArray").GetXmlData("1").HasNumericalIndex.Should().BeFalse();
+        data.GetXmlData("OrderArray").GetXmlData("1").GetXmlData("LineTexture").HasNumericalIndex.Should().BeTrue();
+        data.GetXmlData("OrderArray").GetXmlData("1").GetXmlData("LineTexture").GetXmlData("0").Value.Should().Be("Assets\\Textures\\Storm_WayPointLine1.dds");
 
-        data.KeyValueDataPairs["OrderArray"].KeyValueDataPairs["2"].HasNumericalIndex.Should().BeFalse();
-        data.KeyValueDataPairs["OrderArray"].KeyValueDataPairs["2"].KeyValueDataPairs["LineTexture"].HasNumericalIndex.Should().BeTrue();
-        data.KeyValueDataPairs["OrderArray"].KeyValueDataPairs["2"].KeyValueDataPairs["LineTexture"].KeyValueDataPairs["0"].Value.Should().Be("Assets\\Textures\\Storm_WayPointLine2.dds");
+        data.GetXmlData("OrderArray").GetXmlData("2").HasNumericalIndex.Should().BeFalse();
+        data.GetXmlData("OrderArray").GetXmlData("2").GetXmlData("LineTexture").HasNumericalIndex.Should().BeTrue();
+        data.GetXmlData("OrderArray").GetXmlData("2").GetXmlData("LineTexture").GetXmlData("0").Value.Should().Be("Assets\\Textures\\Storm_WayPointLine2.dds");
     }
 
     [TestMethod]
@@ -242,19 +242,19 @@ public class StormElementDataTests
         StormElementData data = new(element);
 
         // assert
-        data.KeyValueDataPairs["HeroAbilArray"].HasNumericalIndex.Should().BeTrue();
+        data.GetXmlData("HeroAbilArray").HasNumericalIndex.Should().BeTrue();
 
-        data.KeyValueDataPairs["HeroAbilArray"].KeyValueDataPairs["0"].KeyValueDataPairs["Abil"].KeyValueDataPairs["0"].Value.Should().Be("KelThuzadDeathAndDecay");
-        data.KeyValueDataPairs["HeroAbilArray"].KeyValueDataPairs["0"].KeyValueDataPairs["Abil"].HasNumericalIndex.Should().BeTrue();
-        data.KeyValueDataPairs["HeroAbilArray"].KeyValueDataPairs["0"].KeyValueDataPairs["Flags"].KeyValueDataPairs["ShowInHeroSelect"].Value.Should().Be("1");
-        data.KeyValueDataPairs["HeroAbilArray"].KeyValueDataPairs["0"].KeyValueDataPairs["Flags"].HasNumericalIndex.Should().BeFalse();
-        data.KeyValueDataPairs["HeroAbilArray"].KeyValueDataPairs["0"].KeyValueDataPairs["Flags"].HasTextIndex.Should().BeTrue();
+        data.GetXmlData("HeroAbilArray").GetXmlData("0").GetXmlData("Abil").GetXmlData("0").Value.Should().Be("KelThuzadDeathAndDecay");
+        data.GetXmlData("HeroAbilArray").GetXmlData("0").GetXmlData("Abil").HasNumericalIndex.Should().BeTrue();
+        data.GetXmlData("HeroAbilArray").GetXmlData("0").GetXmlData("Flags").GetXmlData("ShowInHeroSelect").Value.Should().Be("1");
+        data.GetXmlData("HeroAbilArray").GetXmlData("0").GetXmlData("Flags").HasNumericalIndex.Should().BeFalse();
+        data.GetXmlData("HeroAbilArray").GetXmlData("0").GetXmlData("Flags").HasTextIndex.Should().BeTrue();
 
-        data.KeyValueDataPairs["HeroAbilArray"].KeyValueDataPairs["2"].KeyValueDataPairs["Abil"].KeyValueDataPairs["0"].Value.Should().Be("KelThuzadChains");
-        data.KeyValueDataPairs["HeroAbilArray"].KeyValueDataPairs["2"].KeyValueDataPairs["Abil"].HasNumericalIndex.Should().BeTrue();
-        data.KeyValueDataPairs["HeroAbilArray"].KeyValueDataPairs["2"].KeyValueDataPairs["Flags"].KeyValueDataPairs["AffectedByOverdrive"].Value.Should().Be("1");
-        data.KeyValueDataPairs["HeroAbilArray"].KeyValueDataPairs["2"].KeyValueDataPairs["Flags"].HasNumericalIndex.Should().BeFalse();
-        data.KeyValueDataPairs["HeroAbilArray"].KeyValueDataPairs["2"].KeyValueDataPairs["Flags"].HasTextIndex.Should().BeTrue();
+        data.GetXmlData("HeroAbilArray").GetXmlData("2").GetXmlData("Abil").GetXmlData("0").Value.Should().Be("KelThuzadChains");
+        data.GetXmlData("HeroAbilArray").GetXmlData("2").GetXmlData("Abil").HasNumericalIndex.Should().BeTrue();
+        data.GetXmlData("HeroAbilArray").GetXmlData("2").GetXmlData("Flags").GetXmlData("AffectedByOverdrive").Value.Should().Be("1");
+        data.GetXmlData("HeroAbilArray").GetXmlData("2").GetXmlData("Flags").HasNumericalIndex.Should().BeFalse();
+        data.GetXmlData("HeroAbilArray").GetXmlData("2").GetXmlData("Flags").HasTextIndex.Should().BeTrue();
     }
 
     [TestMethod]
@@ -286,21 +286,21 @@ public class StormElementDataTests
         StormElementData data = new(element);
 
         // assert
-        data.KeyValueDataPairs["HeroAbilArray"].HasNumericalIndex.Should().BeTrue();
+        data.GetXmlData("HeroAbilArray").HasNumericalIndex.Should().BeTrue();
 
-        data.KeyValueDataPairs["HeroAbilArray"].KeyValueDataPairs["0"].KeyValueDataPairs["Abil"].KeyValueDataPairs["0"].Value.Should().Be("KelThuzadDeathAndDecay");
-        data.KeyValueDataPairs["HeroAbilArray"].KeyValueDataPairs["0"].KeyValueDataPairs["Abil"].HasNumericalIndex.Should().BeTrue();
-        data.KeyValueDataPairs["HeroAbilArray"].KeyValueDataPairs["0"].KeyValueDataPairs["Abil"].HasTextIndex.Should().BeFalse();
-        data.KeyValueDataPairs["HeroAbilArray"].KeyValueDataPairs["0"].KeyValueDataPairs["Flags"].KeyValueDataPairs["0"].Value.Should().Be("1");
-        data.KeyValueDataPairs["HeroAbilArray"].KeyValueDataPairs["0"].KeyValueDataPairs["Flags"].HasNumericalIndex.Should().BeTrue();
-        data.KeyValueDataPairs["HeroAbilArray"].KeyValueDataPairs["0"].KeyValueDataPairs["Flags"].HasTextIndex.Should().BeFalse();
+        data.GetXmlData("HeroAbilArray").GetXmlData("0").GetXmlData("Abil").GetXmlData("0").Value.Should().Be("KelThuzadDeathAndDecay");
+        data.GetXmlData("HeroAbilArray").GetXmlData("0").GetXmlData("Abil").HasNumericalIndex.Should().BeTrue();
+        data.GetXmlData("HeroAbilArray").GetXmlData("0").GetXmlData("Abil").HasTextIndex.Should().BeFalse();
+        data.GetXmlData("HeroAbilArray").GetXmlData("0").GetXmlData("Flags").GetXmlData("0").Value.Should().Be("1");
+        data.GetXmlData("HeroAbilArray").GetXmlData("0").GetXmlData("Flags").HasNumericalIndex.Should().BeTrue();
+        data.GetXmlData("HeroAbilArray").GetXmlData("0").GetXmlData("Flags").HasTextIndex.Should().BeFalse();
 
-        data.KeyValueDataPairs["HeroAbilArray"].KeyValueDataPairs["2"].KeyValueDataPairs["Abil"].KeyValueDataPairs["0"].Value.Should().Be("KelThuzadChains");
-        data.KeyValueDataPairs["HeroAbilArray"].KeyValueDataPairs["2"].KeyValueDataPairs["Abil"].HasNumericalIndex.Should().BeTrue();
-        data.KeyValueDataPairs["HeroAbilArray"].KeyValueDataPairs["2"].KeyValueDataPairs["Abil"].HasTextIndex.Should().BeFalse();
-        data.KeyValueDataPairs["HeroAbilArray"].KeyValueDataPairs["2"].KeyValueDataPairs["Flags"].KeyValueDataPairs["2"].Value.Should().Be("3");
-        data.KeyValueDataPairs["HeroAbilArray"].KeyValueDataPairs["2"].KeyValueDataPairs["Flags"].HasNumericalIndex.Should().BeTrue();
-        data.KeyValueDataPairs["HeroAbilArray"].KeyValueDataPairs["2"].KeyValueDataPairs["Flags"].HasTextIndex.Should().BeFalse();
+        data.GetXmlData("HeroAbilArray").GetXmlData("2").GetXmlData("Abil").GetXmlData("0").Value.Should().Be("KelThuzadChains");
+        data.GetXmlData("HeroAbilArray").GetXmlData("2").GetXmlData("Abil").HasNumericalIndex.Should().BeTrue();
+        data.GetXmlData("HeroAbilArray").GetXmlData("2").GetXmlData("Abil").HasTextIndex.Should().BeFalse();
+        data.GetXmlData("HeroAbilArray").GetXmlData("2").GetXmlData("Flags").GetXmlData("2").Value.Should().Be("3");
+        data.GetXmlData("HeroAbilArray").GetXmlData("2").GetXmlData("Flags").HasNumericalIndex.Should().BeTrue();
+        data.GetXmlData("HeroAbilArray").GetXmlData("2").GetXmlData("Flags").HasTextIndex.Should().BeFalse();
     }
 
     [TestMethod]
@@ -319,8 +319,8 @@ public class StormElementDataTests
         StormElementData stormElementData = new(xElement);
 
         // assert
-        stormElementData.KeyValueDataPairs["Name"].HasConstValue.Should().BeTrue();
-        stormElementData.KeyValueDataPairs["Name"].ConstValue.Should().Be("SomeValue");
+        stormElementData.GetXmlData("Name").HasConstValue.Should().BeTrue();
+        stormElementData.GetXmlData("Name").ConstValue.Should().Be("SomeValue");
     }
 
     [TestMethod]
@@ -339,7 +339,7 @@ public class StormElementDataTests
         StormElementData stormElementData = new(xElement);
 
         // assert
-        stormElementData.KeyValueDataPairs["Name"].HasConstValue.Should().BeFalse();
+        stormElementData.GetXmlData("Name").HasConstValue.Should().BeFalse();
     }
 
     [TestMethod]
@@ -359,12 +359,12 @@ public class StormElementDataTests
         StormElementData stormElementData = new(xElement);
 
         // assert
-        stormElementData.KeyValueDataPairs["Damage"].HasHxdScale.Should().BeTrue();
-        stormElementData.KeyValueDataPairs["Damage"].ScaleValue.Should().Be("0.1");
+        stormElementData.GetXmlData("Damage").HasHxdScale.Should().BeTrue();
+        stormElementData.GetXmlData("Damage").ScaleValue.Should().Be("0.1");
     }
 
     [TestMethod]
-    public void Field_NumbericalIndexes_ReturnsCorrectFields()
+    public void Field_NumericalIndexes_ReturnsCorrectFields()
     {
         // arrange
         XElement element = new(
@@ -385,13 +385,13 @@ public class StormElementDataTests
         StormElementData data = new(element);
 
         // assert
-        data.KeyValueDataPairs["OrderArray"].Field.Should().Be("OrderArray");
-        data.KeyValueDataPairs["OrderArray"].KeyValueDataPairs["0"].Field.Should().Be("OrderArray[0]");
-        data.KeyValueDataPairs["OrderArray"].KeyValueDataPairs["0"].KeyValueDataPairs["LineTexture"].Field.Should().Be("OrderArray[0].LineTexture");
-        data.KeyValueDataPairs["OrderArray"].KeyValueDataPairs["1"].Field.Should().Be("OrderArray[1]");
-        data.KeyValueDataPairs["OrderArray"].KeyValueDataPairs["1"].KeyValueDataPairs["LineTexture"].Field.Should().Be("OrderArray[1].LineTexture");
-        data.KeyValueDataPairs["OrderArray"].KeyValueDataPairs["2"].Field.Should().Be("OrderArray[2]");
-        data.KeyValueDataPairs["OrderArray"].KeyValueDataPairs["2"].KeyValueDataPairs["LineTexture"].Field.Should().Be("OrderArray[2].LineTexture");
+        data.GetXmlData("OrderArray").Field.Should().Be("OrderArray");
+        data.GetXmlData("OrderArray").GetXmlData("0").Field.Should().Be("OrderArray[0]");
+        data.GetXmlData("OrderArray").GetXmlData("0").GetXmlData("LineTexture").Field.Should().Be("OrderArray[0].LineTexture");
+        data.GetXmlData("OrderArray").GetXmlData("1").Field.Should().Be("OrderArray[1]");
+        data.GetXmlData("OrderArray").GetXmlData("1").GetXmlData("LineTexture").Field.Should().Be("OrderArray[1].LineTexture");
+        data.GetXmlData("OrderArray").GetXmlData("2").Field.Should().Be("OrderArray[2]");
+        data.GetXmlData("OrderArray").GetXmlData("2").GetXmlData("LineTexture").Field.Should().Be("OrderArray[2].LineTexture");
     }
 
     [TestMethod]
@@ -423,21 +423,21 @@ public class StormElementDataTests
         StormElementData data = new(element);
 
         // assert
-        data.KeyValueDataPairs["HeroAbilArray"].Field.Should().Be("HeroAbilArray");
-        data.KeyValueDataPairs["HeroAbilArray"].KeyValueDataPairs["0"].KeyValueDataPairs["Abil"].KeyValueDataPairs["0"].Field.Should().Be("HeroAbilArray[0].Abil[0]");
-        data.KeyValueDataPairs["HeroAbilArray"].KeyValueDataPairs["0"].KeyValueDataPairs["Flags"].KeyValueDataPairs["ShowInHeroSelect"].Field.Should().Be("HeroAbilArray[0].Flags[ShowInHeroSelect]");
-        data.KeyValueDataPairs["HeroAbilArray"].KeyValueDataPairs["0"].KeyValueDataPairs["Flags"].KeyValueDataPairs["AffectedByCooldownReduction"].Field.Should().Be("HeroAbilArray[0].Flags[AffectedByCooldownReduction]");
-        data.KeyValueDataPairs["HeroAbilArray"].KeyValueDataPairs["0"].KeyValueDataPairs["Flags"].KeyValueDataPairs["AffectedByOverdrive"].Field.Should().Be("HeroAbilArray[0].Flags[AffectedByOverdrive]");
+        data.GetXmlData("HeroAbilArray").Field.Should().Be("HeroAbilArray");
+        data.GetXmlData("HeroAbilArray").GetXmlData("0").GetXmlData("Abil").GetXmlData("0").Field.Should().Be("HeroAbilArray[0].Abil[0]");
+        data.GetXmlData("HeroAbilArray").GetXmlData("0").GetXmlData("Flags").GetXmlData("ShowInHeroSelect").Field.Should().Be("HeroAbilArray[0].Flags[ShowInHeroSelect]");
+        data.GetXmlData("HeroAbilArray").GetXmlData("0").GetXmlData("Flags").GetXmlData("AffectedByCooldownReduction").Field.Should().Be("HeroAbilArray[0].Flags[AffectedByCooldownReduction]");
+        data.GetXmlData("HeroAbilArray").GetXmlData("0").GetXmlData("Flags").GetXmlData("AffectedByOverdrive").Field.Should().Be("HeroAbilArray[0].Flags[AffectedByOverdrive]");
 
-        data.KeyValueDataPairs["HeroAbilArray"].KeyValueDataPairs["1"].KeyValueDataPairs["Abil"].KeyValueDataPairs["0"].Field.Should().Be("HeroAbilArray[1].Abil[0]");
-        data.KeyValueDataPairs["HeroAbilArray"].KeyValueDataPairs["1"].KeyValueDataPairs["Flags"].KeyValueDataPairs["ShowInHeroSelect"].Field.Should().Be("HeroAbilArray[1].Flags[ShowInHeroSelect]");
-        data.KeyValueDataPairs["HeroAbilArray"].KeyValueDataPairs["1"].KeyValueDataPairs["Flags"].KeyValueDataPairs["AffectedByCooldownReduction"].Field.Should().Be("HeroAbilArray[1].Flags[AffectedByCooldownReduction]");
-        data.KeyValueDataPairs["HeroAbilArray"].KeyValueDataPairs["1"].KeyValueDataPairs["Flags"].KeyValueDataPairs["AffectedByOverdrive"].Field.Should().Be("HeroAbilArray[1].Flags[AffectedByOverdrive]");
+        data.GetXmlData("HeroAbilArray").GetXmlData("1").GetXmlData("Abil").GetXmlData("0").Field.Should().Be("HeroAbilArray[1].Abil[0]");
+        data.GetXmlData("HeroAbilArray").GetXmlData("1").GetXmlData("Flags").GetXmlData("ShowInHeroSelect").Field.Should().Be("HeroAbilArray[1].Flags[ShowInHeroSelect]");
+        data.GetXmlData("HeroAbilArray").GetXmlData("1").GetXmlData("Flags").GetXmlData("AffectedByCooldownReduction").Field.Should().Be("HeroAbilArray[1].Flags[AffectedByCooldownReduction]");
+        data.GetXmlData("HeroAbilArray").GetXmlData("1").GetXmlData("Flags").GetXmlData("AffectedByOverdrive").Field.Should().Be("HeroAbilArray[1].Flags[AffectedByOverdrive]");
 
-        data.KeyValueDataPairs["HeroAbilArray"].KeyValueDataPairs["2"].KeyValueDataPairs["Abil"].KeyValueDataPairs["0"].Field.Should().Be("HeroAbilArray[2].Abil[0]");
-        data.KeyValueDataPairs["HeroAbilArray"].KeyValueDataPairs["2"].KeyValueDataPairs["Flags"].KeyValueDataPairs["ShowInHeroSelect"].Field.Should().Be("HeroAbilArray[2].Flags[ShowInHeroSelect]");
-        data.KeyValueDataPairs["HeroAbilArray"].KeyValueDataPairs["2"].KeyValueDataPairs["Flags"].KeyValueDataPairs["AffectedByCooldownReduction"].Field.Should().Be("HeroAbilArray[2].Flags[AffectedByCooldownReduction]");
-        data.KeyValueDataPairs["HeroAbilArray"].KeyValueDataPairs["2"].KeyValueDataPairs["Flags"].KeyValueDataPairs["AffectedByOverdrive"].Field.Should().Be("HeroAbilArray[2].Flags[AffectedByOverdrive]");
+        data.GetXmlData("HeroAbilArray").GetXmlData("2").GetXmlData("Abil").GetXmlData("0").Field.Should().Be("HeroAbilArray[2].Abil[0]");
+        data.GetXmlData("HeroAbilArray").GetXmlData("2").GetXmlData("Flags").GetXmlData("ShowInHeroSelect").Field.Should().Be("HeroAbilArray[2].Flags[ShowInHeroSelect]");
+        data.GetXmlData("HeroAbilArray").GetXmlData("2").GetXmlData("Flags").GetXmlData("AffectedByCooldownReduction").Field.Should().Be("HeroAbilArray[2].Flags[AffectedByCooldownReduction]");
+        data.GetXmlData("HeroAbilArray").GetXmlData("2").GetXmlData("Flags").GetXmlData("AffectedByOverdrive").Field.Should().Be("HeroAbilArray[2].Flags[AffectedByOverdrive]");
     }
 
     [TestMethod]
@@ -469,21 +469,21 @@ public class StormElementDataTests
         StormElementData data = new(element);
 
         // assert
-        data.KeyValueDataPairs["HeroAbilArray"].Field.Should().Be("HeroAbilArray");
-        data.KeyValueDataPairs["HeroAbilArray"].KeyValueDataPairs["0"].KeyValueDataPairs["Abil"].KeyValueDataPairs["0"].Field.Should().Be("HeroAbilArray[0].Abil[0]");
-        data.KeyValueDataPairs["HeroAbilArray"].KeyValueDataPairs["0"].KeyValueDataPairs["Flags"].KeyValueDataPairs["0"].Field.Should().Be("HeroAbilArray[0].Flags[0]");
-        data.KeyValueDataPairs["HeroAbilArray"].KeyValueDataPairs["0"].KeyValueDataPairs["Flags"].KeyValueDataPairs["1"].Field.Should().Be("HeroAbilArray[0].Flags[1]");
-        data.KeyValueDataPairs["HeroAbilArray"].KeyValueDataPairs["0"].KeyValueDataPairs["Flags"].KeyValueDataPairs["2"].Field.Should().Be("HeroAbilArray[0].Flags[2]");
+        data.GetXmlData("HeroAbilArray").Field.Should().Be("HeroAbilArray");
+        data.GetXmlData("HeroAbilArray").GetXmlData("0").GetXmlData("Abil").GetXmlData("0").Field.Should().Be("HeroAbilArray[0].Abil[0]");
+        data.GetXmlData("HeroAbilArray").GetXmlData("0").GetXmlData("Flags").GetXmlData("0").Field.Should().Be("HeroAbilArray[0].Flags[0]");
+        data.GetXmlData("HeroAbilArray").GetXmlData("0").GetXmlData("Flags").GetXmlData("1").Field.Should().Be("HeroAbilArray[0].Flags[1]");
+        data.GetXmlData("HeroAbilArray").GetXmlData("0").GetXmlData("Flags").GetXmlData("2").Field.Should().Be("HeroAbilArray[0].Flags[2]");
 
-        data.KeyValueDataPairs["HeroAbilArray"].KeyValueDataPairs["1"].KeyValueDataPairs["Abil"].KeyValueDataPairs["0"].Field.Should().Be("HeroAbilArray[1].Abil[0]");
-        data.KeyValueDataPairs["HeroAbilArray"].KeyValueDataPairs["1"].KeyValueDataPairs["Flags"].KeyValueDataPairs["0"].Field.Should().Be("HeroAbilArray[1].Flags[0]");
-        data.KeyValueDataPairs["HeroAbilArray"].KeyValueDataPairs["1"].KeyValueDataPairs["Flags"].KeyValueDataPairs["1"].Field.Should().Be("HeroAbilArray[1].Flags[1]");
-        data.KeyValueDataPairs["HeroAbilArray"].KeyValueDataPairs["1"].KeyValueDataPairs["Flags"].KeyValueDataPairs["2"].Field.Should().Be("HeroAbilArray[1].Flags[2]");
+        data.GetXmlData("HeroAbilArray").GetXmlData("1").GetXmlData("Abil").GetXmlData("0").Field.Should().Be("HeroAbilArray[1].Abil[0]");
+        data.GetXmlData("HeroAbilArray").GetXmlData("1").GetXmlData("Flags").GetXmlData("0").Field.Should().Be("HeroAbilArray[1].Flags[0]");
+        data.GetXmlData("HeroAbilArray").GetXmlData("1").GetXmlData("Flags").GetXmlData("1").Field.Should().Be("HeroAbilArray[1].Flags[1]");
+        data.GetXmlData("HeroAbilArray").GetXmlData("1").GetXmlData("Flags").GetXmlData("2").Field.Should().Be("HeroAbilArray[1].Flags[2]");
 
-        data.KeyValueDataPairs["HeroAbilArray"].KeyValueDataPairs["2"].KeyValueDataPairs["Abil"].KeyValueDataPairs["0"].Field.Should().Be("HeroAbilArray[2].Abil[0]");
-        data.KeyValueDataPairs["HeroAbilArray"].KeyValueDataPairs["2"].KeyValueDataPairs["Flags"].KeyValueDataPairs["0"].Field.Should().Be("HeroAbilArray[2].Flags[0]");
-        data.KeyValueDataPairs["HeroAbilArray"].KeyValueDataPairs["2"].KeyValueDataPairs["Flags"].KeyValueDataPairs["1"].Field.Should().Be("HeroAbilArray[2].Flags[1]");
-        data.KeyValueDataPairs["HeroAbilArray"].KeyValueDataPairs["2"].KeyValueDataPairs["Flags"].KeyValueDataPairs["2"].Field.Should().Be("HeroAbilArray[2].Flags[2]");
+        data.GetXmlData("HeroAbilArray").GetXmlData("2").GetXmlData("Abil").GetXmlData("0").Field.Should().Be("HeroAbilArray[2].Abil[0]");
+        data.GetXmlData("HeroAbilArray").GetXmlData("2").GetXmlData("Flags").GetXmlData("0").Field.Should().Be("HeroAbilArray[2].Flags[0]");
+        data.GetXmlData("HeroAbilArray").GetXmlData("2").GetXmlData("Flags").GetXmlData("1").Field.Should().Be("HeroAbilArray[2].Flags[1]");
+        data.GetXmlData("HeroAbilArray").GetXmlData("2").GetXmlData("Flags").GetXmlData("2").Field.Should().Be("HeroAbilArray[2].Flags[2]");
     }
 
     [TestMethod]
@@ -502,6 +502,80 @@ public class StormElementDataTests
         StormElementData stormElementData = new(xElement);
 
         // assert
-        stormElementData.KeyValueDataPairs["Name"].Field.Should().Be("Name");
+        stormElementData.GetXmlData("Name").Field.Should().Be("Name");
+    }
+
+    [TestMethod]
+    public void TryGetXmlData_HasData_ReturnsStormElementData()
+    {
+        // arrange
+        XElement element = XElement.Parse(@"
+<CHero id=""KelThuzad"">
+  <HeroAbilArray Abil=""KelThuzadDeathAndDecay"" Button=""KelThuzadDeathAndDecay"">
+    <Flags index=""ShowInHeroSelect"" value=""1"" />
+    <Flags index=""AffectedByCooldownReduction"" value=""1"" />
+    <Flags index=""AffectedByOverdrive"" value=""1"" />
+  </HeroAbilArray>
+  <HeroAbilArray Abil=""KelThuzadFrostNova"" Button=""KelThuzadFrostNova"">
+    <Flags index=""ShowInHeroSelect"" value=""1"" />
+    <Flags index=""AffectedByCooldownReduction"" value=""1"" />
+    <Flags index=""AffectedByOverdrive"" value=""1"" />
+  </HeroAbilArray>
+  <HeroAbilArray Abil=""KelThuzadChains"" Button=""KelThuzadChains"">
+    <Flags index=""ShowInHeroSelect"" value=""1"" />
+    <Flags index=""AffectedByCooldownReduction"" value=""1"" />
+    <Flags index=""AffectedByOverdrive"" value=""1"" />
+  </HeroAbilArray>
+</CHero>
+
+");
+        StormElementData data = new(element);
+
+        // act
+        bool result = data.TryGetXmlData("HeroAbilArray", out StormElementData? stormElementData);
+        bool resultAsSpan = data.TryGetXmlData("HeroAbilArray".AsSpan(), out StormElementData? stormElementDataAsSpan);
+
+        // assert
+        result.Should().BeTrue();
+        resultAsSpan.Should().BeTrue();
+        stormElementData!.GetXmlData().ToList().Should().HaveCount(3);
+        stormElementDataAsSpan!.GetXmlData().ToList().Should().HaveCount(3);
+    }
+
+    [TestMethod]
+    public void TryGetXmlData_HasNoData_ReturnsNull()
+    {
+        // arrange
+        XElement element = XElement.Parse(@"
+<CHero id=""KelThuzad"">
+  <HeroAbilArray Abil=""KelThuzadDeathAndDecay"" Button=""KelThuzadDeathAndDecay"">
+    <Flags index=""ShowInHeroSelect"" value=""1"" />
+    <Flags index=""AffectedByCooldownReduction"" value=""1"" />
+    <Flags index=""AffectedByOverdrive"" value=""1"" />
+  </HeroAbilArray>
+  <HeroAbilArray Abil=""KelThuzadFrostNova"" Button=""KelThuzadFrostNova"">
+    <Flags index=""ShowInHeroSelect"" value=""1"" />
+    <Flags index=""AffectedByCooldownReduction"" value=""1"" />
+    <Flags index=""AffectedByOverdrive"" value=""1"" />
+  </HeroAbilArray>
+  <HeroAbilArray Abil=""KelThuzadChains"" Button=""KelThuzadChains"">
+    <Flags index=""ShowInHeroSelect"" value=""1"" />
+    <Flags index=""AffectedByCooldownReduction"" value=""1"" />
+    <Flags index=""AffectedByOverdrive"" value=""1"" />
+  </HeroAbilArray>
+</CHero>
+
+");
+        StormElementData data = new(element);
+
+        // act
+        bool result = data.TryGetXmlData("Damage", out StormElementData? stormElementData);
+        bool resultAsSpan = data.TryGetXmlData("Damage".AsSpan(), out StormElementData? stormElementDataAsSpan);
+
+        // assert
+        result.Should().BeFalse();
+        resultAsSpan.Should().BeFalse();
+        stormElementData.Should().BeNull();
+        stormElementDataAsSpan.Should().BeNull();
     }
 }
