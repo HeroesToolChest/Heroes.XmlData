@@ -1,174 +1,59 @@
 ﻿using BenchmarkDotNet.Attributes;
-using System.Buffers;
+using Heroes.LocaleText;
+using System.Xml.Linq;
 
 namespace Heroes.XmlData.Benchmarks;
 
 [MemoryDiagnoser]
 public class XmlDataBenchmarks
 {
-    //private SearchValues<char> _operators = SearchValues.Create("*-+/");
-
-    private string _test = "sdflkjsfd+sdfjlkfds-sdklfjsdlk/sdflkjsdfjkl+sdljkd-sljkdsdf*dfg%sdf%sdfg";
-
-    [Benchmark]
-    public int Test()
+    public XmlDataBenchmarks()
     {
-        int count = _test.AsSpan().Count('+');
-        count += _test.AsSpan().Count('-');
-        count += _test.AsSpan().Count('*');
-        count += _test.AsSpan().Count('%');
-        count += _test.AsSpan().Count('/');
-
-        return count;
     }
 
     [Benchmark]
-    public int TestWithForEach()
+    public TooltipDescription Test()
     {
-        int count = 0;
-        foreach (char item in _test.AsSpan())
-        {
-            if (item == '+' || item == '-' || item == '*' || item == '%' || item == '/')
-            {
-                count++;
-            }
-        }
+        string description = "Increase the damage of Octo-Grab by <c val=\"#TooltipNumbers\"><d ref=\"Effect,OctoGrabPokeMasteryDamage,Amount * 100\"/>%</c>";
 
-        return count;
+        HeroesXmlLoader loader = HeroesXmlLoader.LoadAsEmpty()
+            .LoadCustomMod(new ManualModLoader("custom")
+                .AddBaseElementTypes(new List<(string, string)>()
+                {
+                    ("Effect", "CEffectDamage"),
+                })
+                .AddElements(new List<XElement>()
+                {
+                    new(
+                        "CEffectDamage",
+                        new XAttribute("id", "OctoGrabPokeMasteryDamage"),
+                        new XElement(
+                            "Amount",
+                            new XAttribute("value", "137"))),
+                })
+                .AddLevelScalingArrayElements(new List<XElement>()
+                {
+                    new(
+                        "LevelScalingArray",
+                        new XAttribute("Ability", "MurkyOctoGrab"),
+                        new XElement(
+                            "Modifications",
+                            new XElement(
+                                "Catalog",
+                                new XAttribute("value", "Effect")),
+                            new XElement(
+                                "Entry",
+                                new XAttribute("value", "OctoGrabPokeMasteryDamage")),
+                            new XElement(
+                                "Field",
+                                new XAttribute("value", "Amount")),
+                            new XElement(
+                                "Value",
+                                new XAttribute("value", "0.040000")))),
+                }));
+
+        HeroesData heroesData = loader.HeroesData;
+
+        return heroesData.ParseGameString(description, StormLocale.ENUS);
     }
-
-    //[Benchmark]
-    //public bool WithBooleanCheck()
-    //{
-    //    return IsOperator('/');
-    //}
-
-    //[Benchmark]
-    //public bool WithSearchValues()
-    //{
-    //    return "/".AsSpan().ContainsAny(_operators);
-    //}
-
-
-    //private static bool IsOperator(char value) => value == '*' || value == '-' || value == '+' || value == '/';
-    //public struct Struct1
-    //{
-    //    public string Value1 { get; set; }
-    //    public string Value2 { get; set; }
-
-    //    public Class1 Class1 { get; set; }
-    //}
-    //public record Record1
-    //{
-    //    public string Value1 { get; set; }
-    //    public string Value2 { get; set; }
-
-    //    public Class1 Class1 { get; set; }
-    //}
-
-    //public class Class1
-    //{
-    //    public string Value1 { get; set; }
-    //    public string Value2 { get; set; }
-
-    //    public Class1 ClassOfItself { get; set; }
-    //}
-
-
-    ////private readonly string _value = "thisIsAstringValueOfSoMeSorts";
-
-    //[Benchmark]
-    //public Struct1 Struct()
-    //{
-    //    Struct1 struct1 = new Struct1()
-    //    {
-    //        Value1 = "item",
-    //        Value2 = "item2",
-    //        Class1 = new Class1()
-    //        {
-    //            Value1 = "item4",
-    //            Value2 = "item5",
-    //        },
-    //    };
-
-    //    Dictionary<string, Struct1> dic = [];
-    //    dic.Add("item1", struct1);
-
-    //    return dic["item1"];
-    //}
-
-    //[Benchmark]
-    //public Record1 Record()
-    //{
-    //    Record1 struct1 = new Record1()
-    //    {
-    //        Value1 = "item",
-    //        Value2 = "item2",
-    //        Class1 = new Class1()
-    //        {
-    //            Value1 = "item4",
-    //            Value2 = "item5",
-    //        },
-    //    };
-
-    //    Dictionary<string, Record1> dic = [];
-    //    dic.Add("item1", struct1);
-
-    //    return dic["item1"];
-    //}
-
-    //[Benchmark]
-    //public Class1 Class()
-    //{
-    //    Class1 struct1 = new Class1()
-    //    {
-    //        Value1 = "item",
-    //        Value2 = "item2",
-    //        ClassOfItself = new Class1()
-    //        {
-    //            Value1 = "item4",
-    //            Value2 = "item5",
-    //        },
-    //    };
-
-    //    Dictionary<string, Class1> dic = [];
-    //    dic.Add("item1", struct1);
-
-    //    return dic["item1"];
-    //}
-
-    //[Benchmark]
-    //public string TestUpper()
-    //{
-    //    string value = "thisIsAstringValueOfSoMeSorts";
-    //    string toUpper = value;
-
-    //    if (toUpper == "THISISASTRINGVALUEOFSOMESORTS")
-    //    {
-    //        return value;
-    //    }
-    //    return string.Empty;
-    //}
-
-    //[Benchmark]
-    //public string TestAsSpan()
-    //{
-    //    string value = "thisIsAstringValueOfSoMeSorts";
-    //    if (value.AsSpan().Equals("THISISASTRINGVALUEOFSOMESORTS", StringComparison.OrdinalIgnoreCase))
-    //    {
-    //        return value;
-    //    }
-    //    return string.Empty;
-    //}
-
-    //[Benchmark]
-    //public string TestCompareNormal()
-    //{
-    //    string value = "thisIsAstringValueOfSoMeSorts";
-    //    if (value.Equals("thisIsAstringValueOfSoMeSorts", StringComparison.OrdinalIgnoreCase))
-    //    {
-    //        return value;
-    //    }
-    //    return string.Empty;
-    //}
 }
