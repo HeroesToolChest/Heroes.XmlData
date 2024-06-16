@@ -364,7 +364,7 @@ internal partial class StormStorage : IStormStorage
 
         foundExistingDataObjectType ??= StormMapCache.ElementTypesByDataObjectType.Keys.FirstOrDefault(x => elementName.AsSpan()[1..].StartsWith(x));
         foundExistingDataObjectType ??= StormCustomCache.ElementTypesByDataObjectType.Keys.FirstOrDefault(x => elementName.AsSpan()[1..].StartsWith(x)) ??
-            throw new Exception("TODO");
+            throw new HeroesXmlDataException($"Could not find an existing data object type for \"{elementName}\"");
 
         return foundExistingDataObjectType;
     }
