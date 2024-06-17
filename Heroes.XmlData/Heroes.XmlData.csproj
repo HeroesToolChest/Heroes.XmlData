@@ -9,23 +9,22 @@
     <Authors>Kevin Oliva</Authors>
     <Copyright>Copyright © 2024 Kevin Oliva</Copyright>
     <Description></Description>
-    <!--<PackageProjectUrl></PackageProjectUrl>-->
-    <!--<RepositoryUrl></RepositoryUrl>-->
-    <!--<PackageReleaseNotes></PackageReleaseNotes>-->
-    <!--<PackageLicenseFile>LICENSE</PackageLicenseFile>-->
+    <PackageProjectUrl></PackageProjectUrl>
+    <RepositoryUrl></RepositoryUrl>
+    <PackageReleaseNotes></PackageReleaseNotes>
     <PackageTags>hots heroes-of-the-storm HeroesOfTheStorm blizzard xmldata</PackageTags>
-    <!--<PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>-->
-    <!--<ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>-->
-    <!--<EmbedUntrackedSources>true</EmbedUntrackedSources>-->
-    <!--<IncludeSymbols>true</IncludeSymbols>-->
-    <!--<SymbolPackageFormat>snupkg</SymbolPackageFormat>-->
-    <!--<PackageReadmeFile></PackageReadmeFile>-->
-	  <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+    <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
+    <ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageLicenseFile>LICENSE</PackageLicenseFile>
+    <EnforceCodeStyleInBuild>True</EnforceCodeStyleInBuild>
     <TargetsForTfmSpecificBuildOutput>$(TargetsForTfmSpecificBuildOutput);CopyProjectReferencesToPackage</TargetsForTfmSpecificBuildOutput>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Heroes.LocaleText" Version="1.0.0-build.14" />
+    <PackageReference Include="Heroes.LocaleText" Version="1.0.0-beta.2" />
     <PackageReference Include="Heroes.MpqTool" Version="1.1.0" />
     <PackageReference Include="StyleCop.Analyzers" Version="1.2.0-beta.556">
       <PrivateAssets>all</PrivateAssets>
