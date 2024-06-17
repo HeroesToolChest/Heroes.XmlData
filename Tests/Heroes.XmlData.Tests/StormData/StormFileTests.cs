@@ -12,7 +12,7 @@ public class StormFileTests
             StormModName = "modname",
             StormModDirectoryPath = "directorypath",
             Path = "somepath",
-            PathType = StormPathType.HxD,
+            PathType = StormPathType.Hxd,
         };
 
         StormPath stormFile2 = new()
@@ -20,7 +20,7 @@ public class StormFileTests
             StormModName = "ModName",
             StormModDirectoryPath = "DirectoryPath",
             Path = "SomePath",
-            PathType = StormPathType.HxD,
+            PathType = StormPathType.Hxd,
         };
 
         // act
@@ -39,7 +39,7 @@ public class StormFileTests
             StormModName = "modname",
             StormModDirectoryPath = "directorypath",
             Path = "somepath",
-            PathType = StormPathType.HxD,
+            PathType = StormPathType.Hxd,
         };
 
         StormPath stormFile2 = new()
@@ -47,7 +47,7 @@ public class StormFileTests
             StormModName = "ModName2",
             StormModDirectoryPath = "DirectoryPath2",
             Path = "SomePath2",
-            PathType = StormPathType.HxD,
+            PathType = StormPathType.Hxd,
         };
 
         // act
@@ -66,7 +66,7 @@ public class StormFileTests
             StormModName = "modname",
             StormModDirectoryPath = "directorypath",
             Path = "somepath",
-            PathType = StormPathType.HxD,
+            PathType = StormPathType.Hxd,
         };
 
         StormPath stormFile2 = new()
@@ -74,7 +74,7 @@ public class StormFileTests
             StormModName = "ModName",
             StormModDirectoryPath = "DirectoryPath",
             Path = "SomePath",
-            PathType = StormPathType.HxD,
+            PathType = StormPathType.Hxd,
         };
 
         // act
@@ -94,7 +94,7 @@ public class StormFileTests
             StormModName = "modname",
             StormModDirectoryPath = "directorypath",
             Path = "somepath",
-            PathType = StormPathType.HxD,
+            PathType = StormPathType.Hxd,
         };
 
         StormPath stormFile2 = new()
@@ -102,7 +102,7 @@ public class StormFileTests
             StormModName = "ModName2",
             StormModDirectoryPath = "DirectoryPath2",
             Path = "SomePath2",
-            PathType = StormPathType.HxD,
+            PathType = StormPathType.Hxd,
         };
 
         // act

@@ -9,6 +9,6 @@ internal static class TestHelpers
         StormModName = "test",
         StormModDirectoryPath = Path.Combine("test", "test"),
         Path = path,
-        PathType = StormPathType.HxD,
+        PathType = StormPathType.Hxd,
     };
 }

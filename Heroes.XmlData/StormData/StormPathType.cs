@@ -8,7 +8,7 @@ public enum StormPathType
     /// <summary>
     /// Indicates the file or directory is programmically added.
     /// </summary>
-    HxD,
+    Hxd,
 
     /// <summary>
     /// Indicates the file or directory exists on disk as a physical file or directory.
