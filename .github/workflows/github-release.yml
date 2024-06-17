@@ -1,0 +1,17 @@
+name: Github Release
+
+on: workflow_dispatch
+  
+jobs:
+  deploy:
+    uses: koliva8245/github.workflows/.github/workflows/github-release.yml@main
+    permissions:
+      contents: write
+    with:
+      title: 'Heroes Xml Data'
+      app-name: Heroes.XmlData
+      artificats-workflow: build.yml
+      github-release-env: Github Release
+      github-release-url: https://github.com/HeroesToolChest/Heroes.XmlData/releases
+    secrets:
+      token: ${{ secrets.GH_RELEASE }}
