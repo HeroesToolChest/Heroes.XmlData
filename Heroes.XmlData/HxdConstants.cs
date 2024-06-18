@@ -2,5 +2,5 @@
 
 internal class HxdConstants
 {
-    public const string Name = "hxd";
+    public const string Name = "Hxd";
 }
