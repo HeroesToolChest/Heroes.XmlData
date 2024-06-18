@@ -6,7 +6,7 @@ internal static class ScaleValueParser
 {
     public const string ScaleAttributeName = $"{HxdConstants.Name}Scale";
 
-    public static StormElement? CreateStormElement(StormStorage stormStorage, LevelScalingEntry levelScalingEntry, StormStringValue stormStringValue)
+    public static StormElement? CreateStormElement(IStormStorage stormStorage, LevelScalingEntry levelScalingEntry, StormStringValue stormStringValue)
     {
         // field from the internal storm element data which might be different from the level scaling entry field but will be more "accurate"
         string? validatedField = GetValidatedField(stormStorage, levelScalingEntry);
@@ -32,7 +32,7 @@ internal static class ScaleValueParser
         return null;
     }
 
-    private static string? GetValidatedField(StormStorage stormStorage, LevelScalingEntry levelScalingEntry)
+    private static string? GetValidatedField(IStormStorage stormStorage, LevelScalingEntry levelScalingEntry)
     {
         ReadOnlySpan<char> fieldSpan = levelScalingEntry.Field;
         int splitterCount = fieldSpan.Count('.');
@@ -52,7 +52,7 @@ internal static class ScaleValueParser
         StormElementData lastData = DataRefParser.GetStormElementDataFromLastFieldPart(completeStormElement.DataValues, levelScalingEntry.Field, fieldParts);
 
         // if it has a value, then we found the value for the scaling entry
-        if (lastData.HasValue || lastData.HasConstValue)
+        if (lastData.HasValue)
         {
             // return the field from the storm element, this might be different from the given scaling entry but will be more "accurate"
             return lastData.Field;
