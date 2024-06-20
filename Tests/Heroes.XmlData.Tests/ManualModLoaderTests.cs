@@ -292,7 +292,7 @@ public class ManualModLoaderTests
     }
 
     [TestMethod]
-    public void AddStormStyleElementsTest()
+    public void AddStormStyleElements_AddingTwoCollections_ShouldReturnTotal()
     {
         // arrange
         ManualModLoader manualModLoader = new("custom");
