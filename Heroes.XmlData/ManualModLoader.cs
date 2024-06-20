@@ -48,7 +48,7 @@ public class ManualModLoader
     }
 
     /// <summary>
-    /// Adds a collection of constant <see cref="XElement"/>s to the custom cache storage.
+    /// Adds a collection of constant <see cref="XElement"/>s (e.g. &lt;const id="" /&gt;) to the custom cache storage.
     /// </summary>
     /// <param name="elements">A collection of const <see cref="XElement"/>s (e.g. &lt;const id="" /&gt;).</param>
     /// <returns>The current <see cref="ManualModLoader"/> instance.</returns>

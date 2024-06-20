@@ -73,35 +73,35 @@ public class ManualModLoaderTests
         // act
         manualModLoader.AddConstantXElements([
             XElement.Parse(@"
-<Constant name=""Color"" val=""ABABAB"" />
+ <const id=""$ChromieBasicAttackRange"" value=""7"" />
 "),
             XElement.Parse(@"
-<Constant name=""PingAlly"" val=""23213"" />
+<const id=""$ChromieBasicAttackDamage"" value=""82"" />
 ")
 ]);
 
         manualModLoader.AddConstantXElements([
             XElement.Parse(@"
-<Constant name=""Color"" val=""ABABAB"" />
+<const id=""$ChromieWeaponPreSwing"" value=""0.25"" />
 "),
             XElement.Parse(@"
-<Constant name=""PingAlly"" val=""23213"" />
+<const id=""$ChromieSandBlastDamage"" value=""305"" />
 ")
 ]);
 
         // assert
         manualModLoader.ConstantXElements.Should().BeEquivalentTo([
             XElement.Parse(@"
-<Constant name=""Color"" val=""ABABAB"" />
+ <const id=""$ChromieBasicAttackRange"" value=""7"" />
 "),
             XElement.Parse(@"
-<Constant name=""PingAlly"" val=""23213"" />
+<const id=""$ChromieBasicAttackDamage"" value=""82"" />
 "),
             XElement.Parse(@"
-<Constant name=""Color"" val=""ABABAB"" />
+<const id=""$ChromieWeaponPreSwing"" value=""0.25"" />
 "),
             XElement.Parse(@"
-<Constant name=""PingAlly"" val=""23213"" />
+<const id=""$ChromieSandBlastDamage"" value=""305"" />
 ")
 ]);
     }
