@@ -161,34 +161,6 @@ public class HeroesXmlLoader
         return this;
     }
 
-
-    /// <summary>
-    /// Adds a gamestring collection to the custom cache storage. If an id already exists, it will be overridden.
-    /// </summary>
-    /// <param name="gameStrings">A collection of gamestrings in a format of &lt;id&gt;=&lt;value&gt;.</param>
-    /// <returns>The current <see cref="HeroesXmlLoader"/> instance.</returns>
-    public HeroesXmlLoader AddGameStrings(IEnumerable<string> gameStrings)
-    {
-        // foreach (string item in gameStrings)
-        //  _stormStorage.StormCustomCache.AddGameString(item, _customPath);
-
-        return this;
-    }
-
-    /// <summary>
-    /// Adds a colletion of <see cref="XElement"/>s with a local name of 'const' to the custom cache storage.
-    /// If an element with an id value already exists, it will be overridden.
-    /// </summary>
-    /// <param name="elements">A collection of <see cref="XElement"/>s with a local name of "const".</param>
-    /// <returns>The current <see cref="HeroesXmlLoader"/> instance.</returns>
-    public HeroesXmlLoader AddConstantElements(IEnumerable<XElement> elements)
-    {
-        //foreach (XElement item in elements)
-        //  _stormStorage.StormCustomCache.AddConstantElement(item, _customPath);
-
-        return this;
-    }
-
     /// <summary>
     /// Gets a collection of the map titles to be used for <see cref="LoadMapMod(string)"/>.
     /// </summary>

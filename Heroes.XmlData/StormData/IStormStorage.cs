@@ -32,11 +32,11 @@ internal interface IStormStorage
 
     void AddElement(StormModType stormModType, XElement element, StormPath stormPath);
 
-    void SetFontStyleCache(StormModType stormModType, XDocument document, StormPath stormPath);
+    void SetStormStyleCache(StormModType stormModType, XDocument document, StormPath stormPath);
 
     void AddLevelScalingArrayElement(StormModType stormModType, XElement element, StormPath stormPath);
 
-    void AddStormStyleHexColor(StormModType stormModType, XElement element, StormPath stormPath);
+    void AddStormStyleElement(StormModType stormModType, XElement element, StormPath stormPath);
 
     void BuildDataForScalingAttributes(StormModType stormModType);
 

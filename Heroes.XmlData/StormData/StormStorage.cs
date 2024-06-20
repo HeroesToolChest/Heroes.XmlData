@@ -238,15 +238,15 @@ internal partial class StormStorage : IStormStorage
         }
     }
 
-    public void SetFontStyleCache(StormModType stormModType, XDocument document, StormPath stormPath)
+    public void SetStormStyleCache(StormModType stormModType, XDocument document, StormPath stormPath)
     {
         foreach (XElement element in document.Root!.Elements())
         {
-            AddStormStyleHexColor(stormModType, element, stormPath);
+            AddStormStyleElement(stormModType, element, stormPath);
         }
     }
 
-    public void AddStormStyleHexColor(StormModType stormModType, XElement element, StormPath stormPath)
+    public void AddStormStyleElement(StormModType stormModType, XElement element, StormPath stormPath)
     {
         StormCache currentStormCache = GetCurrentStormCache(stormModType);
 

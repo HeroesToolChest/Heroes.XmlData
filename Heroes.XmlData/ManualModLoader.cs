@@ -1,12 +1,22 @@
 ﻿namespace Heroes.XmlData;
 
+/// <summary>
+/// Used to load a custom mod.
+/// </summary>
 public class ManualModLoader
 {
+    /// <summary>
+    /// Initializes a new instance of the <see cref="ManualModLoader"/> class.
+    /// </summary>
+    /// <param name="name">A name to be given to this mod.</param>
     public ManualModLoader(string name)
     {
         Name = name;
     }
 
+    /// <summary>
+    /// Gets the name of this mod loader.
+    /// </summary>
     public string Name { get; }
 
     internal Dictionary<StormLocale, List<string>> GameStringsByLocale { get; } = [];
@@ -19,9 +29,7 @@ public class ManualModLoader
 
     internal List<XElement> LevelScalingArrayElements { get; } = [];
 
-    internal List<XElement> StormStyleHexColorElements { get; } = [];
-
-    internal StormLocale GameStringsLocale { get; private set; }
+    internal List<XElement> StormStyleElements { get; } = [];
 
     /// <summary>
     /// Adds an unparsed gamestring collection to the custom cache storage. If an id already exists, it will be overridden.
@@ -31,8 +39,6 @@ public class ManualModLoader
     /// <returns>The current <see cref="ManualModLoader"/> instance.</returns>
     public ManualModLoader AddGameStrings(IEnumerable<string> gameStrings, StormLocale stormLocale)
     {
-        GameStringsLocale = stormLocale;
-
         if (GameStringsByLocale.TryGetValue(stormLocale, out List<string>? gamestrings))
             gamestrings.AddRange(gameStrings);
         else
@@ -44,7 +50,7 @@ public class ManualModLoader
     /// <summary>
     /// Adds a collection of constant <see cref="XElement"/>s to the custom cache storage.
     /// </summary>
-    /// <param name="elements">A collection of constant <see cref="XElement"/>s.</param>
+    /// <param name="elements">A collection of const <see cref="XElement"/>s (e.g. &lt;const id="" /&gt;).</param>
     /// <returns>The current <see cref="ManualModLoader"/> instance.</returns>
     public ManualModLoader AddConstantXElements(IEnumerable<XElement> elements)
     {
@@ -72,7 +78,7 @@ public class ManualModLoader
     }
 
     /// <summary>
-    /// Adds a collection of <see cref="XElement"/>s to the custom cache storage. 
+    /// Adds a collection of <see cref="XElement"/>s to the custom cache storage.
     /// Use <see cref="AddBaseElementTypes(IEnumerable{ValueTuple{string, string}})"/> to add in the base element types.
     /// </summary>
     /// <param name="elements">A collection of <see cref="XElement"/>s.</param>
@@ -87,7 +93,7 @@ public class ManualModLoader
     /// <summary>
     /// Adds a collection of level scaling array <see cref="XElement"/>s to the custom cache storage.
     /// </summary>
-    /// <param name="elements">A collection of level scaling array <see cref="XElement"/>s.</param>
+    /// <param name="elements">A collection of level scaling array <see cref="XElement"/>s (e.g. &lt;LevelScalingArray /&gt;).</param>
     /// <returns>The current <see cref="ManualModLoader"/> instance.</returns>
     public ManualModLoader AddLevelScalingArrayElements(IEnumerable<XElement> elements)
     {
@@ -97,13 +103,13 @@ public class ManualModLoader
     }
 
     /// <summary>
-    /// Adds a collection of storm style hex color <see cref="XElement"/>s to the custom cache storage.
+    /// Adds a collection of storm style <see cref="XElement"/>s to the custom cache storage.
     /// </summary>
-    /// <param name="elements">A collection of storm style hex color <see cref="XElement"/>s.</param>
+    /// <param name="elements">A collection of storm style <see cref="XElement"/>s (e.g. &lt;Constant name="" /&gt; or &lt;Style name="" /&gt;).</param>
     /// <returns>The current <see cref="ManualModLoader"/> instance.</returns>
-    public ManualModLoader Add(IEnumerable<XElement> elements)
+    public ManualModLoader AddStormStyleElements(IEnumerable<XElement> elements)
     {
-        StormStyleHexColorElements.AddRange(elements);
+        StormStyleElements.AddRange(elements);
 
         return this;
     }

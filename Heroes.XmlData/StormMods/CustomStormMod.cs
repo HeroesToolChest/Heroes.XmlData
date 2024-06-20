@@ -60,6 +60,7 @@ internal class CustomStormMod : IStormMod
         }
 
         StormModStorage.UpdateConstantAttributes(_manualModLoader.Elements.DescendantsAndSelf());
+
         foreach (XElement element in _manualModLoader.Elements)
         {
             _heroesSource.StormStorage.AddElement(StormModType, element, _stormPath);
@@ -70,9 +71,9 @@ internal class CustomStormMod : IStormMod
             _heroesSource.StormStorage.AddLevelScalingArrayElement(StormModType, element, _stormPath);
         }
 
-        foreach (XElement element in _manualModLoader.StormStyleHexColorElements)
+        foreach (XElement element in _manualModLoader.StormStyleElements)
         {
-            _heroesSource.StormStorage.AddStormStyleHexColor(StormModType, element, _stormPath);
+            _heroesSource.StormStorage.AddStormStyleElement(StormModType, element, _stormPath);
         }
     }
 

@@ -93,7 +93,7 @@ internal class StormModStorage
         if (!_addedXmlFontStyleFilePathsList.Add(stormPath))
             return;
 
-        _stormStorage.SetFontStyleCache(StormModType, document, stormPath);
+        _stormStorage.SetStormStyleCache(StormModType, document, stormPath);
     }
 
     public void AddBuildIdFile(Stream stream)
