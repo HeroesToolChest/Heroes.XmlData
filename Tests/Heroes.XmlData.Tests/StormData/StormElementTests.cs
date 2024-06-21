@@ -42,6 +42,7 @@ public class StormElementTests
         stormElement.AddValue(new StormXElementValuePath(mergingElement, TestHelpers.GetStormPath("some\\other\\path")));
 
         // assert
+        stormElement.ElementType.Should().Be("CAbil");
         stormElement.GetXmlData("default").Value.Should().Be("1");
         stormElement.GetXmlData("name").Value.Should().Be("Abil/Name/##id##");
         stormElement.GetXmlData("OrderArray").GetXmlData("0".AsSpan()).GetXmlData("color").GetXmlData("0").Value.Should().Be("255,0,255,0");
@@ -95,6 +96,7 @@ public class StormElementTests
         stormElement.AddValue(otherStormElement);
 
         // assert
+        stormElement.ElementType.Should().Be("CAbil");
         stormElement.GetXmlData("default").Value.Should().Be("1");
         stormElement.GetXmlData("name").Value.Should().Be("Abil/Name/##id##");
         stormElement.GetXmlData("OrderArray").GetXmlData("0").GetXmlData("color").GetXmlData("0").Value.Should().Be("255,0,255,0");
@@ -242,7 +244,7 @@ public class StormElementTests
     }
 
     [TestMethod]
-    public void StormElement_HasIdAttribute_ReturnsId()
+    public void Id_HasIdAttribute_ReturnsId()
     {
         // arrange
         XElement element = XElement.Parse(@"
@@ -250,17 +252,19 @@ public class StormElementTests
   <Amount value=""110"" />
 </CEffectDamage>
 ");
-
-        // act
         StormElement stormElement = new(new StormXElementValuePath(element, TestHelpers.GetStormPath("some\\path")));
 
+        // act
+        string? resultValue = stormElement.Id;
+        bool result = stormElement.HasId;
+
         // assert
-        stormElement.HasId.Should().BeTrue();
-        stormElement.Id.Should().Be("StormBoltDamage");
+        result.Should().BeTrue();
+        resultValue.Should().Be("StormBoltDamage");
     }
 
     [TestMethod]
-    public void StormElement_HasNoIdAttribute_ReturnsNull()
+    public void Id_HasNoId_ReturnsNull()
     {
         // arrange
         XElement element = XElement.Parse(@"
@@ -268,17 +272,19 @@ public class StormElementTests
   <Amount value=""110"" />
 </CEffectDamage>
 ");
-
-        // act
         StormElement stormElement = new(new StormXElementValuePath(element, TestHelpers.GetStormPath("some\\path")));
 
+        // act
+        string? resultValue = stormElement.Id;
+        bool result = stormElement.HasId;
+
         // assert
-        stormElement.HasId.Should().BeFalse();
-        stormElement.Id.Should().BeNull();
+        result.Should().BeFalse();
+        resultValue.Should().BeNull();
     }
 
     [TestMethod]
-    public void StormElement_HasParentAttribute_ReturnsParent()
+    public void ParentId_HasParentAttribute_ReturnsParentId()
     {
         // arrange
         XElement element = XElement.Parse(@"
@@ -286,17 +292,19 @@ public class StormElementTests
   <Amount value=""110"" />
 </CEffectDamage>
 ");
-
-        // act
         StormElement stormElement = new(new StormXElementValuePath(element, TestHelpers.GetStormPath("some\\path")));
 
+        // act
+        string? resultValue = stormElement.ParentId;
+        bool result = stormElement.HasParentId;
+
         // assert
-        stormElement.HasParentId.Should().BeTrue();
-        stormElement.ParentId.Should().Be("StormSpell");
+        result.Should().BeTrue();
+        resultValue.Should().Be("StormSpell");
     }
 
     [TestMethod]
-    public void StormElement_HasNoParentAttribute_ReturnsNull()
+    public void ParentId_HasNoParentAttribute_ReturnsNull()
     {
         // arrange
         XElement element = XElement.Parse(@"
@@ -304,13 +312,15 @@ public class StormElementTests
   <Amount value=""110"" />
 </CEffectDamage>
 ");
-
-        // act
         StormElement stormElement = new(new StormXElementValuePath(element, TestHelpers.GetStormPath("some\\path")));
 
+        // act
+        string? resultValue = stormElement.ParentId;
+        bool result = stormElement.HasParentId;
+
         // assert
-        stormElement.HasParentId.Should().BeFalse();
-        stormElement.ParentId.Should().BeNull();
+        result.Should().BeFalse();
+        resultValue.Should().BeNull();
     }
 
     [TestMethod]
@@ -349,8 +359,8 @@ public class StormElementTests
         // assert
         result.Should().BeTrue();
         resultAsSpan.Should().BeTrue();
-        stormElementData!.GetXmlData().ToList().Should().HaveCount(0);
-        stormElementDataAsSpan!.GetXmlData().ToList().Should().HaveCount(0);
+        stormElementData!.GetXmlData().ToList().Should().BeEmpty();
+        stormElementDataAsSpan!.GetXmlData().ToList().Should().BeEmpty();
     }
 
     [TestMethod]

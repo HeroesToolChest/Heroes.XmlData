@@ -1491,369 +1491,369 @@ public class StormStorageTests
     }
 
     [TestMethod]
-    public void GetStormStyleConstantsByName_ExistsInAllCaches_ReturnsMergedFromAllThree()
+    public void GetStormStyleConstantElementsByName_ExistsInAllCaches_ReturnsMergedFromAllThree()
     {
         // arrange
         StormStorage stormStorage = new(false);
 
-        stormStorage.StormCache.StormStyleConstantsByName.Add("TooltipNumbers", new StormElement(new StormXElementValuePath(
+        stormStorage.StormCache.StormStyleConstantElementsByName.Add("TooltipNumbers", new StormStyleConstantElement(new StormXElementValuePath(
             XElement.Parse(@"
 <Constant name=""TooltipNumbers"" val=""bfd4fd"" />
 "),
             TestHelpers.GetStormPath("normal"))));
 
-        stormStorage.StormMapCache.StormStyleConstantsByName.Add("TooltipNumbers", new StormElement(new StormXElementValuePath(
+        stormStorage.StormMapCache.StormStyleConstantElementsByName.Add("TooltipNumbers", new StormStyleConstantElement(new StormXElementValuePath(
             XElement.Parse(@"
 <Constant name=""TooltipNumbers"" val=""bfd4fd"" other=""value"" />
 "),
             TestHelpers.GetStormPath("map"))));
 
-        stormStorage.StormCustomCache.StormStyleConstantsByName.Add("TooltipNumbers", new StormElement(new StormXElementValuePath(
+        stormStorage.StormCustomCache.StormStyleConstantElementsByName.Add("TooltipNumbers", new StormStyleConstantElement(new StormXElementValuePath(
             XElement.Parse(@"
 <Constant name=""TooltipNumbers"" val=""bfd4fd"" other2=""value2"" />
 "),
             TestHelpers.GetStormPath("custom"))));
 
         // act
-        StormElement? stormElement = stormStorage.GetStormStyleConstantsByName("TooltipNumbers".AsSpan());
+        StormStyleConstantElement? stormStyleConstantElement = stormStorage.GetStormStyleConstantElementsByName("TooltipNumbers".AsSpan());
 
         // assert
-        stormElement.Should().NotBeNull();
-        stormElement!.XmlDataCount.Should().Be(4);
+        stormStyleConstantElement.Should().NotBeNull();
+        stormStyleConstantElement!.XmlDataCount.Should().Be(4);
     }
 
     [TestMethod]
-    public void GetStormStyleConstantsByName_ExistsInNormalCache_ReturnsMergedNormalCache()
+    public void GetStormStyleConstantElementsByName_ExistsInNormalCache_ReturnsMergedNormalCache()
     {
         // arrange
         StormStorage stormStorage = new(false);
 
-        stormStorage.StormCache.StormStyleConstantsByName.Add("TooltipNumbers", new StormElement(new StormXElementValuePath(
+        stormStorage.StormCache.StormStyleConstantElementsByName.Add("TooltipNumbers", new StormStyleConstantElement(new StormXElementValuePath(
             XElement.Parse(@"
 <Constant name=""TooltipNumbers"" val=""bfd4fd"" />
 "),
             TestHelpers.GetStormPath("normal"))));
 
         // act
-        StormElement? stormElement = stormStorage.GetStormStyleConstantsByName("TooltipNumbers".AsSpan());
+        StormStyleConstantElement? stormStyleConstantElement = stormStorage.GetStormStyleConstantElementsByName("TooltipNumbers".AsSpan());
 
         // assert
-        stormElement.Should().NotBeNull();
-        stormElement!.XmlDataCount.Should().Be(2);
+        stormStyleConstantElement.Should().NotBeNull();
+        stormStyleConstantElement!.XmlDataCount.Should().Be(2);
     }
 
     [TestMethod]
-    public void GetStormStyleConstantsByName_ExistsInMapCache_ReturnsMergedMapCache()
+    public void GetStormStyleConstantElementsByName_ExistsInMapCache_ReturnsMergedMapCache()
     {
         // arrange
         StormStorage stormStorage = new(false);
 
-        stormStorage.StormMapCache.StormStyleConstantsByName.Add("TooltipNumbers", new StormElement(new StormXElementValuePath(
+        stormStorage.StormMapCache.StormStyleConstantElementsByName.Add("TooltipNumbers", new StormStyleConstantElement(new StormXElementValuePath(
             XElement.Parse(@"
 <Constant name=""TooltipNumbers"" val=""bfd4fd"" />
 "),
             TestHelpers.GetStormPath("map"))));
 
         // act
-        StormElement? stormElement = stormStorage.GetStormStyleConstantsByName("TooltipNumbers".AsSpan());
+        StormStyleConstantElement? stormStyleConstantElement = stormStorage.GetStormStyleConstantElementsByName("TooltipNumbers".AsSpan());
 
         // assert
-        stormElement.Should().NotBeNull();
-        stormElement!.XmlDataCount.Should().Be(2);
+        stormStyleConstantElement.Should().NotBeNull();
+        stormStyleConstantElement!.XmlDataCount.Should().Be(2);
     }
 
     [TestMethod]
-    public void GetStormStyleConstantsByName_ExistsInCustomCache_ReturnsMergedMapCache()
+    public void GetStormStyleConstantElementsByName_ExistsInCustomCache_ReturnsMergedMapCache()
     {
         // arrange
         StormStorage stormStorage = new(false);
 
-        stormStorage.StormCustomCache.StormStyleConstantsByName.Add("TooltipNumbers", new StormElement(new StormXElementValuePath(
+        stormStorage.StormCustomCache.StormStyleConstantElementsByName.Add("TooltipNumbers", new StormStyleConstantElement(new StormXElementValuePath(
             XElement.Parse(@"
 <Constant name=""TooltipNumbers"" val=""bfd4fd"" />
 "),
             TestHelpers.GetStormPath("map"))));
 
         // act
-        StormElement? stormElement = stormStorage.GetStormStyleConstantsByName("TooltipNumbers".AsSpan());
+        StormStyleConstantElement? stormStyleConstantElement = stormStorage.GetStormStyleConstantElementsByName("TooltipNumbers".AsSpan());
 
         // assert
-        stormElement.Should().NotBeNull();
-        stormElement!.XmlDataCount.Should().Be(2);
+        stormStyleConstantElement.Should().NotBeNull();
+        stormStyleConstantElement!.XmlDataCount.Should().Be(2);
     }
 
     [TestMethod]
-    public void GetStormStyleConstantsByName_ExistsInNormalAndMapCache_ReturnsMergedNormalAndMapCache()
+    public void GetStormStyleConstantElementsByName_ExistsInNormalAndMapCache_ReturnsMergedNormalAndMapCache()
     {
         // arrange
         StormStorage stormStorage = new(false);
 
-        stormStorage.StormCache.StormStyleConstantsByName.Add("TooltipNumbers", new StormElement(new StormXElementValuePath(
+        stormStorage.StormCache.StormStyleConstantElementsByName.Add("TooltipNumbers", new StormStyleConstantElement(new StormXElementValuePath(
             XElement.Parse(@"
 <Constant name=""TooltipNumbers"" val=""bfd4fd"" />
 "),
             TestHelpers.GetStormPath("normal"))));
 
-        stormStorage.StormMapCache.StormStyleConstantsByName.Add("TooltipNumbers", new StormElement(new StormXElementValuePath(
+        stormStorage.StormMapCache.StormStyleConstantElementsByName.Add("TooltipNumbers", new StormStyleConstantElement(new StormXElementValuePath(
             XElement.Parse(@"
-<Constant name=""TooltipNumbers"" val=""bfd4fd"" other=""value"" />
+<Constant name=""TooltipNumbers"" val=""bfd4ff"" other=""value"" />
 "),
             TestHelpers.GetStormPath("map"))));
 
         // act
-        StormElement? stormElement = stormStorage.GetStormStyleConstantsByName("TooltipNumbers".AsSpan());
+        StormStyleConstantElement? stormStyleConstantElement = stormStorage.GetStormStyleConstantElementsByName("TooltipNumbers".AsSpan());
 
         // assert
-        stormElement.Should().NotBeNull();
-        stormElement!.XmlDataCount.Should().Be(3);
+        stormStyleConstantElement.Should().NotBeNull();
+        stormStyleConstantElement!.XmlDataCount.Should().Be(3);
     }
 
     [TestMethod]
-    public void GetStormStyleConstantsByName_HasNoName_ReturnsNull()
+    public void GetStormStyleConstantElementsByName_HasNoName_ReturnsNull()
     {
         // arrange
         StormStorage stormStorage = new(false);
 
         // act
-        StormElement? result = stormStorage.GetStormStyleConstantsByName("TooltipNumbers".AsSpan());
+        StormElement? result = stormStorage.GetStormStyleConstantElementsByName("TooltipNumbers".AsSpan());
 
         // assert
         result.Should().BeNull();
     }
 
     [TestMethod]
-    public void GetStormStyleConstantsByName_NullDataObjectType_ThrowsException()
+    public void GetStormStyleConstantElementsByName_NullDataObjectType_ThrowsException()
     {
         // arrange
         StormStorage stormStorage = new();
 
         // act
-        Action result = () => stormStorage.GetStormStyleConstantsByName(null!);
+        Action result = () => stormStorage.GetStormStyleConstantElementsByName(null!);
 
         // assert
         result.Should().Throw<ArgumentNullException>();
     }
 
     [TestMethod]
-    public void GetStormStyleConstantsByName_ModifiedReturnValue_ShouldNotModifiedInternalData()
+    public void GetStormStyleConstantElementsByName_ModifiedReturnValue_ShouldNotModifiedInternalData()
     {
         // arrange
         StormStorage stormStorage = new(false);
 
-        stormStorage.StormCache.StormStyleConstantsByName.Add("TooltipNumbers", new StormElement(new StormXElementValuePath(
+        stormStorage.StormCache.StormStyleConstantElementsByName.Add("TooltipNumbers", new StormStyleConstantElement(new StormXElementValuePath(
             XElement.Parse(@"
 <Constant name=""TooltipNumbers"" val=""bfd4fd"" />
 "),
             TestHelpers.GetStormPath("normal"))));
 
-        stormStorage.StormMapCache.StormStyleConstantsByName.Add("TooltipNumbers", new StormElement(new StormXElementValuePath(
+        stormStorage.StormMapCache.StormStyleConstantElementsByName.Add("TooltipNumbers", new StormStyleConstantElement(new StormXElementValuePath(
             XElement.Parse(@"
 <Constant name=""TooltipNumbers"" val=""bfd4fd"" other=""value"" />
 "),
             TestHelpers.GetStormPath("map"))));
 
-        stormStorage.StormCustomCache.StormStyleConstantsByName.Add("TooltipNumbers", new StormElement(new StormXElementValuePath(
+        stormStorage.StormCustomCache.StormStyleConstantElementsByName.Add("TooltipNumbers", new StormStyleConstantElement(new StormXElementValuePath(
             XElement.Parse(@"
 <Constant name=""TooltipNumbers"" val=""bfd4fd"" other=""value"" other2=""value2"" />
 "),
             TestHelpers.GetStormPath("custom"))));
 
         // act
-        StormElement? result = stormStorage.GetStormStyleConstantsByName("TooltipNumbers".AsSpan());
+        StormStyleConstantElement? result = stormStorage.GetStormStyleConstantElementsByName("TooltipNumbers".AsSpan());
 
-        result!.AddValue(new StormElement(new StormXElementValuePath(
+        result!.AddValue(new StormStyleConstantElement(new StormXElementValuePath(
             XElement.Parse(@"
 <Constant name=""TooltipNumbers"" val=""bfd4fd"" other2=""value2"" other3=""value3"" other4=""value4"" other5=""value5"" />
 "),
             TestHelpers.GetStormPath("custom"))));
 
         // assert
-        stormStorage.StormCache.StormStyleConstantsByName["TooltipNumbers"].XmlDataCount.Should().Be(2);
-        stormStorage.StormMapCache.StormStyleConstantsByName["TooltipNumbers"].XmlDataCount.Should().Be(3);
-        stormStorage.StormCustomCache.StormStyleConstantsByName["TooltipNumbers"].XmlDataCount.Should().Be(4);
+        stormStorage.StormCache.StormStyleConstantElementsByName["TooltipNumbers"].XmlDataCount.Should().Be(2);
+        stormStorage.StormMapCache.StormStyleConstantElementsByName["TooltipNumbers"].XmlDataCount.Should().Be(3);
+        stormStorage.StormCustomCache.StormStyleConstantElementsByName["TooltipNumbers"].XmlDataCount.Should().Be(4);
     }
 
     [TestMethod]
-    public void GetStormStyleStylesByName_ExistsInAllCaches_ReturnsMergedFromAllThree()
+    public void GetStormStyleStyleElementsByName_ExistsInAllCaches_ReturnsMergedFromAllThree()
     {
         // arrange
         StormStorage stormStorage = new(false);
 
-        stormStorage.StormCache.StormStyleStylesByName.Add("ReticleEnemy", new StormElement(new StormXElementValuePath(
+        stormStorage.StormCache.StormStyleStyleElementsByName.Add("ReticleEnemy", new StormStyleStyleElement(new StormXElementValuePath(
             XElement.Parse(@"
 <Style name=""ReticleEnemy"" template=""Storm_Tutorial_Reticle_Text"" textcolor=""255,255,255,255"" />
 "),
             TestHelpers.GetStormPath("normal"))));
 
-        stormStorage.StormMapCache.StormStyleStylesByName.Add("ReticleEnemy", new StormElement(new StormXElementValuePath(
+        stormStorage.StormMapCache.StormStyleStyleElementsByName.Add("ReticleEnemy", new StormStyleStyleElement(new StormXElementValuePath(
             XElement.Parse(@"
 <Style name=""ReticleEnemy"" template=""Storm_Tutorial_Reticle_Text"" textcolor=""255,255,255,255"" height=""80"" />
 "),
             TestHelpers.GetStormPath("map"))));
 
-        stormStorage.StormCustomCache.StormStyleStylesByName.Add("ReticleEnemy", new StormElement(new StormXElementValuePath(
+        stormStorage.StormCustomCache.StormStyleStyleElementsByName.Add("ReticleEnemy", new StormStyleStyleElement(new StormXElementValuePath(
             XElement.Parse(@"
 <Style name=""ReticleEnemy"" template=""Storm_Tutorial_Reticle_Text"" textcolor=""255,255,255,255"" styleflags=""Shadow"" />
 "),
             TestHelpers.GetStormPath("custom"))));
 
         // act
-        StormElement? stormElement = stormStorage.GetStormStyleStylesByName("ReticleEnemy".AsSpan());
+        StormStyleStyleElement? stormStyleStyleElement = stormStorage.GetStormStyleStyleElementsByName("ReticleEnemy".AsSpan());
 
         // assert
-        stormElement.Should().NotBeNull();
-        stormElement!.XmlDataCount.Should().Be(5);
+        stormStyleStyleElement.Should().NotBeNull();
+        stormStyleStyleElement!.XmlDataCount.Should().Be(5);
     }
 
     [TestMethod]
-    public void GetStormStyleStylesByName_ExistsInNormalCache_ReturnsMergedNormalCache()
+    public void GetStormStyleStyleElementsByName_ExistsInNormalCache_ReturnsMergedNormalCache()
     {
         // arrange
         StormStorage stormStorage = new(false);
 
-        stormStorage.StormCache.StormStyleStylesByName.Add("ReticleEnemy", new StormElement(new StormXElementValuePath(
+        stormStorage.StormCache.StormStyleStyleElementsByName.Add("ReticleEnemy", new StormStyleStyleElement(new StormXElementValuePath(
             XElement.Parse(@"
 <Style name=""ReticleEnemy"" template=""Storm_Tutorial_Reticle_Text"" textcolor=""255,255,255,255"" />
 "),
             TestHelpers.GetStormPath("normal"))));
 
         // act
-        StormElement? stormElement = stormStorage.GetStormStyleStylesByName("ReticleEnemy".AsSpan());
+        StormStyleStyleElement? stormStyleStyleElement = stormStorage.GetStormStyleStyleElementsByName("ReticleEnemy".AsSpan());
 
         // assert
-        stormElement.Should().NotBeNull();
-        stormElement!.XmlDataCount.Should().Be(3);
+        stormStyleStyleElement.Should().NotBeNull();
+        stormStyleStyleElement!.XmlDataCount.Should().Be(3);
     }
 
     [TestMethod]
-    public void GetStormStyleStylesByName_ExistsInMapCache_ReturnsMergedMapCache()
+    public void GetStormStyleStyleElementsByName_ExistsInMapCache_ReturnsMergedMapCache()
     {
         // arrange
         StormStorage stormStorage = new(false);
 
-        stormStorage.StormMapCache.StormStyleStylesByName.Add("ReticleEnemy", new StormElement(new StormXElementValuePath(
+        stormStorage.StormMapCache.StormStyleStyleElementsByName.Add("ReticleEnemy", new StormStyleStyleElement(new StormXElementValuePath(
             XElement.Parse(@"
 <Style name=""ReticleEnemy"" template=""Storm_Tutorial_Reticle_Text"" textcolor=""255,255,255,255"" height=""80"" />
 "),
             TestHelpers.GetStormPath("map"))));
 
         // act
-        StormElement? stormElement = stormStorage.GetStormStyleStylesByName("ReticleEnemy".AsSpan());
+        StormStyleStyleElement? stormStyleStyleElement = stormStorage.GetStormStyleStyleElementsByName("ReticleEnemy".AsSpan());
 
         // assert
-        stormElement.Should().NotBeNull();
-        stormElement!.XmlDataCount.Should().Be(4);
+        stormStyleStyleElement.Should().NotBeNull();
+        stormStyleStyleElement!.XmlDataCount.Should().Be(4);
     }
 
     [TestMethod]
-    public void GetStormStyleStylesByName_ExistsInCustomCache_ReturnsMergedMapCache()
+    public void GetStormStyleStyleElementsByName_ExistsInCustomCache_ReturnsMergedMapCache()
     {
         // arrange
         StormStorage stormStorage = new(false);
 
-        stormStorage.StormCustomCache.StormStyleStylesByName.Add("ReticleEnemy", new StormElement(new StormXElementValuePath(
+        stormStorage.StormCustomCache.StormStyleStyleElementsByName.Add("ReticleEnemy", new StormStyleStyleElement(new StormXElementValuePath(
             XElement.Parse(@"
 <Style name=""ReticleEnemy"" template=""Storm_Tutorial_Reticle_Text"" textcolor=""255,255,255,255"" styleflags=""Shadow"" />
 "),
             TestHelpers.GetStormPath("custom"))));
 
         // act
-        StormElement? stormElement = stormStorage.GetStormStyleStylesByName("ReticleEnemy".AsSpan());
+        StormStyleStyleElement? stormStyleStyleElement = stormStorage.GetStormStyleStyleElementsByName("ReticleEnemy".AsSpan());
 
         // assert
-        stormElement.Should().NotBeNull();
-        stormElement!.XmlDataCount.Should().Be(4);
+        stormStyleStyleElement.Should().NotBeNull();
+        stormStyleStyleElement!.XmlDataCount.Should().Be(4);
     }
 
     [TestMethod]
-    public void GetStormStyleStylesByName_ExistsInNormalAndMapCache_ReturnsMergedNormalAndMapCache()
+    public void GetStormStyleStyleElementsByName_ExistsInNormalAndMapCache_ReturnsMergedNormalAndMapCache()
     {
         // arrange
         StormStorage stormStorage = new(false);
 
-        stormStorage.StormCache.StormStyleStylesByName.Add("ReticleEnemy", new StormElement(new StormXElementValuePath(
+        stormStorage.StormCache.StormStyleStyleElementsByName.Add("ReticleEnemy", new StormStyleStyleElement(new StormXElementValuePath(
             XElement.Parse(@"
 <Style name=""ReticleEnemy"" template=""Storm_Tutorial_Reticle_Text"" textcolor=""255,255,255,255"" />
 "),
             TestHelpers.GetStormPath("normal"))));
 
-        stormStorage.StormMapCache.StormStyleStylesByName.Add("ReticleEnemy", new StormElement(new StormXElementValuePath(
+        stormStorage.StormMapCache.StormStyleStyleElementsByName.Add("ReticleEnemy", new StormStyleStyleElement(new StormXElementValuePath(
             XElement.Parse(@"
 <Style name=""ReticleEnemy"" template=""Storm_Tutorial_Reticle_Text"" textcolor=""255,255,255,255"" height=""80"" />
 "),
             TestHelpers.GetStormPath("map"))));
 
         // act
-        StormElement? stormElement = stormStorage.GetStormStyleStylesByName("ReticleEnemy".AsSpan());
+        StormStyleStyleElement? stormStyleStyleElement = stormStorage.GetStormStyleStyleElementsByName("ReticleEnemy".AsSpan());
 
         // assert
-        stormElement.Should().NotBeNull();
-        stormElement!.XmlDataCount.Should().Be(4);
+        stormStyleStyleElement.Should().NotBeNull();
+        stormStyleStyleElement!.XmlDataCount.Should().Be(4);
     }
 
     [TestMethod]
-    public void GetStormStyleStylesByName_HasNoName_ReturnsNull()
+    public void GetStormStyleStyleElementsByName_HasNoName_ReturnsNull()
     {
         // arrange
         StormStorage stormStorage = new(false);
 
         // act
-        StormElement? result = stormStorage.GetStormStyleStylesByName("ReticleEnemy".AsSpan());
+        StormElement? result = stormStorage.GetStormStyleStyleElementsByName("ReticleEnemy".AsSpan());
 
         // assert
         result.Should().BeNull();
     }
 
     [TestMethod]
-    public void GetStormStyleStylesByName_NullDataObjectType_ThrowsException()
+    public void GetStormStyleStyleElementsByName_NullDataObjectType_ThrowsException()
     {
         // arrange
         StormStorage stormStorage = new();
 
         // act
-        Action result = () => stormStorage.GetStormStyleStylesByName(null!);
+        Action result = () => stormStorage.GetStormStyleStyleElementsByName(null!);
 
         // assert
         result.Should().Throw<ArgumentNullException>();
     }
 
     [TestMethod]
-    public void GetStormStyleStylesByName_ModifiedReturnValue_ShouldNotModifiedInternalData()
+    public void GetStormStyleStyleElementsByName_ModifiedReturnValue_ShouldNotModifiedInternalData()
     {
         // arrange
         StormStorage stormStorage = new(false);
 
-        stormStorage.StormCache.StormStyleStylesByName.Add("ReticleEnemy", new StormElement(new StormXElementValuePath(
+        stormStorage.StormCache.StormStyleStyleElementsByName.Add("ReticleEnemy", new StormStyleStyleElement(new StormXElementValuePath(
             XElement.Parse(@"
 <Style name=""ReticleEnemy"" template=""Storm_Tutorial_Reticle_Text"" textcolor=""255,255,255,255"" />
 "),
             TestHelpers.GetStormPath("normal"))));
 
-        stormStorage.StormMapCache.StormStyleStylesByName.Add("ReticleEnemy", new StormElement(new StormXElementValuePath(
+        stormStorage.StormMapCache.StormStyleStyleElementsByName.Add("ReticleEnemy", new StormStyleStyleElement(new StormXElementValuePath(
             XElement.Parse(@"
 <Style name=""ReticleEnemy"" template=""Storm_Tutorial_Reticle_Text"" textcolor=""255,255,255,255"" height=""80"" />
 "),
             TestHelpers.GetStormPath("map"))));
 
-        stormStorage.StormCustomCache.StormStyleStylesByName.Add("ReticleEnemy", new StormElement(new StormXElementValuePath(
+        stormStorage.StormCustomCache.StormStyleStyleElementsByName.Add("ReticleEnemy", new StormStyleStyleElement(new StormXElementValuePath(
             XElement.Parse(@"
 <Style name=""ReticleEnemy"" template=""Storm_Tutorial_Reticle_Text"" textcolor=""255,255,255,255"" styleflags=""Shadow"" height=""80"" />
 "),
             TestHelpers.GetStormPath("custom"))));
 
         // act
-        StormElement? result = stormStorage.GetStormStyleStylesByName("ReticleEnemy".AsSpan());
+        StormStyleStyleElement? result = stormStorage.GetStormStyleStyleElementsByName("ReticleEnemy".AsSpan());
 
-        result!.AddValue(new StormElement(new StormXElementValuePath(
+        result!.AddValue(new StormStyleStyleElement(new StormXElementValuePath(
             XElement.Parse(@"
 <Style name=""ReticleEnemy"" template=""Storm_Tutorial_Reticle_Text"" textcolor=""255,255,255,255"" styleflags=""Shadow"" shadowoffset=""3"" />
 "),
             TestHelpers.GetStormPath("custom"))));
 
         // assert
-        stormStorage.StormCache.StormStyleStylesByName["ReticleEnemy"].XmlDataCount.Should().Be(3);
-        stormStorage.StormMapCache.StormStyleStylesByName["ReticleEnemy"].XmlDataCount.Should().Be(4);
-        stormStorage.StormCustomCache.StormStyleStylesByName["ReticleEnemy"].XmlDataCount.Should().Be(5);
+        stormStorage.StormCache.StormStyleStyleElementsByName["ReticleEnemy"].XmlDataCount.Should().Be(3);
+        stormStorage.StormMapCache.StormStyleStyleElementsByName["ReticleEnemy"].XmlDataCount.Should().Be(4);
+        stormStorage.StormCustomCache.StormStyleStyleElementsByName["ReticleEnemy"].XmlDataCount.Should().Be(5);
     }
 
     [TestMethod]

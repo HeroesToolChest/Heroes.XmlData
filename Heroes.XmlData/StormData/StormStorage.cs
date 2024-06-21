@@ -258,7 +258,7 @@ internal partial class StormStorage : IStormStorage
             if (string.IsNullOrEmpty(name))
                 return;
 
-            currentStormCache.StormStyleConstantsByName[name] = new StormElement(new StormXElementValuePath(element, stormPath));
+            currentStormCache.StormStyleConstantElementsByName[name] = new StormStyleConstantElement(new StormXElementValuePath(element, stormPath));
         }
         else if (elementName.Equals("Style", StringComparison.OrdinalIgnoreCase))
         {
@@ -267,7 +267,7 @@ internal partial class StormStorage : IStormStorage
             if (string.IsNullOrEmpty(name))
                 return;
 
-            currentStormCache.StormStyleStylesByName[name] = new StormElement(new StormXElementValuePath(element, stormPath));
+            currentStormCache.StormStyleStyleElementsByName[name] = new StormStyleStyleElement(new StormXElementValuePath(element, stormPath));
         }
     }
 

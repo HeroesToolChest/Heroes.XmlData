@@ -166,9 +166,9 @@ public class HeroesData
     /// </summary>
     /// <param name="name">A character span that contains the name of the Constant element.</param>
     /// <returns>A StormStyle Constant <see cref="StormElement"/>.</returns>
-    public StormElement? GetStormStyleConstantStormElement(ReadOnlySpan<char> name)
+    public StormStyleConstantElement? GetStormStyleConstantStormElement(ReadOnlySpan<char> name)
     {
-        return _stormStorage.GetStormStyleConstantsByName(name);
+        return _stormStorage.GetStormStyleConstantElementsByName(name);
     }
 
     /// <summary>
@@ -176,9 +176,9 @@ public class HeroesData
     /// </summary>
     /// <param name="name">The name of the Constant element.</param>
     /// <returns>A StormStyle Constant <see cref="StormElement"/>.</returns>
-    public StormElement? GetStormStyleConstantStormElement(string name)
+    public StormStyleConstantElement? GetStormStyleConstantStormElement(string name)
     {
-        return _stormStorage.GetStormStyleConstantsByName(name);
+        return _stormStorage.GetStormStyleConstantElementsByName(name);
     }
 
     /// <summary>
@@ -186,9 +186,9 @@ public class HeroesData
     /// </summary>
     /// <param name="name">A character span that contains the name of the Style element.</param>
     /// <returns>A StormStyle Style <see cref="StormElement"/>.</returns>
-    public StormElement? GetStormStyleStyleStormElement(ReadOnlySpan<char> name)
+    public StormStyleStyleElement? GetStormStyleStyleStormElement(ReadOnlySpan<char> name)
     {
-        return _stormStorage.GetStormStyleStylesByName(name);
+        return _stormStorage.GetStormStyleStyleElementsByName(name);
     }
 
     /// <summary>
@@ -196,9 +196,9 @@ public class HeroesData
     /// </summary>
     /// <param name="name">The name of the Style element.</param>
     /// <returns>A StormStyle Style <see cref="StormElement"/>.</returns>
-    public StormElement? GetStormStyleStyleStormElement(string name)
+    public StormStyleStyleElement? GetStormStyleStyleStormElement(string name)
     {
-        return _stormStorage.GetStormStyleStylesByName(name);
+        return _stormStorage.GetStormStyleStyleElementsByName(name);
     }
 
     /// <summary>

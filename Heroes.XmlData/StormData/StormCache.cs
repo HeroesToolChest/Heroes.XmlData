@@ -56,12 +56,12 @@ internal class StormCache
     /// <summary>
     /// Gets a dictionary of Storm Style styles by name.
     /// </summary>
-    public Dictionary<string, StormElement> StormStyleStylesByName { get; } = [];
+    public Dictionary<string, StormStyleStyleElement> StormStyleStyleElementsByName { get; } = [];
 
     /// <summary>
     /// Gets a dictionary of Storm Style constants by name.
     /// </summary>
-    public Dictionary<string, StormElement> StormStyleConstantsByName { get; } = [];
+    public Dictionary<string, StormStyleConstantElement> StormStyleConstantElementsByName { get; } = [];
 
     /// <summary>
     /// Gets the level scaling cache. Used to determine the scaling value of damage abilities.
@@ -78,8 +78,8 @@ internal class StormCache
         ConstantXElementById.Clear();
         StormElementByElementType.Clear();
         StormElementsByDataObjectType.Clear();
-        StormStyleStylesByName.Clear();
-        StormStyleConstantsByName.Clear();
+        StormStyleStyleElementsByName.Clear();
+        StormStyleConstantElementsByName.Clear();
         ScaleValueByEntry.Clear();
     }
 }

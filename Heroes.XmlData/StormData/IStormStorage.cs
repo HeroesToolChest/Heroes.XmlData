@@ -98,13 +98,13 @@ internal interface IStormStorage
 
     StormElement? GetBaseStormElement(string elementType);
 
-    StormElement? GetStormStyleConstantsByName(ReadOnlySpan<char> name);
+    StormStyleConstantElement? GetStormStyleConstantElementsByName(ReadOnlySpan<char> name);
 
-    StormElement? GetStormStyleConstantsByName(string name);
+    StormStyleConstantElement? GetStormStyleConstantElementsByName(string name);
 
-    StormElement? GetStormStyleStylesByName(ReadOnlySpan<char> name);
+    StormStyleStyleElement? GetStormStyleStyleElementsByName(ReadOnlySpan<char> name);
 
-    StormElement? GetStormStyleStylesByName(string name);
+    StormStyleStyleElement? GetStormStyleStyleElementsByName(string name);
 
     StormGameString? GetStormGameString(ReadOnlySpan<char> id);
 
