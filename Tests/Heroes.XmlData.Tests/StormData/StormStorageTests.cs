@@ -63,7 +63,7 @@ public class StormStorageTests
     public void TryGetExistingDataObjectTypeByElementType_ElementTypes_ReturnsDataObjectType(string elementType, string dataObjectType)
     {
         // arrange
-        StormStorage stormStorage = new();
+        StormStorage stormStorage = new(false);
         stormStorage.StormCache.DataObjectTypeByElementType.Add("CEffectDamage", "Effect");
         stormStorage.StormCache.DataObjectTypeByElementType.Add("CEffectLaunchMissile", "Effect");
         stormStorage.StormCache.DataObjectTypeByElementType.Add("CUnit", "Unit");
@@ -111,7 +111,7 @@ public class StormStorageTests
     public void GetDataObjectTypeByElementType_HasElementType_ReturnsResult()
     {
         // arrange
-        StormStorage stormStorage = new();
+        StormStorage stormStorage = new(false);
         stormStorage.StormCache.DataObjectTypeByElementType.Add("CEffectDamage", "Effect");
 
         // act
@@ -125,7 +125,7 @@ public class StormStorageTests
     public void GetDataObjectTypeByElementType_HasNoElementType_ReturnsNull()
     {
         // arrange
-        StormStorage stormStorage = new();
+        StormStorage stormStorage = new(false);
 
         // act
         string? result = stormStorage.GetDataObjectTypeByElementType("CEffectDamage".AsSpan());
@@ -140,7 +140,7 @@ public class StormStorageTests
         // arrange
         string newValue = "modified";
 
-        StormStorage stormStorage = new();
+        StormStorage stormStorage = new(false);
         stormStorage.StormCache.DataObjectTypeByElementType.Add("CEffectDamage", "Effect");
 
         // act
@@ -159,7 +159,7 @@ public class StormStorageTests
     public void TryGetExistingElementTypesByDataObjectType_DataObjectTypes_ReturnsElementTypes(string dataObjectType, string[] elementTypes)
     {
         // arrange
-        StormStorage stormStorage = new();
+        StormStorage stormStorage = new(false);
         stormStorage.StormCache.ElementTypesByDataObjectType.Add("Effect", ["CEffectDamage", "CEffectLaunchMissile"]);
         stormStorage.StormCache.ElementTypesByDataObjectType.Add("Unit", ["CUnit"]);
         stormStorage.StormCache.ElementTypesByDataObjectType.Add("Actor", ["CActorModel"]);
@@ -282,7 +282,7 @@ public class StormStorageTests
     public void GetElementTypesByDataObjectType_ModifiedReturnValue_ShouldNotModifiedInternalData()
     {
         // arrange
-        StormStorage stormStorage = new();
+        StormStorage stormStorage = new(false);
         stormStorage.StormCache.ElementTypesByDataObjectType.Add("Effect", ["CEffectDamage", "CEffectLaunchMissile"]);
         stormStorage.StormCache.ElementTypesByDataObjectType.Add("Unit", ["CUnit"]);
         stormStorage.StormCache.ElementTypesByDataObjectType.Add("Actor", ["CActorModel"]);
