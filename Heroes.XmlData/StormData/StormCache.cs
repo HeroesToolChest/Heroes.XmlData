@@ -15,7 +15,10 @@ internal class StormCache
     /// </summary>
     public HashSet<StormPath> NotFoundFilesList { get; } = [];
 
-    public HashSet<KeyValuePair<LevelScalingEntry, StormStringValue>> ScaleValuesNotFoundList { get; } = [];
+    /// <summary>
+    /// Gets a collection of level scaling entries that could not be found.
+    /// </summary>
+    public List<KeyValuePair<LevelScalingEntry, StormStringValue>> NotFoundScaleValuesList { get; } = [];
 
     /// <summary>
     /// Gets a dictionary of gamestrings by id.

@@ -306,17 +306,19 @@ internal partial class StormStorage : IStormStorage
             StormStringValue stormStringValue = scaling.Value;
 
             StormElement? stormElement = ScaleValueParser.CreateStormElement(this, new LevelScalingEntry(levelScalingEntry.Catalog, levelScalingEntry.Entry, levelScalingEntry.Field), stormStringValue);
-
-            if (stormElement is not null)
+            if (stormElement is null)
             {
-                if (!currentStormCache.ScaleValueStormElementsByDataObjectType.ContainsKey(levelScalingEntry.Catalog))
-                    currentStormCache.ScaleValueStormElementsByDataObjectType.Add(levelScalingEntry.Catalog, []);
-
-                if (TryGetExistingScaleValueStormElementById(levelScalingEntry.Entry, levelScalingEntry.Catalog, out StormElement? existingStormElement))
-                    existingStormElement.AddValue(stormElement);
-                else
-                    currentStormCache.ScaleValueStormElementsByDataObjectType[levelScalingEntry.Catalog].Add(levelScalingEntry.Entry, stormElement);
+                currentStormCache.NotFoundScaleValuesList.Add(scaling);
+                continue;
             }
+
+            if (!currentStormCache.ScaleValueStormElementsByDataObjectType.ContainsKey(levelScalingEntry.Catalog))
+                currentStormCache.ScaleValueStormElementsByDataObjectType.Add(levelScalingEntry.Catalog, []);
+
+            if (TryGetExistingScaleValueStormElementById(levelScalingEntry.Entry, levelScalingEntry.Catalog, out StormElement? existingStormElement))
+                existingStormElement.AddValue(stormElement);
+            else
+                currentStormCache.ScaleValueStormElementsByDataObjectType[levelScalingEntry.Catalog].Add(levelScalingEntry.Entry, stormElement);
         }
     }
 

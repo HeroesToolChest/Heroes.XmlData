@@ -30,10 +30,13 @@ public class HeroesData
     /// </summary>
     public StormLocale? HeroesLocalization => _heroesLocalization;
 
-    [DebuggerHidden]
-    internal IStormStorage StormStorage => _stormStorage;
+    /// <summary>
+    /// Gets the build number.
+    /// </summary>
+    public int? Build => _stormStorage.GetBuildId();
 
-    //public int? GetBuildNumber() => _stormStorage.GetBuildId();
+    [DebuggerBrowsable(DebuggerBrowsableState.Never)]
+    internal IStormStorage StormStorage => _stormStorage;
 
     /// <summary>
     /// Get a collection of all the element types (e.g. CEffectDamage) associated with the data object type (e.g. Effect).
