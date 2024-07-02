@@ -36,11 +36,12 @@
   
   <ItemGroup>
     <PackageReference Include="Heroes.LocaleText" Version="1.0.0-beta.2" />
-    <PackageReference Include="Heroes.MpqTool" Version="1.1.0" />
+    <PackageReference Include="Heroes.MpqTool" Version="1.2.0" />
     <PackageReference Include="StyleCop.Analyzers" Version="1.2.0-beta.556">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
+    <PackageReference Include="TestableIO.System.IO.Abstractions.Wrappers" Version="21.0.22" />
     <PackageReference Include="U8XmlParser" Version="1.6.1" />
   </ItemGroup>
 
