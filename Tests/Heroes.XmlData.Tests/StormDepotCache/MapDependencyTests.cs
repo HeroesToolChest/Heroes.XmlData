@@ -24,7 +24,7 @@ public class MapDependencyTests
                 first.BnetNamespace.Should().Be(1146);
                 first.BnetVersionMajor.Should().Be(0);
                 first.BnetVersionMinor.Should().Be(0);
-                first.LocalFile.Should().Be("\\heroesmapmods\\battlegroundmapmods\\volskayasound.stormmod");
+                first.LocalFile.Should().Be(Path.Join($"{Path.DirectorySeparatorChar}", "heroesmapmods", "battlegroundmapmods", "volskayasound.stormmod"));
             },
             second =>
             {
@@ -32,7 +32,7 @@ public class MapDependencyTests
                 second.BnetNamespace.Should().Be(111);
                 second.BnetVersionMajor.Should().Be(1);
                 second.BnetVersionMinor.Should().Be(2);
-                second.LocalFile.Should().Be("\\heroesmapmods\\battlegroundmapmods\\volskayasound.stormmod");
+                second.LocalFile.Should().Be(Path.Join($"{Path.DirectorySeparatorChar}", "heroesmapmods", "battlegroundmapmods", "volskayasound.stormmod"));
             });
     }
 

@@ -46,8 +46,8 @@ public class FileStormModTests
         FileHeroesSource fileHeroesSource = new(stormStorage, _stormModFactory, _depotCacheFactory, "mods");
         FileStormMod fileStormMod = new(mockFileSystem, fileHeroesSource, "test.stormmod", StormModType.Normal);
 
-        _stormModFactory.CreateFileStormModInstance(fileHeroesSource, Path.Join("\\", "heromods", "test1.stormmod"), StormModType.Normal)
-            .Returns(new FileStormMod(mockFileSystem, fileHeroesSource, Path.Join("\\", "heromods", "test1.stormmod"), StormModType.Normal));
+        _stormModFactory.CreateFileStormModInstance(fileHeroesSource, Path.Join($"{Path.DirectorySeparatorChar}", "heromods", "test1.stormmod"), StormModType.Normal)
+            .Returns(new FileStormMod(mockFileSystem, fileHeroesSource, Path.Join($"{Path.DirectorySeparatorChar}", "heromods", "test1.stormmod"), StormModType.Normal));
 
         // act
         fileStormMod.LoadStormData();
@@ -82,8 +82,8 @@ public class FileStormModTests
         FileHeroesSource fileHeroesSource = new(stormStorage, _stormModFactory, _depotCacheFactory, "mods");
         FileStormMod fileStormMod = new(mockFileSystem, fileHeroesSource, "test.stormmod", StormModType.Normal);
 
-        _stormModFactory.CreateFileStormModInstance(fileHeroesSource, Path.Join("\\", "heromods", "test1.stormmod"), StormModType.Normal)
-            .Returns(new FileStormMod(mockFileSystem, fileHeroesSource, Path.Join("\\", "heromods", "test1.stormmod"), StormModType.Normal));
+        _stormModFactory.CreateFileStormModInstance(fileHeroesSource, Path.Join($"{Path.DirectorySeparatorChar}", "heromods", "test1.stormmod"), StormModType.Normal)
+            .Returns(new FileStormMod(mockFileSystem, fileHeroesSource, Path.Join($"{Path.DirectorySeparatorChar}", "heromods", "test1.stormmod"), StormModType.Normal));
 
         fileStormMod.LoadIncludesStormMods();
 
@@ -114,8 +114,8 @@ public class FileStormModTests
         FileHeroesSource fileHeroesSource = new(stormStorage, _stormModFactory, _depotCacheFactory, "mods");
         FileStormMod fileStormMod = new(mockFileSystem, fileHeroesSource, "test.stormmod", StormModType.Normal);
 
-        _stormModFactory.CreateFileStormModInstance(fileHeroesSource, Path.Join("\\", "heromods", "test1.stormmod"), StormModType.Normal)
-            .Returns(new FileStormMod(mockFileSystem, fileHeroesSource, Path.Join("\\", "heromods", "test1.stormmod"), StormModType.Normal));
+        _stormModFactory.CreateFileStormModInstance(fileHeroesSource, Path.Join($"{Path.DirectorySeparatorChar}", "heromods", "test1.stormmod"), StormModType.Normal)
+            .Returns(new FileStormMod(mockFileSystem, fileHeroesSource, Path.Join($"{Path.DirectorySeparatorChar}", "heromods", "test1.stormmod"), StormModType.Normal));
 
         fileStormMod.LoadIncludesStormMods();
 
@@ -139,7 +139,7 @@ public class FileStormModTests
             BnetNamespace = 0,
             BnetVersionMinor = 0,
             BnetVersionMajor = 0,
-            LocalFile = "\\heroesmapmods\\battlegroundmapmods\\volskayafoundry.stormmod",
+            LocalFile = Path.Join($"{Path.DirectorySeparatorChar}", "heroesmapmods", "battlegroundmapmods", "volskayafoundry.stormmod"),
         });
 
         // act
@@ -441,11 +441,11 @@ public class FileStormModTests
         FileHeroesSource fileHeroesSource = new(new StormStorage(false), _stormModFactory, _depotCacheFactory, "mods");
         FileStormMod fileStormMod = new(mockFileSystem, fileHeroesSource, "top.stormmod", StormModType.Normal);
 
-        _stormModFactory.CreateFileStormModInstance(fileHeroesSource, Path.Join("\\", "heromods", "test1.stormmod"), StormModType.Normal)
-            .Returns(new FileStormMod(mockFileSystem, fileHeroesSource, Path.Join("\\", "heromods", "test1.stormmod"), StormModType.Normal));
+        _stormModFactory.CreateFileStormModInstance(fileHeroesSource, Path.Join($"{Path.DirectorySeparatorChar}", "heromods", "test1.stormmod"), StormModType.Normal)
+            .Returns(new FileStormMod(mockFileSystem, fileHeroesSource, Path.Join($"{Path.DirectorySeparatorChar}", "heromods", "test1.stormmod"), StormModType.Normal));
 
-        _stormModFactory.CreateFileStormModInstance(fileHeroesSource, Path.Join("\\", "heromods", "test2.stormmod"), StormModType.Normal)
-            .Returns(new FileStormMod(mockFileSystem, fileHeroesSource, Path.Join("\\", "heromods", "test2.stormmod"), StormModType.Normal));
+        _stormModFactory.CreateFileStormModInstance(fileHeroesSource, Path.Join($"{Path.DirectorySeparatorChar}", "heromods", "test2.stormmod"), StormModType.Normal)
+            .Returns(new FileStormMod(mockFileSystem, fileHeroesSource, Path.Join($"{Path.DirectorySeparatorChar}", "heromods", "test2.stormmod"), StormModType.Normal));
 
         // act
         fileStormMod.LoadIncludesStormMods();
@@ -515,7 +515,7 @@ public class FileStormModTests
             .SatisfyRespectively(
                 first =>
                 {
-                    first.Path.Should().Be("mods\\test.stormmod\\base.stormdata\\gamedata");
+                    first.Path.Should().Be(Path.Join("mods", "test.stormmod", "base.stormdata", "gamedata"));
                     first.PathType.Should().Be(StormPathType.File);
                     first.StormModDirectoryPath.Should().Be("test.stormmod");
                     first.StormModName.Should().Be("test");
@@ -638,28 +638,28 @@ public class FileStormModTests
         });
 
         FileHeroesSource fileHeroesSource = new(new StormStorage(false), _stormModFactory, _depotCacheFactory, "mods");
-        FileStormMod fileStormMod = new(mockFileSystem, fileHeroesSource, Path.Join("\\", "heroesmapmods", "battlegroundmapmods", "volskayafoundry.stormmod"), StormModType.Map);
+        FileStormMod fileStormMod = new(mockFileSystem, fileHeroesSource, Path.Join($"{Path.DirectorySeparatorChar}", "heroesmapmods", "battlegroundmapmods", "volskayafoundry.stormmod"), StormModType.Map);
 
-        _stormModFactory.CreateFileStormModInstance(fileHeroesSource, Path.Join("\\", "heroesmapmods", "battlegroundmapmods", "volskayafoundry.stormmod"), StormModType.Map)
-            .Returns(new FileStormMod(mockFileSystem, fileHeroesSource, Path.Join("\\", "heroesmapmods", "battlegroundmapmods", "volskayafoundry.stormmod"), StormModType.Map));
+        _stormModFactory.CreateFileStormModInstance(fileHeroesSource, Path.Join($"{Path.DirectorySeparatorChar}", "heroesmapmods", "battlegroundmapmods", "volskayafoundry.stormmod"), StormModType.Map)
+            .Returns(new FileStormMod(mockFileSystem, fileHeroesSource, Path.Join($"{Path.DirectorySeparatorChar}", "heroesmapmods", "battlegroundmapmods", "volskayafoundry.stormmod"), StormModType.Map));
 
-        _stormModFactory.CreateFileStormModInstance(fileHeroesSource, Path.Join("\\", "heroesmapmods", "battlegroundmapmods", "volskayasound.stormmod"), StormModType.Map)
-            .Returns(new FileStormMod(mockFileSystem, fileHeroesSource, Path.Join("\\", "heroesmapmods", "battlegroundmapmods", "volskayasound.stormmod"), StormModType.Map));
+        _stormModFactory.CreateFileStormModInstance(fileHeroesSource, Path.Join($"{Path.DirectorySeparatorChar}", "heroesmapmods", "battlegroundmapmods", "volskayasound.stormmod"), StormModType.Map)
+            .Returns(new FileStormMod(mockFileSystem, fileHeroesSource, Path.Join($"{Path.DirectorySeparatorChar}", "heroesmapmods", "battlegroundmapmods", "volskayasound.stormmod"), StormModType.Map));
 
-        _stormModFactory.CreateFileStormModInstance(fileHeroesSource, Path.Join("\\", "heroesmapmods", "battlegroundmapmods", "volskayamechanics.stormmod"), StormModType.Map)
-            .Returns(new FileStormMod(mockFileSystem, fileHeroesSource, Path.Join("\\", "heroesmapmods", "battlegroundmapmods", "volskayamechanics.stormmod"), StormModType.Map));
+        _stormModFactory.CreateFileStormModInstance(fileHeroesSource, Path.Join($"{Path.DirectorySeparatorChar}", "heroesmapmods", "battlegroundmapmods", "volskayamechanics.stormmod"), StormModType.Map)
+            .Returns(new FileStormMod(mockFileSystem, fileHeroesSource, Path.Join($"{Path.DirectorySeparatorChar}", "heroesmapmods", "battlegroundmapmods", "volskayamechanics.stormmod"), StormModType.Map));
 
-        _stormModFactory.CreateFileStormModInstance(fileHeroesSource, Path.Join("\\", "heroesmapmods", "battlegroundmapmods", "volskayadata.stormmod"), StormModType.Map)
-            .Returns(new FileStormMod(mockFileSystem, fileHeroesSource, Path.Join("\\", "heroesmapmods", "battlegroundmapmods", "volskayadata.stormmod"), StormModType.Map));
+        _stormModFactory.CreateFileStormModInstance(fileHeroesSource, Path.Join($"{Path.DirectorySeparatorChar}", "heroesmapmods", "battlegroundmapmods", "volskayadata.stormmod"), StormModType.Map)
+            .Returns(new FileStormMod(mockFileSystem, fileHeroesSource, Path.Join($"{Path.DirectorySeparatorChar}", "heroesmapmods", "battlegroundmapmods", "volskayadata.stormmod"), StormModType.Map));
 
-        _stormModFactory.CreateFileStormModInstance(fileHeroesSource, Path.Join("\\", "heroesmapmods", "battlegroundmapmods", "conveyorbelts.stormmod"), StormModType.Map)
-            .Returns(new FileStormMod(mockFileSystem, fileHeroesSource, Path.Join("\\", "heroesmapmods", "battlegroundmapmods", "conveyorbelts.stormmod"), StormModType.Map));
+        _stormModFactory.CreateFileStormModInstance(fileHeroesSource, Path.Join($"{Path.DirectorySeparatorChar}", "heroesmapmods", "battlegroundmapmods", "conveyorbelts.stormmod"), StormModType.Map)
+            .Returns(new FileStormMod(mockFileSystem, fileHeroesSource, Path.Join($"{Path.DirectorySeparatorChar}", "heroesmapmods", "battlegroundmapmods", "conveyorbelts.stormmod"), StormModType.Map));
 
-        _stormModFactory.CreateFileStormModInstance(fileHeroesSource, Path.Join("\\", "heroesmapmods", "battlegroundmapmods", "overwatchdata.stormmod"), StormModType.Map)
-            .Returns(new FileStormMod(mockFileSystem, fileHeroesSource, Path.Join("\\", "heroesmapmods", "battlegroundmapmods", "overwatchdata.stormmod"), StormModType.Map));
+        _stormModFactory.CreateFileStormModInstance(fileHeroesSource, Path.Join($"{Path.DirectorySeparatorChar}", "heroesmapmods", "battlegroundmapmods", "overwatchdata.stormmod"), StormModType.Map)
+            .Returns(new FileStormMod(mockFileSystem, fileHeroesSource, Path.Join($"{Path.DirectorySeparatorChar}", "heroesmapmods", "battlegroundmapmods", "overwatchdata.stormmod"), StormModType.Map));
 
-        _stormModFactory.CreateFileStormModInstance(fileHeroesSource, Path.Join("\\", "heroesdata.stormmod"), StormModType.Map)
-            .Returns(new FileStormMod(mockFileSystem, fileHeroesSource, Path.Join("\\", "heroesdata.stormmod"), StormModType.Map));
+        _stormModFactory.CreateFileStormModInstance(fileHeroesSource, Path.Join($"{Path.DirectorySeparatorChar}", "heroesdata.stormmod"), StormModType.Map)
+            .Returns(new FileStormMod(mockFileSystem, fileHeroesSource, Path.Join($"{Path.DirectorySeparatorChar}", "heroesdata.stormmod"), StormModType.Map));
 
         return fileStormMod;
     }
