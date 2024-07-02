@@ -9,8 +9,6 @@ internal partial class StormStorage : IStormStorage
 {
     private readonly StormPath _rootFilePath;
 
-    private readonly List<StormModStorage> _stormModStorages = [];
-
     private int _loadedMapMods;
 
     public StormStorage(bool hasRootDefaults = true)
@@ -33,6 +31,8 @@ internal partial class StormStorage : IStormStorage
 
     public StormCache StormCustomCache { get; } = new();
 
+    public List<StormModStorage> StormModStorages { get; } = [];
+
     public StormModStorage CreateModStorage(IStormMod stormMod)
     {
         return new(stormMod, this);
@@ -40,7 +40,7 @@ internal partial class StormStorage : IStormStorage
 
     public void AddModStorage(StormModStorage stormModStorage)
     {
-        _stormModStorages.Add(stormModStorage);
+        StormModStorages.Add(stormModStorage);
 
         if (stormModStorage.StormModType == StormModType.Map)
             _loadedMapMods++;
@@ -71,7 +71,7 @@ internal partial class StormStorage : IStormStorage
     {
         Span<Range> ranges = stackalloc Range[2];
 
-        gamestring.Split(ranges, '=', StringSplitOptions.None);
+        gamestring.Split(ranges, '=', StringSplitOptions.RemoveEmptyEntries);
 
         if (gamestring[ranges[0]].IsEmpty || gamestring[ranges[0]].IsWhiteSpace())
             return null;
@@ -324,7 +324,7 @@ internal partial class StormStorage : IStormStorage
 
     public void ClearGamestrings()
     {
-        foreach (StormModStorage stormModStorage in _stormModStorages)
+        foreach (StormModStorage stormModStorage in StormModStorages)
             stormModStorage.ClearGameStrings();
 
         StormCache.GameStringsById.Clear();
@@ -340,7 +340,7 @@ internal partial class StormStorage : IStormStorage
 
     public int? GetBuildId()
     {
-        return _stormModStorages.FirstOrDefault()?.BuildId;
+        return StormModStorages.FirstOrDefault()?.BuildId;
     }
 
     private void AddRootDefaults()
@@ -420,14 +420,14 @@ internal partial class StormStorage : IStormStorage
     private void ClearStormMapContainers()
     {
         // stormmap mods are always at the end
-        for (int i = _stormModStorages.Count - 1; i > 0; i--)
+        for (int i = StormModStorages.Count - 1; i > 0; i--)
         {
             if (_loadedMapMods < 1)
                 break;
 
-            if (_stormModStorages[i].StormModType == StormModType.Map)
+            if (StormModStorages[i].StormModType == StormModType.Map)
             {
-                _stormModStorages.RemoveAt(i);
+                StormModStorages.RemoveAt(i);
                 _loadedMapMods--;
             }
         }

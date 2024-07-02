@@ -8,6 +8,8 @@ internal interface IStormStorage
 
     StormCache StormCustomCache { get; }
 
+    List<StormModStorage> StormModStorages { get; }
+
     StormModStorage CreateModStorage(IStormMod stormMod);
 
     void AddModStorage(StormModStorage stormModStorage);

@@ -17,8 +17,6 @@ internal class StormModStorage
     private readonly HashSet<StormPath> _addedXmlFontStyleFilePathsList = [];
     private readonly HashSet<StormPath> _addedGameStringFilePathsList = [];
 
-    private readonly Dictionary<string, GameStringText> _gameStringsById = [];
-
     internal StormModStorage(IStormMod stormMod, IStormStorage stormStorage)
     {
         _stormMod = stormMod;
@@ -27,7 +25,21 @@ internal class StormModStorage
 
     public int? BuildId { get; private set; }
 
+    public string Name => _stormMod.Name;
+
     public StormModType StormModType => _stormMod.StormModType;
+
+    public IEnumerable<StormPath> NotFoundDirectories => _notFoundDirectoriesList;
+
+    public IEnumerable<StormPath> NotFoundFiles => _notFoundFilesList;
+
+    public IEnumerable<StormPath> AddedXmlDataFilePaths => _addedXmlDataFilePathsList;
+
+    public IEnumerable<StormPath> AddedXmlFontStyleFilePaths => _addedXmlFontStyleFilePathsList;
+
+    public IEnumerable<StormPath> AddedGameStringFilePaths => _addedGameStringFilePathsList;
+
+    public Dictionary<string, GameStringText> GameStringsById { get; } = [];
 
     public void AddDirectoryNotFound(StormPath requiredStormDirectory)
     {
@@ -43,7 +55,7 @@ internal class StormModStorage
 
     public void AddGameString(string id, GameStringText gameStringText)
     {
-        _gameStringsById[id] = gameStringText;
+        GameStringsById[id] = gameStringText;
 
         _stormStorage.AddGameString(StormModType, id, gameStringText);
     }
@@ -108,13 +120,7 @@ internal class StormModStorage
 
     public void ClearGameStrings()
     {
-        _gameStringsById.Clear();
-    }
-
-    /// <inheritdoc/>
-    public override string ToString()
-    {
-        return _stormMod.Name;
+        GameStringsById.Clear();
     }
 
     public void UpdateConstantAttributes(IEnumerable<XElement> elements)
@@ -145,6 +151,12 @@ internal class StormModStorage
                 }
             }
         }
+    }
+
+    /// <inheritdoc/>
+    public override string ToString()
+    {
+        return Name;
     }
 
     private static string? SetDataObjectTypes(string filePath)

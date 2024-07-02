@@ -53,26 +53,7 @@ internal abstract class MpqStormMod<T> : StormMod<T>
         base.LoadStormGameStrings(stormLocale);
     }
 
-    protected override string GetGameStringFilePath(StormLocale stormLocale)
-    {
-        return Path.Join(StormLocaleData.GetStormDataFileName(stormLocale), HeroesSource.LocalizedDataDirectory, HeroesSource.GameStringFile);
-    }
-
-    protected override bool TryGetFile(string filePath, [NotNullWhen(true)] out Stream? stream)
-    {
-        stream = null;
-
-        if (_mpqHeroesArchive is null || !TryGetEntry(filePath, out MpqHeroesArchiveEntry? entry))
-        {
-            return false;
-        }
-
-        stream = _mpqHeroesArchive.DecompressEntry(entry.Value);
-
-        return true;
-    }
-
-    protected override void LoadGameDataDirectory()
+    public override void LoadGameDataDirectory()
     {
         if (_mpqFolderRoot is null || !_mpqFolderRoot.TryGetLastDirectory(GameDataDirectoryPath, out MpqFolder? gameDataFolder))
         {
@@ -91,6 +72,25 @@ internal abstract class MpqStormMod<T> : StormMod<T>
         {
             AddXmlFile(file.Value.FullName);
         }
+    }
+
+    protected override string GetGameStringFilePath(StormLocale stormLocale)
+    {
+        return Path.Join(StormLocaleData.GetStormDataFileName(stormLocale), HeroesSource.LocalizedDataDirectory, HeroesSource.GameStringFile);
+    }
+
+    protected override bool TryGetFile(string filePath, [NotNullWhen(true)] out Stream? stream)
+    {
+        stream = null;
+
+        if (_mpqHeroesArchive is null || !TryGetEntry(filePath, out MpqHeroesArchiveEntry? entry))
+        {
+            return false;
+        }
+
+        stream = _mpqHeroesArchive.DecompressEntry(entry.Value);
+
+        return true;
     }
 
     protected abstract Stream GetMpqFile(string file);

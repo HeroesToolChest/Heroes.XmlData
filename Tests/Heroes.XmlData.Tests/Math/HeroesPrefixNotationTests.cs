@@ -1,5 +1,3 @@
-using Heroes.XmlData.StormData;
-using Heroes.XmlData.StormMods;
 using Heroes.XmlData.Tests;
 using System.Collections.Concurrent;
 using System.Data;

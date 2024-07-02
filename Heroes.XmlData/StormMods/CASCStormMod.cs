@@ -12,19 +12,7 @@ internal class CASCStormMod : StormMod<ICASCHeroesSource>, IStormMod
     {
     }
 
-    protected override bool TryGetFile(string filePath, [NotNullWhen(true)] out Stream? stream)
-    {
-        stream = null;
-
-        if (!HeroesSource.CASCHeroesStorage.CASCHandler.FileExists(filePath))
-            return false;
-
-        stream = HeroesSource.CASCHeroesStorage.CASCHandler.OpenFile(filePath);
-
-        return true;
-    }
-
-    protected override void LoadGameDataDirectory()
+    public override void LoadGameDataDirectory()
     {
         if (!HeroesSource.CASCHeroesStorage.CASCFolderRoot.TryGetLastDirectory(GameDataDirectoryPath, out CASCFolder? gameDataFolder))
         {
@@ -43,6 +31,18 @@ internal class CASCStormMod : StormMod<ICASCHeroesSource>, IStormMod
         {
             AddXmlFile(file.Value.FullName);
         }
+    }
+
+    protected override bool TryGetFile(string filePath, [NotNullWhen(true)] out Stream? stream)
+    {
+        stream = null;
+
+        if (!HeroesSource.CASCHeroesStorage.CASCHandler.FileExists(filePath))
+            return false;
+
+        stream = HeroesSource.CASCHeroesStorage.CASCHandler.OpenFile(filePath);
+
+        return true;
     }
 
     protected override IStormMod GetStormMod(string path, StormModType stormModType) => HeroesSource.StormModFactory.CreateCASCStormModInstance(HeroesSource, path, stormModType);

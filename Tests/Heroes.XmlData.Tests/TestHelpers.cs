@@ -1,6 +1,4 @@
-﻿using Heroes.XmlData.StormData;
-
-namespace Heroes.XmlData.Tests;
+﻿namespace Heroes.XmlData.Tests;
 
 internal static class TestHelpers
 {

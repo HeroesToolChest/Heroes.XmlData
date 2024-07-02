@@ -1,6 +1,4 @@
-﻿using Heroes.LocaleText;
-
-namespace Heroes.XmlData.Tests;
+﻿namespace Heroes.XmlData.Tests;
 
 [TestClass]
 public class ManualModLoaderTests

@@ -1,4 +1,6 @@
-﻿namespace Heroes.XmlData.StormMods;
+﻿using System.IO.Abstractions;
+
+namespace Heroes.XmlData.StormMods;
 
 internal class FileStormMod : StormMod<IFileHeroesSource>
 {
@@ -12,23 +14,19 @@ internal class FileStormMod : StormMod<IFileHeroesSource>
     {
     }
 
-    protected override bool TryGetFile(string filePath, [NotNullWhen(true)] out Stream? stream)
+    public FileStormMod(IFileSystem fileSystem, IFileHeroesSource heroesSource, string directoryPath, StormModType stormModType)
+        : base(fileSystem, heroesSource, directoryPath, stormModType, StormPathType.File)
     {
-        stream = null;
-
-        if (!File.Exists(filePath))
-        {
-            return false;
-        }
-
-        stream = File.OpenRead(filePath);
-
-        return true;
     }
 
-    protected override void LoadGameDataDirectory()
+    public FileStormMod(IFileSystem fileSystem, IFileHeroesSource heroesSource, string name, string directoryPath, StormModType stormModType)
+        : base(fileSystem, heroesSource, name, directoryPath, stormModType, StormPathType.File)
     {
-        if (!Directory.Exists(GameDataDirectoryPath))
+    }
+
+    public override void LoadGameDataDirectory()
+    {
+        if (!FileSystem.Directory.Exists(GameDataDirectoryPath))
         {
             StormModStorage.AddDirectoryNotFound(new StormPath()
             {
@@ -41,7 +39,7 @@ internal class FileStormMod : StormMod<IFileHeroesSource>
             return;
         }
 
-        IEnumerable<string> files = Directory.EnumerateFiles(GameDataDirectoryPath);
+        IEnumerable<string> files = FileSystem.Directory.EnumerateFiles(GameDataDirectoryPath);
 
         foreach (string file in files)
         {
@@ -50,6 +48,20 @@ internal class FileStormMod : StormMod<IFileHeroesSource>
             else
                 AddXmlFile(file);
         }
+    }
+
+    protected override bool TryGetFile(string filePath, [NotNullWhen(true)] out Stream? stream)
+    {
+        stream = null;
+
+        if (!FileSystem.File.Exists(filePath))
+        {
+            return false;
+        }
+
+        stream = FileSystem.File.OpenRead(filePath);
+
+        return true;
     }
 
     protected override IStormMod GetStormMod(string path, StormModType stormModType) => HeroesSource.StormModFactory.CreateFileStormModInstance(HeroesSource, path, stormModType);

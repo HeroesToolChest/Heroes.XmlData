@@ -1,19 +1,13 @@
-﻿using Heroes.XmlData.Source;
-using Heroes.XmlData.StormData;
-using Heroes.XmlData.StormMods;
-
-namespace Heroes.XmlData.Tests.StormMods;
+﻿namespace Heroes.XmlData.Tests.StormMods;
 
 [TestClass]
 public class CustomStormModTests
 {
     private readonly IHeroesSource _heroesSource;
-    private readonly IStormStorage _stormStorage;
 
     public CustomStormModTests()
     {
         _heroesSource = Substitute.For<IHeroesSource>();
-        _stormStorage = Substitute.For<IStormStorage>();
     }
 
     [TestMethod]

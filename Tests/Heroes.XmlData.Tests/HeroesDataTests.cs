@@ -1,5 +1,4 @@
-﻿using Heroes.LocaleText;
-using Microsoft.VisualStudio.TestPlatform.MSTest.TestAdapter.ObjectModel;
+﻿using Microsoft.VisualStudio.TestPlatform.MSTest.TestAdapter.ObjectModel;
 
 namespace Heroes.XmlData.Tests;
 
