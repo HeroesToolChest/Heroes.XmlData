@@ -1,16 +1,18 @@
-﻿namespace Heroes.XmlData.Source;
+﻿using Heroes.XmlData.CASC;
+
+namespace Heroes.XmlData.Source;
 
 internal class CASCHeroesSource : HeroesSource, ICASCHeroesSource
 {
-    private readonly CASCHeroesStorage _cascHeroesStorage;
+    private readonly ICASCHeroesStorage _cascHeroesStorage;
 
-    public CASCHeroesSource(IStormStorage stormStorage, IStormModFactory stormModFactory, IDepotCacheFactory depotCacheFactory, CASCHeroesStorage cascHeroesStorage)
+    public CASCHeroesSource(IStormStorage stormStorage, IStormModFactory stormModFactory, IDepotCacheFactory depotCacheFactory, ICASCHeroesStorage cascHeroesStorage)
         : base(stormStorage, stormModFactory, depotCacheFactory)
     {
         _cascHeroesStorage = cascHeroesStorage;
     }
 
-    public CASCHeroesStorage CASCHeroesStorage => _cascHeroesStorage;
+    public ICASCHeroesStorage CASCHeroesStorage => _cascHeroesStorage;
 
     protected override IStormMod GetStormMod(string directoryPath, StormModType stormModType) => StormModFactory.CreateCASCStormModInstance(this, directoryPath, stormModType);
 

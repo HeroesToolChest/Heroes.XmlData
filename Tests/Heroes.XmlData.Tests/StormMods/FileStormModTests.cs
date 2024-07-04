@@ -3,13 +3,11 @@
 [TestClass]
 public class FileStormModTests
 {
-    private readonly IFileHeroesSource _fileHeroesSource;
     private readonly IStormModFactory _stormModFactory;
     private readonly IDepotCacheFactory _depotCacheFactory;
 
     public FileStormModTests()
     {
-        _fileHeroesSource = Substitute.For<IFileHeroesSource>();
         _stormModFactory = Substitute.For<IStormModFactory>();
         _depotCacheFactory = Substitute.For<IDepotCacheFactory>();
     }

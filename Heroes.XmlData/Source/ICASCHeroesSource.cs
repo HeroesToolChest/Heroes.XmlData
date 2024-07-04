@@ -1,6 +1,8 @@
-﻿namespace Heroes.XmlData.Source;
+﻿using Heroes.XmlData.CASC;
+
+namespace Heroes.XmlData.Source;
 
 internal interface ICASCHeroesSource : IHeroesSource
 {
-    CASCHeroesStorage CASCHeroesStorage { get; }
+    ICASCHeroesStorage CASCHeroesStorage { get; }
 }

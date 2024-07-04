@@ -55,15 +55,15 @@ public class HeroesXmlLoader
         return new HeroesXmlLoader(pathToModsDirectory);
     }
 
-    /// <summary>
-    /// Gets an instance of the <see cref="HeroesXmlLoader"/> class. Sets the source of the data to be loaded from the Heroes of the Storm directory.
-    /// </summary>
-    /// <param name="cascHeroesStorage">A <paramref name="cascHeroesStorage"/>.</param>
-    /// <returns>A <see cref="HeroesXmlLoader"/> instance.</returns>
-    public static HeroesXmlLoader LoadAsCASC(CASCHeroesStorage cascHeroesStorage)
-    {
-        return new HeroesXmlLoader(cascHeroesStorage);
-    }
+    ///// <summary>
+    ///// Gets an instance of the <see cref="HeroesXmlLoader"/> class. Sets the source of the data to be loaded from the Heroes of the Storm directory.
+    ///// </summary>
+    ///// <param name="cascHeroesStorage">A <paramref name="cascHeroesStorage"/>.</param>
+    ///// <returns>A <see cref="HeroesXmlLoader"/> instance.</returns>
+    //public static HeroesXmlLoader LoadAsCASC(CASCHeroesStorage cascHeroesStorage)
+    //{
+    //    return new HeroesXmlLoader(cascHeroesStorage);
+    //}
 
     /// <summary>
     /// Gets an instance of the <see cref="HeroesXmlLoader"/> class. Sets the source of the data to be loaded from the Heroes of the Storm directory.

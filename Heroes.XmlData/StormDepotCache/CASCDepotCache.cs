@@ -32,7 +32,7 @@ internal class CASCDepotCache : DepotCache<ICASCHeroesSource>
                     if (!IsS2mvFile(file.Value.FullName))
                         continue;
 
-                    if (LoadS2mvFile(HeroesSource.CASCHeroesStorage.CASCHandler.OpenFile(file.Value.FullName)))
+                    if (LoadS2mvFile(HeroesSource.CASCHeroesStorage.CASCHandlerWrapper.OpenFile(file.Value.FullName)))
                     {
                         HeroesSource.S2MVPaths.Add(file.Value.FullName);
                         HeroesSource.S2MVPropertiesByHashCode.Last().Value.DirectoryPath = PathHelper.NormalizePath(file.Value.FullName, HeroesSource.DefaultModsDirectory);
@@ -51,7 +51,7 @@ internal class CASCDepotCache : DepotCache<ICASCHeroesSource>
                     if (!IsS2maFile(file.Value.FullName))
                         continue;
 
-                    if (LoadS2maFile(HeroesSource.CASCHeroesStorage.CASCHandler.OpenFile(file.Value.FullName)))
+                    if (LoadS2maFile(HeroesSource.CASCHeroesStorage.CASCHandlerWrapper.OpenFile(file.Value.FullName)))
                     {
                         HeroesSource.S2MAPaths.Add(file.Value.FullName);
                         HeroesSource.S2MAProperties.Last().DirectoryPath = PathHelper.NormalizePath(file.Value.FullName, HeroesSource.DefaultModsDirectory);

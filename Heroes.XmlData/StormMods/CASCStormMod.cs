@@ -29,7 +29,10 @@ internal class CASCStormMod : StormMod<ICASCHeroesSource>, IStormMod
 
         foreach (KeyValuePair<string, CASCFile> file in gameDataFolder.Files)
         {
-            AddXmlFile(file.Value.FullName);
+            if (DirectoryPath == HeroesSource.CoreStormModDirectory || DirectoryPath == HeroesSource.HeroesDataStormModDirectory)
+                AddXmlFile(file.Value.FullName, true);
+            else
+                AddXmlFile(file.Value.FullName);
         }
     }
 
@@ -37,10 +40,10 @@ internal class CASCStormMod : StormMod<ICASCHeroesSource>, IStormMod
     {
         stream = null;
 
-        if (!HeroesSource.CASCHeroesStorage.CASCHandler.FileExists(filePath))
+        if (!HeroesSource.CASCHeroesStorage.CASCHandlerWrapper.FileExists(filePath))
             return false;
 
-        stream = HeroesSource.CASCHeroesStorage.CASCHandler.OpenFile(filePath);
+        stream = HeroesSource.CASCHeroesStorage.CASCHandlerWrapper.OpenFile(filePath);
 
         return true;
     }

@@ -30,6 +30,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\CascLib\CascLib\CascLib.csproj" />
     <ProjectReference Include="..\..\Heroes.XmlData\Heroes.XmlData.csproj" />
   </ItemGroup>
 
