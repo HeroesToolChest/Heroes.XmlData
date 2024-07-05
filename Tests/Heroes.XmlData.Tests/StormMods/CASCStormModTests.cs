@@ -178,7 +178,6 @@ public class CASCStormModTests
 
         CASCHeroesSource cascHeroesSource = new(stormStorage, _stormModFactory, _depotCacheFactory, _cascHeroesStorage);
 
-        FileHeroesSource fileHeroesSource = new(stormStorage, _stormModFactory, _depotCacheFactory, "mods");
         CASCStormMod cascStormMod = new(cascHeroesSource, "test.stormmod", StormModType.Normal);
 
         _cascHeroesStorage.CASCFolderRoot.Returns(new CASCFolder("cascfolder"));
