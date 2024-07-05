@@ -1,4 +1,5 @@
 ﻿using System.Buffers;
+using System.IO.Abstractions;
 
 namespace Heroes.XmlData.StormMods;
 
@@ -24,6 +25,16 @@ internal abstract class MpqStormMod<T> : StormMod<T>
     {
     }
 
+    protected MpqStormMod(IFileSystem fileSystem, T heroesSource, string directoryPath, StormModType stormModType)
+        : base(fileSystem, heroesSource, directoryPath, stormModType, StormPathType.MPQ)
+    {
+    }
+
+    protected MpqStormMod(IFileSystem fileSystem, T heroesSource, string name, string directoryPath, StormModType stormModType)
+        : base(fileSystem, heroesSource, name, directoryPath, stormModType, StormPathType.MPQ)
+    {
+    }
+
     protected string MpqDirectoryPath => Path.Join(HeroesSource.ModsBaseDirectoryPath, DirectoryPath);
 
     protected override string GameDataDirectoryPath => Path.Join(HeroesSource.BaseStormDataDirectory, HeroesSource.GameDataDirectory);
@@ -40,6 +51,7 @@ internal abstract class MpqStormMod<T> : StormMod<T>
 
     public override void LoadStormData()
     {
+        // sets _mpqHeroesArchive field
         using MpqHeroesArchive mpqHeroesArchive = GetMpqHeroesArchive();
 
         CreateMpqFileTree();
@@ -48,6 +60,7 @@ internal abstract class MpqStormMod<T> : StormMod<T>
 
     public override void LoadStormGameStrings(StormLocale stormLocale)
     {
+        // sets _mpqHeroesArchive field
         using MpqHeroesArchive mpqHeroesArchive = GetMpqHeroesArchive();
 
         base.LoadStormGameStrings(stormLocale);
@@ -123,15 +136,19 @@ internal abstract class MpqStormMod<T> : StormMod<T>
         }
     }
 
+    // used to set the _mpqHeroesArchive field
     private MpqHeroesArchive GetMpqHeroesArchive()
     {
         MpqHeroesArchive mpqHeroesArchive = MpqHeroesFile.Open(GetMpqFile(MpqDirectoryPath));
         _mpqHeroesArchive = mpqHeroesArchive;
-        return mpqHeroesArchive;
+        return _mpqHeroesArchive;
     }
 
     private void CreateMpqFileTree()
     {
+        if (_mpqFolderRoot is not null)
+            return;
+
         _mpqFolderRoot = new MpqFolder("root");
 
         if (_mpqHeroesArchive is null)
