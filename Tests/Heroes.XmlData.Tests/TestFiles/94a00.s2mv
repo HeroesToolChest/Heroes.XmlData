@@ -1,0 +1,776 @@
+{
+    "AddMultiMod": false,
+    "ResultDefinitions": [
+        {
+            "Name": "DragonShireRoot",
+            "HandleId": 50331655,
+            "Form": "Heading",
+            "Flags": [],
+            "Containers": [
+                {
+                    "HandleId": 0,
+                    "OrderHint": 7
+                }
+            ],
+            "Visual": {
+                "Text": "",
+                "Tip": ""
+            }
+        },
+        {
+            "Name": "DragonShireHeroes",
+            "HandleId": 50331656,
+            "Form": "Heading",
+            "Flags": [],
+            "Containers": [
+                {
+                    "HandleId": 50331655,
+                    "OrderHint": 0
+                }
+            ],
+            "Visual": {
+                "Text": "ScoreResult/PublishName/DragonShireHeroes",
+                "Tip": "ScoreResult/Tooltip/DragonShireHeroes"
+            }
+        },
+        {
+            "Name": "DragonShireHeroes_template",
+            "HandleId": 67108872,
+            "Form": "Score",
+            "Flags": [],
+            "Containers": [
+                {
+                    "HandleId": 50331656,
+                    "OrderHint": 0
+                }
+            ],
+            "Visual": {
+                "Text": "ScoreResult/PublishName/DragonShireHeroes",
+                "Tip": "ScoreResult/Tooltip/DragonShireHeroes"
+            }
+        },
+        {
+            "Name": "DragonNumberOfDragonCaptures",
+            "HandleId": 192,
+            "Form": "Value",
+            "Flags": [
+                "PERFORMANCE_MEASURE"
+            ],
+            "Containers": [
+                {
+                    "HandleId": 67108872,
+                    "OrderHint": 0
+                }
+            ],
+            "Visual": {
+                "Text": "ScoreValue/PublishName/DragonNumberOfDragonCaptures",
+                "Tip": "ScoreValue/Tooltip/DragonNumberOfDragonCaptures"
+            },
+            "Tag": 1145794164
+        },
+        {
+            "Name": "DragonShrinesCaptured",
+            "HandleId": 178,
+            "Form": "Value",
+            "Flags": [
+                "PERFORMANCE_MEASURE"
+            ],
+            "Containers": [
+                {
+                    "HandleId": 67108872,
+                    "OrderHint": 1
+                }
+            ],
+            "Visual": {
+                "Text": "ScoreValue/PublishName/DragonShrinesCaptured",
+                "Tip": "ScoreValue/Tooltip/DragonShrinesCaptured"
+            },
+            "Tag": 1146316914
+        }
+    ],
+    "GameInfoScreenshots": [],
+    "HowToPlayScreenshots": [],
+    "HowToPlay": [
+        {
+            "Title": "DocInfo/HowToPlaySummaryHeaderTitle",
+            "ListType": "Plain",
+            "Lines": [
+                "DocInfo/HowToPlaySummary00"
+            ]
+        }
+    ],
+    "DocInfo": {
+        "Info": {
+            "Flags": 0,
+            "ModType": 1,
+            "IconFile": "Assets/Textures/storm_ui_homescreenbackground_volskaya.dds",
+            "Tutorial": {
+                "Type": 0,
+                "BnetName": "",
+                "BnetVersionMajor": 0,
+                "BnetVersionMinor": 0,
+                "VariantIndex": 0,
+                "GameSpeed": 2,
+                "VariantCategoryId": 0,
+                "VariantModeId": 0
+            },
+            "ClusterParent": "",
+            "MatchMakerTags": [
+                "Hero"
+            ]
+        },
+        "Sections": [],
+        "Dependencies": [
+            {
+                "BnetName": "Volskaya Sound",
+                "BnetVersionMajor": 0,
+                "BnetVersionMinor": 0,
+                "BnetNamespace": 1146,
+                "LocalFile": "Mods/heroesmapmods/battlegroundmapmods/volskayasound.stormmod",
+                "DocumentDependencyType": 0
+            }
+        ],
+        "ModifiableDependencies": [
+            "Mods/HeroesData.StormMod",
+            "Mods/heroesmapmods/battlegroundmapmods/overwatchdata.stormmod",
+            "Mods/heroesmapmods/battlegroundmapmods/volskayamechanics.stormmod"
+        ],
+        "HowToPlay": [
+            0,
+            0,
+            2,
+            0,
+            2
+        ],
+        "PatchNotes": [],
+        "Preload": []
+    },
+    "MapInfo": {
+        "MapSymmetry": {
+            "BoundsCustom": {
+                "l": {
+                    "x": 0,
+                    "y": 0
+                },
+                "h": {
+                    "x": 0,
+                    "y": 0
+                }
+            },
+            "BoundsType": 1,
+            "Diagonal": -1,
+            "HAxis": 0,
+            "Rotation": -1,
+            "Segments": 0,
+            "Type": 1,
+            "VAxis": 1
+        },
+        "Players": [
+            {
+                "Color": 10,
+                "CustomAI": "",
+                "Decal": "",
+                "Flags": 0,
+                "Name": "",
+                "PlayerId": 0,
+                "Races": "",
+                "StartLoc": 0,
+                "Type": 3
+            },
+            {
+                "Color": 2,
+                "CustomAI": "",
+                "Decal": "Decal_Protoss_0008_01",
+                "Flags": 0,
+                "Name": "",
+                "PlayerId": 1,
+                "Races": "Prot",
+                "StartLoc": 3,
+                "Type": 1
+            },
+            {
+                "Color": 2,
+                "CustomAI": "",
+                "Decal": "Decal_Protoss_0008_01",
+                "Flags": 0,
+                "Name": "",
+                "PlayerId": 2,
+                "Races": "Prot",
+                "StartLoc": 4,
+                "Type": 1
+            },
+            {
+                "Color": 2,
+                "CustomAI": "",
+                "Decal": "Decal_Protoss_0008_01",
+                "Flags": 0,
+                "Name": "",
+                "PlayerId": 3,
+                "Races": "Prot",
+                "StartLoc": 5,
+                "Type": 1
+            },
+            {
+                "Color": 2,
+                "CustomAI": "",
+                "Decal": "Decal_Protoss_0008_01",
+                "Flags": 0,
+                "Name": "",
+                "PlayerId": 4,
+                "Races": "Prot",
+                "StartLoc": 6,
+                "Type": 1
+            },
+            {
+                "Color": 2,
+                "CustomAI": "",
+                "Decal": "Decal_Protoss_0008_01",
+                "Flags": 0,
+                "Name": "",
+                "PlayerId": 5,
+                "Races": "Prot",
+                "StartLoc": 7,
+                "Type": 1
+            },
+            {
+                "Color": 6,
+                "CustomAI": "",
+                "Decal": "Decal_Protoss_0027_01",
+                "Flags": 0,
+                "Name": "",
+                "PlayerId": 6,
+                "Races": "Prot",
+                "StartLoc": 8,
+                "Type": 1
+            },
+            {
+                "Color": 6,
+                "CustomAI": "",
+                "Decal": "Decal_Protoss_0027_01",
+                "Flags": 0,
+                "Name": "",
+                "PlayerId": 7,
+                "Races": "Prot",
+                "StartLoc": 9,
+                "Type": 1
+            },
+            {
+                "Color": 6,
+                "CustomAI": "",
+                "Decal": "Decal_Protoss_0027_01",
+                "Flags": 0,
+                "Name": "",
+                "PlayerId": 8,
+                "Races": "Prot",
+                "StartLoc": 10,
+                "Type": 1
+            },
+            {
+                "Color": 6,
+                "CustomAI": "",
+                "Decal": "Decal_Protoss_0027_01",
+                "Flags": 0,
+                "Name": "",
+                "PlayerId": 9,
+                "Races": "Prot",
+                "StartLoc": 11,
+                "Type": 1
+            },
+            {
+                "Color": 6,
+                "CustomAI": "",
+                "Decal": "Decal_Protoss_0027_01",
+                "Flags": 0,
+                "Name": "",
+                "PlayerId": 10,
+                "Races": "Prot",
+                "StartLoc": 12,
+                "Type": 1
+            },
+            {
+                "Color": 2,
+                "CustomAI": "",
+                "Decal": "",
+                "Flags": 0,
+                "Name": "",
+                "PlayerId": 11,
+                "Races": "",
+                "StartLoc": 0,
+                "Type": 4
+            },
+            {
+                "Color": 1,
+                "CustomAI": "",
+                "Decal": "",
+                "Flags": 0,
+                "Name": "",
+                "PlayerId": 12,
+                "Races": "",
+                "StartLoc": 0,
+                "Type": 4
+            },
+            {
+                "Color": 0,
+                "CustomAI": "",
+                "Decal": "",
+                "Flags": 0,
+                "Name": "",
+                "PlayerId": 15,
+                "Races": "",
+                "StartLoc": 0,
+                "Type": 4
+            }
+        ],
+        "Properties": {
+            "Size": {
+                "x": 248,
+                "y": 208
+            },
+            "Preview": 1,
+            "PreviewImage": "",
+            "PreviewLarge": 2,
+            "PreviewLargeImage": "Assets/Textures/storm_ui_homescreenbackground_volskaya.dds",
+            "CustomMinimap": "CustomMiniMap.dds",
+            "MinimapHoverImage": "CustomMiniMap_Hover.dds",
+            "MinimapPixPerCell": 2,
+            "UserDifficulty": 0,
+            "PrimaryTexSet": "StormOWVol",
+            "Fow": "BlackNoUnhide",
+            "PlayableBounds": {
+                "l": {
+                    "x": 3,
+                    "y": 4
+                },
+                "h": {
+                    "x": 245,
+                    "y": 196
+                }
+            },
+            "BaseHeight": 7.75,
+            "Loading": {
+                "Type": 1,
+                "Image": "Assets/Textures/storm_ui_homescreenbackground_volskaya.dds",
+                "ImageScale": 1,
+                "TextAnchor": -1,
+                "TextOffset": {
+                    "x": 0,
+                    "y": 0
+                },
+                "TextSize": {
+                    "x": 800,
+                    "y": 600
+                },
+                "BarSuffix": "",
+                "CustomLayout": "UI/Layout/LoadingScreens/Volskaya_Loading.StormLayout",
+                "CustomFrame": "Volskaya_Loading/ScreenMapLoading_Volskaya",
+                "Music": "LoadingMusic_Volskaya",
+                "MapLink": "Volskaya"
+            },
+            "Flags": 16416,
+            "Type": 1,
+            "PublishType": 2,
+            "LightGenScale": 1.0,
+            "LightGenTime": 1405459555,
+            "LightModTime": 1511923963,
+            "DefaultObserved": 0,
+            "UserTags": []
+        },
+        "TeamPlacement": {
+            "BasicLinks": [],
+            "BasicLocs": [],
+            "TeamDefs": [],
+            "TeamLinks": [],
+            "TeamLocs": []
+        }
+    },
+    "Attributes": {
+        "Attributes": [],
+        "UseDefault": false,
+        "Variants": [
+            {
+                "Id": 1,
+                "Flags": 1,
+                "CategoryId": 1,
+                "CategoryName": "",
+                "CategoryDesc": "",
+                "ModeId": 1,
+                "ModeName": "Variant001/ModeName",
+                "ModeDesc": "Variant001/ModeDesc",
+                "MaxTeamSize": 5,
+                "HiddenAtts": [
+                    {
+                        "AttNamespace": 999,
+                        "AttId": 3003
+                    },
+                    {
+                        "AttNamespace": 999,
+                        "AttId": 3001
+                    },
+                    {
+                        "AttNamespace": 999,
+                        "AttId": 3006
+                    },
+                    {
+                        "AttNamespace": 999,
+                        "AttId": 3000
+                    },
+                    {
+                        "AttNamespace": 999,
+                        "AttId": 3002
+                    },
+                    {
+                        "AttNamespace": 999,
+                        "AttId": 3010
+                    },
+                    {
+                        "AttNamespace": 999,
+                        "AttId": 3134
+                    },
+                    {
+                        "AttNamespace": 999,
+                        "AttId": 3135
+                    },
+                    {
+                        "AttNamespace": 999,
+                        "AttId": 3136
+                    },
+                    {
+                        "AttNamespace": 999,
+                        "AttId": 3139
+                    },
+                    {
+                        "AttNamespace": 999,
+                        "AttId": 3140
+                    },
+                    {
+                        "AttNamespace": 999,
+                        "AttId": 3141
+                    },
+                    {
+                        "AttNamespace": 999,
+                        "AttId": 3142
+                    },
+                    {
+                        "AttNamespace": 999,
+                        "AttId": 3143
+                    },
+                    {
+                        "AttNamespace": 999,
+                        "AttId": 3198
+                    },
+                    {
+                        "AttNamespace": 999,
+                        "AttId": 3199
+                    },
+                    {
+                        "AttNamespace": 999,
+                        "AttId": 3200
+                    },
+                    {
+                        "AttNamespace": 999,
+                        "AttId": 3203
+                    },
+                    {
+                        "AttNamespace": 999,
+                        "AttId": 3204
+                    },
+                    {
+                        "AttNamespace": 999,
+                        "AttId": 3205
+                    },
+                    {
+                        "AttNamespace": 999,
+                        "AttId": 3206
+                    },
+                    {
+                        "AttNamespace": 999,
+                        "AttId": 3207
+                    },
+                    {
+                        "AttNamespace": 999,
+                        "AttId": 3166
+                    },
+                    {
+                        "AttNamespace": 999,
+                        "AttId": 3167
+                    },
+                    {
+                        "AttNamespace": 999,
+                        "AttId": 3168
+                    },
+                    {
+                        "AttNamespace": 999,
+                        "AttId": 3171
+                    },
+                    {
+                        "AttNamespace": 999,
+                        "AttId": 3172
+                    },
+                    {
+                        "AttNamespace": 999,
+                        "AttId": 3173
+                    },
+                    {
+                        "AttNamespace": 999,
+                        "AttId": 3174
+                    },
+                    {
+                        "AttNamespace": 999,
+                        "AttId": 3175
+                    },
+                    {
+                        "AttNamespace": 999,
+                        "AttId": 3102
+                    },
+                    {
+                        "AttNamespace": 999,
+                        "AttId": 3103
+                    },
+                    {
+                        "AttNamespace": 999,
+                        "AttId": 3104
+                    },
+                    {
+                        "AttNamespace": 999,
+                        "AttId": 3107
+                    },
+                    {
+                        "AttNamespace": 999,
+                        "AttId": 3108
+                    },
+                    {
+                        "AttNamespace": 999,
+                        "AttId": 3109
+                    },
+                    {
+                        "AttNamespace": 999,
+                        "AttId": 3110
+                    },
+                    {
+                        "AttNamespace": 999,
+                        "AttId": 3111
+                    }
+                ],
+                "Values": [
+                    {
+                        "Attribute": {
+                            "AttNamespace": 999,
+                            "AttId": 1001
+                        },
+                        "Defaults": [
+                            {
+                                "Slot": 4294967295,
+                                "ValueId": 7955827,
+                                "ValueMultIndex": 0,
+                                "Locked": true
+                            }
+                        ],
+                        "Hidden": []
+                    },
+                    {
+                        "Attribute": {
+                            "AttNamespace": 999,
+                            "AttId": 2001
+                        },
+                        "Defaults": [
+                            {
+                                "Slot": 4294967295,
+                                "ValueId": 3503669,
+                                "ValueMultIndex": 0,
+                                "Locked": true
+                            }
+                        ],
+                        "Hidden": []
+                    },
+                    {
+                        "Attribute": {
+                            "AttNamespace": 999,
+                            "AttId": 2007
+                        },
+                        "Defaults": [
+                            {
+                                "Slot": 0,
+                                "ValueId": 21553,
+                                "ValueMultIndex": 0,
+                                "Locked": false
+                            },
+                            {
+                                "Slot": 1,
+                                "ValueId": 21553,
+                                "ValueMultIndex": 1,
+                                "Locked": false
+                            },
+                            {
+                                "Slot": 2,
+                                "ValueId": 21553,
+                                "ValueMultIndex": 2,
+                                "Locked": false
+                            },
+                            {
+                                "Slot": 3,
+                                "ValueId": 21553,
+                                "ValueMultIndex": 3,
+                                "Locked": false
+                            },
+                            {
+                                "Slot": 4,
+                                "ValueId": 21553,
+                                "ValueMultIndex": 4,
+                                "Locked": false
+                            },
+                            {
+                                "Slot": 5,
+                                "ValueId": 21554,
+                                "ValueMultIndex": 0,
+                                "Locked": false
+                            },
+                            {
+                                "Slot": 6,
+                                "ValueId": 21554,
+                                "ValueMultIndex": 1,
+                                "Locked": false
+                            },
+                            {
+                                "Slot": 7,
+                                "ValueId": 21554,
+                                "ValueMultIndex": 2,
+                                "Locked": false
+                            },
+                            {
+                                "Slot": 8,
+                                "ValueId": 21554,
+                                "ValueMultIndex": 3,
+                                "Locked": false
+                            },
+                            {
+                                "Slot": 9,
+                                "ValueId": 21554,
+                                "ValueMultIndex": 4,
+                                "Locked": false
+                            }
+                        ],
+                        "Hidden": []
+                    },
+                    {
+                        "Attribute": {
+                            "AttNamespace": 999,
+                            "AttId": 3006
+                        },
+                        "Defaults": [
+                            {
+                                "Slot": 4294967295,
+                                "ValueId": 53,
+                                "ValueMultIndex": 0,
+                                "Locked": false
+                            }
+                        ],
+                        "Hidden": []
+                    }
+                ],
+                "AchievementTags": [
+                    "CSTM"
+                ]
+            }
+        ]
+    },
+    "UsedStrings": {
+        "DocInfo/DescShort": {
+            "ptBR": "5x5",
+            "frFR": "5c5",
+            "koKR": "5대5",
+            "enUS": "5v5",
+            "esES": "5 vs 5",
+            "itIT": "5v5",
+            "deDE": "5vs5",
+            "ruRU": "5x5",
+            "zhTW": "5對5",
+            "esMX": "5 vs. 5",
+            "plPL": "5 na 5",
+            "zhCN": "5V5"
+        },
+        "DocInfo/HowToPlaySummary00": {
+            "ptBR": "Mapa de 3 trilhas",
+            "frFR": "Carte à 3 voies",
+            "koKR": "3개의 공격로를 가진 전장입니다.",
+            "enUS": "3-Lane Map",
+            "esES": "Mapa de 3 caminos",
+            "itIT": "Mappa a 3 corsie",
+            "deDE": "Karte mit 3 Wegen",
+            "ruRU": "Поле боя с 3 линиями",
+            "zhTW": "三路線地圖",
+            "esMX": "Mapa de 3 vías",
+            "plPL": "Mapa z 3 alejami",
+            "zhCN": "3兵线地图"
+        },
+        "Variant001/ModeName": {
+            "ptBR": "Padrão",
+            "frFR": "Standard",
+            "koKR": "일반",
+            "enUS": "Standard",
+            "esES": "Estándar",
+            "itIT": "Standard",
+            "deDE": "Standard",
+            "ruRU": "Стандарт",
+            "zhTW": "標準",
+            "esMX": "Estándar",
+            "plPL": "Standard",
+            "zhCN": "标准游戏"
+        },
+        "DocInfo/DescLong": {
+            "ptBR": "Mapa de 3 trilhas",
+            "frFR": "Carte à 3 voies",
+            "koKR": "3개의 공격로를 가진 전장입니다.",
+            "enUS": "3-Lane Map",
+            "esES": "Mapa de 3 caminos",
+            "itIT": "Mappa a 3 corsie",
+            "deDE": "Karte mit 3 Wegen",
+            "ruRU": "Поле боя с 3 линиями",
+            "zhTW": "三路線地圖",
+            "esMX": "Mapa de 3 vías",
+            "plPL": "Mapa z 3 alejami",
+            "zhCN": "3兵线地图"
+        },
+        "DocInfo/HowToPlaySummaryHeaderTitle": {
+            "ptBR": "Fundição Volskaya",
+            "frFR": "La fonderie Volskaya",
+            "koKR": "볼스카야 공장",
+            "enUS": "Volskaya Foundry",
+            "esES": "Fundición de Volskaya",
+            "itIT": "Fonderia Volskaya",
+            "deDE": "Volskaya-Fertigung",
+            "ruRU": "Завод Вольской",
+            "zhTW": "伏斯凱亞鑄造廠",
+            "esMX": "Fundición de Volskaya",
+            "plPL": "Odlewnia Volskaya Industries",
+            "zhCN": "沃斯卡娅铸造厂"
+        },
+        "Variant001/ModeDesc": {
+            "ptBR": "Os jogadores podem escolher os Heróis.",
+            "frFR": "Les joueurs peuvent choisir leur héros.",
+            "koKR": "플레이어가 영웅을 선택할 수 있습니다.",
+            "enUS": "Players can choose their Heroes.",
+            "esES": "Los jugadores pueden elegir a sus héroes.",
+            "itIT": "I giocatori possono scegliere i propri eroi.",
+            "deDE": "Spieler können ihre Helden auswählen.",
+            "ruRU": "Игроки могут выбирать своих героев.",
+            "zhTW": "玩家可以選擇自己的英雄。",
+            "esMX": "Los jugadores pueden elegir a sus héroes.",
+            "plPL": "Gracze mogą wybrać swoich bohaterów.",
+            "zhCN": "玩家可以选择英雄。"
+        },
+        "DocInfo/Name": {
+            "ptBR": "Fundição Volskaya",
+            "frFR": "La fonderie Volskaya",
+            "koKR": "볼스카야 공장",
+            "enUS": "Volskaya Foundry",
+            "esES": "Fundición de Volskaya",
+            "itIT": "Fonderia Volskaya",
+            "deDE": "Volskaya-Fertigung",
+            "ruRU": "Завод Вольской",
+            "zhTW": "伏斯凱亞鑄造廠",
+            "esMX": "Fundición de Volskaya",
+            "plPL": "Odlewnia Volskaya Industries",
+            "zhCN": "沃斯卡娅铸造厂"
+        }
+    }
+}

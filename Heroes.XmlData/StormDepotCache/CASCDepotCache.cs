@@ -1,9 +1,16 @@
-﻿namespace Heroes.XmlData.StormDepotCache;
+﻿using System.IO.Abstractions;
+
+namespace Heroes.XmlData.StormDepotCache;
 
 internal class CASCDepotCache : DepotCache<ICASCHeroesSource>
 {
     public CASCDepotCache(ICASCHeroesSource heroesSource)
         : base(heroesSource)
+    {
+    }
+
+    public CASCDepotCache(IFileSystem fileSystem, ICASCHeroesSource heroesSource)
+        : base(fileSystem, heroesSource)
     {
     }
 
@@ -14,7 +21,7 @@ internal class CASCDepotCache : DepotCache<ICASCHeroesSource>
             StormStorage.AddDirectoryNotFound(StormModType.Normal, new StormPath()
             {
                 StormModDirectoryPath = string.Empty,
-                StormModName = Name,
+                StormModName = string.Empty,
                 Path = DepotCacheDirectoryPath,
                 PathType = StormPathType.CASC,
             });

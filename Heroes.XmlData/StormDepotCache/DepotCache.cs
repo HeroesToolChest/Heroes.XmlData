@@ -1,24 +1,31 @@
-﻿using System.Text.Json;
+﻿using System.IO.Abstractions;
+using System.Text.Json;
 
 namespace Heroes.XmlData.StormDepotCache;
 
 internal abstract class DepotCache<T> : IDepotCache
     where T : IHeroesSource
 {
-    private readonly T _heroesSource;
-
     public DepotCache(T heroesSource)
+        : this(new FileSystem(), heroesSource)
     {
-        _heroesSource = heroesSource;
+        HeroesSource = heroesSource;
     }
 
-    protected static string Name => "DepotCache";
+    public DepotCache(IFileSystem fileSystem, T heroesSource)
+    {
+        FileSystem = fileSystem;
+
+        HeroesSource = heroesSource;
+    }
 
     protected string DepotCacheDirectoryPath => Path.Join(HeroesSource.ModsBaseDirectoryPath, HeroesSource.DepotCacheDirectory);
 
-    protected T HeroesSource => _heroesSource;
+    protected T HeroesSource { get; }
 
-    protected IStormStorage StormStorage => _heroesSource.StormStorage;
+    protected IStormStorage StormStorage => HeroesSource.StormStorage;
+
+    protected IFileSystem FileSystem { get; }
 
     public void LoadDepotCache()
     {

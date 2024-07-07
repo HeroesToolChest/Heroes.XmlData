@@ -1,0 +1,895 @@
+{
+    "AddMultiMod": false,
+    "ResultDefinitions": [
+        {
+            "Name": "CursedHollowRoot",
+            "HandleId": 50331655,
+            "Form": "Heading",
+            "Flags": [],
+            "Containers": [
+                {
+                    "HandleId": 0,
+                    "OrderHint": 7
+                }
+            ],
+            "Visual": {
+                "Text": "",
+                "Tip": ""
+            }
+        },
+        {
+            "Name": "CursedHollowHeroes",
+            "HandleId": 50331656,
+            "Form": "Heading",
+            "Flags": [],
+            "Containers": [
+                {
+                    "HandleId": 50331655,
+                    "OrderHint": 0
+                }
+            ],
+            "Visual": {
+                "Text": "ScoreResult/PublishName/CursedHollowHeroes",
+                "Tip": "ScoreResult/Tooltip/CursedHollowHeroes"
+            }
+        },
+        {
+            "Name": "CursedHollowHeroes_template",
+            "HandleId": 67108872,
+            "Form": "Score",
+            "Flags": [],
+            "Containers": [
+                {
+                    "HandleId": 50331656,
+                    "OrderHint": 0
+                }
+            ],
+            "Visual": {
+                "Text": "ScoreResult/PublishName/CursedHollowHeroes",
+                "Tip": "ScoreResult/Tooltip/CursedHollowHeroes"
+            }
+        },
+        {
+            "Name": "RavenTributesCollected",
+            "HandleId": 185,
+            "Form": "Value",
+            "Flags": [
+                "PERFORMANCE_MEASURE"
+            ],
+            "Containers": [
+                {
+                    "HandleId": 67108872,
+                    "OrderHint": 0
+                }
+            ],
+            "Visual": {
+                "Text": "ScoreValue/PublishName/RavenTributesCollected",
+                "Tip": "ScoreValue/Tooltip/RavenTributesCollected"
+            },
+            "Tag": 1416784226
+        },
+        {
+            "Name": "CurseDamageDone",
+            "HandleId": 186,
+            "Form": "Value",
+            "Flags": [
+                "PERFORMANCE_MEASURE"
+            ],
+            "Containers": [
+                {
+                    "HandleId": 67108872,
+                    "OrderHint": 1
+                }
+            ],
+            "Visual": {
+                "Text": "ScoreValue/PublishName/CurseDamageDone",
+                "Tip": "ScoreValue/Tooltip/CurseDamageDone"
+            },
+            "Tag": 1131574084
+        }
+    ],
+    "GameInfoScreenshots": [],
+    "HowToPlayScreenshots": [],
+    "HowToPlay": [
+        {
+            "Title": "DocInfo/HowToPlaySummaryHeaderTitle",
+            "ListType": "Plain",
+            "Lines": [
+                "DocInfo/HowToPlaySummary00"
+            ]
+        }
+    ],
+    "DocInfo": {
+        "Info": {
+            "Flags": 0,
+            "ModType": 1,
+            "IconFile": "Storm_UI_Gamemode_MapSelect_CursedHollow.png",
+            "Tutorial": {
+                "Type": 0,
+                "BnetName": "",
+                "BnetVersionMajor": 0,
+                "BnetVersionMinor": 0,
+                "VariantIndex": 0,
+                "GameSpeed": 2,
+                "VariantCategoryId": 0,
+                "VariantModeId": 0
+            },
+            "ClusterParent": "",
+            "MatchMakerTags": [
+                "Hero"
+            ]
+        },
+        "Sections": [],
+        "Dependencies": [
+            {
+                "BnetName": "Cursed Hollow (Mod)",
+                "BnetVersionMajor": 0,
+                "BnetVersionMinor": 0,
+                "BnetNamespace": 1497,
+                "LocalFile": "Mods/heroesmapmods/battlegroundmapmods/cursedhollow.stormmod",
+                "DocumentDependencyType": 0
+            }
+        ],
+        "ModifiableDependencies": [
+            "Mods/HeroesData.StormMod"
+        ],
+        "HowToPlay": [
+            0,
+            0,
+            2,
+            0,
+            2
+        ],
+        "PatchNotes": [],
+        "Preload": [
+            {
+                "Type": 0,
+                "Catalog": 48,
+                "Name": "RavenLordTributeWarning",
+                "Players": 0
+            },
+            {
+                "Type": 0,
+                "Catalog": 83,
+                "Name": "JungleGraveGolemLaner",
+                "Players": 0
+            },
+            {
+                "Type": 0,
+                "Catalog": 83,
+                "Name": "JungleGraveGolemDefender",
+                "Players": 0
+            },
+            {
+                "Type": 0,
+                "Catalog": 83,
+                "Name": "MercDefenderSiegeGiant",
+                "Players": 0
+            },
+            {
+                "Type": 0,
+                "Catalog": 83,
+                "Name": "MercLanerSiegeGiant",
+                "Players": 0
+            },
+            {
+                "Type": 0,
+                "Catalog": 83,
+                "Name": "JungleCampIconUnit",
+                "Players": 0
+            },
+            {
+                "Type": 0,
+                "Catalog": 83,
+                "Name": "RangedMinion",
+                "Players": 0
+            },
+            {
+                "Type": 0,
+                "Catalog": 83,
+                "Name": "CatapultMinion",
+                "Players": 0
+            },
+            {
+                "Type": 0,
+                "Catalog": 83,
+                "Name": "FootmanMinion",
+                "Players": 0
+            },
+            {
+                "Type": 0,
+                "Catalog": 83,
+                "Name": "WizardMinion",
+                "Players": 0
+            },
+            {
+                "Type": 0,
+                "Catalog": 83,
+                "Name": "MercLanerMeleeKnight",
+                "Players": 0
+            },
+            {
+                "Type": 0,
+                "Catalog": 83,
+                "Name": "MercLanerRangedMage",
+                "Players": 0
+            },
+            {
+                "Type": 0,
+                "Catalog": 83,
+                "Name": "MercDefenderMeleeKnight",
+                "Players": 0
+            },
+            {
+                "Type": 0,
+                "Catalog": 83,
+                "Name": "MercDefenderRangedMage",
+                "Players": 0
+            },
+            {
+                "Type": 0,
+                "Catalog": 83,
+                "Name": "RavenLordTribute",
+                "Players": 0
+            }
+        ]
+    },
+    "MapInfo": {
+        "MapSymmetry": {
+            "BoundsCustom": {
+                "l": {
+                    "x": -4,
+                    "y": -20
+                },
+                "h": {
+                    "x": 252,
+                    "y": 236
+                }
+            },
+            "BoundsType": 2,
+            "Diagonal": -1,
+            "HAxis": 0,
+            "Rotation": 0,
+            "Segments": 2,
+            "Type": 3,
+            "VAxis": 0
+        },
+        "Players": [
+            {
+                "Color": 10,
+                "CustomAI": "",
+                "Decal": "",
+                "Flags": 0,
+                "Name": "",
+                "PlayerId": 0,
+                "Races": "",
+                "StartLoc": 0,
+                "Type": 3
+            },
+            {
+                "Color": 2,
+                "CustomAI": "",
+                "Decal": "Decal_Protoss_0008_01",
+                "Flags": 0,
+                "Name": "",
+                "PlayerId": 1,
+                "Races": "Prot",
+                "StartLoc": 3,
+                "Type": 1
+            },
+            {
+                "Color": 2,
+                "CustomAI": "",
+                "Decal": "Decal_Protoss_0008_01",
+                "Flags": 0,
+                "Name": "",
+                "PlayerId": 2,
+                "Races": "Prot",
+                "StartLoc": 4,
+                "Type": 1
+            },
+            {
+                "Color": 2,
+                "CustomAI": "",
+                "Decal": "Decal_Protoss_0008_01",
+                "Flags": 0,
+                "Name": "",
+                "PlayerId": 3,
+                "Races": "Prot",
+                "StartLoc": 5,
+                "Type": 1
+            },
+            {
+                "Color": 2,
+                "CustomAI": "",
+                "Decal": "Decal_Protoss_0008_01",
+                "Flags": 0,
+                "Name": "",
+                "PlayerId": 4,
+                "Races": "Prot",
+                "StartLoc": 6,
+                "Type": 1
+            },
+            {
+                "Color": 2,
+                "CustomAI": "",
+                "Decal": "Decal_Protoss_0008_01",
+                "Flags": 0,
+                "Name": "",
+                "PlayerId": 5,
+                "Races": "Prot",
+                "StartLoc": 7,
+                "Type": 1
+            },
+            {
+                "Color": 6,
+                "CustomAI": "",
+                "Decal": "Decal_Protoss_0027_01",
+                "Flags": 0,
+                "Name": "",
+                "PlayerId": 6,
+                "Races": "Prot",
+                "StartLoc": 8,
+                "Type": 1
+            },
+            {
+                "Color": 6,
+                "CustomAI": "",
+                "Decal": "Decal_Protoss_0027_01",
+                "Flags": 0,
+                "Name": "",
+                "PlayerId": 7,
+                "Races": "Prot",
+                "StartLoc": 9,
+                "Type": 1
+            },
+            {
+                "Color": 6,
+                "CustomAI": "",
+                "Decal": "Decal_Protoss_0027_01",
+                "Flags": 0,
+                "Name": "",
+                "PlayerId": 8,
+                "Races": "Prot",
+                "StartLoc": 10,
+                "Type": 1
+            },
+            {
+                "Color": 6,
+                "CustomAI": "",
+                "Decal": "Decal_Protoss_0027_01",
+                "Flags": 0,
+                "Name": "",
+                "PlayerId": 9,
+                "Races": "Prot",
+                "StartLoc": 11,
+                "Type": 1
+            },
+            {
+                "Color": 6,
+                "CustomAI": "",
+                "Decal": "Decal_Protoss_0027_01",
+                "Flags": 0,
+                "Name": "",
+                "PlayerId": 10,
+                "Races": "Prot",
+                "StartLoc": 12,
+                "Type": 1
+            },
+            {
+                "Color": 2,
+                "CustomAI": "",
+                "Decal": "",
+                "Flags": 0,
+                "Name": "",
+                "PlayerId": 11,
+                "Races": "",
+                "StartLoc": 0,
+                "Type": 4
+            },
+            {
+                "Color": 1,
+                "CustomAI": "",
+                "Decal": "",
+                "Flags": 0,
+                "Name": "",
+                "PlayerId": 12,
+                "Races": "",
+                "StartLoc": 0,
+                "Type": 4
+            },
+            {
+                "Color": 0,
+                "CustomAI": "",
+                "Decal": "",
+                "Flags": 0,
+                "Name": "",
+                "PlayerId": 15,
+                "Races": "",
+                "StartLoc": 0,
+                "Type": 4
+            }
+        ],
+        "Properties": {
+            "Size": {
+                "x": 256,
+                "y": 216
+            },
+            "Preview": 1,
+            "PreviewImage": "",
+            "PreviewLarge": 2,
+            "PreviewLargeImage": "ReplaysPreviewImage.tga",
+            "CustomMinimap": "CustomMiniMap.dds",
+            "MinimapHoverImage": "CustomMiniMap_Hover.dds",
+            "MinimapPixPerCell": 2,
+            "UserDifficulty": 0,
+            "PrimaryTexSet": "StormKingsCrestRavenCourt",
+            "Fow": "BlackNoUnhide",
+            "PlayableBounds": {
+                "l": {
+                    "x": 13,
+                    "y": 20
+                },
+                "h": {
+                    "x": 247,
+                    "y": 190
+                }
+            },
+            "BaseHeight": 7.39990234375,
+            "Loading": {
+                "Type": 1,
+                "Image": "Assets/Textures/ui_ingame_mapmechanic_loadscreen_cursedhollow.dds",
+                "ImageScale": 1,
+                "TextAnchor": -1,
+                "TextOffset": {
+                    "x": 0,
+                    "y": 0
+                },
+                "TextSize": {
+                    "x": 800,
+                    "y": 600
+                },
+                "BarSuffix": "",
+                "CustomLayout": "UI/Layout/LoadingScreens/CursedHollow_Loading.StormLayout",
+                "CustomFrame": "CursedHollow_Loading/ScreenMapLoading_CursedHollow",
+                "Music": "LoadingMusic_CursedHollow",
+                "MapLink": "CursedHollow"
+            },
+            "Flags": 16416,
+            "Type": 1,
+            "PublishType": 2,
+            "LightGenScale": 1.5,
+            "LightGenTime": 1507577562,
+            "LightModTime": 1510072773,
+            "DefaultObserved": 0,
+            "UserTags": []
+        },
+        "TeamPlacement": {
+            "BasicLinks": [],
+            "BasicLocs": [],
+            "TeamDefs": [],
+            "TeamLinks": [],
+            "TeamLocs": []
+        }
+    },
+    "Attributes": {
+        "Attributes": [],
+        "UseDefault": false,
+        "Variants": [
+            {
+                "Id": 1,
+                "Flags": 1,
+                "CategoryId": 1,
+                "CategoryName": "",
+                "CategoryDesc": "",
+                "ModeId": 1,
+                "ModeName": "Variant001/ModeName",
+                "ModeDesc": "Variant001/ModeDesc",
+                "MaxTeamSize": 5,
+                "HiddenAtts": [
+                    {
+                        "AttNamespace": 999,
+                        "AttId": 3003
+                    },
+                    {
+                        "AttNamespace": 999,
+                        "AttId": 3001
+                    },
+                    {
+                        "AttNamespace": 999,
+                        "AttId": 3006
+                    },
+                    {
+                        "AttNamespace": 999,
+                        "AttId": 3000
+                    },
+                    {
+                        "AttNamespace": 999,
+                        "AttId": 3002
+                    },
+                    {
+                        "AttNamespace": 999,
+                        "AttId": 3010
+                    },
+                    {
+                        "AttNamespace": 999,
+                        "AttId": 3134
+                    },
+                    {
+                        "AttNamespace": 999,
+                        "AttId": 3135
+                    },
+                    {
+                        "AttNamespace": 999,
+                        "AttId": 3136
+                    },
+                    {
+                        "AttNamespace": 999,
+                        "AttId": 3139
+                    },
+                    {
+                        "AttNamespace": 999,
+                        "AttId": 3140
+                    },
+                    {
+                        "AttNamespace": 999,
+                        "AttId": 3141
+                    },
+                    {
+                        "AttNamespace": 999,
+                        "AttId": 3142
+                    },
+                    {
+                        "AttNamespace": 999,
+                        "AttId": 3143
+                    },
+                    {
+                        "AttNamespace": 999,
+                        "AttId": 3198
+                    },
+                    {
+                        "AttNamespace": 999,
+                        "AttId": 3199
+                    },
+                    {
+                        "AttNamespace": 999,
+                        "AttId": 3200
+                    },
+                    {
+                        "AttNamespace": 999,
+                        "AttId": 3203
+                    },
+                    {
+                        "AttNamespace": 999,
+                        "AttId": 3204
+                    },
+                    {
+                        "AttNamespace": 999,
+                        "AttId": 3205
+                    },
+                    {
+                        "AttNamespace": 999,
+                        "AttId": 3206
+                    },
+                    {
+                        "AttNamespace": 999,
+                        "AttId": 3207
+                    },
+                    {
+                        "AttNamespace": 999,
+                        "AttId": 3166
+                    },
+                    {
+                        "AttNamespace": 999,
+                        "AttId": 3167
+                    },
+                    {
+                        "AttNamespace": 999,
+                        "AttId": 3168
+                    },
+                    {
+                        "AttNamespace": 999,
+                        "AttId": 3171
+                    },
+                    {
+                        "AttNamespace": 999,
+                        "AttId": 3172
+                    },
+                    {
+                        "AttNamespace": 999,
+                        "AttId": 3173
+                    },
+                    {
+                        "AttNamespace": 999,
+                        "AttId": 3174
+                    },
+                    {
+                        "AttNamespace": 999,
+                        "AttId": 3175
+                    },
+                    {
+                        "AttNamespace": 999,
+                        "AttId": 3102
+                    },
+                    {
+                        "AttNamespace": 999,
+                        "AttId": 3103
+                    },
+                    {
+                        "AttNamespace": 999,
+                        "AttId": 3104
+                    },
+                    {
+                        "AttNamespace": 999,
+                        "AttId": 3107
+                    },
+                    {
+                        "AttNamespace": 999,
+                        "AttId": 3108
+                    },
+                    {
+                        "AttNamespace": 999,
+                        "AttId": 3109
+                    },
+                    {
+                        "AttNamespace": 999,
+                        "AttId": 3110
+                    },
+                    {
+                        "AttNamespace": 999,
+                        "AttId": 3111
+                    }
+                ],
+                "Values": [
+                    {
+                        "Attribute": {
+                            "AttNamespace": 999,
+                            "AttId": 3000
+                        },
+                        "Defaults": [
+                            {
+                                "Slot": 4294967295,
+                                "ValueId": 1180791666,
+                                "ValueMultIndex": 0,
+                                "Locked": false
+                            }
+                        ],
+                        "Hidden": []
+                    },
+                    {
+                        "Attribute": {
+                            "AttNamespace": 999,
+                            "AttId": 3010
+                        },
+                        "Defaults": [
+                            {
+                                "Slot": 4294967295,
+                                "ValueId": 7955827,
+                                "ValueMultIndex": 0,
+                                "Locked": false
+                            }
+                        ],
+                        "Hidden": []
+                    },
+                    {
+                        "Attribute": {
+                            "AttNamespace": 999,
+                            "AttId": 1001
+                        },
+                        "Defaults": [
+                            {
+                                "Slot": 4294967295,
+                                "ValueId": 7955827,
+                                "ValueMultIndex": 0,
+                                "Locked": true
+                            }
+                        ],
+                        "Hidden": []
+                    },
+                    {
+                        "Attribute": {
+                            "AttNamespace": 999,
+                            "AttId": 3006
+                        },
+                        "Defaults": [
+                            {
+                                "Slot": 4294967295,
+                                "ValueId": 53,
+                                "ValueMultIndex": 0,
+                                "Locked": false
+                            }
+                        ],
+                        "Hidden": []
+                    },
+                    {
+                        "Attribute": {
+                            "AttNamespace": 999,
+                            "AttId": 2001
+                        },
+                        "Defaults": [
+                            {
+                                "Slot": 4294967295,
+                                "ValueId": 3503669,
+                                "ValueMultIndex": 0,
+                                "Locked": true
+                            }
+                        ],
+                        "Hidden": []
+                    },
+                    {
+                        "Attribute": {
+                            "AttNamespace": 999,
+                            "AttId": 2007
+                        },
+                        "Defaults": [
+                            {
+                                "Slot": 0,
+                                "ValueId": 21553,
+                                "ValueMultIndex": 0,
+                                "Locked": false
+                            },
+                            {
+                                "Slot": 1,
+                                "ValueId": 21553,
+                                "ValueMultIndex": 1,
+                                "Locked": false
+                            },
+                            {
+                                "Slot": 2,
+                                "ValueId": 21553,
+                                "ValueMultIndex": 2,
+                                "Locked": false
+                            },
+                            {
+                                "Slot": 3,
+                                "ValueId": 21553,
+                                "ValueMultIndex": 3,
+                                "Locked": false
+                            },
+                            {
+                                "Slot": 4,
+                                "ValueId": 21553,
+                                "ValueMultIndex": 4,
+                                "Locked": false
+                            },
+                            {
+                                "Slot": 5,
+                                "ValueId": 21554,
+                                "ValueMultIndex": 0,
+                                "Locked": false
+                            },
+                            {
+                                "Slot": 6,
+                                "ValueId": 21554,
+                                "ValueMultIndex": 1,
+                                "Locked": false
+                            },
+                            {
+                                "Slot": 7,
+                                "ValueId": 21554,
+                                "ValueMultIndex": 2,
+                                "Locked": false
+                            },
+                            {
+                                "Slot": 8,
+                                "ValueId": 21554,
+                                "ValueMultIndex": 3,
+                                "Locked": false
+                            },
+                            {
+                                "Slot": 9,
+                                "ValueId": 21554,
+                                "ValueMultIndex": 4,
+                                "Locked": false
+                            }
+                        ],
+                        "Hidden": []
+                    }
+                ],
+                "AchievementTags": [
+                    "CSTM"
+                ]
+            }
+        ]
+    },
+    "UsedStrings": {
+        "DocInfo/DescShort": {
+            "ptBR": "5x5",
+            "frFR": "5c5",
+            "koKR": "5대5",
+            "enUS": "5v5",
+            "esES": "5 vs 5",
+            "itIT": "5v5",
+            "deDE": "5vs5",
+            "ruRU": "5x5",
+            "zhTW": "5對5",
+            "esMX": "5 vs. 5",
+            "plPL": "5na5",
+            "zhCN": "5v5"
+        },
+        "DocInfo/HowToPlaySummary00": {
+            "ptBR": "Mapa de 3 trilhas",
+            "frFR": "Carte à 3 voies",
+            "koKR": "3개의 공격로를 가진 전장입니다.",
+            "enUS": "3-Lane Map",
+            "esES": "Mapa de 3 caminos",
+            "itIT": "Mappa a 3 corsie",
+            "deDE": "Karte mit 3 Wegen",
+            "ruRU": "Поле боя с 3 линиями",
+            "zhTW": "三路線地圖",
+            "esMX": "Mapa de 3 vías",
+            "plPL": "Mapa z 3 alejami",
+            "zhCN": "3兵线地图"
+        },
+        "Variant001/ModeName": {
+            "ptBR": "Padrão",
+            "frFR": "Standard",
+            "koKR": "일반",
+            "enUS": "Standard",
+            "esES": "Estándar",
+            "itIT": "Standard",
+            "deDE": "Standard",
+            "ruRU": "Стандарт",
+            "zhTW": "標準",
+            "esMX": "Estándar",
+            "plPL": "Standardowa",
+            "zhCN": "标准游戏"
+        },
+        "DocInfo/DescLong": {
+            "ptBR": "Mapa de 3 trilhas<n/><n/>O Senhor dos Corvos evoca tributos em certos pontos da Clareira Maldita. Enfrente a equipe inimiga e seja o primeiro a coletá-los. Quando o terceiro tributo tiver sido coletado, o Senhor dos Corvos vai amaldiçoar seus inimigos, incapacitando as torres deles e reduzindo a vida dos lacaios inimigos.",
+            "frFR": "Carte à 3 voies<n/><n/>Le seigneur corbeau invoque des tributs en différents endroits dans le val maudit. Combattez l’équipe adverse et soyez les premiers à vous emparer de ces tributs. Après la récupération du troisième tribut, le seigneur corbeau maudira vos ennemis, rendant leurs tours incapables d’attaquer et réduisant les points de vie de leurs serviteurs.",
+            "koKR": "3개의 공격로<n/><n/>까마귀 군주가 저주받은 골짜기의 몇몇 특정 지점에 공물을 소환합니다. 상대 팀을 몰아내고 먼저 공물을 차지하십시오. 공물을 세 개 모으면 까마귀 군주가 상대 팀에 저주를 내려 포탑이 공격을 멈추게 만들고 돌격병의 생명력을 감소시킵니다.",
+            "enUS": "3-Lane Map<n/><n/>The Raven Lord summons tributes in certain locations across Cursed Hollow. Fight back the enemy team and be the first to collect the tributes. Once the third tribute has been gathered, the Raven Lord will curse your enemies, rendering their towers incapable of attacking, and reducing the health of their minions.",
+            "esES": "Mapa de 3 caminos<n/><n/>El Señor de los Cuervos invoca tributos en ciertas ubicaciones de la Cuenca Maldita. Enfrentaos al equipo enemigo para ser los primeros en recolectar los tributos. Cuando un equipo recolecte tres, el Señor de los Cuervos maldecirá a sus enemigos, impidiendo que sus torres ataquen y reduciendo la salud de sus esbirros.",
+            "itIT": "Mappa a 3 corsie<n/><n/>Il Signore dei Corvi evoca dei tributi in determinati punti della Valle Maledetta. Combattete la squadra nemica e conquistate per primi i tributi. Quando avrete conquistato tre tributi, il Signore dei Corvi maledirà i nemici, disabilitandone le torri e riducendo la Salute dei loro servitori.",
+            "deDE": "Karte mit 3 Wegen<n/><n/>Der Rabenfürst beschwört an bestimmten Orten im verfluchten Tal Tribute. Drängt das gegnerische Team zurück und sammelt die Tribute als Erste ein. Sobald der dritte Tribut eingesammelt wurde, verflucht der Rabenfürst eure Gegner: Ihre Türme können nicht mehr angreifen und ihre Diener verfügen über weniger Lebenspunkte.",
+            "ruRU": "Поле боя с 3 линиями<n/><n/>Время от времени в различных точках Проклятой лощины появляются дары. Преподносите эти дары Повелителю воронов и не подпускайте к ним вражескую команду. Если преподнести три дара, Повелитель воронов проклянет ваших противников, из-за чего вражеские укрепления перестанут атаковать, а воины потеряют здоровье.",
+            "zhTW": "三路線地圖<n/><n/>掠鴉王會在詛咒谷地的特定位置召喚出貢品。擊退敵人的團隊，搶在他們之前收集貢品。一旦收集到三件貢品，掠鴉王就會詛咒你的敵人，讓他們的防禦塔喪失攻擊能力，並且降低對方小兵的生命值。",
+            "esMX": "Mapa de 3 vías<n/><n/>En la Hondonada maldita, Lord Cuervo invocará tributos en diferentes posiciones. Lucha contra el equipo enemigo y sé el primero en recogerlos. Cuando hayas conseguido el tercer tributo, Lord Cuervo maldecirá a tus enemigos para que sus torres no puedan atacarte y sus esbirros sean más débiles.",
+            "plPL": "Mapa z 3 alejami<n/><n/>Władca Kruków przyzywa daninę w niektórych punktach Przeklętej Kotliny. Pokonajcie drużynę przeciwną i jako pierwsi zbierzcie daninę. Kiedy zbierzecie trzecią, Władca Kruków przeklnie waszych wrogów, uniemożliwiając ostrzał ich wieżom i redukując wytrzymałość ich stronników.",
+            "zhCN": "三条通道的地图<n/><n/>乌鸦王会在诅咒谷四处召唤贡品。击退敌方队伍并抢先收集贡品。当收集到三个贡品时，乌鸦王将诅咒敌人，使他们的防御塔无法攻击，而他们的小兵生命值也会降低。"
+        },
+        "DocInfo/HowToPlaySummaryHeaderTitle": {
+            "ptBR": "Clareira Maldita",
+            "frFR": "Le val maudit",
+            "koKR": "저주받은 골짜기",
+            "enUS": "Cursed Hollow",
+            "esES": "Cuenca Maldita",
+            "itIT": "Valle Maledetta",
+            "deDE": "Verfluchtes Tal",
+            "ruRU": "Проклятая лощина",
+            "zhTW": "詛咒谷地",
+            "esMX": "Hondonada maldita",
+            "plPL": "Przeklęta Kotlina",
+            "zhCN": "诅咒谷"
+        },
+        "Variant001/ModeDesc": {
+            "ptBR": "Os jogadores escolhem os Heróis.",
+            "frFR": "Les joueurs peuvent choisir leur héros.",
+            "koKR": "영웅을 선택할 수 있습니다.",
+            "enUS": "Players can choose their Heroes.",
+            "esES": "Los jugadores pueden elegir a sus héroes.",
+            "itIT": "I giocatori possono scegliere i propri eroi.",
+            "deDE": "Spieler können ihre Helden auswählen.",
+            "ruRU": "Игроки могут выбирать своих героев.",
+            "zhTW": "玩家可以選擇自己的英雄。",
+            "esMX": "Los jugadores pueden elegir a sus héroes.",
+            "plPL": "Gracze mogą wybrać swoich bohaterów.",
+            "zhCN": "玩家可以选择英雄。"
+        },
+        "DocInfo/Name": {
+            "ptBR": "Clareira Maldita",
+            "frFR": "Le val maudit",
+            "koKR": "저주받은 골짜기",
+            "enUS": "Cursed Hollow",
+            "esES": "Cuenca Maldita",
+            "itIT": "Valle Maledetta",
+            "deDE": "Verfluchtes Tal",
+            "ruRU": "Проклятая лощина",
+            "zhTW": "詛咒谷地",
+            "esMX": "Hondonada maldita",
+            "plPL": "Przeklęta Kotlina",
+            "zhCN": "诅咒谷"
+        }
+    }
+}
