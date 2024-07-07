@@ -8,8 +8,8 @@ namespace Heroes.XmlData.StormData;
 [DebuggerDisplay("{DebuggerDisplay,nq}")]
 public class StormElement : IXmlData
 {
-    private const string _idAttribute = "id";
-    private const string _parentAttribute = "parent";
+    private const string IdAttribute = "id";
+    private const string ParentAttribute = "parent";
     private readonly List<StormXElementValuePath> _originalStormXElementValues = [];
 
     /// <summary>
@@ -64,7 +64,7 @@ public class StormElement : IXmlData
         get
         {
             if (HasId)
-                return DataValues.ElementDataPairs[_idAttribute].Value;
+                return DataValues.ElementDataPairs[IdAttribute].Value;
             else
                 return null;
         }
@@ -78,7 +78,7 @@ public class StormElement : IXmlData
         get
         {
             if (HasParentId)
-                return DataValues.ElementDataPairs[_parentAttribute].Value;
+                return DataValues.ElementDataPairs[ParentAttribute].Value;
             else
                 return null;
         }
@@ -88,13 +88,13 @@ public class StormElement : IXmlData
     /// Gets a value indicating whether <see cref="Id"/> exists or not.
     /// </summary>
     [MemberNotNullWhen(true, nameof(Id))]
-    public bool HasId => DataValues.ElementDataPairs.ContainsKey(_idAttribute);
+    public bool HasId => DataValues.ElementDataPairs.ContainsKey(IdAttribute);
 
     /// <summary>
     /// Gets a value indicating whether <see cref="ParentId"/> exists or not.
     /// </summary>
     [MemberNotNullWhen(true, nameof(ParentId))]
-    public bool HasParentId => DataValues.ElementDataPairs.ContainsKey(_parentAttribute);
+    public bool HasParentId => DataValues.ElementDataPairs.ContainsKey(ParentAttribute);
 
     /// <inheritdoc/>
     public int XmlDataCount => DataValues.ElementDataPairs.Count;

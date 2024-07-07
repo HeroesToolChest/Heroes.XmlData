@@ -2,33 +2,30 @@
 
 internal abstract class HeroesSource : IHeroesSource
 {
-    private const string _defaultModsDirectory = "mods";
-    private const string _gameDataDirectory = "gamedata";
-    private const string _baseStormDataDirectory = "base.stormdata";
-    private const string _localizedDataDirectory = "localizeddata";
-    private const string _gameStringFile = "gamestrings.txt";
-    private const string _gameDataXmlFile = "gamedata.xml";
-    private const string _includesXmlFile = "includes.xml";
-    private const string _documentInfoFile = "documentinfo";
-    private const string _fontStyleFile = "fontstyles.stormstyle";
-    private const string _buildIdFile = "buildid.txt";
+    private const string DefaultModsDirectoryConst = "mods";
+    private const string GameDataDirectoryConst = "gamedata";
+    private const string BaseStormDataDirectoryConst = "base.stormdata";
+    private const string LocalizedDataDirectoryConst = "localizeddata";
+    private const string GameStringFileConst = "gamestrings.txt";
+    private const string GameDataXmlFileConst = "gamedata.xml";
+    private const string IncludesXmlFileConst = "includes.xml";
+    private const string DocumentInfoFileConst = "documentinfo";
+    private const string FontStyleFileConst = "fontstyles.stormstyle";
+    private const string BuildIdFileConst = "buildid.txt";
 
-    private const string _coreStormModDirectory = "core.stormmod";
-    private const string _heroesStormModDirectory = "heroes.stormmod";
-    private const string _heroesDataStormModDirectory = "heroesdata.stormmod";
+    private const string CoreStormModDirectoryConst = "core.stormmod";
+    private const string HeroesStormModDirectoryConst = "heroes.stormmod";
+    private const string HeroesDataStormModDirectoryConst = "heroesdata.stormmod";
 
-    private const string _heroModsDirectory = "heromods";
-    private const string _uiDirectory = "ui";
-
-    private readonly string _depotCacheDirectory = Path.Join(_coreStormModDirectory, _baseStormDataDirectory, "depotcache");
-    private readonly string _battleMapModsDirectory = Path.Join("heroesmapmods", "battlegroundmapmods");
+    private const string HeroModsDirectoryConst = "heromods";
+    private const string UiDirectoryConst = "ui";
 
     private readonly List<IStormMod> _stormMods = [];
     private readonly List<IStormMod> _stormMapMods = [];
     private readonly List<IStormMod> _stormCustomMods = [];
 
     public HeroesSource(IStormStorage stormStorage, IStormModFactory stormModFactory, IDepotCacheFactory depotCacheFactory)
-        : this(stormStorage, stormModFactory, depotCacheFactory, _defaultModsDirectory)
+        : this(stormStorage, stormModFactory, depotCacheFactory, DefaultModsDirectoryConst)
     {
     }
 
@@ -48,39 +45,39 @@ internal abstract class HeroesSource : IHeroesSource
 
     public string ModsBaseDirectoryPath { get; }
 
-    public string DefaultModsDirectory => _defaultModsDirectory;
+    public string DefaultModsDirectory => DefaultModsDirectoryConst;
 
-    public string GameDataDirectory => _gameDataDirectory;
+    public string GameDataDirectory => GameDataDirectoryConst;
 
-    public string BaseStormDataDirectory => _baseStormDataDirectory;
+    public string BaseStormDataDirectory => BaseStormDataDirectoryConst;
 
-    public string LocalizedDataDirectory => _localizedDataDirectory;
+    public string LocalizedDataDirectory => LocalizedDataDirectoryConst;
 
-    public string GameStringFile => _gameStringFile;
+    public string GameStringFile => GameStringFileConst;
 
-    public string GameDataXmlFile => _gameDataXmlFile;
+    public string GameDataXmlFile => GameDataXmlFileConst;
 
-    public string IncludesXmlFile => _includesXmlFile;
+    public string IncludesXmlFile => IncludesXmlFileConst;
 
-    public string DocumentInfoFile => _documentInfoFile;
+    public string DocumentInfoFile => DocumentInfoFileConst;
 
-    public string FontStyleFile => _fontStyleFile;
+    public string FontStyleFile => FontStyleFileConst;
 
-    public string BuildIdFile => _buildIdFile;
+    public string BuildIdFile => BuildIdFileConst;
 
-    public string CoreStormModDirectory => _coreStormModDirectory;
+    public string CoreStormModDirectory => CoreStormModDirectoryConst;
 
-    public string HeroesStormModDirectory => _heroesStormModDirectory;
+    public string HeroesStormModDirectory => HeroesStormModDirectoryConst;
 
-    public string HeroesDataStormModDirectory => _heroesDataStormModDirectory;
+    public string HeroesDataStormModDirectory => HeroesDataStormModDirectoryConst;
 
-    public string HeroModsDirectory => _heroModsDirectory;
+    public string HeroModsDirectory => HeroModsDirectoryConst;
 
-    public string UIDirectory => _uiDirectory;
+    public string UIDirectory => UiDirectoryConst;
 
-    public string DepotCacheDirectory => _depotCacheDirectory;
+    public string DepotCacheDirectory => Path.Join(CoreStormModDirectory, BaseStormDataDirectory, "depotcache");
 
-    public string BattleMapModsDirectory => _battleMapModsDirectory;
+    public string BattleMapModsDirectory => Path.Join("heroesmapmods", "battlegroundmapmods");
 
     public IStormStorage StormStorage { get; }
 

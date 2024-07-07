@@ -8,8 +8,8 @@ namespace Heroes.XmlData.StormData;
 [DebuggerDisplay("{DebuggerDisplay,nq}")]
 public class StormStyleConstantElement : StormElement
 {
-    private const string _nameAttribute = "name";
-    private const string _valAttribute = "val";
+    private const string NameAttribute = "name";
+    private const string ValAttribute = "val";
 
     /// <summary>
     /// Initializes a new instance of the <see cref="StormStyleConstantElement"/> class.
@@ -37,7 +37,7 @@ public class StormStyleConstantElement : StormElement
         get
         {
             if (HasName)
-                return DataValues.ElementDataPairs[_nameAttribute].Value;
+                return DataValues.ElementDataPairs[NameAttribute].Value;
             else
                 return null;
         }
@@ -51,7 +51,7 @@ public class StormStyleConstantElement : StormElement
         get
         {
             if (HasVal)
-                return DataValues.ElementDataPairs[_valAttribute].Value;
+                return DataValues.ElementDataPairs[ValAttribute].Value;
             else
                 return null;
         }
@@ -61,13 +61,13 @@ public class StormStyleConstantElement : StormElement
     /// Gets a value indicating whether <see cref="Name"/> exists or not.
     /// </summary>
     [MemberNotNullWhen(true, nameof(Name))]
-    public bool HasName => DataValues.ElementDataPairs.ContainsKey(_nameAttribute);
+    public bool HasName => DataValues.ElementDataPairs.ContainsKey(NameAttribute);
 
     /// <summary>
     /// Gets a value indicating whether <see cref="Val"/> exists or not.
     /// </summary>
     [MemberNotNullWhen(true, nameof(Val))]
-    public bool HasVal => DataValues.ElementDataPairs.ContainsKey(_valAttribute);
+    public bool HasVal => DataValues.ElementDataPairs.ContainsKey(ValAttribute);
 
     [DebuggerBrowsable(DebuggerBrowsableState.RootHidden)]
     private string DebuggerDisplay

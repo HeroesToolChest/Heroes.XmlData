@@ -8,8 +8,8 @@ namespace Heroes.XmlData.StormData;
 [DebuggerDisplay("{DebuggerDisplay,nq}")]
 public class StormStyleStyleElement : StormElement
 {
-    private const string _nameAttribute = "name";
-    private const string _templateAttribute = "template";
+    private const string NameAttribute = "name";
+    private const string TemplateAttribute = "template";
 
     /// <summary>
     /// Initializes a new instance of the <see cref="StormStyleStyleElement"/> class.
@@ -37,7 +37,7 @@ public class StormStyleStyleElement : StormElement
         get
         {
             if (HasName)
-                return DataValues.ElementDataPairs[_nameAttribute].Value;
+                return DataValues.ElementDataPairs[NameAttribute].Value;
             else
                 return null;
         }
@@ -51,7 +51,7 @@ public class StormStyleStyleElement : StormElement
         get
         {
             if (HasTemplate)
-                return DataValues.ElementDataPairs[_templateAttribute].Value;
+                return DataValues.ElementDataPairs[TemplateAttribute].Value;
             else
                 return null;
         }
@@ -61,13 +61,13 @@ public class StormStyleStyleElement : StormElement
     /// Gets a value indicating whether <see cref="Name"/> exists or not.
     /// </summary>
     [MemberNotNullWhen(true, nameof(Name))]
-    public bool HasName => DataValues.ElementDataPairs.ContainsKey(_nameAttribute);
+    public bool HasName => DataValues.ElementDataPairs.ContainsKey(NameAttribute);
 
     /// <summary>
     /// Gets a value indicating whether <see cref="Template"/> exists or not.
     /// </summary>
     [MemberNotNullWhen(true, nameof(Template))]
-    public bool HasTemplate => DataValues.ElementDataPairs.ContainsKey(_templateAttribute);
+    public bool HasTemplate => DataValues.ElementDataPairs.ContainsKey(TemplateAttribute);
 
     [DebuggerBrowsable(DebuggerBrowsableState.RootHidden)]
     private string DebuggerDisplay

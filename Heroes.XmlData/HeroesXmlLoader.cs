@@ -5,8 +5,6 @@
 /// </summary>
 public class HeroesXmlLoader
 {
-    private const string _customPath = "custom";
-
     private readonly IHeroesSource _heroesSource;
 
     private bool _baseStormModsLoaded = false;
