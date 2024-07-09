@@ -1,15 +1,19 @@
-﻿namespace Heroes.XmlData.Tests.StormMods;
+﻿using CASCLib;
+
+namespace Heroes.XmlData.Tests.StormMods;
 
 [TestClass]
 public class FileStormModTests
 {
     private readonly IStormModFactory _stormModFactory;
     private readonly IDepotCacheFactory _depotCacheFactory;
+    private readonly IBackgroundWorkerEx _backgroundWorkerEx;
 
     public FileStormModTests()
     {
         _stormModFactory = Substitute.For<IStormModFactory>();
         _depotCacheFactory = Substitute.For<IDepotCacheFactory>();
+        _backgroundWorkerEx = Substitute.For<IBackgroundWorkerEx>();
     }
 
     [TestMethod]
@@ -41,7 +45,7 @@ public class FileStormModTests
         });
 
         StormStorage stormStorage = new(false);
-        FileHeroesSource fileHeroesSource = new(stormStorage, _stormModFactory, _depotCacheFactory, "mods");
+        FileHeroesSource fileHeroesSource = new(stormStorage, _stormModFactory, _depotCacheFactory, "mods", _backgroundWorkerEx);
         FileStormMod fileStormMod = new(mockFileSystem, fileHeroesSource, "test.stormmod", StormModType.Normal);
 
         _stormModFactory.CreateFileStormModInstance(fileHeroesSource, Path.Join($"{Path.DirectorySeparatorChar}", "heromods", "test1.stormmod"), StormModType.Normal)
@@ -77,7 +81,7 @@ public class FileStormModTests
         });
 
         StormStorage stormStorage = new(false);
-        FileHeroesSource fileHeroesSource = new(stormStorage, _stormModFactory, _depotCacheFactory, "mods");
+        FileHeroesSource fileHeroesSource = new(stormStorage, _stormModFactory, _depotCacheFactory, "mods", _backgroundWorkerEx);
         FileStormMod fileStormMod = new(mockFileSystem, fileHeroesSource, "test.stormmod", StormModType.Normal);
 
         _stormModFactory.CreateFileStormModInstance(fileHeroesSource, Path.Join($"{Path.DirectorySeparatorChar}", "heromods", "test1.stormmod"), StormModType.Normal)
@@ -109,7 +113,7 @@ public class FileStormModTests
         });
 
         StormStorage stormStorage = new(false);
-        FileHeroesSource fileHeroesSource = new(stormStorage, _stormModFactory, _depotCacheFactory, "mods");
+        FileHeroesSource fileHeroesSource = new(stormStorage, _stormModFactory, _depotCacheFactory, "mods", _backgroundWorkerEx);
         FileStormMod fileStormMod = new(mockFileSystem, fileHeroesSource, "test.stormmod", StormModType.Normal);
 
         _stormModFactory.CreateFileStormModInstance(fileHeroesSource, Path.Join($"{Path.DirectorySeparatorChar}", "heromods", "test1.stormmod"), StormModType.Normal)
@@ -227,7 +231,7 @@ public class FileStormModTests
             { Path.Join("mods", "test.stormmod", "base.stormdata", "ui", "fontstyles.stormstyle"), new MockFileData("<Constant name=\"ColorEnergy\" val=\"339df5\" />") },
         });
 
-        FileHeroesSource fileHeroesSource = new(new StormStorage(false), _stormModFactory, _depotCacheFactory, "mods");
+        FileHeroesSource fileHeroesSource = new(new StormStorage(false), _stormModFactory, _depotCacheFactory, "mods", _backgroundWorkerEx);
         FileStormMod fileStormMod = new(mockFileSystem, fileHeroesSource, "test.stormmod", StormModType.Normal);
 
         // act
@@ -245,7 +249,7 @@ public class FileStormModTests
         {
         });
 
-        FileHeroesSource fileHeroesSource = new(new StormStorage(false), _stormModFactory, _depotCacheFactory, "mods");
+        FileHeroesSource fileHeroesSource = new(new StormStorage(false), _stormModFactory, _depotCacheFactory, "mods", _backgroundWorkerEx);
         FileStormMod fileStormMod = new(mockFileSystem, fileHeroesSource, "test.stormmod", StormModType.Normal);
 
         // act
@@ -264,7 +268,7 @@ public class FileStormModTests
             { Path.Join("mods", "test.stormmod", "base.stormdata", "buildid.txt"), new MockFileData($"B999{Environment.NewLine}") },
         });
 
-        FileHeroesSource fileHeroesSource = new(new StormStorage(false), _stormModFactory, _depotCacheFactory, "mods");
+        FileHeroesSource fileHeroesSource = new(new StormStorage(false), _stormModFactory, _depotCacheFactory, "mods", _backgroundWorkerEx);
         FileStormMod fileStormMod = new(mockFileSystem, fileHeroesSource, "test.stormmod", StormModType.Normal);
 
         // act
@@ -282,7 +286,7 @@ public class FileStormModTests
         {
         });
 
-        FileHeroesSource fileHeroesSource = new(new StormStorage(false), _stormModFactory, _depotCacheFactory, "mods");
+        FileHeroesSource fileHeroesSource = new(new StormStorage(false), _stormModFactory, _depotCacheFactory, "mods", _backgroundWorkerEx);
         FileStormMod fileStormMod = new(mockFileSystem, fileHeroesSource, "test.stormmod", StormModType.Normal);
 
         // act
@@ -300,7 +304,7 @@ public class FileStormModTests
         {
         });
 
-        FileHeroesSource fileHeroesSource = new(new StormStorage(false), _stormModFactory, _depotCacheFactory, "mods");
+        FileHeroesSource fileHeroesSource = new(new StormStorage(false), _stormModFactory, _depotCacheFactory, "mods", _backgroundWorkerEx);
         FileStormMod fileStormMod = new(mockFileSystem, fileHeroesSource, "heroesdata.stormmod", StormModType.Normal);
 
         // act
@@ -326,7 +330,7 @@ public class FileStormModTests
             },
         });
 
-        FileHeroesSource fileHeroesSource = new(new StormStorage(false), _stormModFactory, _depotCacheFactory, "mods");
+        FileHeroesSource fileHeroesSource = new(new StormStorage(false), _stormModFactory, _depotCacheFactory, "mods", _backgroundWorkerEx);
         FileStormMod fileStormMod = new(mockFileSystem, fileHeroesSource, "heroesdata.stormmod", StormModType.Normal);
 
         // act
@@ -361,7 +365,7 @@ public class FileStormModTests
             { Path.Join("mods", "heroesdata.stormmod", "base.stormdata", "heroes", "common", "genericeffectdata.xml"), new MockFileData("<?xml version=\"1.0\" encoding=\"us-ascii\"?><Catalog></Catalog>") },
         });
 
-        FileHeroesSource fileHeroesSource = new(new StormStorage(false), _stormModFactory, _depotCacheFactory, "mods");
+        FileHeroesSource fileHeroesSource = new(new StormStorage(false), _stormModFactory, _depotCacheFactory, "mods", _backgroundWorkerEx);
         FileStormMod fileStormMod = new(mockFileSystem, fileHeroesSource, "heroesdata.stormmod", StormModType.Normal);
 
         // act
@@ -380,7 +384,7 @@ public class FileStormModTests
         {
         });
 
-        FileHeroesSource fileHeroesSource = new(new StormStorage(false), _stormModFactory, _depotCacheFactory, "mods");
+        FileHeroesSource fileHeroesSource = new(new StormStorage(false), _stormModFactory, _depotCacheFactory, "mods", _backgroundWorkerEx);
         FileStormMod fileStormMod = new(mockFileSystem, fileHeroesSource, "top.stormmod", StormModType.Normal);
 
         // act
@@ -405,7 +409,7 @@ public class FileStormModTests
             },
         });
 
-        FileHeroesSource fileHeroesSource = new(new StormStorage(false), _stormModFactory, _depotCacheFactory, "mods");
+        FileHeroesSource fileHeroesSource = new(new StormStorage(false), _stormModFactory, _depotCacheFactory, "mods", _backgroundWorkerEx);
         FileStormMod fileStormMod = new(mockFileSystem, fileHeroesSource, "top.stormmod", StormModType.Normal);
 
         // act
@@ -436,7 +440,7 @@ public class FileStormModTests
             },
         });
 
-        FileHeroesSource fileHeroesSource = new(new StormStorage(false), _stormModFactory, _depotCacheFactory, "mods");
+        FileHeroesSource fileHeroesSource = new(new StormStorage(false), _stormModFactory, _depotCacheFactory, "mods", _backgroundWorkerEx);
         FileStormMod fileStormMod = new(mockFileSystem, fileHeroesSource, "top.stormmod", StormModType.Normal);
 
         _stormModFactory.CreateFileStormModInstance(fileHeroesSource, Path.Join($"{Path.DirectorySeparatorChar}", "heromods", "test1.stormmod"), StormModType.Normal)
@@ -480,7 +484,7 @@ public class FileStormModTests
         });
 
         StormStorage stormStorage = new(false);
-        FileHeroesSource fileHeroesSource = new(stormStorage, _stormModFactory, _depotCacheFactory, "mods");
+        FileHeroesSource fileHeroesSource = new(stormStorage, _stormModFactory, _depotCacheFactory, "mods", _backgroundWorkerEx);
         FileStormMod fileStormMod = new(mockFileSystem, fileHeroesSource, stormmod, StormModType.Normal);
 
         // act
@@ -502,7 +506,7 @@ public class FileStormModTests
         });
 
         StormStorage stormStorage = new(false);
-        FileHeroesSource fileHeroesSource = new(stormStorage, _stormModFactory, _depotCacheFactory, "mods");
+        FileHeroesSource fileHeroesSource = new(stormStorage, _stormModFactory, _depotCacheFactory, "mods", _backgroundWorkerEx);
         FileStormMod fileStormMod = new(mockFileSystem, fileHeroesSource, "test.stormmod", StormModType.Normal);
 
         // act
@@ -635,7 +639,7 @@ public class FileStormModTests
             },
         });
 
-        FileHeroesSource fileHeroesSource = new(new StormStorage(false), _stormModFactory, _depotCacheFactory, "mods");
+        FileHeroesSource fileHeroesSource = new(new StormStorage(false), _stormModFactory, _depotCacheFactory, "mods", _backgroundWorkerEx);
         FileStormMod fileStormMod = new(mockFileSystem, fileHeroesSource, Path.Join($"{Path.DirectorySeparatorChar}", "heroesmapmods", "battlegroundmapmods", "volskayafoundry.stormmod"), StormModType.Map);
 
         _stormModFactory.CreateFileStormModInstance(fileHeroesSource, Path.Join($"{Path.DirectorySeparatorChar}", "heroesmapmods", "battlegroundmapmods", "volskayafoundry.stormmod"), StormModType.Map)

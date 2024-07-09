@@ -9,12 +9,14 @@ public class CASCStormModTests
     private readonly IStormModFactory _stormModFactory;
     private readonly IDepotCacheFactory _depotCacheFactory;
     private readonly ICASCHeroesStorage _cascHeroesStorage;
+    private readonly IBackgroundWorkerEx _backgroundWorkerEx;
 
     public CASCStormModTests()
     {
         _stormModFactory = Substitute.For<IStormModFactory>();
         _depotCacheFactory = Substitute.For<IDepotCacheFactory>();
         _cascHeroesStorage = Substitute.For<ICASCHeroesStorage>();
+        _backgroundWorkerEx = Substitute.For<IBackgroundWorkerEx>();
     }
 
     [TestMethod]
@@ -26,7 +28,7 @@ public class CASCStormModTests
         // arrange
         StormStorage stormStorage = new(false);
 
-        CASCHeroesSource cascHeroesSource = new(stormStorage, _stormModFactory, _depotCacheFactory, _cascHeroesStorage);
+        CASCHeroesSource cascHeroesSource = new(stormStorage, _stormModFactory, _depotCacheFactory, _cascHeroesStorage, _backgroundWorkerEx);
         CASCStormMod cascStormMod = new(cascHeroesSource, stormmod, StormModType.Normal);
 
         CASCFolder rootFolder = new("name");
@@ -176,7 +178,7 @@ public class CASCStormModTests
 
         StormStorage stormStorage = new(false);
 
-        CASCHeroesSource cascHeroesSource = new(stormStorage, _stormModFactory, _depotCacheFactory, _cascHeroesStorage);
+        CASCHeroesSource cascHeroesSource = new(stormStorage, _stormModFactory, _depotCacheFactory, _cascHeroesStorage, _backgroundWorkerEx);
 
         CASCStormMod cascStormMod = new(cascHeroesSource, "test.stormmod", StormModType.Normal);
 

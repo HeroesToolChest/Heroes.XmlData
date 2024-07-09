@@ -24,17 +24,19 @@ internal abstract class HeroesSource : IHeroesSource
     private readonly List<IStormMod> _stormMapMods = [];
     private readonly List<IStormMod> _stormCustomMods = [];
 
-    public HeroesSource(IStormStorage stormStorage, IStormModFactory stormModFactory, IDepotCacheFactory depotCacheFactory)
-        : this(stormStorage, stormModFactory, depotCacheFactory, DefaultModsDirectoryConst)
+    public HeroesSource(IStormStorage stormStorage, IStormModFactory stormModFactory, IDepotCacheFactory depotCacheFactory, IBackgroundWorkerEx? backgroundWorkerEx)
+        : this(stormStorage, stormModFactory, depotCacheFactory, DefaultModsDirectoryConst, backgroundWorkerEx)
     {
     }
 
-    public HeroesSource(IStormStorage stormStorage, IStormModFactory stormModFactory, IDepotCacheFactory depotCacheFactory, string modsDirectoryPath)
+    public HeroesSource(IStormStorage stormStorage, IStormModFactory stormModFactory, IDepotCacheFactory depotCacheFactory, string modsDirectoryPath, IBackgroundWorkerEx? backgroundWorkerEx)
     {
         StormStorage = stormStorage;
         StormModFactory = stormModFactory;
         DepotCacheFactory = depotCacheFactory;
         ModsBaseDirectoryPath = modsDirectoryPath;
+
+        BackgroundWorkerEx = backgroundWorkerEx;
 
         AddStormMods();
 
@@ -42,6 +44,8 @@ internal abstract class HeroesSource : IHeroesSource
     }
 
     public IStormModFactory StormModFactory { get; }
+
+    public IBackgroundWorkerEx? BackgroundWorkerEx { get; }
 
     public string ModsBaseDirectoryPath { get; }
 
@@ -97,11 +101,16 @@ internal abstract class HeroesSource : IHeroesSource
 
     public void LoadStormData()
     {
-        foreach (IStormMod stormMod in _stormMods)
+        BackgroundWorkerEx?.ReportProgress(0, "Loading storm data...");
+
+        for (int i = 0; i < _stormMods.Count; i++)
         {
+            IStormMod stormMod = _stormMods[i];
             StormStorage.AddModStorage(stormMod.StormModStorage);
 
             stormMod.LoadStormData();
+
+            BackgroundWorkerEx?.ReportProgress((int)((i + 1) / (float)_stormMods.Count * 100));
         }
 
         StormStorage.BuildDataForScalingAttributes(StormModType.Normal);
@@ -110,6 +119,8 @@ internal abstract class HeroesSource : IHeroesSource
     public void LoadGamestrings(StormLocale stormLocale)
     {
         StormStorage.ClearGamestrings();
+
+        BackgroundWorkerEx?.ReportProgress(0, "Loading gamestrings...");
 
         foreach (IStormMod stormMod in _stormMods)
         {
@@ -129,6 +140,8 @@ internal abstract class HeroesSource : IHeroesSource
 
     public void LoadDepotCache()
     {
+        BackgroundWorkerEx?.ReportProgress(0, "Loading depot cache...");
+
         DepotCache.LoadDepotCache();
     }
 
@@ -144,11 +157,16 @@ internal abstract class HeroesSource : IHeroesSource
 
         _stormMapMods.AddRange(mapRootMod.GetStormMapMods(s2maProperties));
 
-        foreach (IStormMod stormMapMod in _stormMapMods)
+        BackgroundWorkerEx?.ReportProgress(0, $"Loading map '{mapTitle}' mods...");
+
+        for (int i = 0; i < _stormMapMods.Count; i++)
         {
+            IStormMod stormMapMod = _stormMapMods[i];
             stormMapMod.LoadStormData();
 
             StormStorage.AddModStorage(stormMapMod.StormModStorage);
+
+            BackgroundWorkerEx?.ReportProgress((int)((i + 1) / (float)_stormMapMods.Count * 100));
         }
 
         StormStorage.BuildDataForScalingAttributes(StormModType.Map);
@@ -178,7 +196,7 @@ internal abstract class HeroesSource : IHeroesSource
         _stormCustomMods.Clear();
     }
 
-    protected abstract IStormMod GetStormMod(string directoryPath, StormModType stormModType);
+    protected abstract IStormMod GetStormMod(string directoryPath, StormModType stormModType, BackgroundWorkerEx? backgroundWorkerEx = null);
 
     protected abstract IStormMod GetMpqStormMod(string name, string directoryPath, StormModType stormModType);
 

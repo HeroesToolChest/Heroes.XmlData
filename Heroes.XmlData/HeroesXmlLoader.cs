@@ -9,22 +9,22 @@ public class HeroesXmlLoader
 
     private bool _baseStormModsLoaded = false;
 
-    private HeroesXmlLoader()
-        : this(string.Empty)
+    private HeroesXmlLoader(IBackgroundWorkerEx? backgroundWorkerEx)
+        : this(string.Empty, backgroundWorkerEx)
     {
     }
 
-    private HeroesXmlLoader(string pathToModsDirectory)
+    private HeroesXmlLoader(string pathToModsDirectory, IBackgroundWorkerEx? backgroundWorkerEx)
     {
         StormStorage stormStorage = new();
-        _heroesSource = new FileHeroesSource(stormStorage, new StormModFactory(), new DepotCacheFactory(), pathToModsDirectory);
+        _heroesSource = new FileHeroesSource(stormStorage, new StormModFactory(), new DepotCacheFactory(), pathToModsDirectory, backgroundWorkerEx);
         HeroesData = new HeroesData(stormStorage);
     }
 
-    private HeroesXmlLoader(CASCHeroesStorage cascHeroesStorage)
+    private HeroesXmlLoader(CASCHeroesStorage cascHeroesStorage, IBackgroundWorkerEx? backgroundWorkerEx)
     {
         StormStorage stormStorage = new();
-        _heroesSource = new CASCHeroesSource(stormStorage, new StormModFactory(), new DepotCacheFactory(), cascHeroesStorage);
+        _heroesSource = new CASCHeroesSource(stormStorage, new StormModFactory(), new DepotCacheFactory(), cascHeroesStorage, backgroundWorkerEx);
         HeroesData = new HeroesData(stormStorage);
     }
 
@@ -39,47 +39,40 @@ public class HeroesXmlLoader
     /// <returns>A <see cref="HeroesXmlLoader"/>.</returns>
     public static HeroesXmlLoader LoadAsEmpty()
     {
-        return new HeroesXmlLoader();
+        return new HeroesXmlLoader(null);
     }
 
     /// <summary>
     /// Gets an instance of the <see cref="HeroesXmlLoader"/> class. Sets the source of the data to be loaded from an extracted file source.
     /// </summary>
     /// <param name="pathToModsDirectory">A mods directory.</param>
+    /// <param name="backgroundWorkerEx">A background worker used to report loading progress.</param>
     /// <returns>A <see cref="HeroesXmlLoader"/> instance.</returns>
-    /// <remarks>On linux and macos, all directories and files must be in lowercase characters.</remarks>
-    public static HeroesXmlLoader LoadAsFile(string pathToModsDirectory)
+    /// <remarks>On linux and macos, all directories and files should be in lowercase characters, otherwise some files and directories may not be found.</remarks>
+    public static HeroesXmlLoader LoadAsFile(string pathToModsDirectory, IBackgroundWorkerEx? backgroundWorkerEx = null)
     {
-        return new HeroesXmlLoader(pathToModsDirectory);
+        return new HeroesXmlLoader(pathToModsDirectory, backgroundWorkerEx);
     }
-
-    ///// <summary>
-    ///// Gets an instance of the <see cref="HeroesXmlLoader"/> class. Sets the source of the data to be loaded from the Heroes of the Storm directory.
-    ///// </summary>
-    ///// <param name="cascHeroesStorage">A <paramref name="cascHeroesStorage"/>.</param>
-    ///// <returns>A <see cref="HeroesXmlLoader"/> instance.</returns>
-    //public static HeroesXmlLoader LoadAsCASC(CASCHeroesStorage cascHeroesStorage)
-    //{
-    //    return new HeroesXmlLoader(cascHeroesStorage);
-    //}
 
     /// <summary>
     /// Gets an instance of the <see cref="HeroesXmlLoader"/> class. Sets the source of the data to be loaded from the Heroes of the Storm directory.
     /// </summary>
     /// <param name="pathToHeroesDirectory">The Heroes of the storm directory.</param>
+    /// <param name="backgroundWorkerEx">A background worker used to report loading progress.</param>
     /// <returns>A <see cref="HeroesXmlLoader"/> instance.</returns>
-    public static HeroesXmlLoader LoadAsCASC(string pathToHeroesDirectory)
+    public static HeroesXmlLoader LoadAsCASC(string pathToHeroesDirectory, BackgroundWorkerEx? backgroundWorkerEx = null)
     {
-        CASCConfig.ThrowOnFileNotFound = true;
-        CASCConfig.ThrowOnMissingDecryptionKey = true;
-        CASCConfig config = CASCConfig.LoadLocalStorageConfig(pathToHeroesDirectory, "hero");
-        CASCHandler cascHandler = CASCHandler.OpenStorage(config);
+        return LoadAsCASCInternal(CASCConfig.LoadLocalStorageConfig(pathToHeroesDirectory, "hero"), backgroundWorkerEx);
+    }
 
-        cascHandler.Root.LoadListFile(Path.Combine(Environment.CurrentDirectory, "listfile.txt"));
-
-        CASCFolder cascFolderRoot = cascHandler.Root.SetFlags(LocaleFlags.All);
-
-        return new HeroesXmlLoader(new CASCHeroesStorage(cascHandler, cascFolderRoot));
+    /// <summary>
+    /// Gets an instance of the <see cref="HeroesXmlLoader"/> class. Sets the source of the data to be downloaded from Blizzard's online servers.
+    /// </summary>
+    /// <param name="backgroundWorkerEx">A background worker used to report loading progress.</param>
+    /// <returns>A <see cref="HeroesXmlLoader"/> instance.</returns>
+    public static HeroesXmlLoader LoadAsOnlineCASC(BackgroundWorkerEx backgroundWorkerEx)
+    {
+        return LoadAsCASCInternal(CASCConfig.LoadOnlineStorageConfig("hero", "us"), backgroundWorkerEx);
     }
 
     /// <summary>
@@ -167,6 +160,19 @@ public class HeroesXmlLoader
     public IEnumerable<string> GetMapTitles()
     {
         return _heroesSource.S2MAPropertiesByTitle.Select(x => x.Key).Order();
+    }
+
+    private static HeroesXmlLoader LoadAsCASCInternal(CASCConfig cascConfig, BackgroundWorkerEx? backgroundWorkerEx)
+    {
+        CASCConfig.ThrowOnFileNotFound = true;
+        CASCConfig.ThrowOnMissingDecryptionKey = true;
+
+        CASCHandler cascHandler = CASCHandler.OpenStorage(cascConfig, backgroundWorkerEx);
+        cascHandler.Root.LoadListFile(string.Empty, backgroundWorkerEx);
+
+        CASCFolder cascFolderRoot = cascHandler.Root.SetFlags(LocaleFlags.All);
+
+        return new HeroesXmlLoader(new CASCHeroesStorage(cascHandler, cascFolderRoot), backgroundWorkerEx);
     }
 
     private void LoadBaseStormMods()

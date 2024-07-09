@@ -27,7 +27,7 @@ internal abstract class DepotCache<T> : IDepotCache
 
     protected IFileSystem FileSystem { get; }
 
-    public void LoadDepotCache()
+    public virtual void LoadDepotCache()
     {
         FindMapRootData();
     }

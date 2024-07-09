@@ -1,4 +1,5 @@
-﻿using Heroes.XmlData.CASC;
+﻿using CASCLib;
+using Heroes.XmlData.CASC;
 
 namespace Heroes.XmlData.Tests.StormMods;
 
@@ -10,12 +11,14 @@ public class CASCMpqStormModTests
     private readonly IStormModFactory _stormModFactory;
     private readonly IDepotCacheFactory _depotCacheFactory;
     private readonly ICASCHeroesStorage _cascHeroesStorage;
+    private readonly IBackgroundWorkerEx _backgroundWorkerEx;
 
     public CASCMpqStormModTests()
     {
         _stormModFactory = Substitute.For<IStormModFactory>();
         _depotCacheFactory = Substitute.For<IDepotCacheFactory>();
         _cascHeroesStorage = Substitute.For<ICASCHeroesStorage>();
+        _backgroundWorkerEx = Substitute.For<IBackgroundWorkerEx>();
     }
 
     [TestMethod]
@@ -24,7 +27,7 @@ public class CASCMpqStormModTests
         // arrange
         StormStorage stormStorage = new(false);
 
-        CASCHeroesSource cascHeroesSource = new(stormStorage, _stormModFactory, _depotCacheFactory, _cascHeroesStorage);
+        CASCHeroesSource cascHeroesSource = new(stormStorage, _stormModFactory, _depotCacheFactory, _cascHeroesStorage, _backgroundWorkerEx);
         CASCMpqStormMod cascMpqStormMod = new(cascHeroesSource, Path.Join("test.stormmod", "depotcache", "8d554.s2ma"), StormModType.Normal);
 
         cascMpqStormMod.StormModStorage.AddXmlDataFile(

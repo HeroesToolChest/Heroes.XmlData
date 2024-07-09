@@ -1,4 +1,6 @@
-﻿namespace Heroes.XmlData.Tests.StormMods;
+﻿using CASCLib;
+
+namespace Heroes.XmlData.Tests.StormMods;
 
 [TestClass]
 public class FileMpqStormModTests
@@ -7,11 +9,13 @@ public class FileMpqStormModTests
 
     private readonly IStormModFactory _stormModFactory;
     private readonly IDepotCacheFactory _depotCacheFactory;
+    private readonly IBackgroundWorkerEx _backgroundWorkerEx;
 
     public FileMpqStormModTests()
     {
         _stormModFactory = Substitute.For<IStormModFactory>();
         _depotCacheFactory = Substitute.For<IDepotCacheFactory>();
+        _backgroundWorkerEx = Substitute.For<IBackgroundWorkerEx>();
     }
 
     [TestMethod]
@@ -50,7 +54,7 @@ public class FileMpqStormModTests
         });
 
         StormStorage stormStorage = new(false);
-        FileHeroesSource fileHeroesSource = new(stormStorage, _stormModFactory, _depotCacheFactory, "mods");
+        FileHeroesSource fileHeroesSource = new(stormStorage, _stormModFactory, _depotCacheFactory, "mods", _backgroundWorkerEx);
         FileMpqStormMod fileMpqStormMod = new(mockFileSystem, fileHeroesSource, Path.Join("test.stormmod", "depotcache", "8d554.s2ma"), StormModType.Normal);
 
         // act
@@ -70,7 +74,7 @@ public class FileMpqStormModTests
         });
 
         StormStorage stormStorage = new(false);
-        FileHeroesSource fileHeroesSource = new(stormStorage, _stormModFactory, _depotCacheFactory, "mods");
+        FileHeroesSource fileHeroesSource = new(stormStorage, _stormModFactory, _depotCacheFactory, "mods", _backgroundWorkerEx);
         FileMpqStormMod fileMpqStormMod = new(mockFileSystem, fileHeroesSource, Path.Join("test.stormmod", "depotcache", "8d554.s2ma"), StormModType.Normal);
 
         // act
@@ -90,7 +94,7 @@ public class FileMpqStormModTests
         });
 
         StormStorage stormStorage = new(false);
-        FileHeroesSource fileHeroesSource = new(stormStorage, _stormModFactory, _depotCacheFactory, "mods");
+        FileHeroesSource fileHeroesSource = new(stormStorage, _stormModFactory, _depotCacheFactory, "mods", _backgroundWorkerEx);
         FileMpqStormMod fileMpqStormMod = new(mockFileSystem, fileHeroesSource, Path.Join("test.stormmod", "depotcache", "8d554.s2ma"), StormModType.Normal);
 
         fileMpqStormMod.LoadStormGameStrings(StormLocale.ENUS);
@@ -111,7 +115,7 @@ public class FileMpqStormModTests
         });
 
         StormStorage stormStorage = new(false);
-        FileHeroesSource fileHeroesSource = new(stormStorage, _stormModFactory, _depotCacheFactory, "mods");
+        FileHeroesSource fileHeroesSource = new(stormStorage, _stormModFactory, _depotCacheFactory, "mods", _backgroundWorkerEx);
         FileMpqStormMod fileMpqStormMod = new(mockFileSystem, fileHeroesSource, "test.stormmod", StormModType.Normal);
 
         // act
@@ -140,7 +144,7 @@ public class FileMpqStormModTests
         });
 
         StormStorage stormStorage = new(false);
-        FileHeroesSource fileHeroesSource = new(stormStorage, _stormModFactory, _depotCacheFactory, "mods");
+        FileHeroesSource fileHeroesSource = new(stormStorage, _stormModFactory, _depotCacheFactory, "mods", _backgroundWorkerEx);
         FileMpqStormMod fileMpqStormMod = new(mockFileSystem, fileHeroesSource, Path.Join("test.stormmod", "depotcache", "8d554.s2ma"), StormModType.Normal);
         fileMpqStormMod.StormModStorage.AddXmlDataFile(
             XDocument.Parse(

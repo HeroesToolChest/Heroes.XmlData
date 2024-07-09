@@ -1,4 +1,6 @@
-﻿namespace Heroes.XmlData.Tests.StormDepotCache;
+﻿using CASCLib;
+
+namespace Heroes.XmlData.Tests.StormDepotCache;
 
 [TestClass]
 public class FileDepotCacheTests
@@ -7,11 +9,13 @@ public class FileDepotCacheTests
 
     private readonly IStormModFactory _stormModFactory;
     private readonly IDepotCacheFactory _depotCacheFactory;
+    private readonly IBackgroundWorkerEx _backgroundWorkerEx;
 
     public FileDepotCacheTests()
     {
         _stormModFactory = Substitute.For<IStormModFactory>();
         _depotCacheFactory = Substitute.For<IDepotCacheFactory>();
+        _backgroundWorkerEx = Substitute.For<IBackgroundWorkerEx>();
     }
 
     [TestMethod]
@@ -28,7 +32,7 @@ public class FileDepotCacheTests
         });
 
         StormStorage stormStorage = new(false);
-        FileHeroesSource fileHeroesSource = new(stormStorage, _stormModFactory, _depotCacheFactory, "mods");
+        FileHeroesSource fileHeroesSource = new(stormStorage, _stormModFactory, _depotCacheFactory, "mods", _backgroundWorkerEx);
         FileDepotCache fileDepotCache = new(mockFileSystem, fileHeroesSource);
 
         // act
@@ -199,7 +203,7 @@ public class FileDepotCacheTests
         });
 
         StormStorage stormStorage = new(false);
-        FileHeroesSource fileHeroesSource = new(stormStorage, _stormModFactory, _depotCacheFactory, "mods");
+        FileHeroesSource fileHeroesSource = new(stormStorage, _stormModFactory, _depotCacheFactory, "mods", _backgroundWorkerEx);
         FileDepotCache fileDepotCache = new(mockFileSystem, fileHeroesSource);
 
         // act
@@ -222,7 +226,7 @@ public class FileDepotCacheTests
         });
 
         StormStorage stormStorage = new(false);
-        FileHeroesSource fileHeroesSource = new(stormStorage, _stormModFactory, _depotCacheFactory, "mods");
+        FileHeroesSource fileHeroesSource = new(stormStorage, _stormModFactory, _depotCacheFactory, "mods", _backgroundWorkerEx);
         FileDepotCache fileDepotCache = new(mockFileSystem, fileHeroesSource);
 
         // act
