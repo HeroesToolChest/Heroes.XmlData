@@ -73,4 +73,6 @@ internal interface IHeroesSource
     void LoadCustomMod(string directoryPath);
 
     void LoadDepotCache();
+
+    void UnloadCustomMods();
 }

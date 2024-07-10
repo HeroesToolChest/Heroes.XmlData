@@ -9,8 +9,8 @@ public class HeroesXmlLoader
 
     private bool _baseStormModsLoaded = false;
 
-    private HeroesXmlLoader(IBackgroundWorkerEx? backgroundWorkerEx)
-        : this(string.Empty, backgroundWorkerEx)
+    private HeroesXmlLoader()
+        : this(string.Empty, null)
     {
     }
 
@@ -37,9 +37,9 @@ public class HeroesXmlLoader
     /// Gets an instance of the <see cref="HeroesXmlLoader"/> class. The source of data will be emtpy.
     /// </summary>
     /// <returns>A <see cref="HeroesXmlLoader"/>.</returns>
-    public static HeroesXmlLoader LoadAsEmpty()
+    public static HeroesXmlLoader LoadWithEmpty()
     {
-        return new HeroesXmlLoader(null);
+        return new HeroesXmlLoader();
     }
 
     /// <summary>
@@ -49,7 +49,7 @@ public class HeroesXmlLoader
     /// <param name="backgroundWorkerEx">A background worker used to report loading progress.</param>
     /// <returns>A <see cref="HeroesXmlLoader"/> instance.</returns>
     /// <remarks>On linux and macos, all directories and files should be in lowercase characters, otherwise some files and directories may not be found.</remarks>
-    public static HeroesXmlLoader LoadAsFile(string pathToModsDirectory, IBackgroundWorkerEx? backgroundWorkerEx = null)
+    public static HeroesXmlLoader LoadWithFile(string pathToModsDirectory, IBackgroundWorkerEx? backgroundWorkerEx = null)
     {
         return new HeroesXmlLoader(pathToModsDirectory, backgroundWorkerEx);
     }
@@ -60,7 +60,7 @@ public class HeroesXmlLoader
     /// <param name="pathToHeroesDirectory">The Heroes of the storm directory.</param>
     /// <param name="backgroundWorkerEx">A background worker used to report loading progress.</param>
     /// <returns>A <see cref="HeroesXmlLoader"/> instance.</returns>
-    public static HeroesXmlLoader LoadAsCASC(string pathToHeroesDirectory, BackgroundWorkerEx? backgroundWorkerEx = null)
+    public static HeroesXmlLoader LoadWithCASC(string pathToHeroesDirectory, BackgroundWorkerEx? backgroundWorkerEx = null)
     {
         return LoadAsCASCInternal(CASCConfig.LoadLocalStorageConfig(pathToHeroesDirectory, "hero"), backgroundWorkerEx);
     }
@@ -70,7 +70,7 @@ public class HeroesXmlLoader
     /// </summary>
     /// <param name="backgroundWorkerEx">A background worker used to report loading progress.</param>
     /// <returns>A <see cref="HeroesXmlLoader"/> instance.</returns>
-    public static HeroesXmlLoader LoadAsOnlineCASC(BackgroundWorkerEx backgroundWorkerEx)
+    public static HeroesXmlLoader LoadWithOnlineCASC(BackgroundWorkerEx backgroundWorkerEx)
     {
         return LoadAsCASCInternal(CASCConfig.LoadOnlineStorageConfig("hero", "us"), backgroundWorkerEx);
     }
@@ -136,6 +136,11 @@ public class HeroesXmlLoader
         return this;
     }
 
+    /// <summary>
+    /// Loads a mod programmatically.
+    /// </summary>
+    /// <param name="manualModLoader">The data of the custom mod.</param>
+    /// <returns>The current <see cref="HeroesXmlLoader"/> instance.</returns>
     public HeroesXmlLoader LoadCustomMod(ManualModLoader manualModLoader)
     {
         CustomStormMod customStormMod = new(_heroesSource, manualModLoader);
@@ -145,9 +150,25 @@ public class HeroesXmlLoader
         return this;
     }
 
-    public HeroesXmlLoader LoadCustomMod(string directoryPath)
+    /// <summary>
+    /// Loads a stormmod from a directory.
+    /// </summary>
+    /// <param name="stormmodDirectoryPath">The directory of the stormmod.</param>
+    /// <returns>The current <see cref="HeroesXmlLoader"/> instance.</returns>
+    public HeroesXmlLoader LoadCustomMod(string stormmodDirectoryPath)
     {
-        _heroesSource.LoadCustomMod(directoryPath);
+        _heroesSource.LoadCustomMod(stormmodDirectoryPath);
+
+        return this;
+    }
+
+    /// <summary>
+    /// Unloads all custom mods.
+    /// </summary>
+    /// <returns>The current <see cref="HeroesXmlLoader"/> instance.</returns>
+    public HeroesXmlLoader UnloadCustomMods()
+    {
+        _heroesSource.UnloadCustomMods();
 
         return this;
     }

@@ -11,7 +11,7 @@ public class HeroesDataTests
         // arrange
         string description = "Yrel sanctifies the ground around her, gaining <c val=\"#TooltipNumbers\"><d const=\"$YrelSacredGroundArmorBonus\" precision=\"2\"/></c> Armor until she leaves the area.";
 
-        HeroesXmlLoader loader = HeroesXmlLoader.LoadAsEmpty()
+        HeroesXmlLoader loader = HeroesXmlLoader.LoadWithEmpty()
             .LoadCustomMod(new ManualModLoader("custom")
                 .AddConstantXElements(new List<XElement>()
                 {
@@ -36,7 +36,7 @@ public class HeroesDataTests
         // arrange
         string description = "Increase the damage of Octo-Grab by <c val=\"#TooltipNumbers\"><d ref=\"Effect,OctoGrabPokeMasteryDamage,Amount * 100\"/>%</c>";
 
-        HeroesXmlLoader loader = HeroesXmlLoader.LoadAsEmpty()
+        HeroesXmlLoader loader = HeroesXmlLoader.LoadWithEmpty()
             .LoadCustomMod(new ManualModLoader("custom")
                 .AddBaseElementTypes(new List<(string, string)>()
                 {
@@ -88,7 +88,7 @@ public class HeroesDataTests
         // arrange
         string description = "Eject from the Mech, setting it to self-destruct after <c val=\"#TooltipNumbers\"><d ref=\"Behavior,DVaMechSelfDestructMechDetonationCountdown,Duration\" player=\"0\"/></c> seconds. Deals <c val=\"#TooltipNumbers\"><d ref=\"Effect,DVaMechSelfDestructDetonationSearchDamage,Amount+Accumulator,DVaSelfDestructDistanceAccumulator,MinAccumulation\"/></c> to <c val=\"#TooltipNumbers\"><d ref=\"Effect,DVaMechSelfDestructDetonationSearchDamage,Amount\"/></c> damage in a large area, depending on distance from center. Deals <c val=\"#TooltipNumbers\"><d ref=\"Effect,DVaMechSelfDestructDetonationSearchDamage,AttributeFactor[Structure]*(-100)\"/>%</c> damage against Structures.</n></n><c val=\"FF8000\">Gain <c val=\"#TooltipNumbers\">1%</c> Charge for every <c val=\"#TooltipNumbers\">2</c> seconds spent Basic Attacking, and <c val=\"#TooltipNumbers\">25%</c> Charge per <c val=\"#TooltipNumbers\">100%</c> of Mech Health lost.</c>";
 
-        HeroesXmlLoader loader = HeroesXmlLoader.LoadAsEmpty()
+        HeroesXmlLoader loader = HeroesXmlLoader.LoadWithEmpty()
             .LoadCustomMod(new ManualModLoader("custom")
                 .AddBaseElementTypes(new List<(string, string)>()
                 {

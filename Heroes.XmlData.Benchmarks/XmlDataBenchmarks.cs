@@ -16,7 +16,7 @@ public class XmlDataBenchmarks
     {
         string description = "Increase the damage of Octo-Grab by <c val=\"#TooltipNumbers\"><d ref=\"Effect,OctoGrabPokeMasteryDamage,Amount * 100\"/>%</c>";
 
-        HeroesXmlLoader loader = HeroesXmlLoader.LoadAsEmpty()
+        HeroesXmlLoader loader = HeroesXmlLoader.LoadWithEmpty()
             .LoadCustomMod(new ManualModLoader("custom")
                 .AddBaseElementTypes(new List<(string, string)>()
                 {

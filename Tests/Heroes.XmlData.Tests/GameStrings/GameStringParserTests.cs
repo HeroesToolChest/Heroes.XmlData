@@ -9,7 +9,7 @@ public class GameStringParserTests
         // arrange
         string description = "Yrel sanctifies the ground around her, gaining <c val=\"#TooltipNumbers\"><d const=\"$YrelSacredGroundArmorBonus\" precision=\"2\"/></c> Armor until she leaves the area.";
 
-        HeroesXmlLoader loader = HeroesXmlLoader.LoadAsEmpty()
+        HeroesXmlLoader loader = HeroesXmlLoader.LoadWithEmpty()
             .LoadCustomMod(new ManualModLoader("custom")
                 .AddConstantXElements(new List<XElement>()
                 {
@@ -34,7 +34,7 @@ public class GameStringParserTests
         // arrange
         string description = "After <c val=\"#TooltipNumbers\"><d ref=\"Abil,GuldanHorrify, CastIntroTime + Effect,GuldanHorrifyAbilityStartCreatePersistent,PeriodicPeriodArray[0]\" precision=\"2\"/></c> seconds, deal <c val=\"#TooltipNumbers\"><d ref=\"Effect,GuldanHorrifyDamage,Amount\"/></c> damage to enemy Heroes in an area and Fear them for <c val=\"#TooltipNumbers\"><d ref=\"Behavior,GuldanHorrifyFearDuration,Duration\"/></c> seconds. While Feared, Heroes are Silenced and are forced to run away from Horrify's center.";
 
-        HeroesXmlLoader loader = HeroesXmlLoader.LoadAsEmpty()
+        HeroesXmlLoader loader = HeroesXmlLoader.LoadWithEmpty()
             .LoadCustomMod(new ManualModLoader("custom")
                 .AddBaseElementTypes(new List<(string, string)>()
                 {
@@ -109,7 +109,7 @@ public class GameStringParserTests
         // arrange
         string description = "Rain a small army of Demonic Grunts down on enemies, dealing <c val=\"#TooltipNumbers\"><d ref=\"Effect,AzmodanDemonicInvasionImpactDamage,Amount\"/></c> damage per impact. Grunts deal <c val=\"#TooltipNumbers\"><d ref=\"Effect,AzmodanDemonicInvasionDemonGruntWeaponDamage,Amount\"/></c> damage, have <c val=\"#TooltipNumbers\"><d ref=\"Unit,AzmodanDemonicInvasionDemonGrunt,LifeMax\"/></c> Health and last up to <c val=\"#TooltipNumbers\"><d ref=\"-Unit,AzmodanDemonicInvasionDemonGrunt,LifeMax/Unit,AzmodanDemonicInvasionDemonGrunt,LifeRegenRate\"/></c> seconds. When Grunts die they explode, dealing <c val=\"#TooltipNumbers\"><d ref=\"Effect,AzmodanDemonicInvasionExplodeDamage,Amount\"/></c> damage to nearby enemies, doubled against enemy Heroes.<n/><n/>Usable while Channeling All Shall Burn.";
 
-        HeroesXmlLoader loader = HeroesXmlLoader.LoadAsEmpty()
+        HeroesXmlLoader loader = HeroesXmlLoader.LoadWithEmpty()
             .LoadCustomMod(new ManualModLoader("custom")
                 .AddBaseElementTypes(new List<(string, string)>()
                 {
@@ -250,7 +250,7 @@ public class GameStringParserTests
         // arrange
         string description = "Toxic Nests deal <c val=\"#TooltipNumbers\"><d ref=\"(Effect,AbathurToxicNestEnvenomedNestDamage,Amount* [d ref='Behavior,AbathurToxicNestEnvenomedNest,PeriodCount' player='0'/])/Effect,ToxicNestDamage,Amount*100\"/>%</c> more damage over <c val=\"#TooltipNumbers\"><d ref=\"Behavior,AbathurToxicNestEnvenomedNest,Duration\" player=\"0\"/></c> seconds and reduce the Armor of enemy Heroes hit by <c val=\"#TooltipNumbers\"><d ref=\"-Behavior,AbathurToxicNestEnvenomedNestArmorDebuff,ArmorModification.AllArmorBonus\"/></c> for <c val=\"#TooltipNumbers\"><d ref=\"Behavior,AbathurToxicNestEnvenomedNestArmorDebuff,Duration\"/></c> seconds.";
 
-        HeroesXmlLoader loader = HeroesXmlLoader.LoadAsEmpty()
+        HeroesXmlLoader loader = HeroesXmlLoader.LoadWithEmpty()
             .LoadCustomMod(new ManualModLoader("custom")
                 .AddBaseElementTypes(new List<(string, string)>()
                 {
@@ -342,7 +342,7 @@ public class GameStringParserTests
         // arrange
         string description = "Zarya's Basic Attack deals <c val=\"bfd4fd\"><d ref=\"(Effect,ZaryaWeaponFeelTheHeatDamage,Amount/Effect,ZaryaWeaponDamage,Amount)-1*10)\" />0%</c> additional damage to enemies in melee range.";
 
-        HeroesXmlLoader loader = HeroesXmlLoader.LoadAsEmpty()
+        HeroesXmlLoader loader = HeroesXmlLoader.LoadWithEmpty()
             .LoadCustomMod(new ManualModLoader("custom")
                 .AddBaseElementTypes(new List<(string, string)>()
                 {
@@ -412,7 +412,7 @@ public class GameStringParserTests
         // arrange
         string description = "If Sand Blast travels at least <c val=\"bfd4fd\"><d ref=\"Validator,ChromieFastForwardDistanceCheck,Range/Effect,ChromieSandBlastLaunchMissile,ImpactLocation.ProjectionDistanceScale*100\"/>%</c> of its base distance and hits a Hero, its cooldown is reduced to <c val=\"bfd4fd\"><d ref=\"Effect,ChromieSandBlastFastForwardCooldownReduction,Cost[0].CooldownTimeUse\" precision=\"2\"/></c> seconds.";
 
-        HeroesXmlLoader loader = HeroesXmlLoader.LoadAsEmpty()
+        HeroesXmlLoader loader = HeroesXmlLoader.LoadWithEmpty()
             .LoadCustomMod(new ManualModLoader("custom")
                 .AddBaseElementTypes(new List<(string, string)>()
                 {
@@ -460,7 +460,7 @@ public class GameStringParserTests
         // arrange
         string description = "reduces its cooldown by <c val=\"#TooltipNumbers\"><d ref=\"(1-Effect,AnduinHolyWordSalvationLightOfStormwindCooldownReduction,Cost[0].CooldownTimeUse)*-1\"/></c>";
 
-        HeroesXmlLoader loader = HeroesXmlLoader.LoadAsEmpty()
+        HeroesXmlLoader loader = HeroesXmlLoader.LoadWithEmpty()
             .LoadCustomMod(new ManualModLoader("custom")
                 .AddBaseElementTypes(new List<(string, string)>()
                 {
@@ -491,7 +491,7 @@ public class GameStringParserTests
         // arrange
         string description = "Increase the damage of Octo-Grab by <c val=\"#TooltipNumbers\"><d ref=\"Effect,OctoGrabPokeMasteryDamage,Amount * 100\"/>%</c>";
 
-        HeroesXmlLoader loader = HeroesXmlLoader.LoadAsEmpty()
+        HeroesXmlLoader loader = HeroesXmlLoader.LoadWithEmpty()
             .LoadCustomMod(new ManualModLoader("custom")
                 .AddBaseElementTypes(new List<(string, string)>()
                 {
@@ -542,7 +542,7 @@ public class GameStringParserTests
         // arrange
         string description = "Globe of Annihilation deals <c val=\"#TooltipNumbers\"><d ref=\"100*Effect,AzmodanGlobeOfAnnihilationDamage,MultiplicativeModifierArray[Greed].Modifier\"player=\"0\"/>%</c> more damage to non-Heroic targets.<n/><n/><img path=\"@UI/StormTalentInTextQuestIcon\" alignment=\"uppermiddle\" color=\"B48E4C\" width=\"20\" height=\"22\"/><c val=\"#TooltipQuest\">Quest:</c> After gaining <c val=\"#TooltipNumbers\"><d ref=\"Behavior,AzmodanGlobeOfAnnihilationGreedTalentTokenCounter,Max\"/></c> Annihilation, increase the range of All Shall Burn by <c val=\"#TooltipNumbers\"><d ref=\"Effect,AzmodanGlobeOfAnnihilationGreedAllShallBurnRangeIncreaseModifyCatalog,CatalogModifications[0].Value/Abil,AzmodanAllShallBurn,Range*100\" player=\"0\"/>%</c> and Demon Warriors gain <c val=\"#TooltipNumbers\"><d ref=\"Behavior,AzmodanGlobeOfAnnihilationGreedMovementSpeed,Modification.UnifiedMoveSpeedFactor*100\"/>%</c> Attack Speed and Movement Speed.";
 
-        HeroesXmlLoader loader = HeroesXmlLoader.LoadAsEmpty()
+        HeroesXmlLoader loader = HeroesXmlLoader.LoadWithEmpty()
             .LoadCustomMod(new ManualModLoader("custom")
                 .AddBaseElementTypes(new List<(string, string)>()
                 {
@@ -624,7 +624,7 @@ public class GameStringParserTests
         // arrange
         string description = "Channel on an allied or destroyed Fort or Keep to replace it with Ragnaros's ultimate form, temporarily gaining new Abilities, having <c val=\"#TooltipNumbers\"><d ref=\"Unit,RagnarosBigRag,LifeMax\"/></c> Health that burns away over <c val=\"#TooltipNumbers\"><d ref=\"(Unit,RagnarosBigRag,LifeMax / Unit,RagnarosBigRag,LifeRegenRate) * (-1)\"/></c> seconds.<n/><n/>Ragnaros returns to his normal form upon losing all Health in Molten Core.";
 
-        HeroesXmlLoader loader = HeroesXmlLoader.LoadAsEmpty()
+        HeroesXmlLoader loader = HeroesXmlLoader.LoadWithEmpty()
             .LoadCustomMod(new ManualModLoader("custom")
                 .AddBaseElementTypes(new List<(string, string)>()
                 {
@@ -692,7 +692,7 @@ public class GameStringParserTests
         // arrange
         string description = "Deal <c val=\"#TooltipNumbers\"><d ref=\"Effect,MultishotDamage,AmountArray\"/></c> damage to enemies within the target area.";
 
-        HeroesXmlLoader loader = HeroesXmlLoader.LoadAsEmpty()
+        HeroesXmlLoader loader = HeroesXmlLoader.LoadWithEmpty()
             .LoadCustomMod(new ManualModLoader("custom")
                 .AddBaseElementTypes(new List<(string, string)>()
                 {
@@ -744,7 +744,7 @@ public class GameStringParserTests
         // arrange
         string description = "Shields Tyrael for <c val=\"#TooltipNumbers\"><d ref=\"Behavior,TyraelRighteousnessShield,DamageResponse[0].ModifyLimit[0]\"/></c> damage and nearby allied Heroes and Minions for <c val=\"#TooltipNumbers\">40%</c> as much for <c val=\"#TooltipNumbers\"><d ref=\"Behavior,TyraelRighteousnessShield,Duration[0]\"/></c> seconds.";
 
-        HeroesXmlLoader loader = HeroesXmlLoader.LoadAsEmpty()
+        HeroesXmlLoader loader = HeroesXmlLoader.LoadWithEmpty()
             .LoadCustomMod(new ManualModLoader("custom")
                 .AddBaseElementTypes(new List<(string, string)>()
                 {
@@ -799,7 +799,7 @@ public class GameStringParserTests
         // arrange
         string description = "<c val=\"#AbilityPassive\">Pilot Mode: </c>Instead of a single shot, Big Shot fires <c val=\"#TooltipNumbers\"><d ref=\"Effect,DVaBigShotPewPewPewOffsetPeriodic,PeriodCount\"/></c> shots over <c val=\"#TooltipNumbers\"><d ref=\"Effect,DVaBigShotPewPewPewOffsetPeriodic,PeriodicPeriodArray[1]+Effect,DVaBigShotPewPewPewOffsetPeriodic,PeriodicPeriodArray[2]\" precision=\"2\"/></c> seconds. Each shot deals <c val=\"#TooltipNumbers\"><d ref=\"1+Effect,DVaPilotBigShotDamage,MultiplicativeModifierArray[PewPewPew].Modifier*100\"player=\"0\"/>%</c> damage.";
 
-        HeroesXmlLoader loader = HeroesXmlLoader.LoadAsEmpty()
+        HeroesXmlLoader loader = HeroesXmlLoader.LoadWithEmpty()
             .LoadCustomMod(new ManualModLoader("custom")
                 .AddBaseElementTypes(new List<(string, string)>()
                 {
@@ -871,7 +871,7 @@ public class GameStringParserTests
         // arrange
         string description = "Eject from the Mech, setting it to self-destruct after <c val=\"#TooltipNumbers\"><d ref=\"Behavior,DVaMechSelfDestructMechDetonationCountdown,Duration\" player=\"0\"/></c> seconds. Deals <c val=\"#TooltipNumbers\"><d ref=\"Effect,DVaMechSelfDestructDetonationSearchDamage,Amount+Accumulator,DVaSelfDestructDistanceAccumulator,MinAccumulation\"/></c> to <c val=\"#TooltipNumbers\"><d ref=\"Effect,DVaMechSelfDestructDetonationSearchDamage,Amount\"/></c> damage in a large area, depending on distance from center. Deals <c val=\"#TooltipNumbers\"><d ref=\"Effect,DVaMechSelfDestructDetonationSearchDamage,AttributeFactor[Structure]*(-100)\"/>%</c> damage against Structures.</n></n><c val=\"FF8000\">Gain <c val=\"#TooltipNumbers\">1%</c> Charge for every <c val=\"#TooltipNumbers\">2</c> seconds spent Basic Attacking, and <c val=\"#TooltipNumbers\">25%</c> Charge per <c val=\"#TooltipNumbers\">100%</c> of Mech Health lost.</c>";
 
-        HeroesXmlLoader loader = HeroesXmlLoader.LoadAsEmpty()
+        HeroesXmlLoader loader = HeroesXmlLoader.LoadWithEmpty()
             .LoadCustomMod(new ManualModLoader("custom")
                 .AddBaseElementTypes(new List<(string, string)>()
                 {
@@ -970,7 +970,7 @@ public class GameStringParserTests
         // arrange
         string description = "Transform for <c val=\"#TooltipNumbers\"><d ref=\"Behavior,MuradinAvatarHealthBuff,Duration\" player=\"0\" precision=\"2\"/></c> seconds, gaining <c val=\"#TooltipNumbers\"><d ref=\"Behavior,MuradinAvatar,Modification.VitalMaxArray[0]\"/></c> Health.";
 
-        HeroesXmlLoader loader = HeroesXmlLoader.LoadAsEmpty()
+        HeroesXmlLoader loader = HeroesXmlLoader.LoadWithEmpty()
             .LoadCustomMod(new ManualModLoader("custom")
                 .AddBaseElementTypes(new List<(string, string)>()
                 {
@@ -1034,7 +1034,7 @@ public class GameStringParserTests
         // arrange
         string description = "While at or below <c val=\"#TooltipNumbers\">50</c> Brew, gain <c val=\"#TooltipNumbers\"><d ref=\"100*Behavior,ChenBrewmastersBalanceSpeedBuff,Modification.UnifiedMoveSpeedFactor\"/>%</c> Movement Speed. While at or above <c val=\"#TooltipNumbers\">50</c> Brew, regenerate an additional <c val=\"#TooltipNumbers\"><d ref=\"Behavior,ChenBrewmastersBalanceHealthRegen,Modification.VitalRegenArray[Life]\"/></c> Health per second.";
 
-        HeroesXmlLoader loader = HeroesXmlLoader.LoadAsEmpty()
+        HeroesXmlLoader loader = HeroesXmlLoader.LoadWithEmpty()
             .LoadCustomMod(new ManualModLoader("custom")
                 .AddBaseElementTypes(new List<(string, string)>()
                 {
@@ -1097,7 +1097,7 @@ public class GameStringParserTests
         // arrange
         string description = "Increase Hardened Carapace's Spell Armor by <c val=\"#TooltipNumbers\"><d ref=\"Talent,AnubarakNerubianArmor,AbilityModificationArray[0].Modifications[0].Value\"/></c>.";
 
-        HeroesXmlLoader loader = HeroesXmlLoader.LoadAsEmpty()
+        HeroesXmlLoader loader = HeroesXmlLoader.LoadWithEmpty()
             .LoadCustomMod(new ManualModLoader("custom")
                 .AddBaseElementTypes(new List<(string, string)>()
                 {
@@ -1143,7 +1143,7 @@ public class GameStringParserTests
         // arrange
         string description = "Increases Burrow Charge impact area by <c val=\"#TooltipNumbers\"><d ref=\"100*Talent,AnubarakMasteryEpicenterBurrowCharge,AbilityModificationArray[0].Modifications[2].Value\"player=\"0\"/>%</c> and lowers the cooldown by <c val=\"#TooltipNumbers\"><d ref=\"-Effect,AnubarakBurrowChargeEpicenterModifyCooldown,Cost[0].CooldownTimeUse\"precision=\"2\"/></c> second for each Hero hit.";
 
-        HeroesXmlLoader loader = HeroesXmlLoader.LoadAsEmpty()
+        HeroesXmlLoader loader = HeroesXmlLoader.LoadWithEmpty()
             .LoadCustomMod(new ManualModLoader("custom")
                 .AddBaseElementTypes(new List<(string, string)>()
                 {
@@ -1205,7 +1205,7 @@ public class GameStringParserTests
         // arrange
         string description = "<img path=\"@UI/StormTalentInTextQuestIcon\" alignment=\"uppermiddle\" color=\"B48E4C\" width=\"20\" height=\"22\"/><c val=\"#TooltipQuest\">Quest:</c> Gain <c val=\"#TooltipNumbers\"><d ref=\"Effect,KelThuzadMasterOfTheColdDarkModifyToken,Value\"/></c> Blight every time a Hero is Rooted by Frost Nova or hit by Chains of Kel'Thuzad.<n/><n/><img path=\"@UI/StormTalentInTextQuestIcon\" alignment=\"uppermiddle\" color=\"B48E4C\" width=\"20\" height=\"22\"/><c val=\"#TooltipQuest\">Reward:</c> After gaining <c val=\"#TooltipNumbers\"><d ref=\"Behavior,KelThuzadMasterOfTheColdDarkToken,ConditionalEvents[0].CompareValue\"/></c> Blight, gain the Glacial Spike Ability.<n/><n/><img path=\"@UI/StormTalentInTextQuestIcon\" alignment=\"uppermiddle\" color=\"B48E4C\" width=\"20\" height=\"22\"/><c val=\"#TooltipQuest\">Reward:</c> After gaining <c val=\"#TooltipNumbers\"><d ref=\"Behavior,KelThuzadMasterOfTheColdDarkToken,Max\"/></c> Blight, gain <c val=\"#TooltipNumbers\"><d ref=\"Behavior,KelThuzadMasterOfTheColdDarkSpellPower,Modification.DamageDealtFraction[Ability] * 100\"/>%</c> Spell Power.<n/><n/><c val=\"#TooltipQuest\">Blight:</c> <c val=\"#TooltipNumbers\" validator=\"True\"><d ref=\"$BehaviorStackCount:KelThuzadMasterOfTheColdDarkToken$\"/>/<d ref=\"Behavior,KelThuzadMasterOfTheColdDarkToken,Max\"/></c>";
 
-        HeroesXmlLoader loader = HeroesXmlLoader.LoadAsEmpty()
+        HeroesXmlLoader loader = HeroesXmlLoader.LoadWithEmpty()
             .LoadCustomMod(new ManualModLoader("custom")
                 .AddBaseElementTypes(new List<(string, string)>()
                 {
@@ -1268,7 +1268,7 @@ public class GameStringParserTests
         // arrange
         string description = "Launch a grenade that explodes at the end of its path or upon hitting an enemy, dealing <c val=\"#TooltipNumbers\"><d ref=\"Effect,JunkratFragLauncherExplosionDamage,Amount\"/></c> damage to nearby enemies. Grenades can ricochet off of terrain. Deals <c val=\"#TooltipNumbers\"><d ref=\"-Effect,JunkratFragLauncherExplosionDamage,AttributeFactor[Structure] * 100\"/>%</c> less damage to Structures.<n/><n/>Stores up to <c val=\"#TooltipNumbers\"><d ref=\"Abil,JunkratFragLauncher,Cost.Charge.CountMax\" player=\"0\"/></c> charges. Frag Launcher's cooldown replenishes all charges at the same time.";
 
-        HeroesXmlLoader loader = HeroesXmlLoader.LoadAsEmpty()
+        HeroesXmlLoader loader = HeroesXmlLoader.LoadWithEmpty()
             .LoadCustomMod(new ManualModLoader("custom")
                 .AddBaseElementTypes(new List<(string, string)>()
                 {
@@ -1334,7 +1334,7 @@ public class GameStringParserTests
         // arrange
         string description = "<img path=\"@UI/StormTalentInTextQuestIcon\" alignment=\"uppermiddle\" color=\"B48E4C\" width=\"20\" height=\"22\"/><c val=\"#TooltipQuest\">Repeatable Quest:</c> Basic Attacks against Heroes while Windfury's Movement Speed bonus is active increase Attack Damage by <c val=\"#TooltipNumbers\"><d ref=\"Accumulator,ThrallMaelstromWeaponDamageAccumulator,Scale\"precision=\"2\"/></c>.<n/><n/><img path=\"@UI/StormTalentInTextQuestIcon\" alignment=\"uppermiddle\" color=\"B48E4C\" width=\"20\" height=\"22\"/><c val=\"#TooltipQuest\">Reward:</c> After gaining <c val=\"#TooltipNumbers\"><d ref=\"Behavior,ThrallMaelstromWeaponTokenCounter,ConditionalEvents[0].CompareValue*Accumulator,ThrallMaelstromWeaponDamageAccumulator,Scale\"/></c> Attack Damage, increase the Movement Speed bonus of Windfury to <c val=\"#TooltipNumbers\"><d ref=\"100*Effect,ThrallWindfuryMaelstromWeaponTalent1stQuestCompletionModifyPlayer,EffectArray[0].Value\"/>%</c>.<n/><n/><img path=\"@UI/StormTalentInTextQuestIcon\" alignment=\"uppermiddle\" color=\"B48E4C\" width=\"20\" height=\"22\"/><c val=\"#TooltipQuest\">Reward:</c> After gaining <c val=\"#TooltipNumbers\"><d ref=\"Behavior,ThrallMaelstromWeaponTokenCounter,ConditionalEvents[1].CompareValue\"/></c> Attack Damage, Thrall permanently gains <c val=\"#TooltipNumbers\"><d ref=\"100*Behavior,ThrallWindfuryMaelstromWeapon2ndQuestCompletionMoveSpeedCarry,Modification.UnifiedMoveSpeedFactor\"/>%</c> increased Movement Speed.";
 
-        HeroesXmlLoader loader = HeroesXmlLoader.LoadAsEmpty()
+        HeroesXmlLoader loader = HeroesXmlLoader.LoadWithEmpty()
             .LoadCustomMod(new ManualModLoader("custom")
                 .AddBaseElementTypes(new List<(string, string)>()
                 {
@@ -1409,7 +1409,7 @@ public class GameStringParserTests
         // arrange
         string description = "Increase the Slow amount of each Twin Cleave axe by <c val=\"#TooltipNumbers\"><d ref=\"(Behavior,ZuljinTwinCleaveLacerateFirstHitSlow,Modification.UnifiedMoveSpeedFactor-Behavior,ZuljinTwinCleaveFirstHitSlow,Modification.UnifiedMoveSpeedFactor)*(-100)\" player=\"0\" precision=\"2\"/>%</c> and its duration by <c val=\"#TooltipNumbers\"><d ref=\"Behavior,ZuljinTwinCleaveLacerateFirstHitSlow,Duration-Behavior,ZuljinTwinCleaveFirstHitSlow,Duration,\"player=\"0\"precision=\"1\"/></c> seconds.";
 
-        HeroesXmlLoader loader = HeroesXmlLoader.LoadAsEmpty()
+        HeroesXmlLoader loader = HeroesXmlLoader.LoadWithEmpty()
             .LoadCustomMod(new ManualModLoader("custom")
                 .AddBaseElementTypes(new List<(string, string)>()
                 {
@@ -1453,7 +1453,7 @@ public class GameStringParserTests
         // arrange
         string description = "Probius gains permanent Shields equal to <c val=\"#TooltipNumbers\"><d ref=\"(Behavior,ProbiusShieldCapacitorPassiveShieldBuff,Modification.VitalMaxArray[Shields] / Unit,HeroProbius,LifeMax) * 100\"/>% </c>of his max Health. Shields regenerate quickly as long as he hasn't taken damage recently.";
 
-        HeroesXmlLoader loader = HeroesXmlLoader.LoadAsEmpty()
+        HeroesXmlLoader loader = HeroesXmlLoader.LoadWithEmpty()
             .LoadCustomMod(new ManualModLoader("custom")
                 .AddBaseElementTypes(new List<(string, string)>()
                 {
