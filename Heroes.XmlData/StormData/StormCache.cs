@@ -75,12 +75,14 @@ internal class StormCache
     {
         NotFoundDirectoriesList.Clear();
         NotFoundFilesList.Clear();
+        NotFoundScaleValuesList.Clear();
         GameStringsById.Clear();
         ElementTypesByDataObjectType.Clear();
         DataObjectTypeByElementType.Clear();
         ConstantXElementById.Clear();
         StormElementByElementType.Clear();
         StormElementsByDataObjectType.Clear();
+        ScaleValueStormElementsByDataObjectType.Clear();
         StormStyleStyleElementsByName.Clear();
         StormStyleConstantElementsByName.Clear();
         ScaleValueByEntry.Clear();
