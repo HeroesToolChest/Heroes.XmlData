@@ -1,5 +1,4 @@
-﻿
-namespace Heroes.XmlData.CASC;
+﻿namespace Heroes.XmlData.CASC;
 
 internal class CASCHandlerWrapper : ICASCHandlerWrapper
 {

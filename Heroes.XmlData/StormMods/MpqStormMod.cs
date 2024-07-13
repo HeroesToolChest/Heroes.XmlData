@@ -72,7 +72,6 @@ internal abstract class MpqStormMod<T> : StormMod<T>
         {
             StormModStorage.AddDirectoryNotFound(new StormPath()
             {
-                StormModDirectoryPath = DirectoryPath,
                 StormModName = Name,
                 Path = GameDataDirectoryPath,
                 PathType = StormPathType.MPQ,

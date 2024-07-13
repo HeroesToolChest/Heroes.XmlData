@@ -20,7 +20,6 @@ internal class CASCDepotCache : DepotCache<ICASCHeroesSource>
         {
             StormStorage.AddDirectoryNotFound(StormModType.Normal, new StormPath()
             {
-                StormModDirectoryPath = string.Empty,
                 StormModName = string.Empty,
                 Path = DepotCacheDirectoryPath,
                 PathType = StormPathType.CASC,

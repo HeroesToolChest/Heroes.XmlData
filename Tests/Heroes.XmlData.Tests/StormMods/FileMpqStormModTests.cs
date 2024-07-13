@@ -128,7 +128,6 @@ public class FileMpqStormModTests
                 {
                     first.Path.Should().Be(Path.Join("base.stormdata", "gamedata"));
                     first.PathType.Should().Be(StormPathType.MPQ);
-                    first.StormModDirectoryPath.Should().Be("test.stormmod");
                     first.StormModName.Should().Be("test");
                 });
 

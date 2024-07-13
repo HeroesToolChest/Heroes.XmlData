@@ -519,7 +519,6 @@ public class FileStormModTests
                 {
                     first.Path.Should().Be(Path.Join("mods", "test.stormmod", "base.stormdata", "gamedata"));
                     first.PathType.Should().Be(StormPathType.File);
-                    first.StormModDirectoryPath.Should().Be("test.stormmod");
                     first.StormModName.Should().Be("test");
                 });
 

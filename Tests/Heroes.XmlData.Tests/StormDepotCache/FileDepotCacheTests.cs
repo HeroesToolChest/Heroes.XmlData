@@ -240,7 +240,6 @@ public class FileDepotCacheTests
             {
                 first.Path.Should().Be(Path.Join("mods", "core.stormmod", "base.stormdata", "depotcache"));
                 first.PathType.Should().Be(StormPathType.File);
-                first.StormModDirectoryPath.Should().Be(string.Empty);
                 first.StormModName.Should().Be(string.Empty);
             });
     }

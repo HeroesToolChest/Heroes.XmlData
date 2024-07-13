@@ -11,11 +11,6 @@ public record StormPath
     public required string StormModName { get; init; }
 
     /// <summary>
-    /// Gets the directory path of the stormmod that this file or directory resides in.
-    /// </summary>
-    public required string StormModDirectoryPath { get; init; }
-
-    /// <summary>
     /// Gets the relative path of the file or directory.
     /// </summary>
     public required string Path { get; init; }
@@ -32,7 +27,6 @@ public record StormPath
             return false;
 
         if (StormModName.AsSpan().Equals(other.StormModName.AsSpan(), StringComparison.OrdinalIgnoreCase) &&
-            StormModDirectoryPath.AsSpan().Equals(other.StormModDirectoryPath.AsSpan(), StringComparison.OrdinalIgnoreCase) &&
             Path.AsSpan().Equals(other.Path.AsSpan(), StringComparison.OrdinalIgnoreCase) &&
             PathType.Equals(other.PathType))
         {
@@ -47,7 +41,7 @@ public record StormPath
     /// <inheritdoc/>
     public override int GetHashCode()
     {
-        return HashCode.Combine(StormModName?.ToUpperInvariant(), StormModDirectoryPath?.ToUpperInvariant(), Path.ToUpperInvariant(), PathType);
+        return HashCode.Combine(StormModName?.ToUpperInvariant(), Path.ToUpperInvariant(), PathType);
     }
 
     /// <inheritdoc/>

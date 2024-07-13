@@ -47,7 +47,7 @@ internal abstract class StormMod<T> : IStormMod
     /// <summary>
     /// Gets the storage object to keep track of all the loaded xml and gamestrings.
     /// </summary>
-    public StormModStorage StormModStorage { get; }
+    public IStormModStorage StormModStorage { get; }
 
     /// <summary>
     /// Gets the GameData directory path.
@@ -339,7 +339,6 @@ internal abstract class StormMod<T> : IStormMod
 
     private StormPath GetStormPath(string filePath) => new()
     {
-        StormModDirectoryPath = DirectoryPath,
         StormModName = Name,
         Path = GetModlessPath(filePath),
         PathType = StormPathType,

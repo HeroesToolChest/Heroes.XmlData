@@ -3,7 +3,7 @@
 /// <summary>
 /// Storage for an individual storm mod.
 /// </summary>
-internal class StormModStorage
+internal class StormModStorage : IStormModStorage
 {
     public const string SelfNameConst = $"{HxdConstants.Name}const-";
 
@@ -153,7 +153,6 @@ internal class StormModStorage
         }
     }
 
-    /// <inheritdoc/>
     public override string ToString()
     {
         return Name;

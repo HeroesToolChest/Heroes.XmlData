@@ -16,7 +16,6 @@ internal partial class StormStorage : IStormStorage
         _rootFilePath = new StormPath()
         {
             StormModName = HxdConstants.Name,
-            StormModDirectoryPath = string.Empty,
             Path = $"{HxdConstants.Name}-root",
             PathType = StormPathType.Hxd,
         };
@@ -31,14 +30,14 @@ internal partial class StormStorage : IStormStorage
 
     public StormCache StormCustomCache { get; } = new();
 
-    public List<StormModStorage> StormModStorages { get; } = [];
+    public List<IStormModStorage> StormModStorages { get; } = [];
 
-    public StormModStorage CreateModStorage(IStormMod stormMod)
+    public IStormModStorage CreateModStorage(IStormMod stormMod)
     {
-        return new(stormMod, this);
+        return new StormModStorage(stormMod, this);
     }
 
-    public void AddModStorage(StormModStorage stormModStorage)
+    public void AddModStorage(IStormModStorage stormModStorage)
     {
         StormModStorages.Add(stormModStorage);
 
@@ -324,7 +323,7 @@ internal partial class StormStorage : IStormStorage
 
     public void ClearGamestrings()
     {
-        foreach (StormModStorage stormModStorage in StormModStorages)
+        foreach (IStormModStorage stormModStorage in StormModStorages)
             stormModStorage.ClearGameStrings();
 
         StormCache.GameStringsById.Clear();

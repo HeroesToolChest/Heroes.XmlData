@@ -18,7 +18,6 @@ internal class CustomStormMod : IStormMod
         _stormPath = new StormPath()
         {
             StormModName = $"custom-{Name}",
-            StormModDirectoryPath = CustomPath,
             Path = CustomPath,
             PathType = StormPathType.File,
         };
@@ -30,7 +29,7 @@ internal class CustomStormMod : IStormMod
 
     public StormModType StormModType => StormModType.Custom;
 
-    public StormModStorage StormModStorage { get; }
+    public IStormModStorage StormModStorage { get; }
 
     internal string CustomPath => Path.Join(HxdConstants.Name, "custom", Name);
 

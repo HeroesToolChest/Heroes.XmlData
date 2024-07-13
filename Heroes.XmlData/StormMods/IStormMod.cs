@@ -17,7 +17,7 @@ internal interface IStormMod
     /// </summary>
     StormModType StormModType { get; }
 
-    StormModStorage StormModStorage { get; }
+    IStormModStorage StormModStorage { get; }
 
     void LoadStormData();
 
