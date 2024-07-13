@@ -10,9 +10,6 @@ public class HeroesData
 {
     private readonly IStormStorage _stormStorage;
 
-    //private readonly HashSet<RequiredStormFile> _notFoundDirectoriesList = [];
-    //private readonly HashSet<RequiredStormFile> _notFoundFilesList = [];
-
     private StormLocale? _heroesLocalization;
 
     internal HeroesData(IStormStorage stormStorage)
@@ -43,9 +40,9 @@ public class HeroesData
     /// </summary>
     /// <param name="dataObjectType">A character span that contains the type of the element name (e.g. Effect).</param>
     /// <returns>A collection of all the element types of the data object type.</returns>
-    public IReadOnlyList<string>? GetElementTypesByDataObjectType(ReadOnlySpan<char> dataObjectType)
+    public IList<string> GetElementTypesByDataObjectType(ReadOnlySpan<char> dataObjectType)
     {
-        return _stormStorage.GetElementTypesByDataObjectType(dataObjectType)?.ToList();
+        return _stormStorage.GetElementTypesByDataObjectType(dataObjectType).ToList();
     }
 
     /// <summary>
@@ -53,9 +50,9 @@ public class HeroesData
     /// </summary>
     /// <param name="dataObjectType">The type of the element name (e.g. Effect).</param>
     /// <returns>A collection of all the element types of the data object type.</returns>
-    public IReadOnlyList<string>? GetElementTypesByDataObjectType(string dataObjectType)
+    public IList<string> GetElementTypesByDataObjectType(string dataObjectType)
     {
-        return _stormStorage.GetElementTypesByDataObjectType(dataObjectType)?.ToList();
+        return _stormStorage.GetElementTypesByDataObjectType(dataObjectType).ToList();
     }
 
     /// <summary>

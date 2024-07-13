@@ -54,12 +54,12 @@ internal partial class StormStorage
         return false;
     }
 
-    public HashSet<string>? GetElementTypesByDataObjectType(ReadOnlySpan<char> dataObjectType)
+    public HashSet<string> GetElementTypesByDataObjectType(ReadOnlySpan<char> dataObjectType)
     {
         return GetElementTypesByDataObjectType(dataObjectType.ToString());
     }
 
-    public HashSet<string>? GetElementTypesByDataObjectType(string dataObjectType)
+    public HashSet<string> GetElementTypesByDataObjectType(string dataObjectType)
     {
         ArgumentNullException.ThrowIfNull(dataObjectType);
 
@@ -87,7 +87,7 @@ internal partial class StormStorage
                 elementTypes.UnionWith(foundElementTypes);
         }
 
-        return elementTypes;
+        return elementTypes ?? [];
     }
 
     public bool TryGetExistingDataObjectTypeByElementType(ReadOnlySpan<char> elementType, [NotNullWhen(true)] out string? dataObjectType)

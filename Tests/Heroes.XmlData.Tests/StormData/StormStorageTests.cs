@@ -266,7 +266,7 @@ public class StormStorageTests
     }
 
     [TestMethod]
-    public void GetElementTypesByDataObjectType_HasNoDataObjectType_ReturnsNull()
+    public void GetElementTypesByDataObjectType_HasNoDataObjectType_ReturnsEmpty()
     {
         // arrange
         StormStorage stormStorage = new();
@@ -275,7 +275,7 @@ public class StormStorageTests
         HashSet<string>? result = stormStorage.GetElementTypesByDataObjectType("CEffectDamage".AsSpan());
 
         // assert
-        result.Should().BeNull();
+        result.Should().BeEmpty();
     }
 
     [TestMethod]
