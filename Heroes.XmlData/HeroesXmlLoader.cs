@@ -183,6 +183,50 @@ public class HeroesXmlLoader
         return _heroesSource.S2MAPropertiesByTitle.Select(x => x.Key).Order();
     }
 
+    /// <summary>
+    /// Gets a collection of not found files.
+    /// </summary>
+    /// <returns>A collection of not found <see cref="StormPath"/>s that represents not found files.</returns>
+    public IEnumerable<StormPath> GetNotFoundFiles()
+    {
+        foreach (StormPath item in _heroesSource.StormStorage.StormCache.NotFoundFilesList)
+        {
+            yield return item;
+        }
+
+        foreach (StormPath item in _heroesSource.StormStorage.StormMapCache.NotFoundFilesList)
+        {
+            yield return item;
+        }
+
+        foreach (StormPath item in _heroesSource.StormStorage.StormCustomCache.NotFoundFilesList)
+        {
+            yield return item;
+        }
+    }
+
+    /// <summary>
+    /// Gets a collection of not found directories.
+    /// </summary>
+    /// <returns>A collection of not found <see cref="StormPath"/>s that represents not found directories.</returns>
+    public IEnumerable<StormPath> GetNotFoundDirectories()
+    {
+        foreach (StormPath item in _heroesSource.StormStorage.StormCache.NotFoundDirectoriesList)
+        {
+            yield return item;
+        }
+
+        foreach (StormPath item in _heroesSource.StormStorage.StormMapCache.NotFoundDirectoriesList)
+        {
+            yield return item;
+        }
+
+        foreach (StormPath item in _heroesSource.StormStorage.StormCustomCache.NotFoundDirectoriesList)
+        {
+            yield return item;
+        }
+    }
+
     private static HeroesXmlLoader LoadAsCASCInternal(CASCConfig cascConfig, BackgroundWorkerEx? backgroundWorkerEx)
     {
         CASCConfig.ThrowOnFileNotFound = true;
