@@ -245,6 +245,26 @@ public class HeroesData
         return new TooltipDescription(GameStringParser.ParseTooltipDescription(_stormStorage, gameString), gameStringLocale, extractFontValues);
     }
 
+    /// <summary>
+    /// Gets a collection of <see cref="StormElement"/> ids by the data object type.
+    /// </summary>
+    /// <param name="dataObjectType">A character span that contains the type of the element name (e.g. Effect).</param>
+    /// <returns>A collection of <see cref="StormElement"/> ids.</returns>
+    public IList<string> GetStormElementIds(ReadOnlySpan<char> dataObjectType)
+    {
+        return _stormStorage.GetStormElementIds(dataObjectType);
+    }
+
+    /// <summary>
+    /// Gets a collection of <see cref="StormElement"/> ids by the data object type.
+    /// </summary>
+    /// <param name="dataObjectType">The type of the element name (e.g. Effect).</param>
+    /// <returns>A collection of <see cref="StormElement"/> ids.</returns>
+    public IList<string> GetStormElementIds(string dataObjectType)
+    {
+        return _stormStorage.GetStormElementIds(dataObjectType);
+    }
+
     internal void SetHeroesLocalization(StormLocale stormLocale)
     {
         _heroesLocalization = stormLocale;

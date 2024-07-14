@@ -113,4 +113,8 @@ internal interface IStormStorage
     StormGameString? GetStormGameString(string id);
 
     List<StormGameString> GetStormGameStrings();
+
+    List<string> GetStormElementIds(ReadOnlySpan<char> dataObjectType);
+
+    List<string> GetStormElementIds(string dataObjectType);
 }

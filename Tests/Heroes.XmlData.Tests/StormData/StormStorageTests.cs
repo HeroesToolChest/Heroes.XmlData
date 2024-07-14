@@ -1,4 +1,6 @@
 ﻿using Heroes.XmlData.Tests;
+using System.Collections.Generic;
+using System.Configuration;
 
 namespace Heroes.XmlData.StormData.Tests;
 
@@ -2022,5 +2024,84 @@ public class StormStorageTests
                         firstPath.Path.Should().Be("custom");
                     });
             });
+    }
+
+    [TestMethod]
+    public void GetStormElementIds_HasStormElements_ReturnsIds()
+    {
+        // arrange
+        StormStorage stormStorage = new(false);
+
+        stormStorage.StormCache.StormElementsByDataObjectType.Add("Unit", new Dictionary<string, StormElement>()
+        {
+            {
+                "Hero1", new StormElement(new StormXElementValuePath(
+                    XElement.Parse(@"
+<CUnit id=""Hero1"">
+  <Name value=""Unit/Name/##id##"" />
+</CUnit>
+"),
+                    TestHelpers.GetStormPath("normal")))
+            },
+        });
+
+        stormStorage.StormMapCache.StormElementsByDataObjectType.Add("Unit", new Dictionary<string, StormElement>()
+        {
+            {
+                "Hero2", new StormElement(new StormXElementValuePath(
+                    XElement.Parse(@"
+<CUnit id=""Hero2"">
+  <Name value=""Unit/Name/##id##"" />
+</CUnit>
+"),
+                    TestHelpers.GetStormPath("map")))
+            },
+        });
+
+        stormStorage.StormCustomCache.StormElementsByDataObjectType.Add("Unit", new Dictionary<string, StormElement>()
+        {
+            {
+                "Hero3", new StormElement(new StormXElementValuePath(
+                    XElement.Parse(@"
+<CUnit id=""Hero3"">
+  <Name value=""Unit/Name/##id##"" />
+</CUnit>
+"),
+                    TestHelpers.GetStormPath("custom")))
+            },
+        });
+
+        // act
+        List<string> ids = stormStorage.GetStormElementIds("Unit");
+
+        // assert
+        ids.Should().HaveCount(3)
+            .And
+            .SatisfyRespectively(
+                first =>
+                {
+                    first.Should().Be("Hero1");
+                },
+                second =>
+                {
+                    second.Should().Be("Hero2");
+                },
+                third =>
+                {
+                    third.Should().Be("Hero3");
+                });
+    }
+
+    [TestMethod]
+    public void GetStormElementIds_HasNoStormElements_ReturnsEmpty()
+    {
+        // arrange
+        StormStorage stormStorage = new(false);
+
+        // act
+        List<string> ids = stormStorage.GetStormElementIds("Unit");
+
+        // assert
+        ids.Should().BeEmpty();
     }
 }

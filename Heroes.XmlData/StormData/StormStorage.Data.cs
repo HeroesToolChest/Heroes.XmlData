@@ -474,6 +474,36 @@ internal partial class StormStorage
         return stormGameStrings.Select(x => x.Value).ToList();
     }
 
+    public List<string> GetStormElementIds(ReadOnlySpan<char> dataObjectType)
+    {
+        return GetStormElementIds(dataObjectType.ToString());
+    }
+
+    public List<string> GetStormElementIds(string dataObjectType)
+    {
+        ArgumentNullException.ThrowIfNull(dataObjectType);
+
+        HashSet<string> ids = [];
+
+        // normal cache first
+        if (StormCache.StormElementsByDataObjectType.TryGetValue(dataObjectType, out var foundStormElementById))
+        {
+            ids.UnionWith(foundStormElementById.Values.Select(x => x.Id!));
+        }
+
+        if (StormMapCache.StormElementsByDataObjectType.TryGetValue(dataObjectType, out foundStormElementById))
+        {
+            ids.UnionWith(foundStormElementById.Values.Select(x => x.Id!));
+        }
+
+        if (StormCustomCache.StormElementsByDataObjectType.TryGetValue(dataObjectType, out foundStormElementById))
+        {
+            ids.UnionWith(foundStormElementById.Values.Select(x => x.Id!));
+        }
+
+        return [.. ids];
+    }
+
     private static void AddStormGameString(Dictionary<string, StormGameString> stormGameStrings, KeyValuePair<string, GameStringText> item)
     {
         if (stormGameStrings.TryGetValue(item.Key, out StormGameString? existingStormGameString))
