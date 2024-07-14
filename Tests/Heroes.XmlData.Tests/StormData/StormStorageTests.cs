@@ -224,7 +224,7 @@ public class StormStorageTests
         stormStorage.StormCustomCache.ElementTypesByDataObjectType.Add("Behavior", ["CBehaviorBuff", "CBehaviorAbility"]);
 
         // act
-        HashSet<string>? result = stormStorage.GetElementTypesByDataObjectType("Effect".AsSpan());
+        List<string>? result = stormStorage.GetElementTypesByDataObjectType("Effect".AsSpan());
 
         // assert
         result.Should().Equal("CEffectSet", "CEffectLaunchMissile", "CEffectDamage");
@@ -244,7 +244,7 @@ public class StormStorageTests
         stormStorage.StormMapCache.ElementTypesByDataObjectType.Add("Unit", ["CUnit"]);
 
         // act
-        HashSet<string>? result = stormStorage.GetElementTypesByDataObjectType("Effect".AsSpan());
+        List<string>? result = stormStorage.GetElementTypesByDataObjectType("Effect".AsSpan());
 
         // assert
         result.Should().Equal("CEffectLaunchMissile", "CEffectDamage");
@@ -261,7 +261,7 @@ public class StormStorageTests
         stormStorage.StormCache.ElementTypesByDataObjectType.Add("Actor", ["CActorModel"]);
 
         // act
-        HashSet<string>? result = stormStorage.GetElementTypesByDataObjectType("Effect".AsSpan());
+        List<string>? result = stormStorage.GetElementTypesByDataObjectType("Effect".AsSpan());
 
         // assert
         result.Should().Equal("CEffectDamage", "CEffectLaunchMissile");
@@ -274,7 +274,7 @@ public class StormStorageTests
         StormStorage stormStorage = new();
 
         // act
-        HashSet<string>? result = stormStorage.GetElementTypesByDataObjectType("CEffectDamage".AsSpan());
+        List<string>? result = stormStorage.GetElementTypesByDataObjectType("CEffectDamage".AsSpan());
 
         // assert
         result.Should().BeEmpty();
@@ -296,7 +296,7 @@ public class StormStorageTests
         stormStorage.StormCustomCache.ElementTypesByDataObjectType.Add("Behavior", ["CBehaviorBuff", "CBehaviorAbility"]);
 
         // act
-        HashSet<string>? result = stormStorage.GetElementTypesByDataObjectType("Effect".AsSpan());
+        List<string>? result = stormStorage.GetElementTypesByDataObjectType("Effect".AsSpan());
         result!.Add("CWhatever");
 
         // assert

@@ -56,9 +56,9 @@ internal interface IStormStorage
 
     bool TryGetExistingElementTypesByDataObjectType(string dataObjectType, [NotNullWhen(true)] out HashSet<string>? elementTypes);
 
-    HashSet<string> GetElementTypesByDataObjectType(ReadOnlySpan<char> dataObjectType);
+    List<string> GetElementTypesByDataObjectType(ReadOnlySpan<char> dataObjectType);
 
-    HashSet<string> GetElementTypesByDataObjectType(string dataObjectType);
+    List<string> GetElementTypesByDataObjectType(string dataObjectType);
 
     bool TryGetExistingDataObjectTypeByElementType(ReadOnlySpan<char> elementType, [NotNullWhen(true)] out string? dataObjectType);
 

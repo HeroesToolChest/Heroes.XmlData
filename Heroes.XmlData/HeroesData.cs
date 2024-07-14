@@ -42,7 +42,7 @@ public class HeroesData
     /// <returns>A collection of all the element types of the data object type.</returns>
     public IList<string> GetElementTypesByDataObjectType(ReadOnlySpan<char> dataObjectType)
     {
-        return _stormStorage.GetElementTypesByDataObjectType(dataObjectType).ToList();
+        return _stormStorage.GetElementTypesByDataObjectType(dataObjectType);
     }
 
     /// <summary>
@@ -52,7 +52,7 @@ public class HeroesData
     /// <returns>A collection of all the element types of the data object type.</returns>
     public IList<string> GetElementTypesByDataObjectType(string dataObjectType)
     {
-        return _stormStorage.GetElementTypesByDataObjectType(dataObjectType).ToList();
+        return _stormStorage.GetElementTypesByDataObjectType(dataObjectType);
     }
 
     /// <summary>
