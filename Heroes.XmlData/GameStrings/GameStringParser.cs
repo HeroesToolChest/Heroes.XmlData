@@ -56,7 +56,7 @@ internal class GameStringParser
 
             Encoding.UTF8.TryGetChars(constAttribute.Value.AsSpan(), buffer, out int charsWritten);
 
-            if (_stormStorage.TryGetExistingConstantXElementById(buffer, out StormXElementValuePath? stormXElementValue))
+            if (_stormStorage.TryGetFirstConstantXElementById(buffer, out StormXElementValuePath? stormXElementValue))
             {
                 resultValue = _stormStorage.GetValueFromConstElementAsNumber(stormXElementValue.Value);
             }

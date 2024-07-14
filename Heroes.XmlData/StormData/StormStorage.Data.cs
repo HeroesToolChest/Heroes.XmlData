@@ -6,16 +6,17 @@ namespace Heroes.XmlData.StormData;
 /// Contains the methods for obtaining data from the caches.
 /// </content>
 /// <remarks>
-/// The TryGet methods get a reference to a single cache, where as the Get methods merges the data from all caches (if it can).
+/// <para>The TryGetFirst methods get a reference to a first cache.</para>
+/// <para>The Get methods merges the data from all caches (if it can).</para>
 /// </remarks>
 internal partial class StormStorage
 {
-    public bool TryGetExistingConstantXElementById(ReadOnlySpan<char> id, [NotNullWhen(true)] out StormXElementValuePath? stormXElementValuePath)
+    public bool TryGetFirstConstantXElementById(ReadOnlySpan<char> id, [NotNullWhen(true)] out StormXElementValuePath? stormXElementValuePath)
     {
-        return TryGetExistingConstantXElementById(id.ToString(), out stormXElementValuePath);
+        return TryGetFirstConstantXElementById(id.ToString(), out stormXElementValuePath);
     }
 
-    public bool TryGetExistingConstantXElementById(string id, [NotNullWhen(true)] out StormXElementValuePath? stormXElementValuePath)
+    public bool TryGetFirstConstantXElementById(string id, [NotNullWhen(true)] out StormXElementValuePath? stormXElementValuePath)
     {
         ArgumentNullException.ThrowIfNull(id);
 
@@ -27,28 +28,6 @@ internal partial class StormStorage
             return true;
 
         if (StormCache.ConstantXElementById.TryGetValue(id, out stormXElementValuePath))
-            return true;
-
-        return false;
-    }
-
-    public bool TryGetExistingElementTypesByDataObjectType(ReadOnlySpan<char> dataObjectType, [NotNullWhen(true)] out HashSet<string>? elementTypes)
-    {
-        return TryGetExistingElementTypesByDataObjectType(dataObjectType.ToString(), out elementTypes);
-    }
-
-    public bool TryGetExistingElementTypesByDataObjectType(string dataObjectType, [NotNullWhen(true)] out HashSet<string>? elementTypes)
-    {
-        ArgumentNullException.ThrowIfNull(dataObjectType);
-
-        // custom cache always first
-        if (StormCustomCache.ElementTypesByDataObjectType.TryGetValue(dataObjectType, out elementTypes))
-            return true;
-
-        if (StormMapCache.ElementTypesByDataObjectType.TryGetValue(dataObjectType, out elementTypes))
-            return true;
-
-        if (StormCache.ElementTypesByDataObjectType.TryGetValue(dataObjectType, out elementTypes))
             return true;
 
         return false;
@@ -90,12 +69,12 @@ internal partial class StormStorage
         return [.. elementTypes ?? []];
     }
 
-    public bool TryGetExistingDataObjectTypeByElementType(ReadOnlySpan<char> elementType, [NotNullWhen(true)] out string? dataObjectType)
+    public bool TryGetFirstDataObjectTypeByElementType(ReadOnlySpan<char> elementType, [NotNullWhen(true)] out string? dataObjectType)
     {
-        return TryGetExistingDataObjectTypeByElementType(elementType.ToString(), out dataObjectType);
+        return TryGetFirstDataObjectTypeByElementType(elementType.ToString(), out dataObjectType);
     }
 
-    public bool TryGetExistingDataObjectTypeByElementType(string elementType, [NotNullWhen(true)] out string? dataObjectType)
+    public bool TryGetFirstDataObjectTypeByElementType(string elementType, [NotNullWhen(true)] out string? dataObjectType)
     {
         ArgumentNullException.ThrowIfNull(elementType);
 
@@ -119,32 +98,10 @@ internal partial class StormStorage
 
     public string? GetDataObjectTypeByElementType(string elementType)
     {
-        if (TryGetExistingDataObjectTypeByElementType(elementType, out string? dataObjectType))
+        if (TryGetFirstDataObjectTypeByElementType(elementType, out string? dataObjectType))
             return dataObjectType;
 
         return null;
-    }
-
-    public bool TryGetExistingStormElementByElementType(ReadOnlySpan<char> elementType, [NotNullWhen(true)] out StormElement? stormElement)
-    {
-        return TryGetExistingStormElementByElementType(elementType.ToString(), out stormElement);
-    }
-
-    public bool TryGetExistingStormElementByElementType(string elementType, [NotNullWhen(true)] out StormElement? stormElement)
-    {
-        ArgumentNullException.ThrowIfNull(elementType);
-
-        // custom cache always first
-        if (StormCustomCache.StormElementByElementType.TryGetValue(elementType, out stormElement))
-            return true;
-
-        if (StormMapCache.StormElementByElementType.TryGetValue(elementType, out stormElement))
-            return true;
-
-        if (StormCache.StormElementByElementType.TryGetValue(elementType, out stormElement))
-            return true;
-
-        return false;
     }
 
     public StormElement? GetStormElementByElementType(ReadOnlySpan<char> elementType)
@@ -181,34 +138,6 @@ internal partial class StormStorage
         }
 
         return stormElement;
-    }
-
-    public bool TryGetExistingStormElementById(ReadOnlySpan<char> id, ReadOnlySpan<char> dataObjectType, [NotNullWhen(true)] out StormElement? stormElement)
-    {
-        return TryGetExistingStormElementById(id.ToString(), dataObjectType.ToString(), out stormElement);
-    }
-
-    public bool TryGetExistingStormElementById(string id, string dataObjectType, [NotNullWhen(true)] out StormElement? stormElement)
-    {
-        ArgumentNullException.ThrowIfNull(dataObjectType);
-        ArgumentNullException.ThrowIfNull(id);
-
-        stormElement = null;
-
-        // custom cache always first
-        if (StormCustomCache.StormElementsByDataObjectType.TryGetValue(dataObjectType, out var stormElementById) &&
-            stormElementById.TryGetValue(id, out stormElement))
-            return true;
-
-        if (StormMapCache.StormElementsByDataObjectType.TryGetValue(dataObjectType, out stormElementById) &&
-            stormElementById.TryGetValue(id, out stormElement))
-            return true;
-
-        if (StormCache.StormElementsByDataObjectType.TryGetValue(dataObjectType, out stormElementById) &&
-            stormElementById.TryGetValue(id, out stormElement))
-            return true;
-
-        return false;
     }
 
     public StormElement? GetStormElementById(ReadOnlySpan<char> id, ReadOnlySpan<char> dataObjectType)
@@ -249,34 +178,6 @@ internal partial class StormStorage
         }
 
         return stormElement;
-    }
-
-    public bool TryGetExistingScaleValueStormElementById(ReadOnlySpan<char> id, ReadOnlySpan<char> dataObjectType, [NotNullWhen(true)] out StormElement? stormElement)
-    {
-        return TryGetExistingScaleValueStormElementById(id.ToString(), dataObjectType.ToString(), out stormElement);
-    }
-
-    public bool TryGetExistingScaleValueStormElementById(string id, string dataObjectType, [NotNullWhen(true)] out StormElement? stormElement)
-    {
-        ArgumentNullException.ThrowIfNull(dataObjectType);
-        ArgumentNullException.ThrowIfNull(id);
-
-        stormElement = null;
-
-        // custom cache always first
-        if (StormCustomCache.ScaleValueStormElementsByDataObjectType.TryGetValue(dataObjectType, out var stormElementById) &&
-            stormElementById.TryGetValue(id, out stormElement))
-            return true;
-
-        if (StormMapCache.ScaleValueStormElementsByDataObjectType.TryGetValue(dataObjectType, out stormElementById) &&
-            stormElementById.TryGetValue(id, out stormElement))
-            return true;
-
-        if (StormCache.ScaleValueStormElementsByDataObjectType.TryGetValue(dataObjectType, out stormElementById) &&
-            stormElementById.TryGetValue(id, out stormElement))
-            return true;
-
-        return false;
     }
 
     public StormElement? GetScaleValueStormElementById(ReadOnlySpan<char> id, ReadOnlySpan<char> dataObjectType)

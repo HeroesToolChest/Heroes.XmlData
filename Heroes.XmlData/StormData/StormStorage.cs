@@ -148,7 +148,7 @@ internal partial class StormStorage : IStormStorage
 
         if (text[0] == '$')
         {
-            if (TryGetExistingConstantXElementById(text, out StormXElementValuePath? stormXElementValuePath))
+            if (TryGetFirstConstantXElementById(text, out StormXElementValuePath? stormXElementValuePath))
             {
                 return GetValueFromConstElement(stormXElementValuePath.Value);
             }
@@ -168,7 +168,7 @@ internal partial class StormStorage : IStormStorage
 
         if (text[0] == '$')
         {
-            if (TryGetExistingConstantXElementById(text, out StormXElementValuePath? stormXElementValuePath))
+            if (TryGetFirstConstantXElementById(text, out StormXElementValuePath? stormXElementValuePath))
             {
                 return GetValueFromConstElementAsNumber(stormXElementValuePath.Value);
             }
@@ -188,7 +188,7 @@ internal partial class StormStorage : IStormStorage
 
         StormCache currentStormCache = GetCurrentStormCache(stormModType);
 
-        if (TryGetExistingElementTypesByDataObjectType(dataObjectType, out HashSet<string>? elementTypes))
+        if (currentStormCache.ElementTypesByDataObjectType.TryGetValue(dataObjectType, out HashSet<string>? elementTypes))
             elementTypes.Add(elementName);
         else
             currentStormCache.ElementTypesByDataObjectType.Add(dataObjectType, new HashSet<string>(StringComparer.OrdinalIgnoreCase) { elementName });
@@ -210,14 +210,14 @@ internal partial class StormStorage : IStormStorage
 
         if (string.IsNullOrEmpty(idAtt))
         {
-            if (TryGetExistingStormElementByElementType(elementName, out StormElement? stormElement))
+            if (currentStormCache.StormElementByElementType.TryGetValue(elementName, out StormElement? stormElement))
                 stormElement.AddValue(stormXElementValuePath);
             else
                 currentStormCache.StormElementByElementType.Add(elementName, new StormElement(stormXElementValuePath));
         }
         else
         {
-            if (!TryGetExistingDataObjectTypeByElementType(elementName, out string? dataObjectType))
+            if (!TryGetFirstDataObjectTypeByElementType(elementName, out string? dataObjectType))
             {
                 // didnt find one, so look for an existing match
                 string foundExistingDataObjectType = FindExistingDataObjectType(elementName);
@@ -230,7 +230,8 @@ internal partial class StormStorage : IStormStorage
             if (!currentStormCache.StormElementsByDataObjectType.ContainsKey(dataObjectType))
                 currentStormCache.StormElementsByDataObjectType.Add(dataObjectType, []);
 
-            if (TryGetExistingStormElementById(idAtt, dataObjectType, out StormElement? stormElement))
+            if (currentStormCache.StormElementsByDataObjectType.TryGetValue(dataObjectType, out var stormElementById) &&
+                stormElementById.TryGetValue(idAtt, out StormElement? stormElement))
                 stormElement.AddValue(stormXElementValuePath);
             else
                 currentStormCache.StormElementsByDataObjectType[dataObjectType].Add(idAtt, new StormElement(stormXElementValuePath));
@@ -314,7 +315,8 @@ internal partial class StormStorage : IStormStorage
             if (!currentStormCache.ScaleValueStormElementsByDataObjectType.ContainsKey(levelScalingEntry.Catalog))
                 currentStormCache.ScaleValueStormElementsByDataObjectType.Add(levelScalingEntry.Catalog, []);
 
-            if (TryGetExistingScaleValueStormElementById(levelScalingEntry.Entry, levelScalingEntry.Catalog, out StormElement? existingStormElement))
+            if (currentStormCache.ScaleValueStormElementsByDataObjectType.TryGetValue(levelScalingEntry.Catalog, out var stormElementById) &&
+                stormElementById.TryGetValue(levelScalingEntry.Entry, out StormElement? existingStormElement))
                 existingStormElement.AddValue(stormElement);
             else
                 currentStormCache.ScaleValueStormElementsByDataObjectType[levelScalingEntry.Catalog].Add(levelScalingEntry.Entry, stormElement);

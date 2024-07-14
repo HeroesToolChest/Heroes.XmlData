@@ -9,7 +9,7 @@ public class StormStorageTests
     [DataRow("$ZagaraHunterKillerDamage", "71")]
     [DataRow("$ChromieBasicAttackRange", "7")]
     [DataRow("$AzmodanAllShallBurnCastRange", "666")]
-    public void TryGetExistingConstantXElementById_WithId_ReturnsResultPath(string id, string value)
+    public void TryGetFirstExistingConstantXElementById_WithId_ReturnsResultPath(string id, string value)
     {
         // arrange
         string path = "custom";
@@ -20,8 +20,8 @@ public class StormStorageTests
         stormStorage.StormCustomCache.ConstantXElementById.Add("$AzmodanAllShallBurnCastRange", new StormXElementValuePath(XElement.Parse(@"<const id=""$AzmodanAllShallBurnCastRange"" value=""666"" />"), TestHelpers.GetStormPath(path)));
 
         // act
-        bool result = stormStorage.TryGetExistingConstantXElementById(id, out StormXElementValuePath? resultPath);
-        bool resultSpan = stormStorage.TryGetExistingConstantXElementById(id.AsSpan(), out StormXElementValuePath? resultPathSpan);
+        bool result = stormStorage.TryGetFirstConstantXElementById(id, out StormXElementValuePath? resultPath);
+        bool resultSpan = stormStorage.TryGetFirstConstantXElementById(id.AsSpan(), out StormXElementValuePath? resultPathSpan);
 
         // assert
         result.Should().Be(resultSpan);
@@ -32,13 +32,13 @@ public class StormStorageTests
     }
 
     [TestMethod]
-    public void TryGetExistingConstantXElementById_NoneFound_ReturnsNull()
+    public void TryGetFirstExistingConstantXElementById_NoneFound_ReturnsNull()
     {
         // arrange
         StormStorage stormStorage = new();
 
         // act
-        bool result = stormStorage.TryGetExistingConstantXElementById("$Id", out StormXElementValuePath? resultPath);
+        bool result = stormStorage.TryGetFirstConstantXElementById("$Id", out StormXElementValuePath? resultPath);
 
         // assert
         result.Should().BeFalse();
@@ -52,7 +52,7 @@ public class StormStorageTests
         StormStorage stormStorage = new();
 
         // act
-        Action result = () => stormStorage.TryGetExistingConstantXElementById(null!, out StormXElementValuePath? resultPath);
+        Action result = () => stormStorage.TryGetFirstConstantXElementById(null!, out StormXElementValuePath? resultPath);
 
         // assert
         result.Should().Throw<ArgumentNullException>();
@@ -76,8 +76,8 @@ public class StormStorageTests
         stormStorage.StormCustomCache.DataObjectTypeByElementType.Add("CEffectDamage", "Effect");
 
         // act
-        bool result = stormStorage.TryGetExistingDataObjectTypeByElementType(elementType, out string? resultDataObjectType);
-        bool resultSpan = stormStorage.TryGetExistingDataObjectTypeByElementType(elementType.AsSpan(), out string? resultDataObjectTypeSpan);
+        bool result = stormStorage.TryGetFirstDataObjectTypeByElementType(elementType, out string? resultDataObjectType);
+        bool resultSpan = stormStorage.TryGetFirstDataObjectTypeByElementType(elementType.AsSpan(), out string? resultDataObjectTypeSpan);
 
         // assert
         result.Should().Be(resultSpan);
@@ -93,7 +93,7 @@ public class StormStorageTests
         StormStorage stormStorage = new();
 
         // act
-        bool result = stormStorage.TryGetExistingDataObjectTypeByElementType("elementType".AsSpan(), out string? resultDataObjectType);
+        bool result = stormStorage.TryGetFirstDataObjectTypeByElementType("elementType".AsSpan(), out string? resultDataObjectType);
 
         // assert
         result.Should().BeFalse();
@@ -107,7 +107,7 @@ public class StormStorageTests
         StormStorage stormStorage = new();
 
         // act
-        Action result = () => stormStorage.TryGetExistingDataObjectTypeByElementType(null!, out string? resultDataObjectType);
+        Action result = () => stormStorage.TryGetFirstDataObjectTypeByElementType(null!, out string? resultDataObjectType);
 
         // assert
         result.Should().Throw<ArgumentNullException>();
@@ -159,63 +159,6 @@ public class StormStorageTests
 
         // assert
         stormStorage.StormCache.DataObjectTypeByElementType["CEffectDamage"].Should().NotBe(newValue);
-    }
-
-    [TestMethod]
-    [DataRow("Effect", new[] { "CEffectSet" })]
-    [DataRow("Actor", new[] { "CActorModel" })]
-    [DataRow("Unit", new[] { "CUnit" })]
-    [DataRow("Behavior", new[] { "CBehaviorBuff", "CBehaviorAbility" })]
-    public void TryGetExistingElementTypesByDataObjectType_DataObjectTypes_ReturnsElementTypes(string dataObjectType, string[] elementTypes)
-    {
-        // arrange
-        StormStorage stormStorage = new(false);
-        stormStorage.StormCache.ElementTypesByDataObjectType.Add("Effect", ["CEffectDamage", "CEffectLaunchMissile"]);
-        stormStorage.StormCache.ElementTypesByDataObjectType.Add("Unit", ["CUnit"]);
-        stormStorage.StormCache.ElementTypesByDataObjectType.Add("Actor", ["CActorModel"]);
-
-        stormStorage.StormMapCache.ElementTypesByDataObjectType.Add("Effect", ["CEffectLaunchMissile"]);
-        stormStorage.StormMapCache.ElementTypesByDataObjectType.Add("Unit", ["CUnit"]);
-
-        stormStorage.StormCustomCache.ElementTypesByDataObjectType.Add("Effect", ["CEffectSet"]);
-        stormStorage.StormCustomCache.ElementTypesByDataObjectType.Add("Behavior", ["CBehaviorBuff", "CBehaviorAbility"]);
-
-        // act
-        bool result = stormStorage.TryGetExistingElementTypesByDataObjectType(dataObjectType, out HashSet<string>? resultElementTypes);
-        bool resultSpan = stormStorage.TryGetExistingElementTypesByDataObjectType(dataObjectType.AsSpan(), out HashSet<string>? resultElementTypesSpan);
-
-        // assert
-        result.Should().Be(resultSpan);
-        resultElementTypes.Should().BeEquivalentTo(resultElementTypesSpan);
-        result.Should().BeTrue();
-        resultElementTypes!.ToArray().Should().BeEquivalentTo(elementTypes);
-    }
-
-    [TestMethod]
-    public void TryGetExistingElementTypesByDataObjectType_NoneFound_ReturnsNull()
-    {
-        // arrange
-        StormStorage stormStorage = new(false);
-
-        // act
-        bool result = stormStorage.TryGetExistingElementTypesByDataObjectType("Behavior".AsSpan(), out HashSet<string>? resultElementTypes);
-
-        // assert
-        result.Should().BeFalse();
-        resultElementTypes.Should().BeNull();
-    }
-
-    [TestMethod]
-    public void TryGetExistingElementTypesByDataObjectType_NullParam_ThrowsException()
-    {
-        // arrange
-        StormStorage stormStorage = new();
-
-        // act
-        Action result = () => stormStorage.TryGetExistingElementTypesByDataObjectType(null!, out HashSet<string>? resultElementTypes);
-
-        // assert
-        result.Should().Throw<ArgumentNullException>();
     }
 
     [TestMethod]
@@ -322,98 +265,6 @@ public class StormStorageTests
         stormStorage.StormCache.ElementTypesByDataObjectType["Effect"].Should().Equal("CEffectDamage", "CEffectLaunchMissile");
         stormStorage.StormMapCache.ElementTypesByDataObjectType["Effect"].Should().Equal("CEffectLaunchMissile");
         stormStorage.StormCustomCache.ElementTypesByDataObjectType["Effect"].Should().Equal("CEffectSet");
-    }
-
-    [TestMethod]
-    [DataRow("CAbil", "custom")]
-    [DataRow("CEffect", "map")]
-    [DataRow("CUnit", "normal")]
-    public void TryGetExistingStormElementByElementType_ElementType_ReturnsStormElement(string elementType, string parent)
-    {
-        // arrange
-        StormStorage stormStorage = new(false);
-
-        stormStorage.StormCache.StormElementByElementType.Add("CUnit", new StormElement(new StormXElementValuePath(
-            XElement.Parse(@"
-<CUnit default=""1"" parent=""normal"">
-  <Name value=""Unit/Name/##id##"" />
-</CUnit>
-"),
-            TestHelpers.GetStormPath("normal"))));
-
-        stormStorage.StormCache.StormElementByElementType.Add("CAbil", new StormElement(new StormXElementValuePath(
-            XElement.Parse(@"
-<CAbil default=""1"">
-  <Name value=""Abil/Name/##id##"" />
-  <Element2 value=""value2"" />
-  <Element3 value=""value3"" />
-</CAbil>
-"),
-            TestHelpers.GetStormPath("normal"))));
-
-        stormStorage.StormCache.StormElementByElementType.Add("CEffect", new StormElement(new StormXElementValuePath(
-            XElement.Parse(@"
-<CEffect default=""1"">
-  <Chance value=""1"" />
-  <Element2 value=""value2"" />
-  <Element3 value=""value3"" />
-</CEffect>
-"),
-            TestHelpers.GetStormPath("normal"))));
-
-        stormStorage.StormMapCache.StormElementByElementType.Add("CEffect", new StormElement(new StormXElementValuePath(
-            XElement.Parse(@"
-<CEffect default=""1"" parent=""map"">
-  <Chance value=""1"" />
-</CEffect>
-"),
-            TestHelpers.GetStormPath("map"))));
-
-        stormStorage.StormCustomCache.StormElementByElementType.Add("CAbil", new StormElement(new StormXElementValuePath(
-            XElement.Parse(@"
-<CAbil default=""1"" parent=""custom"">
-  <Name value=""Abil/Name/##id##"" />
-</CAbil>
-"),
-            TestHelpers.GetStormPath("custom"))));
-
-        // act
-        bool result = stormStorage.TryGetExistingStormElementByElementType(elementType.AsSpan(), out StormElement? resultStormElement);
-        bool resultSpan = stormStorage.TryGetExistingStormElementByElementType(elementType.AsSpan(), out StormElement? resultStormElementSpan);
-
-        // assert
-        result.Should().Be(resultSpan);
-        resultStormElement.Should().BeEquivalentTo(resultStormElementSpan);
-        result.Should().BeTrue();
-        resultStormElement!.ParentId.Should().Be(parent);
-        resultStormElement.XmlDataCount.Should().Be(3);
-    }
-
-    [TestMethod]
-    public void TryGetExistingStormElementByElementType_NoneFound_ReturnsNull()
-    {
-        // arrange
-        StormStorage stormStorage = new();
-
-        // act
-        bool result = stormStorage.TryGetExistingStormElementByElementType("CEffect", out StormElement? resultStormElement);
-
-        // assert
-        result.Should().BeFalse();
-        resultStormElement.Should().BeNull();
-    }
-
-    [TestMethod]
-    public void TryGetExistingStormElementByElementType_NullParam_ThrowsException()
-    {
-        // arrange
-        StormStorage stormStorage = new();
-
-        // act
-        Action result = () => stormStorage.TryGetExistingStormElementByElementType(null!, out StormElement? resultStormElement);
-
-        // assert
-        result.Should().Throw<ArgumentNullException>();
     }
 
     [TestMethod]
@@ -611,106 +462,6 @@ public class StormStorageTests
         stormStorage.StormCache.StormElementByElementType["CUnit"].XmlDataCount.Should().Be(3);
         stormStorage.StormMapCache.StormElementByElementType["CUnit"].XmlDataCount.Should().Be(4);
         stormStorage.StormCustomCache.StormElementByElementType["CUnit"].XmlDataCount.Should().Be(5);
-    }
-
-    [TestMethod]
-    [DataRow("Hero1", "Unit")]
-    [DataRow("Hero2", "Unit")]
-    [DataRow("Hero3", "Unit")]
-    public void TryGetExistingStormElementById_Id_ReturnsStormElement(string id, string dataObjectType)
-    {
-        // arrange
-        StormStorage stormStorage = new(false);
-
-        stormStorage.StormCache.StormElementsByDataObjectType.Add("Unit", new Dictionary<string, StormElement>()
-        {
-            {
-                "Hero1", new StormElement(new StormXElementValuePath(
-                    XElement.Parse(@"
-<CUnit id=""Hero1"">
-  <Name value=""Unit/Name/##id##"" />
-</CUnit>
-"),
-                    TestHelpers.GetStormPath("normal")))
-            },
-        });
-
-        stormStorage.StormMapCache.StormElementsByDataObjectType.Add("Unit", new Dictionary<string, StormElement>()
-        {
-            {
-                "Hero2", new StormElement(new StormXElementValuePath(
-                    XElement.Parse(@"
-<CUnit id=""Hero2"">
-  <Name value=""Unit/Name/##id##"" />
-</CUnit>
-"),
-                    TestHelpers.GetStormPath("map")))
-            },
-        });
-
-        stormStorage.StormCustomCache.StormElementsByDataObjectType.Add("Unit", new Dictionary<string, StormElement>()
-        {
-            {
-                "Hero3", new StormElement(new StormXElementValuePath(
-                    XElement.Parse(@"
-<CUnit id=""Hero3"">
-  <Name value=""Unit/Name/##id##"" />
-</CUnit>
-"),
-                    TestHelpers.GetStormPath("custom")))
-            },
-        });
-
-        // act
-        bool result = stormStorage.TryGetExistingStormElementById(id, dataObjectType.AsSpan(), out StormElement? resultStormElement);
-        bool resultSpan = stormStorage.TryGetExistingStormElementById(id.AsSpan(), dataObjectType.AsSpan(), out StormElement? resultStormElementSpan);
-
-        // assert
-        result.Should().Be(resultSpan);
-        resultStormElement.Should().BeEquivalentTo(resultStormElementSpan);
-        result.Should().BeTrue();
-        resultStormElement!.Id.Should().Be(id);
-        resultStormElement.XmlDataCount.Should().Be(2);
-    }
-
-    [TestMethod]
-    public void TryGetExistingStormElementById_NoneFound_ReturnsNull()
-    {
-        // arrange
-        StormStorage stormStorage = new(false);
-
-        // act
-        bool result = stormStorage.TryGetExistingStormElementById("id".AsSpan(), "Unit", out StormElement? resultStormElement);
-
-        // assert
-        result.Should().BeFalse();
-        resultStormElement.Should().BeNull();
-    }
-
-    [TestMethod]
-    public void TryGetExistingStormElementById_NullId_ThrowsException()
-    {
-        // arrange
-        StormStorage stormStorage = new();
-
-        // act
-        Action result = () => stormStorage.TryGetExistingStormElementById(null!, "dataObjectType", out StormElement? resultStormElement);
-
-        // assert
-        result.Should().Throw<ArgumentNullException>();
-    }
-
-    [TestMethod]
-    public void TryGetExistingStormElementById_NullDataObjectType_ThrowsException()
-    {
-        // arrange
-        StormStorage stormStorage = new();
-
-        // act
-        Action result = () => stormStorage.TryGetExistingStormElementById("id", null!, out StormElement? resultStormElement);
-
-        // assert
-        result.Should().Throw<ArgumentNullException>();
     }
 
     [TestMethod]
@@ -967,106 +718,6 @@ public class StormStorageTests
         stormStorage.StormCache.StormElementsByDataObjectType["Unit"]["Hero1"].XmlDataCount.Should().Be(3);
         stormStorage.StormMapCache.StormElementsByDataObjectType["Unit"]["Hero1"].XmlDataCount.Should().Be(4);
         stormStorage.StormCustomCache.StormElementsByDataObjectType["Unit"]["Hero1"].XmlDataCount.Should().Be(5);
-    }
-
-    [TestMethod]
-    [DataRow("Hero1", "Unit")]
-    [DataRow("Hero2", "Unit")]
-    [DataRow("Hero3", "Unit")]
-    public void TryGetExistingScaleValueStormElementById_Id_ReturnsStormElement(string id, string dataObjectType)
-    {
-        // arrange
-        StormStorage stormStorage = new(false);
-
-        stormStorage.StormCache.ScaleValueStormElementsByDataObjectType.Add("Unit", new Dictionary<string, StormElement>()
-        {
-            {
-                "Hero1", new StormElement(new StormXElementValuePath(
-                    XElement.Parse(@"
-<CUnit id=""Hero1"">
-  <Name value=""Unit/Name/##id##"" />
-</CUnit>
-"),
-                    TestHelpers.GetStormPath("normal")))
-            },
-        });
-
-        stormStorage.StormMapCache.ScaleValueStormElementsByDataObjectType.Add("Unit", new Dictionary<string, StormElement>()
-        {
-            {
-                "Hero2", new StormElement(new StormXElementValuePath(
-                    XElement.Parse(@"
-<CUnit id=""Hero2"">
-  <Name value=""Unit/Name/##id##"" />
-</CUnit>
-"),
-                    TestHelpers.GetStormPath("map")))
-            },
-        });
-
-        stormStorage.StormCustomCache.ScaleValueStormElementsByDataObjectType.Add("Unit", new Dictionary<string, StormElement>()
-        {
-            {
-                "Hero3", new StormElement(new StormXElementValuePath(
-                    XElement.Parse(@"
-<CUnit id=""Hero3"">
-  <Name value=""Unit/Name/##id##"" />
-</CUnit>
-"),
-                    TestHelpers.GetStormPath("custom")))
-            },
-        });
-
-        // act
-        bool result = stormStorage.TryGetExistingScaleValueStormElementById(id.AsSpan(), dataObjectType.AsSpan(), out StormElement? resultStormElement);
-        bool resultSpan = stormStorage.TryGetExistingScaleValueStormElementById(id.AsSpan(), dataObjectType.AsSpan(), out StormElement? resultStormElementSpan);
-
-        // assert
-        result.Should().Be(resultSpan);
-        resultStormElement.Should().BeEquivalentTo(resultStormElementSpan);
-        result.Should().BeTrue();
-        resultStormElement!.Id.Should().Be(id);
-        resultStormElement.XmlDataCount.Should().Be(2);
-    }
-
-    [TestMethod]
-    public void TryGetExistingScaleValueStormElementById_NoneFound_ReturnsNull()
-    {
-        // arrange
-        StormStorage stormStorage = new(false);
-
-        // act
-        bool result = stormStorage.TryGetExistingScaleValueStormElementById("id".AsSpan(), "Unit", out StormElement? resultStormElement);
-
-        // assert
-        result.Should().BeFalse();
-        resultStormElement.Should().BeNull();
-    }
-
-    [TestMethod]
-    public void TryGetExistingScaleValueStormElementById_NullId_ThrowsException()
-    {
-        // arrange
-        StormStorage stormStorage = new();
-
-        // act
-        Action result = () => stormStorage.TryGetExistingScaleValueStormElementById(null!, "dataObjectType", out StormElement? resultStormElement);
-
-        // assert
-        result.Should().Throw<ArgumentNullException>();
-    }
-
-    [TestMethod]
-    public void TryGetExistingScaleValueStormElementById_NullDataObjectType_ThrowsException()
-    {
-        // arrange
-        StormStorage stormStorage = new();
-
-        // act
-        Action result = () => stormStorage.TryGetExistingScaleValueStormElementById("id", null!, out StormElement? resultStormElement);
-
-        // assert
-        result.Should().Throw<ArgumentNullException>();
     }
 
     [TestMethod]
@@ -1969,7 +1620,7 @@ public class StormStorageTests
         StormGameString? stormGameString = stormStorage.GetStormGameString("id1");
         StormGameString? stormGameStringSpan = stormStorage.GetStormGameString("id1".AsSpan());
 
-        stormGameString.Should().BeEquivalentTo(stormGameString);
+        stormGameString.Should().BeEquivalentTo(stormGameStringSpan);
         stormGameString.Should().NotBeNull();
         stormGameString!.Id.Should().Be("id1");
         stormGameString.Value.Should().Be("After a short delay");
@@ -1990,7 +1641,7 @@ public class StormStorageTests
         StormGameString? stormGameString = stormStorage.GetStormGameString("id1");
         StormGameString? stormGameStringSpan = stormStorage.GetStormGameString("id1".AsSpan());
 
-        stormGameString.Should().BeEquivalentTo(stormGameString);
+        stormGameString.Should().BeEquivalentTo(stormGameStringSpan);
         stormGameString.Should().NotBeNull();
         stormGameString!.Id.Should().Be("id1");
         stormGameString.Value.Should().Be("If Chomp hits a Hero");
@@ -2011,7 +1662,7 @@ public class StormStorageTests
         StormGameString? stormGameString = stormStorage.GetStormGameString("id1");
         StormGameString? stormGameStringSpan = stormStorage.GetStormGameString("id1".AsSpan());
 
-        stormGameString.Should().BeEquivalentTo(stormGameString);
+        stormGameString.Should().BeEquivalentTo(stormGameStringSpan);
         stormGameString.Should().NotBeNull();
         stormGameString!.Id.Should().Be("id1");
         stormGameString.Value.Should().Be("Shadow Waltz deals an increased");
@@ -2032,7 +1683,7 @@ public class StormStorageTests
         StormGameString? stormGameString = stormStorage.GetStormGameString("id1");
         StormGameString? stormGameStringSpan = stormStorage.GetStormGameString("id1".AsSpan());
 
-        stormGameString.Should().BeEquivalentTo(stormGameString);
+        stormGameString.Should().BeEquivalentTo(stormGameStringSpan);
         stormGameString.Should().NotBeNull();
         stormGameString!.Id.Should().Be("id1");
         stormGameString.Value.Should().Be("After a short delay");
@@ -2054,7 +1705,7 @@ public class StormStorageTests
         StormGameString? stormGameString = stormStorage.GetStormGameString("id1");
         StormGameString? stormGameStringSpan = stormStorage.GetStormGameString("id1".AsSpan());
 
-        stormGameString.Should().BeEquivalentTo(stormGameString);
+        stormGameString.Should().BeEquivalentTo(stormGameStringSpan);
         stormGameString.Should().NotBeNull();
         stormGameString!.Id.Should().Be("id1");
         stormGameString.Value.Should().Be("Shadow Waltz deals an increased");
