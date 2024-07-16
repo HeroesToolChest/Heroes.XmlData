@@ -1865,4 +1865,171 @@ public class StormStorageTests
         ids.Should().BeEquivalentTo(idsSpan);
         ids.Should().BeEmpty();
     }
+
+    [TestMethod]
+    [DataRow("""<const id="$Var1" value="7" />""", "7")]
+    [DataRow("""<const id="$Var1" value="" />""", "")]
+    [DataRow("""<const id="$Var1" value=" " />""", " ")]
+    [DataRow("""<const id="$Var1" />""", "")]
+    public void GetValueFromConstElement_NoExpressions_ReturnsValueAsString(string element, string computedValue)
+    {
+        // arrange
+        StormStorage stormStorage = new(false);
+
+        XElement xElement = XElement.Parse(element);
+
+        // act
+        string result = stormStorage.GetValueFromConstElement(xElement);
+
+        // assert
+        result.Should().Be(computedValue);
+    }
+
+    [TestMethod]
+    public void GetValueFromConstElement_HasExpressionAndIs1_ReturnsValueAsString()
+    {
+        // arrange
+        StormStorage stormStorage = new(false);
+        stormStorage.StormCache.ConstantXElementById.Add("$Var2", new StormXElementValuePath(XElement.Parse("""<const id="$Var2" value="7" />"""), TestHelpers.GetStormPath("path")));
+        XElement xElement = XElement.Parse("""<const id="$Var1" value="+($Var2 2.125)" evaluateAsExpression="1" />""");
+
+        // act
+        string result = stormStorage.GetValueFromConstElement(xElement);
+
+        // assert
+        result.Should().Be("9.125");
+    }
+
+    [TestMethod]
+    public void GetValueFromConstElement_HasExpressionAndIs0_ReturnsValueAsString()
+    {
+        // arrange
+        StormStorage stormStorage = new(false);
+
+        XElement xElement = XElement.Parse("""<const id="$Var1" value="+($Var2 2.125)" evaluateAsExpression="0" />""");
+
+        // act
+        string result = stormStorage.GetValueFromConstElement(xElement);
+
+        // assert
+        result.Should().Be("+($Var2 2.125)");
+    }
+
+    [TestMethod]
+    [DataRow("""<const id="$Var1" value="7" />""", 7)]
+    [DataRow("""<const id="$Var1" value="" />""", 0)]
+    [DataRow("""<const id="$Var1" value=" " />""", 0)]
+    [DataRow("""<const id="$Var1" />""", 0)]
+    public void GetValueFromConstElementAsNumber_NoExpressions_ReturnsValue(string element, double computedValue)
+    {
+        // arrange
+        StormStorage stormStorage = new(false);
+
+        XElement xElement = XElement.Parse(element);
+
+        // act
+        double result = stormStorage.GetValueFromConstElementAsNumber(xElement);
+
+        // assert
+        result.Should().Be(computedValue);
+    }
+
+    [TestMethod]
+    public void GetValueFromConstElementAsNumber_HasExpressionAndIs1_ReturnsValueAsString()
+    {
+        // arrange
+        StormStorage stormStorage = new(false);
+        stormStorage.StormCache.ConstantXElementById.Add("$Var2", new StormXElementValuePath(XElement.Parse("""<const id="$Var2" value="7" />"""), TestHelpers.GetStormPath("path")));
+
+        XElement xElement = XElement.Parse("""<const id="$Var1" value="+($Var2 2.125)" evaluateAsExpression="1" />""");
+
+        // act
+        double result = stormStorage.GetValueFromConstElementAsNumber(xElement);
+
+        // assert
+        result.Should().Be(9.125);
+    }
+
+    [TestMethod]
+    public void GetValueFromConstElementAsNumber_HasExpressionAndIs0_ReturnsValueAsString()
+    {
+        // arrange
+        StormStorage stormStorage = new(false);
+
+        XElement xElement = XElement.Parse("""<const id="$Var1" value="+($Var2 2.125)" evaluateAsExpression="0" />""");
+
+        // act
+        double result = stormStorage.GetValueFromConstElementAsNumber(xElement);
+
+        // assert
+        result.Should().Be(0);
+    }
+
+    [TestMethod]
+    public void GetValueFromConstTextAsText_HasVar_ReturnsValueAsString()
+    {
+        // arrange
+        StormStorage stormStorage = new(false);
+        stormStorage.StormCache.ConstantXElementById.Add("$Var1", new StormXElementValuePath(XElement.Parse("""<const id="$Var1" value="7" />"""), TestHelpers.GetStormPath("path")));
+
+        // act
+        string result = stormStorage.GetValueFromConstTextAsText("$Var1");
+
+        // assert
+        result.Should().Be("7");
+    }
+
+    [TestMethod]
+    [DataRow("", "")]
+    [DataRow(" ", " ")]
+    [DataRow("1", "1")]
+    [DataRow("1.1", "1.1")]
+    [DataRow(" 1.1 ", "1.1")]
+    [DataRow("a", "a")]
+    [DataRow(" a ", " a ")]
+    public void GetValueFromConstTextAsText_NoVar_ReturnsValueAsString(string text, string returnValue)
+    {
+        // arrange
+        StormStorage stormStorage = new(false);
+
+        // act
+        string result = stormStorage.GetValueFromConstTextAsText(text);
+
+        // assert
+        result.Should().Be(returnValue);
+    }
+
+    [TestMethod]
+    public void GetValueFromConstTextAsNumber_HasVar_ReturnsValueAsString()
+    {
+        // arrange
+        StormStorage stormStorage = new(false);
+        stormStorage.StormCache.ConstantXElementById.Add("$Var1", new StormXElementValuePath(XElement.Parse("""<const id="$Var1" value="7" />"""), TestHelpers.GetStormPath("path")));
+
+        // act
+        double result = stormStorage.GetValueFromConstTextAsNumber("$Var1");
+
+        // assert
+        result.Should().Be(7);
+    }
+
+    [TestMethod]
+    [DataRow("", 0)]
+    [DataRow(" ", 0)]
+    [DataRow("1", 1)]
+    [DataRow("1.1", 1.1)]
+    [DataRow(" 1.1 ", 1.1)]
+    [DataRow("a", 0)]
+    [DataRow(" a ", 0)]
+    public void GetValueFromConstTextAsNumber_NoVar_ReturnsValueAsString(string text, double returnValue)
+    {
+        // arrange
+        StormStorage stormStorage = new(false);
+
+        // act
+        double result = stormStorage.GetValueFromConstTextAsNumber(text);
+
+        // assert
+        result.Should().Be(returnValue);
+    }
 }
