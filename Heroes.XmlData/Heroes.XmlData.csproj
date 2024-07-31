@@ -8,10 +8,10 @@
     <GenerateDocumentationFile>True</GenerateDocumentationFile>
     <Authors>Kevin Oliva</Authors>
     <Copyright>Copyright © 2024 Kevin Oliva</Copyright>
-    <Description></Description>
-    <PackageProjectUrl></PackageProjectUrl>
-    <RepositoryUrl></RepositoryUrl>
-    <PackageReleaseNotes></PackageReleaseNotes>
+    <Description>Library to directly parse the Heroes of the Storm game data.</Description>
+    <PackageProjectUrl>https://github.com/HeroesToolChest/Heroes.XmlData</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/HeroesToolChest/Heroes.XmlData</RepositoryUrl>
+    <PackageReleaseNotes>https://github.com/HeroesToolChest/Heroes.XmlData/releases</PackageReleaseNotes>
     <PackageTags>hots heroes-of-the-storm HeroesOfTheStorm blizzard xmldata</PackageTags>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
     <ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
@@ -41,7 +41,7 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="TestableIO.System.IO.Abstractions.Wrappers" Version="21.0.22" />
+    <PackageReference Include="TestableIO.System.IO.Abstractions.Wrappers" Version="21.0.29" />
     <PackageReference Include="U8XmlParser" Version="1.6.1" />
   </ItemGroup>
 
