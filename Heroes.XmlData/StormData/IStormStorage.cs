@@ -8,6 +8,8 @@ internal interface IStormStorage
 
     StormCache StormCustomCache { get; }
 
+    StormBattlegroundMap? LoadedStormBattlegroundMap { get; }
+
     List<IStormModStorage> StormModStorages { get; }
 
     IStormModStorage CreateModStorage(IStormMod stormMod);
@@ -20,7 +22,13 @@ internal interface IStormStorage
 
     void AddGameString(StormModType stormModType, string id, GameStringText gameStringText);
 
+    void AddAssetText(StormModType stormModType, string id, AssetText assetText);
+
     (string Id, GameStringText GameStringText)? GetGameStringWithId(ReadOnlySpan<char> gamestring, StormPath stormPath);
+
+    (string Id, AssetText AssetText)? GetAssetWithId(ReadOnlySpan<char> asset, StormPath stormPath);
+
+    void AddStormLayoutFilePath(StormModType stormModType, string relativePath, StormPath stormPath);
 
     bool AddConstantXElement(StormModType stormModType, XElement element, StormPath stormPath);
 
@@ -41,6 +49,8 @@ internal interface IStormStorage
     void AddStormStyleElement(StormModType stormModType, XElement element, StormPath stormPath);
 
     void BuildDataForScalingAttributes(StormModType stormModType);
+
+    void SetStormBattlegroundMap(string name, S2MAProperties s2maProperties);
 
     void ClearGamestrings();
 
@@ -101,4 +111,10 @@ internal interface IStormStorage
     List<string> GetStormElementIds(ReadOnlySpan<char> dataObjectType);
 
     List<string> GetStormElementIds(string dataObjectType);
+
+    StormAssetString? GetStormAssetString(ReadOnlySpan<char> id);
+
+    StormAssetString? GetStormAssetString(string id);
+
+    bool TryGetFirstStormLayoutStormPath(string relativePath, [NotNullWhen(true)] out StormPath? stormPath);
 }

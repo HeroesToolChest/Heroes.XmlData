@@ -222,6 +222,26 @@ public class HeroesData
     }
 
     /// <summary>
+    /// Gets an asset text string.
+    /// </summary>
+    /// <param name="id">A character span that contains the id of the asset.</param>
+    /// <returns>The value of the asset.</returns>
+    public StormAssetString? GetStormAssetString(ReadOnlySpan<char> id)
+    {
+        return _stormStorage.GetStormAssetString(id);
+    }
+
+    /// <summary>
+    /// Gets an asset text string.
+    /// </summary>
+    /// <param name="id">The id of the asset.</param>
+    /// <returns>The value of the asset.</returns>
+    public StormAssetString? GetStormAssetText(string id)
+    {
+        return _stormStorage.GetStormAssetString(id);
+    }
+
+    /// <summary>
     /// Get a collection of all the unparsed gamestrings.
     /// </summary>
     /// <returns>A collection of unparsed gamestrings.</returns>
@@ -263,6 +283,16 @@ public class HeroesData
     public IList<string> GetStormElementIds(string dataObjectType)
     {
         return _stormStorage.GetStormElementIds(dataObjectType);
+    }
+
+    /// <summary>
+    /// Gets the current loaded storm map's data. This does not contain data from the xml or gamestring files.
+    /// This data is from the map's s2ma and s2mv files.
+    /// </summary>
+    /// <returns>The current loaded storm map or <see langword="null"/> if no storm map loaded.</returns>
+    public StormBattlegroundMap? GetLoadedStormBattleGroundMap()
+    {
+        return _stormStorage.LoadedStormBattlegroundMap;
     }
 
     internal void SetHeroesLocalization(StormLocale stormLocale)

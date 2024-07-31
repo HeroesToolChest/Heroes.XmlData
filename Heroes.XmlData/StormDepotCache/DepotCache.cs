@@ -77,8 +77,11 @@ internal abstract class DepotCache<T> : IDepotCache
         {
             MapLink = mapLinkElement.GetString() ?? string.Empty,
             HeaderTitle = docInfoNameElement.GetProperty("enUS").GetString() ?? string.Empty,
-            LoadingImage = PathHelper.NormalizePath(loadingElement.GetProperty("Image").GetString()),
+            LoadingImage = PathHelper.NormalizePath(loadingElement.GetProperty("Image").GetString() ?? string.Empty),
             MapSize = new Point(mapInfoSizeElement.GetProperty("x").GetInt32(), mapInfoSizeElement.GetProperty("y").GetInt32()),
+            PreviewLargeImage = PathHelper.NormalizePath(propertiesElement.GetProperty("PreviewLargeImage").GetString() ?? string.Empty),
+            CustomLayout = PathHelper.NormalizePath(loadingElement.GetProperty("CustomLayout").GetString() ?? string.Empty),
+            CustomFrame = PathHelper.NormalizePath(loadingElement.GetProperty("CustomFrame").GetString() ?? string.Empty),
         };
 
         foreach (JsonElement dependencyElement in dependenciesElement.EnumerateArray())

@@ -1,4 +1,5 @@
 ﻿using CASCLib;
+using System.IO.Abstractions;
 
 namespace Heroes.XmlData.Tests.StormMods;
 
@@ -42,6 +43,9 @@ public class FileStormModTests
 </Includes>
 ")
             },
+            { Path.Join("mods", "test.stormmod", "base.stormdata", "ui", "layout", "descindex.stormlayout"), new MockFileData(@"<?xml version=""1.0"" encoding=""utf-8"" standalone=""yes""?><Desc></Desc>") },
+            { Path.Join("mods", "test.stormmod", "base.stormdata", "ui", "layout", "loadingscreens", "descindex.stormlayout"), new MockFileData(@"<?xml version=""1.0"" encoding=""utf-8"" standalone=""yes""?><Desc></Desc>") },
+            { Path.Join("mods", "test.stormmod", "base.stormdata", "gamedata", "assets.txt"), new MockFileData("id1=value1") },
         });
 
         StormStorage stormStorage = new(false);
@@ -55,10 +59,12 @@ public class FileStormModTests
         fileStormMod.LoadStormData();
 
         // assert
-        fileStormMod.StormModStorage.BuildId.Should().Be(1);
         stormStorage.StormCache.StormElementByElementType.Should().ContainSingle();
+        fileStormMod.StormModStorage.BuildId.Should().Be(1);
         fileStormMod.StormModStorage.AddedXmlDataFilePaths.Should().HaveCount(2);
         fileStormMod.StormModStorage.AddedXmlFontStyleFilePaths.Should().ContainSingle();
+        fileStormMod.StormModStorage.FoundLayoutFilePaths.Should().HaveCount(2);
+        fileStormMod.StormModStorage.AddedAssetsFilePaths.Should().HaveCount(1);
         fileHeroesSource.StormStorage.StormModStorages.Should().ContainSingle();
     }
 
@@ -524,6 +530,73 @@ public class FileStormModTests
 
         stormStorage.StormCache.DataObjectTypeByElementType.Should().BeEmpty();
         stormStorage.StormCache.StormElementByElementType.Should().BeEmpty();
+    }
+
+    [TestMethod]
+    public void LoadStormLayoutDirectory_HasStormLayoutDirectories_LoadsLayoutPaths()
+    {
+        // arrange
+        MockFileSystem mockFileSystem = new(new Dictionary<string, MockFileData>
+        {
+            { Path.Join("mods", "test.stormmod", "base.stormdata", "ui", "layout", "loadingscreens", "layout1.stormlayout"), new MockFileData("<?xml version=\"1.0\" encoding=\"utf-8\" standalone=\"yes\"?><Desc><DescFlags val=\"Locked\" /></Desc>") },
+            { Path.Join("mods", "test.stormmod", "base.stormdata", "ui", "layout", "loadingscreens", "layout2.stormlayout"), new MockFileData("<?xml version=\"1.0\" encoding=\"utf-8\" standalone=\"yes\"?><Desc><DescFlags val=\"Locked\" /></Desc>") },
+            { Path.Join("mods", "test.stormmod", "base.stormdata", "ui", "layout", "homescreens", "layout1.stormlayout"), new MockFileData("<?xml version=\"1.0\" encoding=\"utf-8\" standalone=\"yes\"?><Desc><DescFlags val=\"Locked\" /></Desc>") },
+            { Path.Join("mods", "test.stormmod", "base.stormdata", "ui", "layout", "layout1.stormlayout"), new MockFileData("<?xml version=\"1.0\" encoding=\"utf-8\" standalone=\"yes\"?><Desc><DescFlags val=\"Locked\" /></Desc>") },
+            { Path.Join("mods", "test.stormmod", "base.stormdata", "ui", "layout", "layout2.stormlayout"), new MockFileData("<?xml version=\"1.0\" encoding=\"utf-8\" standalone=\"yes\"?><Desc><DescFlags val=\"Locked\" /></Desc>") },
+            { Path.Join("mods", "test.stormmod", "ui", "layout", "layout1.stormlayout"), new MockFileData("<?xml version=\"1.0\" encoding=\"utf-8\" standalone=\"yes\"?><Desc><DescFlags val=\"Locked\" /></Desc>") },
+            { Path.Join("ui", "layout", "layout1.stormlayout"), new MockFileData("<?xml version=\"1.0\" encoding=\"utf-8\" standalone=\"yes\"?><Desc><DescFlags val=\"Locked\" /></Desc>") },
+        });
+
+        StormStorage stormStorage = new(false);
+        FileHeroesSource fileHeroesSource = new(stormStorage, _stormModFactory, _depotCacheFactory, "mods", _backgroundWorkerEx);
+        FileStormMod fileStormMod = new(mockFileSystem, fileHeroesSource, "test.stormmod", StormModType.Normal);
+
+        // act
+        fileStormMod.LoadStormLayoutDirectory();
+
+        // assert
+        fileStormMod.StormModStorage.FoundLayoutFilePaths.Should().HaveCount(5);
+        stormStorage.StormCache.UiStormPathsByRelativeUiPath.Should().HaveCount(5).And
+            .SatisfyRespectively(
+                first =>
+                {
+                    first.Key.Should().Be(Path.Join("ui", "layout", "loadingscreens", "layout1.stormlayout"));
+                },
+                second =>
+                {
+                    second.Key.Should().Be(Path.Join("ui", "layout", "loadingscreens", "layout2.stormlayout"));
+                },
+                third =>
+                {
+                    third.Key.Should().Be(Path.Join("ui", "layout", "homescreens", "layout1.stormlayout"));
+                },
+                fourth =>
+                {
+                    fourth.Key.Should().Be(Path.Join("ui", "layout", "layout1.stormlayout"));
+                },
+                five =>
+                {
+                    five.Key.Should().Be(Path.Join("ui", "layout", "layout2.stormlayout"));
+                });
+    }
+
+    [TestMethod]
+    public void LoadStormLayoutDirectory_NoStormLayoutDirectoryFound_NothingIsAdded()
+    {
+        // arrange
+        IFileSystem fileSystem = Substitute.For<IFileSystem>();
+
+        StormStorage stormStorage = new(false);
+        FileHeroesSource fileHeroesSource = new(stormStorage, _stormModFactory, _depotCacheFactory, "mods", _backgroundWorkerEx);
+        FileStormMod fileStormMod = new(fileSystem, fileHeroesSource, "test.stormmod", StormModType.Normal);
+
+        // act
+        fileStormMod.LoadStormLayoutDirectory();
+
+        // assert
+        fileSystem.Received().Directory.Exists(Arg.Any<string>());
+        fileStormMod.StormModStorage.FoundLayoutFilePaths.Should().BeEmpty();
+        stormStorage.StormCache.UiStormPathsByRelativeUiPath.Should().BeEmpty();
     }
 
     private FileStormMod GetFileStormModForMapMods()

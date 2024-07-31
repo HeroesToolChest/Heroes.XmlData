@@ -60,6 +60,10 @@ public class FileDepotCacheTests
                     first.Value.DocInfoIconFile.Should().Be(Path.Join("assets", "textures", "storm_ui_homescreenbackground_volskaya.dds"));
                     first.Value.HeaderTitle.Should().Be("Volskaya Foundry");
                     first.Value.LoadingImage.Should().Be(Path.Join("assets", "textures", "storm_ui_homescreenbackground_volskaya.dds"));
+                    first.Value.MapSize.Should().Be(new Point(248, 208));
+                    first.Value.PreviewLargeImage.Should().Be(Path.Join("assets", "textures", "storm_ui_homescreenbackground_volskaya.dds"));
+                    first.Value.CustomLayout.Should().Be(Path.Join("ui", "layout", "loadingscreens", "volskaya_loading.stormlayout"));
+                    first.Value.CustomFrame.Should().Be(Path.Join("volskaya_loading", "screenmaploading_volskaya"));
                     first.Value.MapDependencies.Should().ContainSingle()
                         .And
                         .SatisfyRespectively(
@@ -96,6 +100,10 @@ public class FileDepotCacheTests
                     second.Value.DocInfoIconFile.Should().Be("storm_ui_gamemode_mapselect_cursedhollow.png");
                     second.Value.HeaderTitle.Should().Be("Cursed Hollow");
                     second.Value.LoadingImage.Should().Be(Path.Join("assets", "textures", "ui_ingame_mapmechanic_loadscreen_cursedhollow.dds"));
+                    second.Value.MapSize.Should().Be(new Point(256, 216));
+                    second.Value.PreviewLargeImage.Should().Be("replayspreviewimage.tga");
+                    second.Value.CustomLayout.Should().Be(Path.Join("ui", "layout", "loadingscreens", "cursedhollow_loading.stormlayout"));
+                    second.Value.CustomFrame.Should().Be(Path.Join("cursedhollow_loading", "screenmaploading_cursedhollow"));
                     second.Value.MapDependencies.Should().ContainSingle()
                         .And
                         .SatisfyRespectively(

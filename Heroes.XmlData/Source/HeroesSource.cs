@@ -12,6 +12,8 @@ internal abstract class HeroesSource : IHeroesSource
     private const string DocumentInfoFileConst = "documentinfo";
     private const string FontStyleFileConst = "fontstyles.stormstyle";
     private const string BuildIdFileConst = "buildid.txt";
+    private const string AssetsFileConst = "assets.txt";
+    private const string DescIndexStormLayoutFileConst = "descindex.stormlayout";
 
     private const string CoreStormModDirectoryConst = "core.stormmod";
     private const string HeroesStormModDirectoryConst = "heroes.stormmod";
@@ -19,6 +21,7 @@ internal abstract class HeroesSource : IHeroesSource
 
     private const string HeroModsDirectoryConst = "heromods";
     private const string UiDirectoryConst = "ui";
+    private const string LayoutDirectoryConst = "layout";
 
     private readonly List<IStormMod> _stormMods = [];
     private readonly List<IStormMod> _stormMapMods = [];
@@ -69,6 +72,10 @@ internal abstract class HeroesSource : IHeroesSource
 
     public string BuildIdFile => BuildIdFileConst;
 
+    public string AssetsFile => AssetsFileConst;
+
+    public string DescIndexStormLayoutFile => DescIndexStormLayoutFileConst;
+
     public string CoreStormModDirectory => CoreStormModDirectoryConst;
 
     public string HeroesStormModDirectory => HeroesStormModDirectoryConst;
@@ -78,6 +85,8 @@ internal abstract class HeroesSource : IHeroesSource
     public string HeroModsDirectory => HeroModsDirectoryConst;
 
     public string UIDirectory => UiDirectoryConst;
+
+    public string LayoutDirectory => LayoutDirectoryConst;
 
     public string DepotCacheDirectory => Path.Join(CoreStormModDirectory, BaseStormDataDirectory, "depotcache");
 
@@ -159,6 +168,7 @@ internal abstract class HeroesSource : IHeroesSource
 
         BackgroundWorkerEx?.ReportProgress(0, $"Loading map '{mapTitle}' mods...");
 
+        // load up all the maps stormmods
         for (int i = 0; i < _stormMapMods.Count; i++)
         {
             IStormMod stormMapMod = _stormMapMods[i];
@@ -167,6 +177,12 @@ internal abstract class HeroesSource : IHeroesSource
             StormStorage.AddModStorage(stormMapMod.StormModStorage);
 
             BackgroundWorkerEx?.ReportProgress((int)((i + 1) / (float)_stormMapMods.Count * 100));
+        }
+
+        // load the storm map data from the s2ma/v files (non-xml and gamestring data)
+        if (s2maProperties.S2MVProperties is not null)
+        {
+            StormStorage.SetStormBattlegroundMap(mapTitle, s2maProperties);
         }
 
         StormStorage.BuildDataForScalingAttributes(StormModType.Map);

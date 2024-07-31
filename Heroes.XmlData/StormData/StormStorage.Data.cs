@@ -405,6 +405,54 @@ internal partial class StormStorage
         return [.. ids];
     }
 
+    public StormAssetString? GetStormAssetString(ReadOnlySpan<char> id)
+    {
+        return GetStormAssetString(id.ToString());
+    }
+
+    public StormAssetString? GetStormAssetString(string id)
+    {
+        ArgumentNullException.ThrowIfNull(id);
+
+        StormAssetString? stormAssetText = null;
+
+        // normal cache first
+        if (StormCache.AssetTextsById.TryGetValue(id, out AssetText? assetText))
+            stormAssetText = Get(id, stormAssetText, assetText);
+
+        if (StormMapCache.AssetTextsById.TryGetValue(id, out assetText))
+            stormAssetText = Get(id, stormAssetText, assetText);
+
+        if (StormCustomCache.AssetTextsById.TryGetValue(id, out assetText))
+            stormAssetText = Get(id, stormAssetText, assetText);
+
+        static StormAssetString Get(string id, StormAssetString? stormAssetText, AssetText assetText)
+        {
+            stormAssetText ??= new StormAssetString(id, assetText.Value);
+            stormAssetText.AddPath(assetText.StormPath);
+            stormAssetText.Value = assetText.Value;
+
+            return stormAssetText;
+        }
+
+        return stormAssetText;
+    }
+
+    public bool TryGetFirstStormLayoutStormPath(string relativePath, [NotNullWhen(true)] out StormPath? stormPath)
+    {
+        // custom cache always first
+        if (StormCustomCache.UiStormPathsByRelativeUiPath.TryGetValue(relativePath, out stormPath))
+            return true;
+
+        if (StormMapCache.UiStormPathsByRelativeUiPath.TryGetValue(relativePath, out stormPath))
+            return true;
+
+        if (StormCache.UiStormPathsByRelativeUiPath.TryGetValue(relativePath, out stormPath))
+            return true;
+
+        return false;
+    }
+
     private static void AddStormGameString(Dictionary<string, StormGameString> stormGameStrings, KeyValuePair<string, GameStringText> item)
     {
         if (stormGameStrings.TryGetValue(item.Key, out StormGameString? existingStormGameString))

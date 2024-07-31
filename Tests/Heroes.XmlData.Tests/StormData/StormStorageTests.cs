@@ -1867,6 +1867,114 @@ public class StormStorageTests
     }
 
     [TestMethod]
+    public void GetAssetText_AllThreeCaches_MergesFromAll()
+    {
+        // arrange
+        StormStorage stormStorage = new(false);
+
+        // act
+        stormStorage.StormCache.AssetTextsById.Add("id1", new AssetText("storm_ui_ingame_tooltipframe.dds", TestHelpers.GetStormPath("normal")));
+        stormStorage.StormMapCache.AssetTextsById.Add("id1", new AssetText("storm_standardbuttonmini_gold_normal.dds", TestHelpers.GetStormPath("map")));
+        stormStorage.StormCustomCache.AssetTextsById.Add("id1", new AssetText("storm_tutorial_veteran.ogv", TestHelpers.GetStormPath("custom")));
+
+        // assert
+        StormAssetString? stormAssetString = stormStorage.GetStormAssetString("id1");
+        StormAssetString? stormAssetStringSpan = stormStorage.GetStormAssetString("id1".AsSpan());
+
+        stormAssetString.Should().BeEquivalentTo(stormAssetStringSpan);
+        stormAssetString.Should().NotBeNull();
+        stormAssetString!.Id.Should().Be("id1");
+        stormAssetString.Value.Should().Be("storm_tutorial_veteran.ogv");
+        stormAssetString.StormPaths.Should().HaveCount(3);
+        stormAssetString.StormPaths[^1].Path.Should().Be("custom");
+    }
+
+    [TestMethod]
+    public void GetAssetText_InNormalCache_ReturnsFromNormal()
+    {
+        // arrange
+        StormStorage stormStorage = new(false);
+
+        // act
+        stormStorage.StormCache.AssetTextsById.Add("id1", new AssetText("storm_ui_ingame_tooltipframe.dds", TestHelpers.GetStormPath("normal")));
+
+        // assert
+        StormAssetString? stormAssetString = stormStorage.GetStormAssetString("id1");
+        StormAssetString? stormAssetStringSpan = stormStorage.GetStormAssetString("id1".AsSpan());
+
+        stormAssetString.Should().BeEquivalentTo(stormAssetStringSpan);
+        stormAssetString.Should().NotBeNull();
+        stormAssetString!.Id.Should().Be("id1");
+        stormAssetString.Value.Should().Be("storm_ui_ingame_tooltipframe.dds");
+        stormAssetString.StormPaths.Should().ContainSingle();
+        stormAssetString.StormPaths[^1].Path.Should().Be("normal");
+    }
+
+    [TestMethod]
+    public void GetAssetText_InMapCache_ReturnsFromMap()
+    {
+        // arrange
+        StormStorage stormStorage = new(false);
+
+        // act
+        stormStorage.StormMapCache.AssetTextsById.Add("id1", new AssetText("storm_standardbuttonmini_gold_normal.dds", TestHelpers.GetStormPath("map")));
+
+        // assert
+        StormAssetString? stormAssetString = stormStorage.GetStormAssetString("id1");
+        StormAssetString? stormAssetStringSpan = stormStorage.GetStormAssetString("id1".AsSpan());
+
+        stormAssetString.Should().BeEquivalentTo(stormAssetStringSpan);
+        stormAssetString.Should().NotBeNull();
+        stormAssetString!.Id.Should().Be("id1");
+        stormAssetString.Value.Should().Be("storm_standardbuttonmini_gold_normal.dds");
+        stormAssetString.StormPaths.Should().ContainSingle();
+        stormAssetString.StormPaths[^1].Path.Should().Be("map");
+    }
+
+    [TestMethod]
+    public void GetAssetText_InCustomCache_ReturnsFromCustom()
+    {
+        // arrange
+        StormStorage stormStorage = new(false);
+
+        // act
+        stormStorage.StormCustomCache.AssetTextsById.Add("id1", new AssetText("storm_tutorial_veteran.ogv", TestHelpers.GetStormPath("custom")));
+
+        // assert
+        StormAssetString? stormAssetString = stormStorage.GetStormAssetString("id1");
+        StormAssetString? stormAssetStringSpan = stormStorage.GetStormAssetString("id1".AsSpan());
+
+        stormAssetString.Should().BeEquivalentTo(stormAssetStringSpan);
+        stormAssetString.Should().NotBeNull();
+        stormAssetString!.Id.Should().Be("id1");
+        stormAssetString.Value.Should().Be("storm_tutorial_veteran.ogv");
+        stormAssetString.StormPaths.Should().ContainSingle();
+        stormAssetString.StormPaths[^1].Path.Should().Be("custom");
+    }
+
+    [TestMethod]
+    public void GetAssetText_NormalAndMapCache_MergeFromNormalAndMap()
+    {
+        // arrange
+        StormStorage stormStorage = new(false);
+
+        // act
+        stormStorage.StormCache.AssetTextsById.Add("id1", new AssetText("storm_standardbuttonmini_gold_normal.dds", TestHelpers.GetStormPath("normal")));
+        stormStorage.StormMapCache.AssetTextsById.Add("id1", new AssetText("storm_tutorial_veteran.ogv", TestHelpers.GetStormPath("map")));
+
+        // assert
+        StormAssetString? stormAssetString = stormStorage.GetStormAssetString("id1");
+        StormAssetString? stormAssetStringSpan = stormStorage.GetStormAssetString("id1".AsSpan());
+
+        stormAssetString.Should().BeEquivalentTo(stormAssetStringSpan);
+        stormAssetString.Should().NotBeNull();
+        stormAssetString!.Id.Should().Be("id1");
+        stormAssetString.Value.Should().Be("storm_tutorial_veteran.ogv");
+        stormAssetString.StormPaths.Should().HaveCount(2);
+        stormAssetString.StormPaths[^1].Path.Should().Be("map");
+    }
+
+    [TestMethod]
     [DataRow("""<const id="$Var1" value="7" />""", "7")]
     [DataRow("""<const id="$Var1" value="" />""", "")]
     [DataRow("""<const id="$Var1" value=" " />""", " ")]

@@ -1,5 +1,6 @@
 ﻿using CASCLib;
 using Heroes.XmlData.CASC;
+using Heroes.XmlData.Extensions;
 
 namespace Heroes.XmlData.Tests.StormMods;
 
@@ -32,111 +33,17 @@ public class CASCStormModTests
         CASCStormMod cascStormMod = new(cascHeroesSource, stormmod, StormModType.Normal);
 
         CASCFolder rootFolder = new("name");
-        rootFolder.Folders.Add("mods", new CASCFolder("mods")
-        {
-            Folders =
-            {
-                {
-                    "test.stormmod", new CASCFolder("test.stormmod")
-                    {
-                        Folders =
-                        {
-                            {
-                                "base.stormdata", new CASCFolder("base.stormdata")
-                                {
-                                    Folders =
-                                    {
-                                        {
-                                            "gamedata", new CASCFolder("gamedata")
-                                            {
-                                                Files =
-                                                {
-                                                    {
-                                                        "file1data.xml", new CASCFile(111, "file1data.xml")
-                                                    },
-                                                    {
-                                                        "file2data.xml", new CASCFile(222, "file2data.xml")
-                                                    },
-                                                    {
-                                                        "file3data.xml", new CASCFile(333, "file3data.xml")
-                                                    },
-                                                },
-                                            }
-                                        },
-                                    },
-                                }
-                            },
-                        },
-                    }
-                },
-                {
-                    "core.stormmod", new CASCFolder("core.stormmod")
-                    {
-                        Folders =
-                        {
-                            {
-                                "base.stormdata", new CASCFolder("base.stormdata")
-                                {
-                                    Folders =
-                                    {
-                                        {
-                                            "gamedata", new CASCFolder("gamedata")
-                                            {
-                                                Files =
-                                                {
-                                                    {
-                                                        "file1data.xml", new CASCFile(111, "file1data.xml")
-                                                    },
-                                                    {
-                                                        "file2data.xml", new CASCFile(222, "file2data.xml")
-                                                    },
-                                                    {
-                                                        "file3data.xml", new CASCFile(333, "file3data.xml")
-                                                    },
-                                                },
-                                            }
-                                        },
-                                    },
-                                }
-                            },
-                        },
-                    }
-                },
-                {
-                    "heroesdata.stormmod", new CASCFolder("heroesdata.stormmod")
-                    {
-                        Folders =
-                        {
-                            {
-                                "base.stormdata", new CASCFolder("base.stormdata")
-                                {
-                                    Folders =
-                                    {
-                                        {
-                                            "gamedata", new CASCFolder("gamedata")
-                                            {
-                                                Files =
-                                                {
-                                                    {
-                                                        "file1data.xml", new CASCFile(111, "file1data.xml")
-                                                    },
-                                                    {
-                                                        "file2data.xml", new CASCFile(222, "file2data.xml")
-                                                    },
-                                                    {
-                                                        "file3data.xml", new CASCFile(333, "file3data.xml")
-                                                    },
-                                                },
-                                            }
-                                        },
-                                    },
-                                }
-                            },
-                        },
-                    }
-                },
-            },
-        });
+        rootFolder.AddFile(Path.Join("mods", "test.stormmod", "base.stormdata", "gamedata", "file1data.xml"));
+        rootFolder.AddFile(Path.Join("mods", "test.stormmod", "base.stormdata", "gamedata", "file2data.xml"));
+        rootFolder.AddFile(Path.Join("mods", "test.stormmod", "base.stormdata", "gamedata", "file3data.xml"));
+
+        rootFolder.AddFile(Path.Join("mods", "core.stormmod", "base.stormdata", "gamedata", "file1data.xml"));
+        rootFolder.AddFile(Path.Join("mods", "core.stormmod", "base.stormdata", "gamedata", "file2data.xml"));
+        rootFolder.AddFile(Path.Join("mods", "core.stormmod", "base.stormdata", "gamedata", "file3data.xml"));
+
+        rootFolder.AddFile(Path.Join("mods", "heroesdata.stormmod", "base.stormdata", "gamedata", "file1data.xml"));
+        rootFolder.AddFile(Path.Join("mods", "heroesdata.stormmod", "base.stormdata", "gamedata", "file2data.xml"));
+        rootFolder.AddFile(Path.Join("mods", "heroesdata.stormmod", "base.stormdata", "gamedata", "file3data.xml"));
 
         _cascHeroesStorage.CASCFolderRoot.Returns(rootFolder);
 
@@ -152,11 +59,11 @@ public class CASCStormModTests
         writer2.Flush();
         stream2.Position = 0;
 
-        _cascHeroesStorage.CASCHandlerWrapper.FileExists("file1data.xml").Returns(true);
-        _cascHeroesStorage.CASCHandlerWrapper.FileExists("file2data.xml").Returns(true);
-        _cascHeroesStorage.CASCHandlerWrapper.FileExists("file3data.xml").Returns(false);
-        _cascHeroesStorage.CASCHandlerWrapper.OpenFile("file1data.xml").Returns(stream1);
-        _cascHeroesStorage.CASCHandlerWrapper.OpenFile("file2data.xml").Returns(stream2);
+        _cascHeroesStorage.CASCHandlerWrapper.FileExists(Path.Join("mods", stormmod, "base.stormdata", "gamedata", "file1data.xml")).Returns(true);
+        _cascHeroesStorage.CASCHandlerWrapper.FileExists(Path.Join("mods", stormmod, "base.stormdata", "gamedata", "file2data.xml")).Returns(true);
+        _cascHeroesStorage.CASCHandlerWrapper.FileExists(Path.Join("mods", stormmod, "base.stormdata", "gamedata", "file3data.xml")).Returns(false);
+        _cascHeroesStorage.CASCHandlerWrapper.OpenFile(Path.Join("mods", stormmod, "base.stormdata", "gamedata", "file1data.xml")).Returns(stream1);
+        _cascHeroesStorage.CASCHandlerWrapper.OpenFile(Path.Join("mods", stormmod, "base.stormdata", "gamedata", "file2data.xml")).Returns(stream2);
 
         // act
         cascStormMod.LoadGameDataDirectory();
@@ -172,10 +79,6 @@ public class CASCStormModTests
     public void LoadGameDataDirectory_NoGameDirectoryFound_NotFoundDirectoriesAdded()
     {
         // arrange
-        MockFileSystem mockFileSystem = new(new Dictionary<string, MockFileData>
-        {
-        });
-
         StormStorage stormStorage = new(false);
 
         CASCHeroesSource cascHeroesSource = new(stormStorage, _stormModFactory, _depotCacheFactory, _cascHeroesStorage, _backgroundWorkerEx);
@@ -199,5 +102,79 @@ public class CASCStormModTests
 
         stormStorage.StormCache.DataObjectTypeByElementType.Should().BeEmpty();
         stormStorage.StormCache.StormElementByElementType.Should().BeEmpty();
+    }
+
+    [TestMethod]
+    public void LoadStormLayoutDirectory_HasStormLayoutDirectories_LoadsLayoutPaths()
+    {
+        // arrange
+        StormStorage stormStorage = new(false);
+
+        CASCHeroesSource cascHeroesSource = new(stormStorage, _stormModFactory, _depotCacheFactory, _cascHeroesStorage, _backgroundWorkerEx);
+        CASCStormMod cascStormMod = new(cascHeroesSource, "test.stormmod", StormModType.Normal);
+
+        CASCFolder rootFolder = new("name");
+
+        rootFolder.AddFile(Path.Join("mods", "test.stormmod", "base.stormdata", "ui", "layout", "loadingscreens", "layout1.stormlayout"));
+        rootFolder.AddFile(Path.Join("mods", "test.stormmod", "base.stormdata", "ui", "layout", "loadingscreens", "layout2.stormlayout"));
+
+        rootFolder.AddFile(Path.Join("mods", "test.stormmod", "base.stormdata", "ui", "layout", "homescreens", "layout1.stormlayout"));
+
+        rootFolder.AddFile(Path.Join("mods", "test.stormmod", "base.stormdata", "ui", "layout", "layout1.stormlayout"));
+        rootFolder.AddFile(Path.Join("mods", "test.stormmod", "base.stormdata", "ui", "layout", "layout2.stormlayout"));
+
+        rootFolder.AddFile(Path.Join("mods", "test.stormmod", "ui", "layout", "layout1.stormlayout"));
+
+        rootFolder.AddFile(Path.Join("ui", "layout", "layout1.stormlayout"));
+
+        _cascHeroesStorage.CASCFolderRoot.Returns(rootFolder);
+
+        // act
+        cascStormMod.LoadStormLayoutDirectory();
+
+        // assert
+        cascStormMod.StormModStorage.FoundLayoutFilePaths.Should().HaveCount(5);
+        stormStorage.StormCache.UiStormPathsByRelativeUiPath.Should().HaveCount(5).And
+            .SatisfyRespectively(
+                first =>
+                {
+                    first.Key.Should().Be(Path.Join("ui", "layout", "layout1.stormlayout"));
+                },
+                second =>
+                {
+                    second.Key.Should().Be(Path.Join("ui", "layout", "layout2.stormlayout"));
+                },
+                third =>
+                {
+                    third.Key.Should().Be(Path.Join("ui", "layout", "loadingscreens", "layout1.stormlayout"));
+                },
+                fourth =>
+                {
+                    fourth.Key.Should().Be(Path.Join("ui", "layout", "loadingscreens", "layout2.stormlayout"));
+                },
+                five =>
+                {
+                    five.Key.Should().Be(Path.Join("ui", "layout", "homescreens", "layout1.stormlayout"));
+                });
+    }
+
+    [TestMethod]
+    public void LoadStormLayoutDirectory_NoLayoutDirectoryFound_NothingIsAdded()
+    {
+        // arrange
+        StormStorage stormStorage = new(false);
+
+        CASCHeroesSource cascHeroesSource = new(stormStorage, _stormModFactory, _depotCacheFactory, _cascHeroesStorage, _backgroundWorkerEx);
+
+        CASCStormMod cascStormMod = new(cascHeroesSource, "test.stormmod", StormModType.Normal);
+
+        _cascHeroesStorage.CASCFolderRoot.Returns(new CASCFolder("cascfolder"));
+
+        // act
+        cascStormMod.LoadStormLayoutDirectory();
+
+        // assert
+        cascStormMod.StormModStorage.FoundLayoutFilePaths.Should().BeEmpty();
+        stormStorage.StormCache.UiStormPathsByRelativeUiPath.Should().BeEmpty();
     }
 }

@@ -11,4 +11,6 @@ internal readonly record struct Point(double X, double Y)
     {
         return $"{X}, {Y}".GetHashCode();
     }
+
+    public (double X, double Y) GetAsTuple() => (X, Y);
 }

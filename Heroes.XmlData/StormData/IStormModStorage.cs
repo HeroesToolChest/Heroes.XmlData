@@ -8,6 +8,10 @@ internal interface IStormModStorage
 
     IEnumerable<StormPath> AddedXmlFontStyleFilePaths { get; }
 
+    IEnumerable<StormPath> AddedAssetsFilePaths { get; }
+
+    IEnumerable<StormPath> FoundLayoutFilePaths { get; }
+
     int? BuildId { get; }
 
     Dictionary<string, GameStringText> GameStringsById { get; }
@@ -22,6 +26,8 @@ internal interface IStormModStorage
 
     void AddBuildIdFile(Stream stream);
 
+    void AddAssetsTextFile(Stream stream, StormPath stormPath);
+
     void AddDirectoryNotFound(StormPath requiredStormDirectory);
 
     void AddFileNotFound(StormPath requiredStormFile);
@@ -31,6 +37,8 @@ internal interface IStormModStorage
     void AddGameStringFile(Stream stream, StormPath stormPath);
 
     void AddXmlDataFile(XDocument document, StormPath stormPath, bool isBaseGameDataDirectory);
+
+    void AddStormLayoutFilePath(string relativePath, StormPath stormPath);
 
     void AddXmlFontStyleFile(XDocument document, StormPath stormPath);
 

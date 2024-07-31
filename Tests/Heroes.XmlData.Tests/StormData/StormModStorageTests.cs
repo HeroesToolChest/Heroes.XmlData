@@ -81,6 +81,35 @@ public class StormModStorageTests
     }
 
     [TestMethod]
+    public void AddAssetText_HasAssets_AddsAssetsText()
+    {
+        // arrange
+        StormModStorage stormModStorage = new(_stormMod, _stormStorage);
+        StormPath stormPath1 = TestHelpers.GetStormPath("test1");
+        StormPath stormPath2 = TestHelpers.GetStormPath("test2");
+        StormPath stormPath3 = TestHelpers.GetStormPath("test3");
+
+        AssetText assetText1 = new("value1", stormPath1);
+        AssetText assetText2 = new("value2", stormPath2);
+        AssetText assetText3 = new("value2", stormPath3);
+
+        // act
+        stormModStorage.AddAssetText("id1", assetText1);
+        stormModStorage.AddAssetText("id1", assetText2);
+        stormModStorage.AddAssetText("id2", assetText3);
+
+        // assert
+        stormModStorage.AssetTextsById.Should().BeEquivalentTo(new Dictionary<string, AssetText>
+        {
+            { "id1", assetText2 },
+            { "id2", assetText3 },
+        });
+        _stormStorage.Received().AddAssetText(Arg.Any<StormModType>(), "id1", assetText1);
+        _stormStorage.Received().AddAssetText(Arg.Any<StormModType>(), "id1", assetText2);
+        _stormStorage.Received().AddAssetText(Arg.Any<StormModType>(), "id2", assetText3);
+    }
+
+    [TestMethod]
     public void AddGameStringFile_HasFile_AddGamestrings()
     {
         // arrange
@@ -140,6 +169,71 @@ public class StormModStorageTests
         // assert
         stormModStorage.AddedGameStringFilePaths.Should().BeEquivalentTo(new[] { stormPath1 });
         stormModStorage.GameStringsById.Should().BeEquivalentTo(new Dictionary<string, GameStringText>
+        {
+            { "id1", new("value1", stormPath1) },
+        });
+    }
+
+    [TestMethod]
+    public void AddAssetsTextFile_HasFile_AddAssetTexts()
+    {
+        // arrange
+        StormModStorage stormModStorage = new(_stormMod, new StormStorage(false));
+
+        StormPath stormPath1 = TestHelpers.GetStormPath("test1");
+
+        using MemoryStream stream = new();
+        using StreamWriter writer = new(stream);
+        writer.WriteLine("id1=value1");
+        writer.WriteLine("id1=value2");
+        writer.WriteLine("id2=value3");
+        writer.WriteLine(string.Empty);
+        writer.WriteLine(" ");
+        writer.WriteLine("id");
+        writer.WriteLine("id=");
+        writer.Flush();
+        stream.Position = 0;
+
+        // act
+        stormModStorage.AddAssetsTextFile(stream, stormPath1);
+
+        // assert
+        stormModStorage.AddedAssetsFilePaths.Should().BeEquivalentTo(new[] { stormPath1 });
+        stormModStorage.AssetTextsById.Should().BeEquivalentTo(new Dictionary<string, AssetText>
+        {
+            { "id1", new("value2", stormPath1) },
+            { "id2", new("value3", stormPath1) },
+            { "id", new(string.Empty, stormPath1) },
+        });
+    }
+
+    [TestMethod]
+    public void AddAssetsTextFile_HasAlreadyExistingFile_DoNotAddAssetTexts()
+    {
+        // arrange
+        StormModStorage stormModStorage = new(_stormMod, new StormStorage(false));
+
+        StormPath stormPath1 = TestHelpers.GetStormPath("test1");
+
+        using MemoryStream stream1 = new();
+        using StreamWriter writer1 = new(stream1);
+        writer1.WriteLine("id1=value1");
+        writer1.Flush();
+        stream1.Position = 0;
+
+        using MemoryStream stream2 = new();
+        using StreamWriter writer2 = new(stream2);
+        writer2.WriteLine("id2=value2");
+        writer2.Flush();
+        stream2.Position = 0;
+
+        // act
+        stormModStorage.AddAssetsTextFile(stream1, stormPath1);
+        stormModStorage.AddAssetsTextFile(stream2, stormPath1);
+
+        // assert
+        stormModStorage.AddedAssetsFilePaths.Should().BeEquivalentTo(new[] { stormPath1 });
+        stormModStorage.AssetTextsById.Should().BeEquivalentTo(new Dictionary<string, AssetText>
         {
             { "id1", new("value1", stormPath1) },
         });
@@ -531,6 +625,23 @@ public class StormModStorageTests
 
         // assert
         stormModStorage.BuildId.Should().BeNull();
+    }
+
+    [TestMethod]
+    public void AddStormLayoutFile_HasFilePath_AddLayoutFilePath()
+    {
+        // arrange
+        StormModStorage stormModStorage = new(_stormMod, _stormStorage);
+
+        string relativePath = Path.Join("ui", "this", "file");
+        StormPath stormPath = TestHelpers.GetStormPath(relativePath);
+
+        // act
+        stormModStorage.AddStormLayoutFilePath(relativePath, stormPath);
+
+        // assert
+        stormModStorage.FoundLayoutFilePaths.Should().BeEquivalentTo(new[] { stormPath });
+        _stormStorage.Received().AddStormLayoutFilePath(Arg.Any<StormModType>(), relativePath, stormPath);
     }
 
     [TestMethod]

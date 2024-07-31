@@ -3,7 +3,7 @@
 namespace Heroes.XmlData.StormData;
 
 /// <summary>
-/// Contains the for a storm style style <see cref="XElement"/>.
+/// Contains the data for a storm style style <see cref="XElement"/>.
 /// </summary>
 [DebuggerDisplay("{DebuggerDisplay,nq}")]
 public class StormStyleStyleElement : StormElement

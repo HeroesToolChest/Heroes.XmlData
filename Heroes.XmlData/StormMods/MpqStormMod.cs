@@ -49,6 +49,8 @@ internal abstract class MpqStormMod<T> : StormMod<T>
 
     protected override string BuildIdFilePath => Path.Join(HeroesSource.BaseStormDataDirectory, HeroesSource.BuildIdFile);
 
+    protected override string LayoutDirectoryPath => Path.Join(HeroesSource.BaseStormDataDirectory, HeroesSource.UIDirectory, HeroesSource.LayoutDirectory);
+
     public override void LoadStormData()
     {
         // sets _mpqHeroesArchive field
@@ -80,10 +82,15 @@ internal abstract class MpqStormMod<T> : StormMod<T>
             return;
         }
 
-        foreach (KeyValuePair<string, MpqFile> file in gameDataFolder.Files)
-        {
-            AddXmlFile(file.Value.FullName);
-        }
+        EnumerateGameDataDirectory(gameDataFolder);
+    }
+
+    public override void LoadStormLayoutDirectory()
+    {
+        if (_mpqFolderRoot is null || !_mpqFolderRoot.TryGetLastDirectory(LayoutDirectoryPath, out MpqFolder? layoutFolder))
+            return;
+
+        EnumerateLayoutDirectory(layoutFolder);
     }
 
     protected override string GetGameStringFilePath(StormLocale stormLocale)
@@ -103,6 +110,11 @@ internal abstract class MpqStormMod<T> : StormMod<T>
         stream = _mpqHeroesArchive.DecompressEntry(entry.Value);
 
         return true;
+    }
+
+    protected override bool IsFileExists(string filePath)
+    {
+        throw new NotImplementedException();
     }
 
     protected abstract Stream GetMpqFile(string file);
@@ -163,7 +175,7 @@ internal abstract class MpqStormMod<T> : StormMod<T>
 
             if (normalizedFile.Contains(Path.DirectorySeparatorChar))
             {
-                CreateFilePaths(_mpqFolderRoot, file);
+                CreateFilePaths(_mpqFolderRoot, normalizedFile);
             }
             else
             {
@@ -208,5 +220,37 @@ internal abstract class MpqStormMod<T> : StormMod<T>
         }
 
         return false;
+    }
+
+    private void EnumerateGameDataDirectory(MpqFolder gameDataFolder)
+    {
+        foreach (KeyValuePair<string, MpqFile> file in gameDataFolder.Files)
+        {
+            if (!Path.GetExtension(file.Value.FullName.AsSpan()).Equals(XmlFileExtension, StringComparison.OrdinalIgnoreCase))
+                continue;
+
+            AddXmlFile(file.Value.FullName);
+        }
+
+        foreach (KeyValuePair<string, MpqFolder> folder in gameDataFolder.Folders)
+        {
+            EnumerateGameDataDirectory(folder.Value);
+        }
+    }
+
+    private void EnumerateLayoutDirectory(MpqFolder layoutFolder)
+    {
+        foreach (KeyValuePair<string, MpqFile> file in layoutFolder.Files)
+        {
+            if (!Path.GetExtension(file.Value.FullName.AsSpan()).Equals(StormLayoutFileExtension, StringComparison.OrdinalIgnoreCase))
+                continue;
+
+            AddStormLayoutFilePath(file.Value.FullName);
+        }
+
+        foreach (KeyValuePair<string, MpqFolder> folder in layoutFolder.Folders)
+        {
+            EnumerateLayoutDirectory(folder.Value);
+        }
     }
 }

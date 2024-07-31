@@ -34,6 +34,10 @@ internal interface IHeroesSource
 
     string BuildIdFile { get; }
 
+    string AssetsFile { get; }
+
+    string DescIndexStormLayoutFile { get; }
+
     string CoreStormModDirectory { get; }
 
     string HeroesStormModDirectory { get; }
@@ -43,6 +47,8 @@ internal interface IHeroesSource
     string HeroModsDirectory { get; }
 
     string UIDirectory { get; }
+
+    string LayoutDirectory { get; }
 
     string DepotCacheDirectory { get; }
 

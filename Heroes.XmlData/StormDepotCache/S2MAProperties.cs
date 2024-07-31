@@ -1,5 +1,6 @@
 ﻿namespace Heroes.XmlData.StormDepotCache;
 
+// s2ma is the map mod file
 internal class S2MAProperties : S2mapDependencies
 {
     public S2MVProperties? S2MVProperties { get; set; }

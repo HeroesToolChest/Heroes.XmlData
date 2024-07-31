@@ -26,6 +26,11 @@ internal class StormCache
     public Dictionary<string, GameStringText> GameStringsById { get; } = [];
 
     /// <summary>
+    /// Gets a dictionary of assets text values by id.
+    /// </summary>
+    public Dictionary<string, AssetText> AssetTextsById { get; } = [];
+
+    /// <summary>
     /// Gets the a collection of element types (e.g. CEffectDamage) from a given data object type (e.g. Effect).
     /// </summary>
     public Dictionary<string, HashSet<string>> ElementTypesByDataObjectType { get; } = new(StringComparer.OrdinalIgnoreCase);
@@ -71,12 +76,18 @@ internal class StormCache
     /// </summary>
     public Dictionary<LevelScalingEntry, StormStringValue> ScaleValueByEntry { get; } = [];
 
+    /// <summary>
+    /// Gets the Storm Layout files by the their releative UI path (relative path will start with UI).
+    /// </summary>
+    public Dictionary<string, StormPath> UiStormPathsByRelativeUiPath { get; } = [];
+
     public void Clear()
     {
         NotFoundDirectoriesList.Clear();
         NotFoundFilesList.Clear();
         NotFoundScaleValuesList.Clear();
         GameStringsById.Clear();
+        AssetTextsById.Clear();
         ElementTypesByDataObjectType.Clear();
         DataObjectTypeByElementType.Clear();
         ConstantXElementById.Clear();
@@ -86,5 +97,6 @@ internal class StormCache
         StormStyleStyleElementsByName.Clear();
         StormStyleConstantElementsByName.Clear();
         ScaleValueByEntry.Clear();
+        UiStormPathsByRelativeUiPath.Clear();
     }
 }

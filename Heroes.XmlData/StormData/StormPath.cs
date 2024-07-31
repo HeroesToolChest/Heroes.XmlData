@@ -26,16 +26,9 @@ public record StormPath
         if (other is null)
             return false;
 
-        if (StormModName.AsSpan().Equals(other.StormModName.AsSpan(), StringComparison.OrdinalIgnoreCase) &&
+        return StormModName.AsSpan().Equals(other.StormModName.AsSpan(), StringComparison.OrdinalIgnoreCase) &&
             Path.AsSpan().Equals(other.Path.AsSpan(), StringComparison.OrdinalIgnoreCase) &&
-            PathType.Equals(other.PathType))
-        {
-            return true;
-        }
-        else
-        {
-            return false;
-        }
+            PathType.Equals(other.PathType);
     }
 
     /// <inheritdoc/>

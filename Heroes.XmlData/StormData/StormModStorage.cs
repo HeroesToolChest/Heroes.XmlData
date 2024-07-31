@@ -16,6 +16,9 @@ internal class StormModStorage : IStormModStorage
     private readonly HashSet<StormPath> _addedXmlDataFilePathsList = [];
     private readonly HashSet<StormPath> _addedXmlFontStyleFilePathsList = [];
     private readonly HashSet<StormPath> _addedGameStringFilePathsList = [];
+    private readonly HashSet<StormPath> _addedAssetsFilePathsList = [];
+
+    private readonly HashSet<StormPath> _foundLayoutFilePathsList = [];
 
     internal StormModStorage(IStormMod stormMod, IStormStorage stormStorage)
     {
@@ -39,7 +42,13 @@ internal class StormModStorage : IStormModStorage
 
     public IEnumerable<StormPath> AddedGameStringFilePaths => _addedGameStringFilePathsList;
 
+    public IEnumerable<StormPath> AddedAssetsFilePaths => _addedAssetsFilePathsList;
+
+    public IEnumerable<StormPath> FoundLayoutFilePaths => _foundLayoutFilePathsList;
+
     public Dictionary<string, GameStringText> GameStringsById { get; } = [];
+
+    public Dictionary<string, AssetText> AssetTextsById { get; } = [];
 
     public void AddDirectoryNotFound(StormPath requiredStormDirectory)
     {
@@ -60,6 +69,13 @@ internal class StormModStorage : IStormModStorage
         _stormStorage.AddGameString(StormModType, id, gameStringText);
     }
 
+    public void AddAssetText(string id, AssetText assetText)
+    {
+        AssetTextsById[id] = assetText;
+
+        _stormStorage.AddAssetText(StormModType, id, assetText);
+    }
+
     public void AddGameStringFile(Stream stream, StormPath stormPath)
     {
         using StreamReader reader = new(stream);
@@ -74,11 +90,34 @@ internal class StormModStorage : IStormModStorage
             if (lineSpan.IsEmpty || lineSpan.IsWhiteSpace())
                 continue;
 
-            (string Id, GameStringText GameStringText)? gameStringWithId = _stormStorage.GetGameStringWithId(lineSpan, stormPath);
+            (string Id, GameStringText StormStringValue)? stormStringValue = _stormStorage.GetGameStringWithId(lineSpan, stormPath);
 
-            if (gameStringWithId is not null)
+            if (stormStringValue is not null)
             {
-                AddGameString(gameStringWithId.Value.Id, gameStringWithId.Value.GameStringText);
+                AddGameString(stormStringValue.Value.Id, stormStringValue.Value.StormStringValue);
+            }
+        }
+    }
+
+    public void AddAssetsTextFile(Stream stream, StormPath stormPath)
+    {
+        using StreamReader reader = new(stream);
+
+        if (!_addedAssetsFilePathsList.Add(stormPath))
+            return;
+
+        while (!reader.EndOfStream)
+        {
+            ReadOnlySpan<char> lineSpan = reader.ReadLine().AsSpan();
+
+            if (lineSpan.IsEmpty || lineSpan.IsWhiteSpace())
+                continue;
+
+            (string Id, AssetText StormStringValue)? stormStringValue = _stormStorage.GetAssetWithId(lineSpan, stormPath);
+
+            if (stormStringValue is not null)
+            {
+                AddAssetText(stormStringValue.Value.Id, stormStringValue.Value.StormStringValue);
             }
         }
     }
@@ -116,6 +155,12 @@ internal class StormModStorage : IStormModStorage
 
         if (int.TryParse(buildText, out int result))
             BuildId = result;
+    }
+
+    public void AddStormLayoutFilePath(string relativePath, StormPath stormPath)
+    {
+        _foundLayoutFilePathsList.Add(stormPath);
+        _stormStorage.AddStormLayoutFilePath(StormModType, relativePath, stormPath);
     }
 
     public void ClearGameStrings()

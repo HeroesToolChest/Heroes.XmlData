@@ -32,6 +32,8 @@ internal partial class StormStorage : IStormStorage
 
     public List<IStormModStorage> StormModStorages { get; } = [];
 
+    public StormBattlegroundMap? LoadedStormBattlegroundMap { get; private set; }
+
     public IStormModStorage CreateModStorage(IStormMod stormMod)
     {
         return new StormModStorage(stormMod, this);
@@ -80,6 +82,37 @@ internal partial class StormStorage : IStormStorage
         string id = gamestring[ranges[0]].ToString();
 
         return (id, gameStringText);
+    }
+
+    public void AddAssetText(StormModType stormModType, string id, AssetText assetText)
+    {
+        StormCache currentStormCache = GetCurrentStormCache(stormModType);
+
+        currentStormCache.AssetTextsById[id] = assetText;
+    }
+
+    public (string Id, AssetText AssetText)? GetAssetWithId(ReadOnlySpan<char> asset, StormPath stormPath)
+    {
+        Span<Range> ranges = stackalloc Range[2];
+
+        asset.Split(ranges, '=', StringSplitOptions.RemoveEmptyEntries);
+
+        if (asset[ranges[0]].IsEmpty || asset[ranges[0]].IsWhiteSpace())
+            return null;
+
+        AssetText assetText = new(asset[ranges[1]].ToString(), stormPath);
+
+        string id = asset[ranges[0]].ToString();
+
+        return (id, assetText);
+    }
+
+    public void AddStormLayoutFilePath(StormModType stormModType, string relativePath, StormPath stormPath)
+    {
+        StormCache currentStormCache = GetCurrentStormCache(stormModType);
+
+        // if duplicate just override it
+        currentStormCache.UiStormPathsByRelativeUiPath[relativePath] = stormPath;
     }
 
     public bool AddConstantXElement(StormModType stormModType, XElement element, StormPath stormPath)
@@ -294,6 +327,7 @@ internal partial class StormStorage : IStormStorage
         }
     }
 
+    // create storm elements based on the scaling data so when performing lookups for scaling an entry can be found
     public void BuildDataForScalingAttributes(StormModType stormModType)
     {
         StormCache currentStormCache = GetCurrentStormCache(stormModType);
@@ -323,6 +357,22 @@ internal partial class StormStorage : IStormStorage
         }
     }
 
+    public void SetStormBattlegroundMap(string name, S2MAProperties s2maProperties)
+    {
+        if (s2maProperties.S2MVProperties is null)
+            return;
+
+        LoadedStormBattlegroundMap = new()
+        {
+            Name = name,
+            LoadingScreenImage = Path.GetFileName(s2maProperties.S2MVProperties.LoadingImage) ?? string.Empty,
+            MapId = s2maProperties.MapId ?? string.Empty,
+            MapLink = s2maProperties.S2MVProperties.MapLink,
+            MapSize = s2maProperties.S2MVProperties.MapSize.GetAsTuple(),
+            ReplayPreviewImage = Path.GetFileName(s2maProperties.S2MVProperties.PreviewLargeImage),
+        };
+    }
+
     public void ClearGamestrings()
     {
         foreach (IStormModStorage stormModStorage in StormModStorages)
@@ -337,6 +387,7 @@ internal partial class StormStorage : IStormStorage
     {
         ClearStormMapContainers();
         StormMapCache.Clear();
+        LoadedStormBattlegroundMap = null;
     }
 
     public int? GetBuildId()
