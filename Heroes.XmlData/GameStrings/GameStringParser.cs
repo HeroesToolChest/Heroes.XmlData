@@ -195,7 +195,6 @@ internal class GameStringParser
         if (normalTextLength > 0)
         {
             _textStack.Add(new TextSection(new Range(_startingIndex, _index)));
-
         }
     }
 #endif

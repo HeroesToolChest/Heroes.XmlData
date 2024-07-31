@@ -64,7 +64,7 @@ public class FileStormModTests
         fileStormMod.StormModStorage.AddedXmlDataFilePaths.Should().HaveCount(2);
         fileStormMod.StormModStorage.AddedXmlFontStyleFilePaths.Should().ContainSingle();
         fileStormMod.StormModStorage.FoundLayoutFilePaths.Should().HaveCount(2);
-        fileStormMod.StormModStorage.AddedAssetsFilePaths.Should().HaveCount(1);
+        fileStormMod.StormModStorage.AddedAssetsFilePaths.Should().ContainSingle();
         fileHeroesSource.StormStorage.StormModStorages.Should().ContainSingle();
     }
 
@@ -519,7 +519,7 @@ public class FileStormModTests
         fileStormMod.LoadGameDataDirectory();
 
         // assert
-        fileStormMod.StormModStorage.NotFoundDirectories.Should().HaveCount(1).And
+        fileStormMod.StormModStorage.NotFoundDirectories.Should().ContainSingle().And
             .SatisfyRespectively(
                 first =>
                 {
