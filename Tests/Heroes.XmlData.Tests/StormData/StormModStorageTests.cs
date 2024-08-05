@@ -240,8 +240,7 @@ public class StormModStorageTests
     }
 
     [TestMethod]
-    [TestCategory("IsBaseGameDataDirectory=true")]
-    public void AddXmlDataFile_XDocumentWithBaseElementTypes_AddsElements()
+    public void AddXmlDataFile_XDocumentWithTwoElements_AddsTwoElements()
     {
         // arrange
         string fileName = "behaviordata.xml";
@@ -249,98 +248,32 @@ public class StormModStorageTests
         StormModStorage stormModStorage = new(_stormMod, _stormStorage);
 
         XDocument xmlDoc = new(
-            XElement.Parse(@"
+            XElement.Parse(
+"""
 <Catalog>
-  <CBehaviorBuff default=""1"">
-    <InfoFlags index=""Hidden"" value=""1"" />
+  <CBehaviorBuff default="1">
+    <InfoFlags index="Hidden" value="1" />
   </CBehaviorBuff>
-  <CBehaviorBuff default=""1"">
-    <InfoFlags index=""Hidden"" value=""1"" />
+  <CBehaviorBuff default="1">
+    <InfoFlags index="Hidden" value="1" />
   </CBehaviorBuff>
-</Catalog>"));
+</Catalog>
+"""));
 
-        StormPath stormPath1 = TestHelpers.GetStormPath(fileName);
+        StormPath stormPath = TestHelpers.GetStormPath(fileName);
 
         // act
-        stormModStorage.AddXmlDataFile(xmlDoc, stormPath1, true);
+        stormModStorage.AddXmlDataFile(xmlDoc, stormPath);
 
         // assert
-        stormModStorage.AddedXmlDataFilePaths.Should().BeEquivalentTo(new[] { stormPath1 });
-        _stormStorage.Received(2).AddConstantXElement(Arg.Any<StormModType>(), Arg.Any<XElement>(), stormPath1);
-        _stormStorage.Received(2).AddBaseElementTypes(Arg.Any<StormModType>(), "behavior", "CBehaviorBuff");
-        _stormStorage.Received(2).AddElement(Arg.Any<StormModType>(), Arg.Any<XElement>(), stormPath1);
+        stormModStorage.AddedXmlDataFilePaths.Should().BeEquivalentTo(new[] { stormPath });
+        _stormStorage.Received(2).AddConstantXElement(Arg.Any<StormModType>(), Arg.Any<XElement>(), stormPath);
+        _stormStorage.Received(2).AddLevelScalingArrayElement(Arg.Any<StormModType>(), Arg.Any<XElement>(), stormPath);
+        _stormStorage.Received(2).AddElement(Arg.Any<StormModType>(), Arg.Any<XElement>(), stormPath);
     }
 
     [TestMethod]
-    [TestCategory("IsBaseGameDataDirectory=true")]
-    public void AddXmlDataFile_XDocumentFileNameDoesNotEndWithDataXml_AddsElements()
-    {
-        // arrange
-        string fileName = "behavior.xml";
-
-        StormModStorage stormModStorage = new(_stormMod, _stormStorage);
-
-        XDocument xmlDoc = new(
-            XElement.Parse(@"
-<Catalog>
-  <CBehaviorBuff default=""1"">
-    <InfoFlags index=""Hidden"" value=""1"" />
-  </CBehaviorBuff>
-</Catalog>"));
-
-        StormPath stormPath1 = TestHelpers.GetStormPath(fileName);
-
-        // act
-        stormModStorage.AddXmlDataFile(xmlDoc, stormPath1, true);
-
-        // assert
-        stormModStorage.AddedXmlDataFilePaths.Should().BeEquivalentTo(new[] { stormPath1 });
-        _stormStorage.DidNotReceive().AddBaseElementTypes(Arg.Any<StormModType>(), Arg.Any<string>(), Arg.Any<string>());
-        _stormStorage.DidNotReceive().AddElement(Arg.Any<StormModType>(), Arg.Any<XElement>(), stormPath1);
-    }
-
-    [TestMethod]
-    [TestCategory("IsBaseGameDataDirectory=true")]
-    public void AddXmlDataFile_XDocumentWithBaseConstElements_AddsElements()
-    {
-        // arrange
-        string fileName = "behaviordata.xml";
-
-        StormModStorage stormModStorage = new(_stormMod, _stormStorage);
-
-        XElement element1 = XElement.Parse("<const id=\"$ChromieBasicAttackRange\" value=\"7\" />");
-        XElement element2 = XElement.Parse("<const id=\"$ChromieBasicAttackDamage\" value=\"82\" />");
-        XElement element3 = XElement.Parse(@"
-<CBehaviorBuff default=""1"">
-  <InfoFlags index=""Hidden"" value=""1"" />
-</CBehaviorBuff>
-");
-
-        XDocument xmlDoc = new(
-            new XElement(
-                "Catalog",
-                element1,
-                element2,
-                element3));
-
-        StormPath stormPath1 = TestHelpers.GetStormPath(fileName);
-
-        _stormStorage.AddConstantXElement(Arg.Any<StormModType>(), element1, stormPath1).Returns(true);
-        _stormStorage.AddConstantXElement(Arg.Any<StormModType>(), element2, stormPath1).Returns(true);
-
-        // act
-        stormModStorage.AddXmlDataFile(xmlDoc, stormPath1, true);
-
-        // assert
-        stormModStorage.AddedXmlDataFilePaths.Should().BeEquivalentTo(new[] { stormPath1 });
-        _stormStorage.Received(3).AddConstantXElement(Arg.Any<StormModType>(), Arg.Any<XElement>(), stormPath1);
-        _stormStorage.Received(1).AddBaseElementTypes(Arg.Any<StormModType>(), "behavior", "CBehaviorBuff");
-        _stormStorage.Received(1).AddElement(Arg.Any<StormModType>(), Arg.Any<XElement>(), stormPath1);
-    }
-
-    [TestMethod]
-    [TestCategory("IsBaseGameDataDirectory=true")]
-    public void AddXmlDataFile_XDocumentFileIsEmpty_AddsDefaultElement()
+    public void AddXmlDataFile_XDocumentWithNoElements_AddsNothing()
     {
         // arrange
         string fileName = "behaviordata.xml";
@@ -348,24 +281,26 @@ public class StormModStorageTests
         StormModStorage stormModStorage = new(_stormMod, _stormStorage);
 
         XDocument xmlDoc = new(
-            XElement.Parse(@"
+            XElement.Parse(
+"""
 <Catalog>
-</Catalog>"));
+</Catalog>
+"""));
 
-        StormPath stormPath1 = TestHelpers.GetStormPath(fileName);
+        StormPath stormPath = TestHelpers.GetStormPath(fileName);
 
         // act
-        stormModStorage.AddXmlDataFile(xmlDoc, stormPath1, true);
+        stormModStorage.AddXmlDataFile(xmlDoc, stormPath);
 
         // assert
-        stormModStorage.AddedXmlDataFilePaths.Should().BeEquivalentTo(new[] { stormPath1 });
-        _stormStorage.Received(1).AddBaseElementTypes(Arg.Any<StormModType>(), "behavior", "Cbehavior");
-        _stormStorage.DidNotReceive().AddElement(Arg.Any<StormModType>(), Arg.Any<XElement>(), stormPath1);
+        stormModStorage.AddedXmlDataFilePaths.Should().BeEquivalentTo(new[] { stormPath });
+        _stormStorage.DidNotReceive().AddConstantXElement(Arg.Any<StormModType>(), Arg.Any<XElement>(), stormPath);
+        _stormStorage.DidNotReceive().AddLevelScalingArrayElement(Arg.Any<StormModType>(), Arg.Any<XElement>(), stormPath);
+        _stormStorage.DidNotReceive().AddElement(Arg.Any<StormModType>(), Arg.Any<XElement>(), stormPath);
     }
 
     [TestMethod]
-    [TestCategory("IsBaseGameDataDirectory=true")]
-    public void AddXmlDataFile_XDocumentWithBaseConstValues_AddsElementsWithUpdatedConstValue()
+    public void AddXmlDataFile_XDocumentWithConstElement_AddsElementsWithUpdatedConstValue()
     {
         // arrange
         string fileName = "behaviordata.xml";
@@ -373,131 +308,29 @@ public class StormModStorageTests
         StormStorage stormStorage = new(false);
         StormModStorage stormModStorage = new(_stormMod, stormStorage);
 
-        XElement element1 = XElement.Parse("<const id=\"$ChromieBasicAttackRange\" value=\"7\" />");
-        XElement element3 = XElement.Parse(@"
-<CBehaviorBuff default=""1"">
-  <InfoFlags index=""Hidden"" value=""$ChromieBasicAttackRange"" />
-</CBehaviorBuff>
-");
-
         XDocument xmlDoc = new(
-            new XElement(
-                "Catalog",
-                element1,
-                element3));
+            XElement.Parse(
+"""
+<Catalog>
+  <const id="$ChromieBasicAttackRange" value="7" />
+  <CBehaviorBuff default="1">
+    <InfoFlags index="Hidden" value="$ChromieBasicAttackRange" />
+  </CBehaviorBuff>
+</Catalog>
+"""));
 
-        StormPath stormPath1 = TestHelpers.GetStormPath(fileName);
+        StormPath stormPath = TestHelpers.GetStormPath(fileName);
 
         // act
-        stormModStorage.AddXmlDataFile(xmlDoc, stormPath1, true);
+        stormModStorage.AddXmlDataFile(xmlDoc, stormPath);
 
         // assert
-        stormModStorage.AddedXmlDataFilePaths.Should().BeEquivalentTo(new[] { stormPath1 });
+        stormModStorage.AddedXmlDataFilePaths.Should().BeEquivalentTo(new[] { stormPath });
         stormStorage.StormCache.StormElementByElementType["CBehaviorBuff"].GetXmlData("InfoFlags").GetXmlData("Hidden").Value.Should().Be("$ChromieBasicAttackRange");
         stormStorage.StormCache.StormElementByElementType["CBehaviorBuff"].GetXmlData("InfoFlags").GetXmlData("Hidden").ConstValue.Should().Be("7");
     }
 
     [TestMethod]
-    [TestCategory("IsBaseGameDataDirectory=false")]
-    public void AddXmlDataFile_XDocumentWithElements_AddsElements()
-    {
-        // arrange
-        StormModStorage stormModStorage = new(_stormMod, _stormStorage);
-
-        XDocument xmlDoc = new(
-            XElement.Parse(@"
-    <Catalog>
-      <CBehaviorBuff default=""1"">
-        <InfoFlags index=""Hidden"" value=""1"" />
-      </CBehaviorBuff>
-      <CBehaviorBuff default=""1"">
-        <InfoFlags index=""Hidden"" value=""1"" />
-      </CBehaviorBuff>
-    </Catalog>"));
-
-        StormPath stormPath1 = TestHelpers.GetStormPath("behaviordata.xml");
-
-        // act
-        stormModStorage.AddXmlDataFile(xmlDoc, stormPath1, false);
-
-        // assert
-        stormModStorage.AddedXmlDataFilePaths.Should().BeEquivalentTo(new[] { stormPath1 });
-        _stormStorage.Received(2).AddConstantXElement(Arg.Any<StormModType>(), Arg.Any<XElement>(), stormPath1);
-        _stormStorage.Received(2).AddElement(Arg.Any<StormModType>(), Arg.Any<XElement>(), stormPath1);
-        _stormStorage.DidNotReceive().AddBaseElementTypes(Arg.Any<StormModType>(), "behavior", "CBehaviorBuff");
-    }
-
-    [TestMethod]
-    [TestCategory("IsBaseGameDataDirectory=false")]
-    public void AddXmlDataFile_XDocumentWithConstElements_AddsElements()
-    {
-        // arrange
-        StormModStorage stormModStorage = new(_stormMod, _stormStorage);
-
-        XElement element1 = XElement.Parse("<const id=\"$ChromieBasicAttackRange\" value=\"7\" />");
-        XElement element2 = XElement.Parse("<const id=\"$ChromieBasicAttackDamage\" value=\"82\" />");
-        XElement element3 = XElement.Parse(@"
-<CBehaviorBuff default=""1"">
-  <InfoFlags index=""Hidden"" value=""1"" />
-</CBehaviorBuff>
-");
-
-        XDocument xmlDoc = new(
-            new XElement(
-                "Catalog",
-                element1,
-                element2,
-                element3));
-
-        StormPath stormPath1 = TestHelpers.GetStormPath("behaviordata.xml");
-
-        _stormStorage.AddConstantXElement(Arg.Any<StormModType>(), element1, stormPath1).Returns(true);
-        _stormStorage.AddConstantXElement(Arg.Any<StormModType>(), element2, stormPath1).Returns(true);
-
-        // act
-        stormModStorage.AddXmlDataFile(xmlDoc, stormPath1, false);
-
-        // assert
-        stormModStorage.AddedXmlDataFilePaths.Should().BeEquivalentTo(new[] { stormPath1 });
-        _stormStorage.Received(3).AddConstantXElement(Arg.Any<StormModType>(), Arg.Any<XElement>(), stormPath1);
-        _stormStorage.Received(1).AddElement(Arg.Any<StormModType>(), Arg.Any<XElement>(), stormPath1);
-        _stormStorage.DidNotReceive().AddBaseElementTypes(Arg.Any<StormModType>(), "behavior", "CBehaviorBuff");
-    }
-
-    [TestMethod]
-    [TestCategory("IsBaseGameDataDirectory=false")]
-    public void AddXmlDataFile_XDocumentWithConstValues_AddsElementsWithUpdatedConstValue()
-    {
-        // arrange
-        StormStorage stormStorage = new(false);
-        StormModStorage stormModStorage = new(_stormMod, stormStorage);
-
-        XElement element1 = XElement.Parse("<const id=\"$ChromieBasicAttackRange\" value=\"7\" />");
-        XElement element3 = XElement.Parse(@"
-<CBehaviorBuff default=""1"">
-  <InfoFlags index=""Hidden"" value=""$ChromieBasicAttackRange"" />
-</CBehaviorBuff>
-");
-
-        XDocument xmlDoc = new(
-            new XElement(
-                "Catalog",
-                element1,
-                element3));
-
-        StormPath stormPath1 = TestHelpers.GetStormPath("behaviordata.xml");
-
-        // act
-        stormModStorage.AddXmlDataFile(xmlDoc, stormPath1, false);
-
-        // assert
-        stormModStorage.AddedXmlDataFilePaths.Should().BeEquivalentTo(new[] { stormPath1 });
-        stormStorage.StormCache.StormElementByElementType["CBehaviorBuff"].GetXmlData("InfoFlags").GetXmlData("Hidden").Value.Should().Be("$ChromieBasicAttackRange");
-        stormStorage.StormCache.StormElementByElementType["CBehaviorBuff"].GetXmlData("InfoFlags").GetXmlData("Hidden").ConstValue.Should().Be("7");
-    }
-
-    [TestMethod]
-    [TestCategory("IsBaseGameDataDirectory=false")]
     public void AddXmlDataFile_FilePathAlreadyExists_ReturnAndDoNothing()
     {
         // arrange
@@ -516,9 +349,10 @@ public class StormModStorageTests
 
         StormPath stormPath1 = TestHelpers.GetStormPath("behaviordata.xml");
 
+        stormModStorage.AddXmlDataFile(xmlDoc, stormPath1); // adds in existing
+
         // act
-        stormModStorage.AddXmlDataFile(xmlDoc, stormPath1, false);
-        stormModStorage.AddXmlDataFile(xmlDoc, stormPath1, false);
+        stormModStorage.AddXmlDataFile(xmlDoc, stormPath1);
 
         // assert
         stormModStorage.AddedXmlDataFilePaths.Should().BeEquivalentTo(new[] { stormPath1 });
@@ -563,8 +397,9 @@ public class StormModStorageTests
 
         StormPath stormPath1 = TestHelpers.GetStormPath("fontstyle.stormstyle");
 
-        // act
         stormModStorage.AddXmlFontStyleFile(xmlDoc, stormPath1);
+
+        // act
         stormModStorage.AddXmlFontStyleFile(xmlDoc, stormPath1);
 
         // assert

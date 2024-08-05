@@ -122,7 +122,7 @@ internal class StormModStorage : IStormModStorage
         }
     }
 
-    public void AddXmlDataFile(XDocument document, StormPath stormPath, bool isBaseGameDataDirectory)
+    public void AddXmlDataFile(XDocument document, StormPath stormPath)
     {
         if (document.Root is null)
             return;
@@ -130,10 +130,16 @@ internal class StormModStorage : IStormModStorage
         if (!_addedXmlDataFilePathsList.Add(stormPath))
             return;
 
-        if (isBaseGameDataDirectory)
-            SetElementsForDataObjectTypes(document, stormPath);
-        else
-            SetElements(document, stormPath);
+        foreach (XElement element in document.Root.Elements())
+        {
+            if (_stormStorage.AddConstantXElement(StormModType, element, stormPath))
+                continue;
+
+            UpdateConstantAttributes(element.DescendantsAndSelf());
+
+            _stormStorage.AddLevelScalingArrayElement(StormModType, element, stormPath);
+            _stormStorage.AddElement(StormModType, element, stormPath);
+        }
     }
 
     public void AddXmlFontStyleFile(XDocument document, StormPath stormPath)
@@ -178,22 +184,23 @@ internal class StormModStorage : IStormModStorage
             {
                 ReadOnlySpan<char> attributeSpan = attribute.Value;
 
-                if (!attributeSpan.IsEmpty)
-                {
-                    int indexOfConst = attributeSpan.IndexOf('$');
-                    if (indexOfConst > -1)
-                    {
-                        ReadOnlySpan<char> attributeOfStartSpan = attributeSpan[indexOfConst..];
+                if (attributeSpan.IsEmpty)
+                    continue;
 
-                        int endIndexOfConst = attributeOfStartSpan.IndexOfAny(" ,.;");
-                        if (endIndexOfConst < 0)
-                            endIndexOfConst = attributeOfStartSpan.Length + indexOfConst;
-                        else
-                            endIndexOfConst += indexOfConst;
+                int indexOfConst = attributeSpan.IndexOf('$');
 
-                        element.SetAttributeValue($"{SelfNameConst}{attribute.Name}", attribute.Value.Replace(attributeSpan[indexOfConst..endIndexOfConst].ToString(), _stormStorage.GetValueFromConstTextAsText(attributeSpan[indexOfConst..endIndexOfConst])));
-                    }
-                }
+                if (indexOfConst <= -1)
+                    continue;
+
+                ReadOnlySpan<char> attributeOfStartSpan = attributeSpan[indexOfConst..];
+
+                int endIndexOfConst = attributeOfStartSpan.IndexOfAny(" ,.;");
+                if (endIndexOfConst < 0)
+                    endIndexOfConst = attributeOfStartSpan.Length + indexOfConst;
+                else
+                    endIndexOfConst += indexOfConst;
+
+                element.SetAttributeValue($"{SelfNameConst}{attribute.Name}", attribute.Value.Replace(attributeSpan[indexOfConst..endIndexOfConst].ToString(), _stormStorage.GetValueFromConstTextAsText(attributeSpan[indexOfConst..endIndexOfConst])));
             }
         }
     }
@@ -201,65 +208,5 @@ internal class StormModStorage : IStormModStorage
     public override string ToString()
     {
         return Name;
-    }
-
-    private static string? SetDataObjectTypes(string filePath)
-    {
-        ReadOnlySpan<char> fileNameSpan = Path.GetFileName(filePath.AsSpan());
-
-        int index = fileNameSpan.LastIndexOf("data.xml", StringComparison.OrdinalIgnoreCase);
-        if (index > 1)
-        {
-            string objectType = fileNameSpan[..index].ToString();
-
-            return objectType;
-        }
-
-        return null;
-    }
-
-    private void SetElementsForDataObjectTypes(XDocument document, StormPath stormPath)
-    {
-        if (document.Root is null)
-            return;
-
-        string? dataObjectType = SetDataObjectTypes(stormPath.Path);
-
-        if (string.IsNullOrWhiteSpace(dataObjectType))
-            return;
-
-        int count = 0;
-
-        foreach (XElement element in document.Root.Elements())
-        {
-            if (_stormStorage.AddConstantXElement(StormModType, element, stormPath))
-                continue;
-
-            UpdateConstantAttributes(element.DescendantsAndSelf());
-            string elementName = element.Name.LocalName;
-
-            _stormStorage.AddBaseElementTypes(StormModType, dataObjectType, elementName);
-            _stormStorage.AddElement(StormModType, element, stormPath);
-
-            count++;
-        }
-
-        // file is emtpy, add a default element type for the dataObjectType
-        if (count < 1)
-            _stormStorage.AddBaseElementTypes(StormModType, dataObjectType, $"C{dataObjectType}");
-    }
-
-    private void SetElements(XDocument document, StormPath filePath)
-    {
-        foreach (XElement element in document.Root!.Elements())
-        {
-            if (_stormStorage.AddConstantXElement(StormModType, element, filePath))
-                continue;
-
-            UpdateConstantAttributes(element.DescendantsAndSelf());
-
-            _stormStorage.AddLevelScalingArrayElement(StormModType, element, filePath);
-            _stormStorage.AddElement(StormModType, element, filePath);
-        }
     }
 }

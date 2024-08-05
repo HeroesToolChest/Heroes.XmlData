@@ -82,7 +82,12 @@ internal abstract class MpqStormMod<T> : StormMod<T>
             return;
         }
 
-        EnumerateGameDataDirectory(gameDataFolder);
+        IEnumerable<string> files = gameDataFolder.Files.Select(x => x.Value)
+            .Where(x => Path.GetExtension(x.FullName).Equals(XmlFileExtension, StringComparison.OrdinalIgnoreCase))
+            .Select(x => PathHelper.NormalizePath(x.FullName))
+            .OrderBy(x => x);
+
+        LoadGameDataFiles(files);
     }
 
     public override void LoadStormLayoutDirectory()
@@ -90,7 +95,12 @@ internal abstract class MpqStormMod<T> : StormMod<T>
         if (_mpqFolderRoot is null || !_mpqFolderRoot.TryGetLastDirectory(LayoutDirectoryPath, out MpqFolder? layoutFolder))
             return;
 
-        EnumerateLayoutDirectory(layoutFolder);
+        IEnumerable<string> files = EnumerateDirectory(layoutFolder)
+            .Where(x => Path.GetExtension(x.FullName).Equals(StormLayoutFileExtension, StringComparison.OrdinalIgnoreCase))
+            .Select(x => PathHelper.NormalizePath(x.FullName))
+            .OrderBy(x => x);
+
+        LoadStormLayoutFiles(files);
     }
 
     protected override string GetGameStringFilePath(StormLocale stormLocale)
@@ -143,6 +153,22 @@ internal abstract class MpqStormMod<T> : StormMod<T>
                 }
 
                 folder = existingFolder;
+            }
+        }
+    }
+
+    private static IEnumerable<MpqFile> EnumerateDirectory(MpqFolder gameDataFolder)
+    {
+        foreach (KeyValuePair<string, MpqFile> file in gameDataFolder.Files)
+        {
+            yield return file.Value;
+        }
+
+        foreach (KeyValuePair<string, MpqFolder> folder in gameDataFolder.Folders)
+        {
+            foreach (MpqFile file in EnumerateDirectory(folder.Value))
+            {
+                yield return file;
             }
         }
     }
@@ -220,37 +246,5 @@ internal abstract class MpqStormMod<T> : StormMod<T>
         }
 
         return false;
-    }
-
-    private void EnumerateGameDataDirectory(MpqFolder gameDataFolder)
-    {
-        foreach (KeyValuePair<string, MpqFile> file in gameDataFolder.Files)
-        {
-            if (!Path.GetExtension(file.Value.FullName.AsSpan()).Equals(XmlFileExtension, StringComparison.OrdinalIgnoreCase))
-                continue;
-
-            AddXmlFile(file.Value.FullName);
-        }
-
-        foreach (KeyValuePair<string, MpqFolder> folder in gameDataFolder.Folders)
-        {
-            EnumerateGameDataDirectory(folder.Value);
-        }
-    }
-
-    private void EnumerateLayoutDirectory(MpqFolder layoutFolder)
-    {
-        foreach (KeyValuePair<string, MpqFile> file in layoutFolder.Files)
-        {
-            if (!Path.GetExtension(file.Value.FullName.AsSpan()).Equals(StormLayoutFileExtension, StringComparison.OrdinalIgnoreCase))
-                continue;
-
-            AddStormLayoutFilePath(file.Value.FullName);
-        }
-
-        foreach (KeyValuePair<string, MpqFolder> folder in layoutFolder.Folders)
-        {
-            EnumerateLayoutDirectory(folder.Value);
-        }
     }
 }

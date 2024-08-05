@@ -30,23 +30,13 @@ public class CASCMpqStormModTests
         CASCHeroesSource cascHeroesSource = new(stormStorage, _stormModFactory, _depotCacheFactory, _cascHeroesStorage, _backgroundWorkerEx);
         CASCMpqStormMod cascMpqStormMod = new(cascHeroesSource, Path.Join("test.stormmod", "depotcache", "test.s2ma"), StormModType.Normal);
 
-        cascMpqStormMod.StormModStorage.AddXmlDataFile(
-    XDocument.Parse(
-    @"<?xml version=""1.0"" encoding=""us-ascii""?>
-<Catalog>
-  <CActor default=""1"" id=""default"" />
-</Catalog>
-"),
-    TestHelpers.GetStormPath("ActorData.xml"),
-    true);
-
         _cascHeroesStorage.CASCHandlerWrapper.OpenFile(Path.Join("mods", "test.stormmod", "depotcache", "test.s2ma")).Returns(File.OpenRead(Path.Join(TestFilesFolder, "test.s2ma")));
 
         // act
         cascMpqStormMod.LoadStormData();
 
         // assert
-        cascMpqStormMod.StormModStorage.AddedXmlDataFilePaths.Should().HaveCount(3);
+        cascMpqStormMod.StormModStorage.AddedXmlDataFilePaths.Should().ContainSingle();
         cascMpqStormMod.StormModStorage.FoundLayoutFilePaths.Should().HaveCount(2);
         cascMpqStormMod.StormModStorage.AddedAssetsFilePaths.Should().ContainSingle();
     }

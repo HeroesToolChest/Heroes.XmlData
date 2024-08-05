@@ -11,7 +11,7 @@ public class CASCFolderExtensionsTests
     {
         // arrange
         CASCFolder cascFolder = new("name");
-        cascFolder.AddDirectory(Path.Join("folder1", "folder2", "folder3", "folder4"));
+        cascFolder.AddDirectory(string.Join('/', "folder1", "folder2", "folder3", "folder4"));
 
         // act
         bool success = cascFolder.TryGetLastDirectory(Path.Join("folder1", "folder2", "folder3"), out CASCFolder? resultCASCFolder);
@@ -27,10 +27,10 @@ public class CASCFolderExtensionsTests
     {
         // arrange
         CASCFolder cascFolder = new("name");
-        cascFolder.AddDirectory(Path.Join("folder1", "folder2", "folder3", "folder4"));
+        cascFolder.AddDirectory(string.Join('/', "folder1", "folder2", "folder3", "folder4"));
 
         // act
-        bool success = cascFolder.TryGetLastDirectory(Path.Join("folder1", "folder2", "folder5"), out CASCFolder? resultCASCFolder);
+        bool success = cascFolder.TryGetLastDirectory(string.Join('/', "folder1", "folder2", "folder5"), out CASCFolder? resultCASCFolder);
 
         // assert
         success.Should().BeFalse();
@@ -44,7 +44,7 @@ public class CASCFolderExtensionsTests
         CASCFolder cascFolder = new("name");
 
         // act
-        cascFolder.AddDirectory(Path.Join("this", "is", "path"));
+        cascFolder.AddDirectory(string.Join('/', "this", "is", "path"));
 
         // assert
         cascFolder.Files.Should().BeEmpty();
@@ -71,10 +71,10 @@ public class CASCFolderExtensionsTests
     {
         // arrange
         CASCFolder cascFolder = new("name");
-        cascFolder.AddDirectory(Path.Join("this", "is", "path"));
+        cascFolder.AddDirectory(string.Join('/', "this", "is", "path"));
 
         // act
-        cascFolder.AddDirectory(Path.Join("this", "is", "path2"));
+        cascFolder.AddDirectory(string.Join('/', "this", "is", "path2"));
 
         // assert
         cascFolder.Files.Should().BeEmpty();
@@ -108,7 +108,7 @@ public class CASCFolderExtensionsTests
         CASCFolder cascFolder = new("name");
 
         // act
-        cascFolder.AddFile(Path.Join("this", "is", "file.txt"));
+        cascFolder.AddFile(string.Join('/', "this", "is", "file.txt"));
 
         // assert
         cascFolder.Files.Should().BeEmpty();
@@ -126,7 +126,7 @@ public class CASCFolderExtensionsTests
 
         CASCFile file = currentFolder2.GetFile("file.txt");
         file.Name.Should().Be("file.txt");
-        file.FullName.Should().Be(Path.Join("this", "is", "file.txt"));
+        file.FullName.Should().Be(string.Join('/', "this", "is", "file.txt"));
     }
 
     [TestMethod]
@@ -134,10 +134,10 @@ public class CASCFolderExtensionsTests
     {
         // arrange
         CASCFolder cascFolder = new("name");
-        cascFolder.AddFile(Path.Join("this", "is", "file.txt"));
+        cascFolder.AddFile(string.Join('/', "this", "is", "file.txt"));
 
         // act
-        cascFolder.AddFile(Path.Join("this", "is", "another", "file.txt"));
+        cascFolder.AddFile(string.Join('/', "this", "is", "another", "file.txt"));
 
         // assert
         cascFolder.Files.Should().BeEmpty();
@@ -155,7 +155,7 @@ public class CASCFolderExtensionsTests
 
         CASCFile file = currentFolder2.GetFile("file.txt");
         file.Name.Should().Be("file.txt");
-        file.FullName.Should().Be(Path.Join("this", "is", "file.txt"));
+        file.FullName.Should().Be(string.Join('/', "this", "is", "file.txt"));
 
         CASCFolder currentFolder3 = currentFolder2.GetFolder("another");
         currentFolder3.Files.Should().ContainSingle();
@@ -164,7 +164,7 @@ public class CASCFolderExtensionsTests
 
         CASCFile file3 = currentFolder3.GetFile("file.txt");
         file3.Name.Should().Be("file.txt");
-        file3.FullName.Should().Be(Path.Join("this", "is", "another", "file.txt"));
+        file3.FullName.Should().Be(string.Join('/', "this", "is", "another", "file.txt"));
     }
 
     [TestMethod]
@@ -173,13 +173,13 @@ public class CASCFolderExtensionsTests
         // arrange
         CASCFolder cascFolder = new("name");
 
-        cascFolder.AddFile(Path.Join("this", "is", "file.txt"));
+        cascFolder.AddFile(string.Join('/', "this", "is", "file.txt"));
         CASCFolder currentFolder1 = cascFolder.GetFolder("this");
         CASCFolder currentFolder2 = currentFolder1.GetFolder("is");
         ulong originalHash = currentFolder2.GetFile("file.txt").Hash;
 
         // act
-        cascFolder.AddFile(Path.Join("this", "is", "file.txt"));
+        cascFolder.AddFile(string.Join('/', "this", "is", "file.txt"));
 
         // assert
         cascFolder.Files.Should().BeEmpty();
@@ -187,7 +187,7 @@ public class CASCFolderExtensionsTests
 
         CASCFile file = currentFolder2.GetFile("file.txt");
         file.Name.Should().Be("file.txt");
-        file.FullName.Should().Be(Path.Join("this", "is", "file.txt"));
+        file.FullName.Should().Be(string.Join('/', "this", "is", "file.txt"));
         file.Hash.Should().NotBe(originalHash);
     }
 }

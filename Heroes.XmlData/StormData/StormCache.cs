@@ -46,7 +46,7 @@ internal class StormCache
     public Dictionary<string, StormXElementValuePath> ConstantXElementById { get; } = [];
 
     /// <summary>
-    /// Gets a dictionary of <see cref="StormElement"/>s that have no id attribute by their element name.
+    /// Gets a dictionary of <see cref="StormElement"/>s that have no id attribute by their element type (e.g. CEffectDamage).
     /// </summary>
     public Dictionary<string, StormElement> StormElementByElementType { get; } = [];
 

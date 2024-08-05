@@ -12,37 +12,38 @@ internal static class StormDefaultData
 
     public static List<XElement> DefaultXElements =>
         [
-            XElement.Parse(@"
+            XElement.Parse(
+"""
 <CBehaviorBuff>
-  <DamageResponse ModifyLimit=""0"" />
+  <DamageResponse ModifyLimit="0" />
   <Modification>
-    <DamageDealtScaled index=""Basic"" value=""0"" />
-    <DamageDealtScaled index=""Ability"" value=""0"" />
-    <DamageDealtFraction index=""Basic"" value=""0"" />
-    <DamageDealtFraction index=""Ability"" value=""0"" />
-    <VitalMaxArray index=""Life"" value=""0"" />
-    <VitalMaxArray index=""Shields"" value=""0"" />
-    <VitalMaxArray index=""Energy"" value=""0"" />
-    <VitalRegenArray index=""Life"" value=""0"" />
-    <VitalRegenArray index=""Shields"" value=""0"" />
-    <VitalRegenArray index=""Energy"" value=""0"" />
+    <DamageDealtScaled index="Basic" value="0" />
+    <DamageDealtScaled index="Ability" value="0" />
+    <DamageDealtFraction index="Basic" value="0" />
+    <DamageDealtFraction index="Ability" value="0" />
+    <VitalMaxArray index="Life" value="0" />
+    <VitalMaxArray index="Shields" value="0" />
+    <VitalMaxArray index="Energy" value="0" />
+    <VitalRegenArray index="Life" value="0" />
+    <VitalRegenArray index="Shields" value="0" />
+    <VitalRegenArray index="Energy" value="0" />
   </Modification>
 </CBehaviorBuff>
-"),
-            XElement.Parse(@"
+"""),
+            XElement.Parse("""
 <CEffectDamage>
-  <Amount value=""0"" /> 
+  <Amount value="0" /> 
 </CEffectDamage>
-"),
-            XElement.Parse(@"
+"""),
+            XElement.Parse("""
 <CEffectCreateHealer>
-  <RechargeVitalRate value=""0"" />
+  <RechargeVitalRate value="0" />
 </CEffectCreateHealer>
-"),
-            XElement.Parse(@"
+"""),
+            XElement.Parse("""
 <CUnit>
-    <ShieldRegenRate value=""0"" />
+    <ShieldRegenRate value="0" />
 </CUnit>
-"),
+"""),
         ];
 }

@@ -28,7 +28,7 @@ public class FileMpqStormModTests
         fileMpqStormMod.LoadStormData();
 
         // assert
-        fileMpqStormMod.StormModStorage.AddedXmlDataFilePaths.Should().HaveCount(3);
+        fileMpqStormMod.StormModStorage.AddedXmlDataFilePaths.Should().ContainSingle();
         fileMpqStormMod.StormModStorage.FoundLayoutFilePaths.Should().HaveCount(2);
         fileMpqStormMod.StormModStorage.AddedAssetsFilePaths.Should().ContainSingle();
     }
@@ -44,7 +44,7 @@ public class FileMpqStormModTests
         fileMpqStormMod.LoadStormData();
 
         // assert
-        fileMpqStormMod.StormModStorage.AddedXmlDataFilePaths.Should().HaveCount(3);
+        fileMpqStormMod.StormModStorage.AddedXmlDataFilePaths.Should().ContainSingle();
         fileMpqStormMod.StormModStorage.FoundLayoutFilePaths.Should().HaveCount(2);
         fileMpqStormMod.StormModStorage.AddedAssetsFilePaths.Should().ContainSingle();
     }
@@ -168,17 +168,6 @@ public class FileMpqStormModTests
         StormStorage stormStorage = new(false);
         FileHeroesSource fileHeroesSource = new(stormStorage, _stormModFactory, _depotCacheFactory, "mods", _backgroundWorkerEx);
         FileMpqStormMod fileMpqStormMod = new(mockFileSystem, fileHeroesSource, Path.Join("test.stormmod", "depotcache", "test.s2ma"), StormModType.Normal);
-
-        // base types
-        fileMpqStormMod.StormModStorage.AddXmlDataFile(
-    XDocument.Parse(
-    @"<?xml version=""1.0"" encoding=""us-ascii""?>
-<Catalog>
-  <CActor default=""1"" id=""default"" />
-</Catalog>
-"),
-    TestHelpers.GetStormPath("ActorData.xml"),
-    true);
 
         return fileMpqStormMod;
     }

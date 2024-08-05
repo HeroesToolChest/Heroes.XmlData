@@ -473,34 +473,127 @@ public class FileStormModTests
     }
 
     [TestMethod]
-    [DataRow("test.stormmod", 0, 2)]
-    [DataRow("core.stormmod", 2, 2)]
-    [DataRow("heroesdata.stormmod", 2, 2)]
-    public void LoadGameDataDirectory_HasGameDataDirectories_AddsElementsToCaches(string stormmod, int dataObjectTypes, int stormElements)
+    public void LoadGameDataDirectory_AreAllDataObjectTypes_AddsElementsToCache()
     {
         // arrange
         MockFileSystem mockFileSystem = new(new Dictionary<string, MockFileData>
         {
-            { Path.Join("mods", "test.stormmod", "base.stormdata", "gamedata", "file1data.xml"), new MockFileData("<?xml version=\"1.0\" encoding=\"us-ascii\"?><Catalog><CBehaviorBuff default=\"1\"></CBehaviorBuff></Catalog>") },
-            { Path.Join("mods", "test.stormmod", "base.stormdata", "gamedata", "file2data.xml"), new MockFileData("<?xml version=\"1.0\" encoding=\"us-ascii\"?><Catalog><CElementBuff default=\"1\"></CElementBuff></Catalog>") },
-            { Path.Join("mods", "core.stormmod", "base.stormdata", "gamedata", "file1data.xml"), new MockFileData("<?xml version=\"1.0\" encoding=\"us-ascii\"?><Catalog><CFoodBuff default=\"1\"></CFoodBuff></Catalog>") },
-            { Path.Join("mods", "core.stormmod", "base.stormdata", "gamedata", "file2data.xml"), new MockFileData("<?xml version=\"1.0\" encoding=\"us-ascii\"?><Catalog><CPetBuff default=\"1\"></CPetBuff></Catalog>") },
-            { Path.Join("mods", "heroesdata.stormmod", "base.stormdata", "gamedata", "file1data.xml"), new MockFileData("<?xml version=\"1.0\" encoding=\"us-ascii\"?><Catalog><CWoodBuff default=\"1\"></CWoodBuff></Catalog>") },
-            { Path.Join("mods", "heroesdata.stormmod", "base.stormdata", "gamedata", "file2data.xml"), new MockFileData("<?xml version=\"1.0\" encoding=\"us-ascii\"?><Catalog><CRockBuff default=\"1\"></CRockBuff></Catalog>") },
+            { Path.Join("mods", "core.stormmod", "base.stormdata", "gamedata", "accumulatordata.xml"), new MockFileData("""<?xml version="1.0" encoding="us-ascii"?><Catalog><CAccumulator default="1" id="BaseAccumulator"/></Catalog>""") },
+            { Path.Join("mods", "core.stormmod", "base.stormdata", "gamedata", "abildata.xml"), new MockFileData("""<?xml version="1.0" encoding="us-ascii"?><Catalog><CAbil default="1"/></Catalog>""") },
+            { Path.Join("mods", "core.stormmod", "base.stormdata", "gamedata", "innerfolder", "armordata.xml"), new MockFileData("""<?xml version="1.0" encoding="us-ascii"?><Catalog><CArmor default="1"/></Catalog>""") },
         });
 
         StormStorage stormStorage = new(false);
         FileHeroesSource fileHeroesSource = new(stormStorage, _stormModFactory, _depotCacheFactory, "mods", _backgroundWorkerEx);
-        FileStormMod fileStormMod = new(mockFileSystem, fileHeroesSource, stormmod, StormModType.Normal);
+        FileStormMod fileStormMod = new(mockFileSystem, fileHeroesSource, "core.stormmod", StormModType.Normal);
 
         // act
         fileStormMod.LoadGameDataDirectory();
 
         // assert
-        stormStorage.StormCache.DataObjectTypeByElementType.Should().HaveCount(dataObjectTypes);
-        stormStorage.StormCache.StormElementByElementType.Should().HaveCount(stormElements);
+        stormStorage.StormCache.DataObjectTypeByElementType.Should().HaveCount(2);
+        stormStorage.StormCache.ElementTypesByDataObjectType.Should().HaveCount(2);
+        stormStorage.StormCache.StormElementByElementType.Should().ContainSingle();
+        stormStorage.StormCache.StormElementsByDataObjectType.Should().ContainSingle();
         fileStormMod.StormModStorage.NotFoundDirectories.Should().BeEmpty();
         fileStormMod.StormModStorage.NotFoundFiles.Should().BeEmpty();
+    }
+
+    [TestMethod]
+    public void LoadGameDataDirectory_AreAllDataObjectTypesInTwoStormModTypes_AddsElementsToCaches()
+    {
+        // arrange
+        MockFileSystem mockFileSystem = new(new Dictionary<string, MockFileData>
+        {
+            { Path.Join("mods", "core.stormmod", "base.stormdata", "gamedata", "abildata.xml"), new MockFileData("""<?xml version="1.0" encoding="us-ascii"?><Catalog><CAbil default="1"/><CAbilEffectInstant default="1"/></Catalog>""") },
+            { Path.Join("mods", "heroesdata.stormmod", "base.stormdata", "gamedata", "abildata.xml"), new MockFileData("""<?xml version="1.0" encoding="us-ascii"?><Catalog><CAbilEffectInstant default="1"/></Catalog>""") },
+            { Path.Join("mods", "map.stormmod", "base.stormdata", "gamedata", "abildata.xml"), new MockFileData("""<?xml version="1.0" encoding="us-ascii"?><Catalog><CAbilEffectInstant default="1"/></Catalog>""") },
+        });
+
+        StormStorage stormStorage = new(false);
+        FileHeroesSource fileHeroesSource = new(stormStorage, _stormModFactory, _depotCacheFactory, "mods", _backgroundWorkerEx);
+        FileStormMod fileCoreStormMod = new(mockFileSystem, fileHeroesSource, "core.stormmod", StormModType.Normal);
+        FileStormMod fileHeroesDataStormMod = new(mockFileSystem, fileHeroesSource, "heroesdata.stormmod", StormModType.Normal);
+        FileStormMod fileMapDataStormMod = new(mockFileSystem, fileHeroesSource, "heroesdata.stormmod", StormModType.Map);
+
+        // act
+        fileCoreStormMod.LoadGameDataDirectory();
+        fileHeroesDataStormMod.LoadGameDataDirectory();
+        fileMapDataStormMod.LoadGameDataDirectory();
+
+        // assert
+        stormStorage.StormCache.DataObjectTypeByElementType.Should().HaveCount(2);
+        stormStorage.StormCache.ElementTypesByDataObjectType.Should().ContainSingle();
+        stormStorage.StormCache.StormElementByElementType.Should().HaveCount(2);
+        stormStorage.StormCache.StormElementsByDataObjectType.Should().BeEmpty();
+
+        stormStorage.StormMapCache.DataObjectTypeByElementType.Should().ContainSingle();
+        stormStorage.StormMapCache.ElementTypesByDataObjectType.Should().ContainSingle();
+        stormStorage.StormMapCache.StormElementByElementType.Should().ContainSingle();
+        stormStorage.StormMapCache.StormElementsByDataObjectType.Should().BeEmpty();
+    }
+
+    [TestMethod]
+    public void LoadGameDataDirectory_MapElements_AddsElementsToCaches()
+    {
+        // arrange
+        MockFileSystem mockFileSystem = new(new Dictionary<string, MockFileData>
+        {
+            { Path.Join("mods", "core.stormmod", "base.stormdata", "gamedata", "announcerpackdata.xml"), new MockFileData("""<?xml version="1.0" encoding="us-ascii"?><Catalog><CAnnouncerPack default="1"/></Catalog>""") },
+            { Path.Join("mods", "heroesdata.stormmod", "base.stormdata", "gamedata", "announcers", "adjutantvodata.xml"), new MockFileData("""<?xml version="1.0" encoding="us-ascii"?><Catalog><CAnnouncerPack id="Adjutant" parent="StormAnnouncerPackQuick" heroid="AI"/></Catalog>""") },
+            { Path.Join("mods", "map.stormmod", "base.stormdata", "gamedata", "mymapannouncer.xml"), new MockFileData("""<?xml version="1.0" encoding="us-ascii"?><Catalog><CAnnouncerPack id="Special"/></Catalog>""") },
+            { Path.Join("mods", "map.stormmod", "base.stormdata", "gamedata", "lightdata.xml"), new MockFileData("""<?xml version="1.0" encoding="us-ascii"?><Catalog><CLight id="EditorTestLight" parent="default"/></Catalog>""") },
+        });
+
+        StormStorage stormStorage = new(false);
+        FileHeroesSource fileHeroesSource = new(stormStorage, _stormModFactory, _depotCacheFactory, "mods", _backgroundWorkerEx);
+        FileStormMod fileCoreStormMod = new(mockFileSystem, fileHeroesSource, "core.stormmod", StormModType.Normal);
+        FileStormMod fileHeroesDataStormMod = new(mockFileSystem, fileHeroesSource, "heroesdata.stormmod", StormModType.Normal);
+        FileStormMod fileMapDataStormMod = new(mockFileSystem, fileHeroesSource, "map.stormmod", StormModType.Map);
+
+        // act
+        fileCoreStormMod.LoadGameDataDirectory();
+        fileHeroesDataStormMod.LoadGameDataDirectory();
+        fileMapDataStormMod.LoadGameDataDirectory();
+
+        // assert
+        stormStorage.StormCache.DataObjectTypeByElementType.Should().ContainSingle();
+        stormStorage.StormCache.ElementTypesByDataObjectType.Should().ContainSingle();
+        stormStorage.StormCache.StormElementByElementType.Should().ContainSingle();
+        stormStorage.StormCache.StormElementsByDataObjectType.Should().BeEmpty();
+
+        stormStorage.StormMapCache.DataObjectTypeByElementType.Should().ContainSingle();
+        stormStorage.StormMapCache.ElementTypesByDataObjectType.Should().ContainSingle();
+        stormStorage.StormMapCache.StormElementByElementType.Should().BeEmpty();
+        stormStorage.StormMapCache.StormElementsByDataObjectType.Should().HaveCount(2);
+    }
+
+    [TestMethod]
+    public void LoadGameDataDirectory_FindsExistingDataObjectType_AddsElementsToCaches()
+    {
+        // arrange
+        MockFileSystem mockFileSystem = new(new Dictionary<string, MockFileData>
+        {
+            { Path.Join("mods", "core.stormmod", "base.stormdata", "gamedata", "requirementdata.xml"), new MockFileData("""<?xml version="1.0" encoding="us-ascii"?><Catalog><CRequirement default="1"/></Catalog>""") },
+            { Path.Join("mods", "core.stormmod", "base.stormdata", "gamedata", "requirementnodedata.xml"), new MockFileData("""<?xml version="1.0" encoding="us-ascii"?><Catalog><CRequirementNode default="1"/><CRequirementConst default="1"/></Catalog>""") },
+            { Path.Join("mods", "heroesdata.stormmod", "base.stormdata", "gamedata", "requirementnodedata.xml"), new MockFileData("""<?xml version="1.0" encoding="us-ascii"?><Catalog><CRequirementConst id="01081602903" /><CRequirementAnd id="AndEqCountBehaviorMountedCompleteOnlyAtUnit0"/></Catalog>""") },
+        });
+
+        StormStorage stormStorage = new(false);
+        FileHeroesSource fileHeroesSource = new(stormStorage, _stormModFactory, _depotCacheFactory, "mods", _backgroundWorkerEx);
+        FileStormMod fileCoreStormMod = new(mockFileSystem, fileHeroesSource, "core.stormmod", StormModType.Normal);
+        FileStormMod fileHeroesDataStormMod = new(mockFileSystem, fileHeroesSource, "heroesdata.stormmod", StormModType.Normal);
+
+        // act
+        fileCoreStormMod.LoadGameDataDirectory();
+        fileHeroesDataStormMod.LoadGameDataDirectory();
+
+        // assert
+        stormStorage.StormCache.DataObjectTypeByElementType.Should().HaveCount(4);
+        stormStorage.StormCache.ElementTypesByDataObjectType.Should().HaveCount(2);
+        stormStorage.StormCache.StormElementByElementType.Should().HaveCount(3);
+        stormStorage.StormCache.StormElementsByDataObjectType.Should().ContainSingle();
+        stormStorage.StormCache.StormElementsByDataObjectType["requirement"].Should().HaveCount(2);
     }
 
     [TestMethod]
@@ -560,23 +653,23 @@ public class FileStormModTests
             .SatisfyRespectively(
                 first =>
                 {
-                    first.Key.Should().Be(Path.Join("ui", "layout", "loadingscreens", "layout1.stormlayout"));
+                    first.Key.Should().Be(Path.Join("ui", "layout", "homescreens", "layout1.stormlayout"));
                 },
                 second =>
                 {
-                    second.Key.Should().Be(Path.Join("ui", "layout", "loadingscreens", "layout2.stormlayout"));
+                    second.Key.Should().Be(Path.Join("ui", "layout", "layout1.stormlayout"));
                 },
                 third =>
                 {
-                    third.Key.Should().Be(Path.Join("ui", "layout", "homescreens", "layout1.stormlayout"));
+                    third.Key.Should().Be(Path.Join("ui", "layout", "layout2.stormlayout"));
                 },
                 fourth =>
                 {
-                    fourth.Key.Should().Be(Path.Join("ui", "layout", "layout1.stormlayout"));
+                    fourth.Key.Should().Be(Path.Join("ui", "layout", "loadingscreens", "layout1.stormlayout"));
                 },
                 five =>
                 {
-                    five.Key.Should().Be(Path.Join("ui", "layout", "layout2.stormlayout"));
+                    five.Key.Should().Be(Path.Join("ui", "layout", "loadingscreens", "layout2.stormlayout"));
                 });
     }
 

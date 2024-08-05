@@ -22,11 +22,12 @@ internal static class CASCFolderExtensions
         return true;
     }
 
+    // directoryPath should contain '/' as path separator
     public static void AddDirectory(this CASCFolder folder, string directoryPath)
     {
         CASCFolder currentFolder = folder;
 
-        string[] directories = EnumeratedStringPath(directoryPath);
+        string[] directories = EnumeratedStringCASCPath(directoryPath);
 
         for (int i = 0; i < directories.Length; i++)
         {
@@ -35,11 +36,12 @@ internal static class CASCFolderExtensions
         }
     }
 
+    // filePath should contain '/' as path separator
     public static void AddFile(this CASCFolder folder, string filePath)
     {
         CASCFolder currentFolder = folder;
 
-        string[] paths = EnumeratedStringPath(filePath);
+        string[] paths = EnumeratedStringCASCPath(filePath);
 
         for (int i = 0; i < paths.Length; i++)
         {
@@ -54,6 +56,11 @@ internal static class CASCFolderExtensions
 
     private static string[] EnumeratedStringPath(string directoryPath)
     {
-        return directoryPath.Split(new char[] { Path.DirectorySeparatorChar }, StringSplitOptions.RemoveEmptyEntries);
+        return directoryPath.Split(Path.DirectorySeparatorChar, StringSplitOptions.RemoveEmptyEntries);
+    }
+
+    private static string[] EnumeratedStringCASCPath(string directoryPath)
+    {
+        return directoryPath.Split('/', StringSplitOptions.RemoveEmptyEntries);
     }
 }

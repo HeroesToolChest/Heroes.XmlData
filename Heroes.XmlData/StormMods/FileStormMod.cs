@@ -41,15 +41,9 @@ internal class FileStormMod : StormMod<IFileHeroesSource>
         IEnumerable<string> files = FileSystem.Directory.EnumerateFiles(GameDataDirectoryPath, $"*{XmlFileExtension}", new EnumerationOptions()
         {
             MatchCasing = MatchCasing.CaseInsensitive,
-        });
+        }).OrderBy(x => x, StringComparer.OrdinalIgnoreCase);
 
-        foreach (string file in files)
-        {
-            if (DirectoryPath == HeroesSource.CoreStormModDirectory || DirectoryPath == HeroesSource.HeroesDataStormModDirectory)
-                AddXmlFile(file, true);
-            else
-                AddXmlFile(file);
-        }
+        LoadGameDataFiles(files);
     }
 
     public override void LoadStormLayoutDirectory()
@@ -61,12 +55,9 @@ internal class FileStormMod : StormMod<IFileHeroesSource>
         {
             MatchCasing = MatchCasing.CaseInsensitive,
             RecurseSubdirectories = true,
-        });
+        }).OrderBy(x => x, StringComparer.OrdinalIgnoreCase);
 
-        foreach (string file in files)
-        {
-            AddStormLayoutFilePath(file);
-        }
+        LoadStormLayoutFiles(files);
     }
 
     protected override bool TryGetFile(string filePath, [NotNullWhen(true)] out Stream? stream)

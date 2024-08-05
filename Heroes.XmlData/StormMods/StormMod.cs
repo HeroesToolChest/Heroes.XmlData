@@ -229,14 +229,27 @@ internal abstract class StormMod<T> : IStormMod
     }
 
     /// <summary>
-    /// Loads the xml files from the <see cref="GameDataDirectoryPath"/>.
+    /// Loads the xml files from the <see cref="GameDataDirectoryPath"/>. Only this directory not the subdirectories.
+    /// The subdirectories are loaded from <see cref="LoadGameDataXmlFile"/>.
     /// </summary>
     public abstract void LoadGameDataDirectory();
 
     /// <summary>
-    /// Loads storm layout files paths (not through the desc index file).
+    /// Loads storm layout files paths (not through the desc index file) including subdirectories.
     /// </summary>
     public abstract void LoadStormLayoutDirectory();
+
+    /// <summary>
+    /// Loads and adds the gamestrings from the gamestrings.txt file.
+    /// </summary>
+    /// <param name="stormLocale">The localization of the file to load.</param>
+    protected void LoadBaseStormGameStrings(StormLocale stormLocale)
+    {
+        if (!ValidateGameStringFile(stormLocale, out Stream? stream, out string path))
+            return;
+
+        StormModStorage.AddGameStringFile(stream, GetStormPath(path));
+    }
 
     /// <summary>
     /// Gets the gamestrings.txt file path.
@@ -248,17 +261,32 @@ internal abstract class StormMod<T> : IStormMod
         return Path.Join(HeroesSource.ModsBaseDirectoryPath, DirectoryPath, StormLocaleData.GetStormDataFileName(stormLocale), HeroesSource.LocalizedDataDirectory, HeroesSource.GameStringFile);
     }
 
+    protected void LoadGameDataFiles(IEnumerable<string> files)
+    {
+        foreach (string file in files)
+        {
+            AddXmlFile(file);
+        }
+    }
+
+    protected void LoadStormLayoutFiles(IEnumerable<string> files)
+    {
+        foreach (string file in files)
+        {
+            AddStormLayoutFilePath(file);
+        }
+    }
+
     /// <summary>
     /// Adds an xml file to the <see cref="StormStorage"/>. Checks first if it's an xml file and it exists.
     /// </summary>
     /// <param name="xmlFilePath">The path to the xml file.</param>
-    /// <param name="isBaseGameDataDirectory">Indicates that the xml file is from the gamedata directory from a base storm mod.</param>
-    protected void AddXmlFile(string xmlFilePath, bool isBaseGameDataDirectory = false)
+    protected void AddXmlFile(string xmlFilePath)
     {
         if (!ValidateXmlFile(xmlFilePath, out XDocument? document))
             return;
 
-        StormModStorage.AddXmlDataFile(document, GetStormPath(xmlFilePath), isBaseGameDataDirectory);
+        StormModStorage.AddXmlDataFile(document, GetStormPath(xmlFilePath));
     }
 
     /// <summary>
@@ -283,6 +311,7 @@ internal abstract class StormMod<T> : IStormMod
         }
 
         using Stream fileStream = stream;
+
         document = XDocument.Load(fileStream);
 
         return true;
@@ -325,18 +354,6 @@ internal abstract class StormMod<T> : IStormMod
     protected abstract bool IsFileExists(string filePath);
 
     protected abstract IStormMod GetStormMod(string path, StormModType stormModType);
-
-    /// <summary>
-    /// Loads and adds the gamestrings from the gamestrings.txt file.
-    /// </summary>
-    /// <param name="stormLocale">The localization of the file to load.</param>
-    protected void LoadBaseStormGameStrings(StormLocale stormLocale)
-    {
-        if (!ValidateGameStringFile(stormLocale, out Stream? stream, out string path))
-            return;
-
-        StormModStorage.AddGameStringFile(stream, GetStormPath(path));
-    }
 
     protected void AddStormLayoutFilePath(string layoutFilePath)
     {

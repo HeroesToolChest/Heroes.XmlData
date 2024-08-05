@@ -117,21 +117,19 @@ internal partial class StormStorage : IStormStorage
 
     public bool AddConstantXElement(StormModType stormModType, XElement element, StormPath stormPath)
     {
+        if (!element.Name.LocalName.Equals("const", StringComparison.OrdinalIgnoreCase))
+            return false;
+
         StormCache currentStormCache = GetCurrentStormCache(stormModType);
 
-        if (element.Name.LocalName.Equals("const", StringComparison.OrdinalIgnoreCase))
-        {
-            string? id = element.Attribute("id")?.Value;
+        string? id = element.Attribute("id")?.Value;
 
-            if (string.IsNullOrEmpty(id))
-                return false;
+        if (string.IsNullOrEmpty(id))
+            return false;
 
-            currentStormCache.ConstantXElementById.TryAdd(id, new StormXElementValuePath(element, stormPath));
+        currentStormCache.ConstantXElementById.TryAdd(id, new StormXElementValuePath(element, stormPath));
 
-            return true;
-        }
-
-        return false;
+        return true;
     }
 
     public string GetValueFromConstElement(XElement constElement)
@@ -214,6 +212,57 @@ internal partial class StormStorage : IStormStorage
         return 0;
     }
 
+    public void AddElement(StormModType stormModType, XElement element, StormPath stormPath)
+    {
+        string elementName = element.Name.LocalName;
+
+        if (!elementName.StartsWith('C'))
+            return;
+
+        string? idAtt = element.Attribute("id")?.Value;
+        string? dataObjectType = GetDataObjectTypeFromFileName(stormPath.Path);
+
+        StormCache currentStormCache = GetCurrentStormCache(stormModType);
+        StormXElementValuePath stormXElementValuePath = new(element, stormPath);
+
+        if (!string.IsNullOrWhiteSpace(dataObjectType) && elementName.AsSpan(1).StartsWith(dataObjectType, StringComparison.OrdinalIgnoreCase))
+        {
+            AddBaseElementType(elementName, dataObjectType, currentStormCache);
+        }
+
+        if (string.IsNullOrEmpty(idAtt))
+        {
+            AddElementWithNoId(elementName, currentStormCache, stormXElementValuePath);
+        }
+        else
+        {
+            if (!TryGetFirstDataObjectTypeByElementType(elementName, out string? existingDataObjectType))
+            {
+                // didnt find one, so look for an existing match
+                string foundExistingDataObjectType = FindExistingDataObjectType(elementName);
+
+                AddBaseElementTypes(stormModType, foundExistingDataObjectType, elementName);
+
+                existingDataObjectType = foundExistingDataObjectType;
+            }
+
+            if (currentStormCache.StormElementsByDataObjectType.TryGetValue(existingDataObjectType, out var stormElementById))
+            {
+                if (stormElementById.TryGetValue(idAtt, out StormElement? stormElement))
+                    stormElement.AddValue(stormXElementValuePath);
+                else
+                    stormElementById[idAtt] = new StormElement(stormXElementValuePath);
+            }
+            else
+            {
+                currentStormCache.StormElementsByDataObjectType[existingDataObjectType] = new()
+                {
+                    { idAtt, new StormElement(stormXElementValuePath) },
+                };
+            }
+        }
+    }
+
     public void AddBaseElementTypes(StormModType stormModType, string dataObjectType, string elementName)
     {
         if (!elementName.StartsWith('C'))
@@ -227,48 +276,6 @@ internal partial class StormStorage : IStormStorage
             currentStormCache.ElementTypesByDataObjectType.Add(dataObjectType, new HashSet<string>(StringComparer.OrdinalIgnoreCase) { elementName });
 
         currentStormCache.DataObjectTypeByElementType.TryAdd(elementName, dataObjectType);
-    }
-
-    public void AddElement(StormModType stormModType, XElement element, StormPath stormPath)
-    {
-        string elementName = element.Name.LocalName;
-
-        if (elementName.StartsWith('S'))
-            return;
-
-        string? idAtt = element.Attribute("id")?.Value;
-
-        StormCache currentStormCache = GetCurrentStormCache(stormModType);
-        StormXElementValuePath stormXElementValuePath = new(element, stormPath);
-
-        if (string.IsNullOrEmpty(idAtt))
-        {
-            if (currentStormCache.StormElementByElementType.TryGetValue(elementName, out StormElement? stormElement))
-                stormElement.AddValue(stormXElementValuePath);
-            else
-                currentStormCache.StormElementByElementType.Add(elementName, new StormElement(stormXElementValuePath));
-        }
-        else
-        {
-            if (!TryGetFirstDataObjectTypeByElementType(elementName, out string? dataObjectType))
-            {
-                // didnt find one, so look for an existing match
-                string foundExistingDataObjectType = FindExistingDataObjectType(elementName);
-
-                AddBaseElementTypes(stormModType, foundExistingDataObjectType, elementName);
-
-                dataObjectType = foundExistingDataObjectType;
-            }
-
-            if (!currentStormCache.StormElementsByDataObjectType.ContainsKey(dataObjectType))
-                currentStormCache.StormElementsByDataObjectType.Add(dataObjectType, []);
-
-            if (currentStormCache.StormElementsByDataObjectType.TryGetValue(dataObjectType, out var stormElementById) &&
-                stormElementById.TryGetValue(idAtt, out StormElement? stormElement))
-                stormElement.AddValue(stormXElementValuePath);
-            else
-                currentStormCache.StormElementsByDataObjectType[dataObjectType].Add(idAtt, new StormElement(stormXElementValuePath));
-        }
     }
 
     public void SetStormStyleCache(StormModType stormModType, XDocument document, StormPath stormPath)
@@ -395,6 +402,37 @@ internal partial class StormStorage : IStormStorage
         return StormModStorages.FirstOrDefault()?.BuildId;
     }
 
+    private static string? GetDataObjectTypeFromFileName(string filePath)
+    {
+        string fileName = Path.GetFileName(filePath);
+
+        int index = fileName.LastIndexOf("data.xml", StringComparison.OrdinalIgnoreCase);
+        if (index > 1)
+        {
+            return fileName[..index];
+        }
+
+        return null;
+    }
+
+    private static void AddBaseElementType(string elementName, string dataObjectType, StormCache currentStormCache)
+    {
+        if (currentStormCache.ElementTypesByDataObjectType.TryGetValue(dataObjectType, out HashSet<string>? elementTypes))
+            elementTypes.Add(elementName);
+        else
+            currentStormCache.ElementTypesByDataObjectType.Add(dataObjectType, new HashSet<string>(StringComparer.OrdinalIgnoreCase) { elementName });
+
+        currentStormCache.DataObjectTypeByElementType.TryAdd(elementName, dataObjectType);
+    }
+
+    private static void AddElementWithNoId(string elementName, StormCache currentStormCache, StormXElementValuePath stormXElementValuePath)
+    {
+        if (currentStormCache.StormElementByElementType.TryGetValue(elementName, out StormElement? stormElement))
+            stormElement.AddValue(stormXElementValuePath);
+        else
+            currentStormCache.StormElementByElementType.Add(elementName, new StormElement(stormXElementValuePath));
+    }
+
     private void AddRootDefaults()
     {
         List<(string DataObjectType, string ElementName)> defaultBaseElementTypes = StormDefaultData.DefaultBaseElementsTypes;
@@ -411,54 +449,17 @@ internal partial class StormStorage : IStormStorage
         }
     }
 
+    // find the nearest match, good enough
     private string FindExistingDataObjectType(string elementName)
     {
         // normal cache first
-        string? foundExistingDataObjectType = StormCache.ElementTypesByDataObjectType.Keys.FirstOrDefault(x => elementName.AsSpan()[1..].StartsWith(x));
+        string? foundExistingDataObjectType = StormCache.ElementTypesByDataObjectType.Keys.FirstOrDefault(x => elementName.AsSpan(1).StartsWith(x, StringComparison.OrdinalIgnoreCase));
 
-        foundExistingDataObjectType ??= StormMapCache.ElementTypesByDataObjectType.Keys.FirstOrDefault(x => elementName.AsSpan()[1..].StartsWith(x));
-        foundExistingDataObjectType ??= StormCustomCache.ElementTypesByDataObjectType.Keys.FirstOrDefault(x => elementName.AsSpan()[1..].StartsWith(x)) ??
+        foundExistingDataObjectType ??= StormMapCache.ElementTypesByDataObjectType.Keys.FirstOrDefault(x => elementName.AsSpan(1).StartsWith(x, StringComparison.OrdinalIgnoreCase));
+        foundExistingDataObjectType ??= StormCustomCache.ElementTypesByDataObjectType.Keys.FirstOrDefault(x => elementName.AsSpan(1).StartsWith(x, StringComparison.OrdinalIgnoreCase)) ??
             throw new HeroesXmlDataException($"Could not find an existing data object type for \"{elementName}\"");
 
         return foundExistingDataObjectType;
-    }
-
-    // i.e DamageResponse.ModifyLimit
-    private string? AddDefaultIndexerToMultiFields(ReadOnlySpan<char> field)
-    {
-        int splitterCount = field.Count('.');
-        if (splitterCount < 1)
-            return null;
-
-        Span<Range> ranges = stackalloc Range[splitterCount + 1];
-
-        field.Split(ranges, '.');
-
-        Span<char> newFieldBuffer = stackalloc char[field.Length + (ranges.Length * 3)];
-
-        int currentIndex = 0;
-        for (int i = 0; i < ranges.Length; i++)
-        {
-            ReadOnlySpan<char> fieldPart = field[ranges[i]];
-
-            fieldPart.CopyTo(newFieldBuffer[currentIndex..]);
-            currentIndex += fieldPart.Length;
-
-            if (fieldPart[^1] != ']')
-            {
-                if (i + 1 < ranges.Length)
-                {
-                    "[0].".CopyTo(newFieldBuffer[currentIndex..]);
-                    currentIndex += 4;
-                }
-                else
-                {
-                    "[0]".CopyTo(newFieldBuffer[currentIndex..]);
-                }
-            }
-        }
-
-        return newFieldBuffer.TrimEnd('\0').ToString();
     }
 
     private StormCache GetCurrentStormCache(StormModType stormModType) => stormModType switch

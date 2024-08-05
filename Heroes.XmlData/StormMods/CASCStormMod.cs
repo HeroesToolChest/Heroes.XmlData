@@ -26,7 +26,12 @@ internal class CASCStormMod : StormMod<ICASCHeroesSource>, IStormMod
             return;
         }
 
-        EnumerateGameDataDirectory(gameDataFolder);
+        IEnumerable<string> files = gameDataFolder.Files.Select(x => x.Value)
+            .Where(x => Path.GetExtension(x.FullName).Equals(XmlFileExtension, StringComparison.OrdinalIgnoreCase))
+            .Select(x => PathHelper.NormalizePath(x.FullName))
+            .OrderBy(x => x);
+
+        LoadGameDataFiles(files);
     }
 
     public override void LoadStormLayoutDirectory()
@@ -34,7 +39,12 @@ internal class CASCStormMod : StormMod<ICASCHeroesSource>, IStormMod
         if (!HeroesSource.CASCHeroesStorage.CASCFolderRoot.TryGetLastDirectory(LayoutDirectoryPath, out CASCFolder? layoutFolder))
             return;
 
-        EnumerateLayoutDirectory(layoutFolder);
+        IEnumerable<string> files = EnumerateDirectory(layoutFolder)
+            .Where(x => Path.GetExtension(x.FullName).Equals(StormLayoutFileExtension, StringComparison.OrdinalIgnoreCase))
+            .Select(x => PathHelper.NormalizePath(x.FullName))
+            .OrderBy(x => x);
+
+        LoadStormLayoutFiles(files);
     }
 
     protected override bool TryGetFile(string filePath, [NotNullWhen(true)] out Stream? stream)
@@ -53,38 +63,19 @@ internal class CASCStormMod : StormMod<ICASCHeroesSource>, IStormMod
 
     protected override IStormMod GetStormMod(string path, StormModType stormModType) => HeroesSource.StormModFactory.CreateCASCStormModInstance(HeroesSource, path, stormModType);
 
-    private void EnumerateGameDataDirectory(CASCFolder gameDataFolder)
+    private static IEnumerable<CASCFile> EnumerateDirectory(CASCFolder gameDataFolder)
     {
         foreach (KeyValuePair<string, CASCFile> file in gameDataFolder.Files)
         {
-            if (!Path.GetExtension(file.Value.FullName.AsSpan()).Equals(XmlFileExtension, StringComparison.OrdinalIgnoreCase))
-                continue;
-
-            if (DirectoryPath == HeroesSource.CoreStormModDirectory || DirectoryPath == HeroesSource.HeroesDataStormModDirectory)
-                AddXmlFile(file.Value.FullName, true);
-            else
-                AddXmlFile(file.Value.FullName);
+            yield return file.Value;
         }
 
         foreach (KeyValuePair<string, CASCFolder> folder in gameDataFolder.Folders)
         {
-            EnumerateGameDataDirectory(folder.Value);
-        }
-    }
-
-    private void EnumerateLayoutDirectory(CASCFolder layoutFolder)
-    {
-        foreach (KeyValuePair<string, CASCFile> file in layoutFolder.Files)
-        {
-            if (!Path.GetExtension(file.Value.FullName.AsSpan()).Equals(StormLayoutFileExtension, StringComparison.OrdinalIgnoreCase))
-                continue;
-
-            AddStormLayoutFilePath(file.Value.FullName);
-        }
-
-        foreach (KeyValuePair<string, CASCFolder> folder in layoutFolder.Folders)
-        {
-            EnumerateLayoutDirectory(folder.Value);
+            foreach (CASCFile file in EnumerateDirectory(folder.Value))
+            {
+                yield return file;
+            }
         }
     }
 }

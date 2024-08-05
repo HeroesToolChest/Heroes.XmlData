@@ -21,58 +21,41 @@ public class CASCStormModTests
     }
 
     [TestMethod]
-    [DataRow("test.stormmod", 0, 2)]
-    [DataRow("core.stormmod", 2, 2)]
-    [DataRow("heroesdata.stormmod", 2, 2)]
-    public void LoadGameDataDirectory_HasGameDataDirectories_AddsElementsToCaches(string stormmod, int dataObjectTypes, int stormElements)
+    public void LoadGameDataDirectory_AreAllDataObjectTypes_AddsElementsToCache()
     {
         // arrange
         StormStorage stormStorage = new(false);
-
         CASCHeroesSource cascHeroesSource = new(stormStorage, _stormModFactory, _depotCacheFactory, _cascHeroesStorage, _backgroundWorkerEx);
-        CASCStormMod cascStormMod = new(cascHeroesSource, stormmod, StormModType.Normal);
+        CASCStormMod cascStormMod = new(cascHeroesSource, "core.stormmod", StormModType.Normal);
 
         CASCFolder rootFolder = new("name");
-        rootFolder.AddFile(Path.Join("mods", "test.stormmod", "base.stormdata", "gamedata", "file1data.xml"));
-        rootFolder.AddFile(Path.Join("mods", "test.stormmod", "base.stormdata", "gamedata", "file2data.xml"));
-        rootFolder.AddFile(Path.Join("mods", "test.stormmod", "base.stormdata", "gamedata", "file3data.xml"));
-
-        rootFolder.AddFile(Path.Join("mods", "core.stormmod", "base.stormdata", "gamedata", "file1data.xml"));
-        rootFolder.AddFile(Path.Join("mods", "core.stormmod", "base.stormdata", "gamedata", "file2data.xml"));
-        rootFolder.AddFile(Path.Join("mods", "core.stormmod", "base.stormdata", "gamedata", "file3data.xml"));
-
-        rootFolder.AddFile(Path.Join("mods", "heroesdata.stormmod", "base.stormdata", "gamedata", "file1data.xml"));
-        rootFolder.AddFile(Path.Join("mods", "heroesdata.stormmod", "base.stormdata", "gamedata", "file2data.xml"));
-        rootFolder.AddFile(Path.Join("mods", "heroesdata.stormmod", "base.stormdata", "gamedata", "file3data.xml"));
+        rootFolder.AddFile("mods/core.stormmod/base.stormdata/gamedata/accumulatordata.xml");
+        rootFolder.AddFile("mods/core.stormmod/base.stormdata/gamedata/abildata.xml");
+        rootFolder.AddFile("mods/core.stormmod/base.stormdata/gamedata/innerfolder/armordata.xml");
 
         _cascHeroesStorage.CASCFolderRoot.Returns(rootFolder);
 
-        using MemoryStream stream1 = new();
-        using StreamWriter writer1 = new(stream1);
-        writer1.WriteLine("<?xml version=\"1.0\" encoding=\"us-ascii\"?><Catalog><CBehaviorBuff default=\"1\"></CBehaviorBuff></Catalog>");
-        writer1.Flush();
-        stream1.Position = 0;
+        using MemoryStream stream1 = GetMockStream("""<?xml version="1.0" encoding="us-ascii"?><Catalog><CAccumulator default="1" id="BaseAccumulator"/></Catalog>""");
+        using MemoryStream stream2 = GetMockStream("""<?xml version="1.0" encoding="us-ascii"?><Catalog><CAbil default="1"/></Catalog>""");
+        using MemoryStream stream3 = GetMockStream("""<?xml version="1.0" encoding="us-ascii"?><Catalog><CArmor default="1"/></Catalog>""");
 
-        using MemoryStream stream2 = new();
-        using StreamWriter writer2 = new(stream2);
-        writer2.WriteLine("<?xml version=\"1.0\" encoding=\"us-ascii\"?><Catalog><CElementBuff default=\"1\"></CElementBuff></Catalog>");
-        writer2.Flush();
-        stream2.Position = 0;
-
-        _cascHeroesStorage.CASCHandlerWrapper.FileExists(Path.Join("mods", stormmod, "base.stormdata", "gamedata", "file1data.xml")).Returns(true);
-        _cascHeroesStorage.CASCHandlerWrapper.FileExists(Path.Join("mods", stormmod, "base.stormdata", "gamedata", "file2data.xml")).Returns(true);
-        _cascHeroesStorage.CASCHandlerWrapper.FileExists(Path.Join("mods", stormmod, "base.stormdata", "gamedata", "file3data.xml")).Returns(false);
-        _cascHeroesStorage.CASCHandlerWrapper.OpenFile(Path.Join("mods", stormmod, "base.stormdata", "gamedata", "file1data.xml")).Returns(stream1);
-        _cascHeroesStorage.CASCHandlerWrapper.OpenFile(Path.Join("mods", stormmod, "base.stormdata", "gamedata", "file2data.xml")).Returns(stream2);
+        _cascHeroesStorage.CASCHandlerWrapper.FileExists(Path.Join("mods", "core.stormmod", "base.stormdata", "gamedata", "accumulatordata.xml")).Returns(true);
+        _cascHeroesStorage.CASCHandlerWrapper.FileExists(Path.Join("mods", "core.stormmod", "base.stormdata", "gamedata", "abildata.xml")).Returns(true);
+        _cascHeroesStorage.CASCHandlerWrapper.FileExists(Path.Join("mods", "core.stormmod", "base.stormdata", "gamedata", "innerfolder", "armordata.xml")).Returns(true);
+        _cascHeroesStorage.CASCHandlerWrapper.OpenFile(Path.Join("mods", "core.stormmod", "base.stormdata", "gamedata", "accumulatordata.xml")).Returns(stream1);
+        _cascHeroesStorage.CASCHandlerWrapper.OpenFile(Path.Join("mods", "core.stormmod", "base.stormdata", "gamedata", "abildata.xml")).Returns(stream2);
+        _cascHeroesStorage.CASCHandlerWrapper.OpenFile(Path.Join("mods", "core.stormmod", "base.stormdata", "gamedata", "innerfolder", "armordata.xml")).Returns(stream3);
 
         // act
         cascStormMod.LoadGameDataDirectory();
 
         // assert
-        stormStorage.StormCache.DataObjectTypeByElementType.Should().HaveCount(dataObjectTypes);
-        stormStorage.StormCache.StormElementByElementType.Should().HaveCount(stormElements);
+        stormStorage.StormCache.DataObjectTypeByElementType.Should().HaveCount(2);
+        stormStorage.StormCache.ElementTypesByDataObjectType.Should().HaveCount(2);
+        stormStorage.StormCache.StormElementByElementType.Should().ContainSingle();
+        stormStorage.StormCache.StormElementsByDataObjectType.Should().ContainSingle();
         cascStormMod.StormModStorage.NotFoundDirectories.Should().BeEmpty();
-        cascStormMod.StormModStorage.NotFoundFiles.Should().ContainSingle();
+        cascStormMod.StormModStorage.NotFoundFiles.Should().BeEmpty();
     }
 
     [TestMethod]
@@ -91,7 +74,7 @@ public class CASCStormModTests
         cascStormMod.LoadGameDataDirectory();
 
         // assert
-        cascStormMod.StormModStorage.NotFoundDirectories.Should().HaveCount(1).And
+        cascStormMod.StormModStorage.NotFoundDirectories.Should().ContainSingle().And
             .SatisfyRespectively(
                 first =>
                 {
@@ -115,17 +98,17 @@ public class CASCStormModTests
 
         CASCFolder rootFolder = new("name");
 
-        rootFolder.AddFile(Path.Join("mods", "test.stormmod", "base.stormdata", "ui", "layout", "loadingscreens", "layout1.stormlayout"));
-        rootFolder.AddFile(Path.Join("mods", "test.stormmod", "base.stormdata", "ui", "layout", "loadingscreens", "layout2.stormlayout"));
+        rootFolder.AddFile("mods/test.stormmod/base.stormdata/ui/layout/loadingscreens/layout1.stormlayout");
+        rootFolder.AddFile("mods/test.stormmod/base.stormdata/ui/layout/loadingscreens/layout2.stormlayout");
 
-        rootFolder.AddFile(Path.Join("mods", "test.stormmod", "base.stormdata", "ui", "layout", "homescreens", "layout1.stormlayout"));
+        rootFolder.AddFile("mods/test.stormmod/base.stormdata/ui/layout/homescreens/layout1.stormlayout");
 
-        rootFolder.AddFile(Path.Join("mods", "test.stormmod", "base.stormdata", "ui", "layout", "layout1.stormlayout"));
-        rootFolder.AddFile(Path.Join("mods", "test.stormmod", "base.stormdata", "ui", "layout", "layout2.stormlayout"));
+        rootFolder.AddFile("mods/test.stormmod/base.stormdata/ui/layout/layout1.stormlayout");
+        rootFolder.AddFile("mods/test.stormmod/base.stormdata/ui/layout/layout2.stormlayout");
 
-        rootFolder.AddFile(Path.Join("mods", "test.stormmod", "ui", "layout", "layout1.stormlayout"));
+        rootFolder.AddFile("mods/test.stormmod/ui/layout/layout1.stormlayout");
 
-        rootFolder.AddFile(Path.Join("ui", "layout", "layout1.stormlayout"));
+        rootFolder.AddFile("ui/layout/layout1.stormlayout");
 
         _cascHeroesStorage.CASCFolderRoot.Returns(rootFolder);
 
@@ -138,23 +121,23 @@ public class CASCStormModTests
             .SatisfyRespectively(
                 first =>
                 {
-                    first.Key.Should().Be(Path.Join("ui", "layout", "layout1.stormlayout"));
+                    first.Key.Should().Be(Path.Join("ui", "layout", "homescreens", "layout1.stormlayout"));
                 },
                 second =>
                 {
-                    second.Key.Should().Be(Path.Join("ui", "layout", "layout2.stormlayout"));
+                    second.Key.Should().Be(Path.Join("ui", "layout", "layout1.stormlayout"));
                 },
                 third =>
                 {
-                    third.Key.Should().Be(Path.Join("ui", "layout", "loadingscreens", "layout1.stormlayout"));
+                    third.Key.Should().Be(Path.Join("ui", "layout", "layout2.stormlayout"));
                 },
                 fourth =>
                 {
-                    fourth.Key.Should().Be(Path.Join("ui", "layout", "loadingscreens", "layout2.stormlayout"));
+                    fourth.Key.Should().Be(Path.Join("ui", "layout", "loadingscreens", "layout1.stormlayout"));
                 },
                 five =>
                 {
-                    five.Key.Should().Be(Path.Join("ui", "layout", "homescreens", "layout1.stormlayout"));
+                    five.Key.Should().Be(Path.Join("ui", "layout", "loadingscreens", "layout2.stormlayout"));
                 });
     }
 
@@ -176,5 +159,16 @@ public class CASCStormModTests
         // assert
         cascStormMod.StormModStorage.FoundLayoutFilePaths.Should().BeEmpty();
         stormStorage.StormCache.UiStormPathsByRelativeUiPath.Should().BeEmpty();
+    }
+
+    private static MemoryStream GetMockStream(string content)
+    {
+        MemoryStream stream = new();
+        StreamWriter writer = new(stream);
+        writer.WriteLine(content);
+        writer.Flush();
+        stream.Position = 0;
+
+        return stream;
     }
 }
