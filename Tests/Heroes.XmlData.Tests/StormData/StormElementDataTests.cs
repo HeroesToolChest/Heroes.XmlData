@@ -18,10 +18,10 @@ public class StormElementDataTests
         StormElementData stormElementData = new(xElement);
 
         // assert
-        stormElementData.GetXmlData("default").HasValue.Should().BeTrue();
-        stormElementData.GetXmlData("default").Value.Should().Be("1");
-        stormElementData.GetXmlData("name").HasValue.Should().BeTrue();
-        stormElementData.GetXmlData("name").Value.Should().Be("Abil/Name/abil1");
+        stormElementData.GetElementDataAt("default").HasValue.Should().BeTrue();
+        stormElementData.GetElementDataAt("default").Value.Should().Be("1");
+        stormElementData.GetElementDataAt("name").HasValue.Should().BeTrue();
+        stormElementData.GetElementDataAt("name").Value.Should().Be("Abil/Name/abil1");
     }
 
     [TestMethod]
@@ -43,8 +43,8 @@ public class StormElementDataTests
         StormElementData asElement = new(withElement);
 
         // assert
-        asAttributes.GetXmlData("default").Value.Should().Be("1");
-        asElement.GetXmlData("default").Value.Should().Be("1");
+        asAttributes.GetElementDataAt("default").Value.Should().Be("1");
+        asElement.GetElementDataAt("default").Value.Should().Be("1");
     }
 
     [TestMethod]
@@ -71,11 +71,11 @@ public class StormElementDataTests
         StormElementData stormElementDataAsElements = new(withElements);
 
         // assert
-        stormElementDataAsAttributes.GetXmlData("OrderArray").GetXmlData("0").GetXmlData("LineTexture").GetXmlData("0").Value.Should().Be("Assets\\Textures\\Storm_WayPointLine.dds");
-        stormElementDataAsElements.GetXmlData("OrderArray").GetXmlData("0").GetXmlData("LineTexture").GetXmlData("0").Value.Should().Be("Assets\\Textures\\Storm_WayPointLine.dds");
+        stormElementDataAsAttributes.GetElementDataAt("OrderArray").GetElementDataAt("0").GetElementDataAt("LineTexture").GetElementDataAt("0").Value.Should().Be("Assets\\Textures\\Storm_WayPointLine.dds");
+        stormElementDataAsElements.GetElementDataAt("OrderArray").GetElementDataAt("0").GetElementDataAt("LineTexture").GetElementDataAt("0").Value.Should().Be("Assets\\Textures\\Storm_WayPointLine.dds");
 
-        stormElementDataAsAttributes.GetXmlData("OrderArray").GetXmlData("0").GetXmlData("LineTexture").GetXmlData("0").XmlDataCount.Should().Be(0);
-        stormElementDataAsElements.GetXmlData("OrderArray").GetXmlData("0").GetXmlData("LineTexture").GetXmlData("0").XmlDataCount.Should().Be(0);
+        stormElementDataAsAttributes.GetElementDataAt("OrderArray").GetElementDataAt("0").GetElementDataAt("LineTexture").GetElementDataAt("0").ElementDataCount.Should().Be(0);
+        stormElementDataAsElements.GetElementDataAt("OrderArray").GetElementDataAt("0").GetElementDataAt("LineTexture").GetElementDataAt("0").ElementDataCount.Should().Be(0);
     }
 
     [TestMethod]
@@ -98,8 +98,8 @@ public class StormElementDataTests
         StormElementData data = new(element);
 
         // assert
-        data.GetXmlData("SharedFlags").GetXmlData("DisableWhileDead").Value.Should().Be("1");
-        data.GetXmlData("SharedFlags").GetXmlData("AllowQuickCastCustomization").Value.Should().Be("1");
+        data.GetElementDataAt("SharedFlags").GetElementDataAt("DisableWhileDead").Value.Should().Be("1");
+        data.GetElementDataAt("SharedFlags").GetElementDataAt("AllowQuickCastCustomization").Value.Should().Be("1");
     }
 
     [TestMethod]
@@ -124,9 +124,9 @@ public class StormElementDataTests
         StormElementData data = new(element);
 
         // assert
-        data.GetXmlData("ConditionalEvents").GetXmlData("0").GetXmlData("Compare").Value.Should().Be("GE");
-        data.GetXmlData("ConditionalEvents").GetXmlData("0").GetXmlData("CompareValue").Value.Should().Be("15");
-        data.GetXmlData("ConditionalEvents").GetXmlData("0").GetXmlData("Event").GetXmlData("0").GetXmlData("Effect").Value.Should().Be("KelThuzadMasterOfTheColdDarkTier1ModifyPlayer");
+        data.GetElementDataAt("ConditionalEvents").GetElementDataAt("0").GetElementDataAt("Compare").Value.Should().Be("GE");
+        data.GetElementDataAt("ConditionalEvents").GetElementDataAt("0").GetElementDataAt("CompareValue").Value.Should().Be("15");
+        data.GetElementDataAt("ConditionalEvents").GetElementDataAt("0").GetElementDataAt("Event").GetElementDataAt("0").GetElementDataAt("Effect").Value.Should().Be("KelThuzadMasterOfTheColdDarkTier1ModifyPlayer");
     }
 
     [TestMethod]
@@ -167,13 +167,13 @@ public class StormElementDataTests
         StormElementData data = new(element);
 
         // assert
-        data.GetXmlData("AbilityModificationArray").GetXmlData("0").GetXmlData("Modifications").GetXmlData("0").GetXmlData("Field").Value.Should().Be("AreaArray[0].Radius");
-        data.GetXmlData("AbilityModificationArray").GetXmlData("0").GetXmlData("Modifications").GetXmlData("0").GetXmlData("Value").Value.Should().Be("1.600000");
-        data.GetXmlData("AbilityModificationArray").GetXmlData("0").GetXmlData("Modifications").GetXmlData("0").GetXmlData("Value").GetXmlData("0").Value.Should().Be("1.600000");
+        data.GetElementDataAt("AbilityModificationArray").GetElementDataAt("0").GetElementDataAt("Modifications").GetElementDataAt("0").GetElementDataAt("Field").Value.Should().Be("AreaArray[0].Radius");
+        data.GetElementDataAt("AbilityModificationArray").GetElementDataAt("0").GetElementDataAt("Modifications").GetElementDataAt("0").GetElementDataAt("Value").Value.Should().Be("1.600000");
+        data.GetElementDataAt("AbilityModificationArray").GetElementDataAt("0").GetElementDataAt("Modifications").GetElementDataAt("0").GetElementDataAt("Value").GetElementDataAt("0").Value.Should().Be("1.600000");
 
-        data.GetXmlData("AbilityModificationArray").GetXmlData("0").GetXmlData("Modifications").GetXmlData("2").GetXmlData("Field").Value.Should().Be("AnubarakBurrowChargeCursorSplat");
-        data.GetXmlData("AbilityModificationArray").GetXmlData("0").GetXmlData("Modifications").GetXmlData("2").GetXmlData("Value").Value.Should().Be("0.600000");
-        data.GetXmlData("AbilityModificationArray").GetXmlData("0").GetXmlData("Modifications").GetXmlData("2").GetXmlData("Value").GetXmlData("0").Value.Should().Be("0.600000");
+        data.GetElementDataAt("AbilityModificationArray").GetElementDataAt("0").GetElementDataAt("Modifications").GetElementDataAt("2").GetElementDataAt("Field").Value.Should().Be("AnubarakBurrowChargeCursorSplat");
+        data.GetElementDataAt("AbilityModificationArray").GetElementDataAt("0").GetElementDataAt("Modifications").GetElementDataAt("2").GetElementDataAt("Value").Value.Should().Be("0.600000");
+        data.GetElementDataAt("AbilityModificationArray").GetElementDataAt("0").GetElementDataAt("Modifications").GetElementDataAt("2").GetElementDataAt("Value").GetElementDataAt("0").Value.Should().Be("0.600000");
     }
 
     [TestMethod]
@@ -198,19 +198,19 @@ public class StormElementDataTests
         StormElementData data = new(element);
 
         // assert
-        data.GetXmlData("OrderArray").HasNumericalIndex.Should().BeTrue();
+        data.GetElementDataAt("OrderArray").HasNumericalIndex.Should().BeTrue();
 
-        data.GetXmlData("OrderArray").GetXmlData("0").HasNumericalIndex.Should().BeFalse();
-        data.GetXmlData("OrderArray").GetXmlData("0").GetXmlData("LineTexture").HasNumericalIndex.Should().BeTrue();
-        data.GetXmlData("OrderArray").GetXmlData("0").GetXmlData("LineTexture").GetXmlData("0").Value.Should().Be("Assets\\Textures\\Storm_WayPointLine0.dds");
+        data.GetElementDataAt("OrderArray").GetElementDataAt("0").HasNumericalIndex.Should().BeFalse();
+        data.GetElementDataAt("OrderArray").GetElementDataAt("0").GetElementDataAt("LineTexture").HasNumericalIndex.Should().BeTrue();
+        data.GetElementDataAt("OrderArray").GetElementDataAt("0").GetElementDataAt("LineTexture").GetElementDataAt("0").Value.Should().Be("Assets\\Textures\\Storm_WayPointLine0.dds");
 
-        data.GetXmlData("OrderArray").GetXmlData("1").HasNumericalIndex.Should().BeFalse();
-        data.GetXmlData("OrderArray").GetXmlData("1").GetXmlData("LineTexture").HasNumericalIndex.Should().BeTrue();
-        data.GetXmlData("OrderArray").GetXmlData("1").GetXmlData("LineTexture").GetXmlData("0").Value.Should().Be("Assets\\Textures\\Storm_WayPointLine1.dds");
+        data.GetElementDataAt("OrderArray").GetElementDataAt("1").HasNumericalIndex.Should().BeFalse();
+        data.GetElementDataAt("OrderArray").GetElementDataAt("1").GetElementDataAt("LineTexture").HasNumericalIndex.Should().BeTrue();
+        data.GetElementDataAt("OrderArray").GetElementDataAt("1").GetElementDataAt("LineTexture").GetElementDataAt("0").Value.Should().Be("Assets\\Textures\\Storm_WayPointLine1.dds");
 
-        data.GetXmlData("OrderArray").GetXmlData("2").HasNumericalIndex.Should().BeFalse();
-        data.GetXmlData("OrderArray").GetXmlData("2").GetXmlData("LineTexture").HasNumericalIndex.Should().BeTrue();
-        data.GetXmlData("OrderArray").GetXmlData("2").GetXmlData("LineTexture").GetXmlData("0").Value.Should().Be("Assets\\Textures\\Storm_WayPointLine2.dds");
+        data.GetElementDataAt("OrderArray").GetElementDataAt("2").HasNumericalIndex.Should().BeFalse();
+        data.GetElementDataAt("OrderArray").GetElementDataAt("2").GetElementDataAt("LineTexture").HasNumericalIndex.Should().BeTrue();
+        data.GetElementDataAt("OrderArray").GetElementDataAt("2").GetElementDataAt("LineTexture").GetElementDataAt("0").Value.Should().Be("Assets\\Textures\\Storm_WayPointLine2.dds");
     }
 
     [TestMethod]
@@ -242,19 +242,19 @@ public class StormElementDataTests
         StormElementData data = new(element);
 
         // assert
-        data.GetXmlData("HeroAbilArray").HasNumericalIndex.Should().BeTrue();
+        data.GetElementDataAt("HeroAbilArray").HasNumericalIndex.Should().BeTrue();
 
-        data.GetXmlData("HeroAbilArray").GetXmlData("0").GetXmlData("Abil").GetXmlData("0").Value.Should().Be("KelThuzadDeathAndDecay");
-        data.GetXmlData("HeroAbilArray").GetXmlData("0").GetXmlData("Abil").HasNumericalIndex.Should().BeTrue();
-        data.GetXmlData("HeroAbilArray").GetXmlData("0").GetXmlData("Flags").GetXmlData("ShowInHeroSelect").Value.Should().Be("1");
-        data.GetXmlData("HeroAbilArray").GetXmlData("0").GetXmlData("Flags").HasNumericalIndex.Should().BeFalse();
-        data.GetXmlData("HeroAbilArray").GetXmlData("0").GetXmlData("Flags").HasTextIndex.Should().BeTrue();
+        data.GetElementDataAt("HeroAbilArray").GetElementDataAt("0").GetElementDataAt("Abil").GetElementDataAt("0").Value.Should().Be("KelThuzadDeathAndDecay");
+        data.GetElementDataAt("HeroAbilArray").GetElementDataAt("0").GetElementDataAt("Abil").HasNumericalIndex.Should().BeTrue();
+        data.GetElementDataAt("HeroAbilArray").GetElementDataAt("0").GetElementDataAt("Flags").GetElementDataAt("ShowInHeroSelect").Value.Should().Be("1");
+        data.GetElementDataAt("HeroAbilArray").GetElementDataAt("0").GetElementDataAt("Flags").HasNumericalIndex.Should().BeFalse();
+        data.GetElementDataAt("HeroAbilArray").GetElementDataAt("0").GetElementDataAt("Flags").HasTextIndex.Should().BeTrue();
 
-        data.GetXmlData("HeroAbilArray").GetXmlData("2").GetXmlData("Abil").GetXmlData("0").Value.Should().Be("KelThuzadChains");
-        data.GetXmlData("HeroAbilArray").GetXmlData("2").GetXmlData("Abil").HasNumericalIndex.Should().BeTrue();
-        data.GetXmlData("HeroAbilArray").GetXmlData("2").GetXmlData("Flags").GetXmlData("AffectedByOverdrive").Value.Should().Be("1");
-        data.GetXmlData("HeroAbilArray").GetXmlData("2").GetXmlData("Flags").HasNumericalIndex.Should().BeFalse();
-        data.GetXmlData("HeroAbilArray").GetXmlData("2").GetXmlData("Flags").HasTextIndex.Should().BeTrue();
+        data.GetElementDataAt("HeroAbilArray").GetElementDataAt("2").GetElementDataAt("Abil").GetElementDataAt("0").Value.Should().Be("KelThuzadChains");
+        data.GetElementDataAt("HeroAbilArray").GetElementDataAt("2").GetElementDataAt("Abil").HasNumericalIndex.Should().BeTrue();
+        data.GetElementDataAt("HeroAbilArray").GetElementDataAt("2").GetElementDataAt("Flags").GetElementDataAt("AffectedByOverdrive").Value.Should().Be("1");
+        data.GetElementDataAt("HeroAbilArray").GetElementDataAt("2").GetElementDataAt("Flags").HasNumericalIndex.Should().BeFalse();
+        data.GetElementDataAt("HeroAbilArray").GetElementDataAt("2").GetElementDataAt("Flags").HasTextIndex.Should().BeTrue();
     }
 
     [TestMethod]
@@ -286,21 +286,21 @@ public class StormElementDataTests
         StormElementData data = new(element);
 
         // assert
-        data.GetXmlData("HeroAbilArray").HasNumericalIndex.Should().BeTrue();
+        data.GetElementDataAt("HeroAbilArray").HasNumericalIndex.Should().BeTrue();
 
-        data.GetXmlData("HeroAbilArray").GetXmlData("0").GetXmlData("Abil").GetXmlData("0").Value.Should().Be("KelThuzadDeathAndDecay");
-        data.GetXmlData("HeroAbilArray").GetXmlData("0").GetXmlData("Abil").HasNumericalIndex.Should().BeTrue();
-        data.GetXmlData("HeroAbilArray").GetXmlData("0").GetXmlData("Abil").HasTextIndex.Should().BeFalse();
-        data.GetXmlData("HeroAbilArray").GetXmlData("0").GetXmlData("Flags").GetXmlData("0").Value.Should().Be("1");
-        data.GetXmlData("HeroAbilArray").GetXmlData("0").GetXmlData("Flags").HasNumericalIndex.Should().BeTrue();
-        data.GetXmlData("HeroAbilArray").GetXmlData("0").GetXmlData("Flags").HasTextIndex.Should().BeFalse();
+        data.GetElementDataAt("HeroAbilArray").GetElementDataAt("0").GetElementDataAt("Abil").GetElementDataAt("0").Value.Should().Be("KelThuzadDeathAndDecay");
+        data.GetElementDataAt("HeroAbilArray").GetElementDataAt("0").GetElementDataAt("Abil").HasNumericalIndex.Should().BeTrue();
+        data.GetElementDataAt("HeroAbilArray").GetElementDataAt("0").GetElementDataAt("Abil").HasTextIndex.Should().BeFalse();
+        data.GetElementDataAt("HeroAbilArray").GetElementDataAt("0").GetElementDataAt("Flags").GetElementDataAt("0").Value.Should().Be("1");
+        data.GetElementDataAt("HeroAbilArray").GetElementDataAt("0").GetElementDataAt("Flags").HasNumericalIndex.Should().BeTrue();
+        data.GetElementDataAt("HeroAbilArray").GetElementDataAt("0").GetElementDataAt("Flags").HasTextIndex.Should().BeFalse();
 
-        data.GetXmlData("HeroAbilArray").GetXmlData("2").GetXmlData("Abil").GetXmlData("0").Value.Should().Be("KelThuzadChains");
-        data.GetXmlData("HeroAbilArray").GetXmlData("2").GetXmlData("Abil").HasNumericalIndex.Should().BeTrue();
-        data.GetXmlData("HeroAbilArray").GetXmlData("2").GetXmlData("Abil").HasTextIndex.Should().BeFalse();
-        data.GetXmlData("HeroAbilArray").GetXmlData("2").GetXmlData("Flags").GetXmlData("2").Value.Should().Be("3");
-        data.GetXmlData("HeroAbilArray").GetXmlData("2").GetXmlData("Flags").HasNumericalIndex.Should().BeTrue();
-        data.GetXmlData("HeroAbilArray").GetXmlData("2").GetXmlData("Flags").HasTextIndex.Should().BeFalse();
+        data.GetElementDataAt("HeroAbilArray").GetElementDataAt("2").GetElementDataAt("Abil").GetElementDataAt("0").Value.Should().Be("KelThuzadChains");
+        data.GetElementDataAt("HeroAbilArray").GetElementDataAt("2").GetElementDataAt("Abil").HasNumericalIndex.Should().BeTrue();
+        data.GetElementDataAt("HeroAbilArray").GetElementDataAt("2").GetElementDataAt("Abil").HasTextIndex.Should().BeFalse();
+        data.GetElementDataAt("HeroAbilArray").GetElementDataAt("2").GetElementDataAt("Flags").GetElementDataAt("2").Value.Should().Be("3");
+        data.GetElementDataAt("HeroAbilArray").GetElementDataAt("2").GetElementDataAt("Flags").HasNumericalIndex.Should().BeTrue();
+        data.GetElementDataAt("HeroAbilArray").GetElementDataAt("2").GetElementDataAt("Flags").HasTextIndex.Should().BeFalse();
     }
 
     [TestMethod]
@@ -319,8 +319,8 @@ public class StormElementDataTests
         StormElementData stormElementData = new(xElement);
 
         // assert
-        stormElementData.GetXmlData("Name").HasConstValue.Should().BeTrue();
-        stormElementData.GetXmlData("Name").ConstValue.Should().Be("SomeValue");
+        stormElementData.GetElementDataAt("Name").HasConstValue.Should().BeTrue();
+        stormElementData.GetElementDataAt("Name").ConstValue.Should().Be("SomeValue");
     }
 
     [TestMethod]
@@ -339,7 +339,7 @@ public class StormElementDataTests
         StormElementData stormElementData = new(xElement);
 
         // assert
-        stormElementData.GetXmlData("Name").HasConstValue.Should().BeFalse();
+        stormElementData.GetElementDataAt("Name").HasConstValue.Should().BeFalse();
     }
 
     [TestMethod]
@@ -359,8 +359,8 @@ public class StormElementDataTests
         StormElementData stormElementData = new(xElement);
 
         // assert
-        stormElementData.GetXmlData("Damage").HasHxdScale.Should().BeTrue();
-        stormElementData.GetXmlData("Damage").ScaleValue.Should().Be("0.1");
+        stormElementData.GetElementDataAt("Damage").HasHxdScale.Should().BeTrue();
+        stormElementData.GetElementDataAt("Damage").ScaleValue.Should().Be("0.1");
     }
 
     [TestMethod]
@@ -385,13 +385,13 @@ public class StormElementDataTests
         StormElementData data = new(element);
 
         // assert
-        data.GetXmlData("OrderArray").Field.Should().Be("OrderArray");
-        data.GetXmlData("OrderArray").GetXmlData("0").Field.Should().Be("OrderArray[0]");
-        data.GetXmlData("OrderArray").GetXmlData("0").GetXmlData("LineTexture").Field.Should().Be("OrderArray[0].LineTexture");
-        data.GetXmlData("OrderArray").GetXmlData("1").Field.Should().Be("OrderArray[1]");
-        data.GetXmlData("OrderArray").GetXmlData("1").GetXmlData("LineTexture").Field.Should().Be("OrderArray[1].LineTexture");
-        data.GetXmlData("OrderArray").GetXmlData("2").Field.Should().Be("OrderArray[2]");
-        data.GetXmlData("OrderArray").GetXmlData("2").GetXmlData("LineTexture").Field.Should().Be("OrderArray[2].LineTexture");
+        data.GetElementDataAt("OrderArray").Field.Should().Be("OrderArray");
+        data.GetElementDataAt("OrderArray").GetElementDataAt("0").Field.Should().Be("OrderArray[0]");
+        data.GetElementDataAt("OrderArray").GetElementDataAt("0").GetElementDataAt("LineTexture").Field.Should().Be("OrderArray[0].LineTexture");
+        data.GetElementDataAt("OrderArray").GetElementDataAt("1").Field.Should().Be("OrderArray[1]");
+        data.GetElementDataAt("OrderArray").GetElementDataAt("1").GetElementDataAt("LineTexture").Field.Should().Be("OrderArray[1].LineTexture");
+        data.GetElementDataAt("OrderArray").GetElementDataAt("2").Field.Should().Be("OrderArray[2]");
+        data.GetElementDataAt("OrderArray").GetElementDataAt("2").GetElementDataAt("LineTexture").Field.Should().Be("OrderArray[2].LineTexture");
     }
 
     [TestMethod]
@@ -423,21 +423,21 @@ public class StormElementDataTests
         StormElementData data = new(element);
 
         // assert
-        data.GetXmlData("HeroAbilArray").Field.Should().Be("HeroAbilArray");
-        data.GetXmlData("HeroAbilArray").GetXmlData("0").GetXmlData("Abil").GetXmlData("0").Field.Should().Be("HeroAbilArray[0].Abil[0]");
-        data.GetXmlData("HeroAbilArray").GetXmlData("0").GetXmlData("Flags").GetXmlData("ShowInHeroSelect").Field.Should().Be("HeroAbilArray[0].Flags[ShowInHeroSelect]");
-        data.GetXmlData("HeroAbilArray").GetXmlData("0").GetXmlData("Flags").GetXmlData("AffectedByCooldownReduction").Field.Should().Be("HeroAbilArray[0].Flags[AffectedByCooldownReduction]");
-        data.GetXmlData("HeroAbilArray").GetXmlData("0").GetXmlData("Flags").GetXmlData("AffectedByOverdrive").Field.Should().Be("HeroAbilArray[0].Flags[AffectedByOverdrive]");
+        data.GetElementDataAt("HeroAbilArray").Field.Should().Be("HeroAbilArray");
+        data.GetElementDataAt("HeroAbilArray").GetElementDataAt("0").GetElementDataAt("Abil").GetElementDataAt("0").Field.Should().Be("HeroAbilArray[0].Abil[0]");
+        data.GetElementDataAt("HeroAbilArray").GetElementDataAt("0").GetElementDataAt("Flags").GetElementDataAt("ShowInHeroSelect").Field.Should().Be("HeroAbilArray[0].Flags[ShowInHeroSelect]");
+        data.GetElementDataAt("HeroAbilArray").GetElementDataAt("0").GetElementDataAt("Flags").GetElementDataAt("AffectedByCooldownReduction").Field.Should().Be("HeroAbilArray[0].Flags[AffectedByCooldownReduction]");
+        data.GetElementDataAt("HeroAbilArray").GetElementDataAt("0").GetElementDataAt("Flags").GetElementDataAt("AffectedByOverdrive").Field.Should().Be("HeroAbilArray[0].Flags[AffectedByOverdrive]");
 
-        data.GetXmlData("HeroAbilArray").GetXmlData("1").GetXmlData("Abil").GetXmlData("0").Field.Should().Be("HeroAbilArray[1].Abil[0]");
-        data.GetXmlData("HeroAbilArray").GetXmlData("1").GetXmlData("Flags").GetXmlData("ShowInHeroSelect").Field.Should().Be("HeroAbilArray[1].Flags[ShowInHeroSelect]");
-        data.GetXmlData("HeroAbilArray").GetXmlData("1").GetXmlData("Flags").GetXmlData("AffectedByCooldownReduction").Field.Should().Be("HeroAbilArray[1].Flags[AffectedByCooldownReduction]");
-        data.GetXmlData("HeroAbilArray").GetXmlData("1").GetXmlData("Flags").GetXmlData("AffectedByOverdrive").Field.Should().Be("HeroAbilArray[1].Flags[AffectedByOverdrive]");
+        data.GetElementDataAt("HeroAbilArray").GetElementDataAt("1").GetElementDataAt("Abil").GetElementDataAt("0").Field.Should().Be("HeroAbilArray[1].Abil[0]");
+        data.GetElementDataAt("HeroAbilArray").GetElementDataAt("1").GetElementDataAt("Flags").GetElementDataAt("ShowInHeroSelect").Field.Should().Be("HeroAbilArray[1].Flags[ShowInHeroSelect]");
+        data.GetElementDataAt("HeroAbilArray").GetElementDataAt("1").GetElementDataAt("Flags").GetElementDataAt("AffectedByCooldownReduction").Field.Should().Be("HeroAbilArray[1].Flags[AffectedByCooldownReduction]");
+        data.GetElementDataAt("HeroAbilArray").GetElementDataAt("1").GetElementDataAt("Flags").GetElementDataAt("AffectedByOverdrive").Field.Should().Be("HeroAbilArray[1].Flags[AffectedByOverdrive]");
 
-        data.GetXmlData("HeroAbilArray").GetXmlData("2").GetXmlData("Abil").GetXmlData("0").Field.Should().Be("HeroAbilArray[2].Abil[0]");
-        data.GetXmlData("HeroAbilArray").GetXmlData("2").GetXmlData("Flags").GetXmlData("ShowInHeroSelect").Field.Should().Be("HeroAbilArray[2].Flags[ShowInHeroSelect]");
-        data.GetXmlData("HeroAbilArray").GetXmlData("2").GetXmlData("Flags").GetXmlData("AffectedByCooldownReduction").Field.Should().Be("HeroAbilArray[2].Flags[AffectedByCooldownReduction]");
-        data.GetXmlData("HeroAbilArray").GetXmlData("2").GetXmlData("Flags").GetXmlData("AffectedByOverdrive").Field.Should().Be("HeroAbilArray[2].Flags[AffectedByOverdrive]");
+        data.GetElementDataAt("HeroAbilArray").GetElementDataAt("2").GetElementDataAt("Abil").GetElementDataAt("0").Field.Should().Be("HeroAbilArray[2].Abil[0]");
+        data.GetElementDataAt("HeroAbilArray").GetElementDataAt("2").GetElementDataAt("Flags").GetElementDataAt("ShowInHeroSelect").Field.Should().Be("HeroAbilArray[2].Flags[ShowInHeroSelect]");
+        data.GetElementDataAt("HeroAbilArray").GetElementDataAt("2").GetElementDataAt("Flags").GetElementDataAt("AffectedByCooldownReduction").Field.Should().Be("HeroAbilArray[2].Flags[AffectedByCooldownReduction]");
+        data.GetElementDataAt("HeroAbilArray").GetElementDataAt("2").GetElementDataAt("Flags").GetElementDataAt("AffectedByOverdrive").Field.Should().Be("HeroAbilArray[2].Flags[AffectedByOverdrive]");
     }
 
     [TestMethod]
@@ -469,21 +469,21 @@ public class StormElementDataTests
         StormElementData data = new(element);
 
         // assert
-        data.GetXmlData("HeroAbilArray").Field.Should().Be("HeroAbilArray");
-        data.GetXmlData("HeroAbilArray").GetXmlData("0").GetXmlData("Abil").GetXmlData("0").Field.Should().Be("HeroAbilArray[0].Abil[0]");
-        data.GetXmlData("HeroAbilArray").GetXmlData("0").GetXmlData("Flags").GetXmlData("0").Field.Should().Be("HeroAbilArray[0].Flags[0]");
-        data.GetXmlData("HeroAbilArray").GetXmlData("0").GetXmlData("Flags").GetXmlData("1").Field.Should().Be("HeroAbilArray[0].Flags[1]");
-        data.GetXmlData("HeroAbilArray").GetXmlData("0").GetXmlData("Flags").GetXmlData("2").Field.Should().Be("HeroAbilArray[0].Flags[2]");
+        data.GetElementDataAt("HeroAbilArray").Field.Should().Be("HeroAbilArray");
+        data.GetElementDataAt("HeroAbilArray").GetElementDataAt("0").GetElementDataAt("Abil").GetElementDataAt("0").Field.Should().Be("HeroAbilArray[0].Abil[0]");
+        data.GetElementDataAt("HeroAbilArray").GetElementDataAt("0").GetElementDataAt("Flags").GetElementDataAt("0").Field.Should().Be("HeroAbilArray[0].Flags[0]");
+        data.GetElementDataAt("HeroAbilArray").GetElementDataAt("0").GetElementDataAt("Flags").GetElementDataAt("1").Field.Should().Be("HeroAbilArray[0].Flags[1]");
+        data.GetElementDataAt("HeroAbilArray").GetElementDataAt("0").GetElementDataAt("Flags").GetElementDataAt("2").Field.Should().Be("HeroAbilArray[0].Flags[2]");
 
-        data.GetXmlData("HeroAbilArray").GetXmlData("1").GetXmlData("Abil").GetXmlData("0").Field.Should().Be("HeroAbilArray[1].Abil[0]");
-        data.GetXmlData("HeroAbilArray").GetXmlData("1").GetXmlData("Flags").GetXmlData("0").Field.Should().Be("HeroAbilArray[1].Flags[0]");
-        data.GetXmlData("HeroAbilArray").GetXmlData("1").GetXmlData("Flags").GetXmlData("1").Field.Should().Be("HeroAbilArray[1].Flags[1]");
-        data.GetXmlData("HeroAbilArray").GetXmlData("1").GetXmlData("Flags").GetXmlData("2").Field.Should().Be("HeroAbilArray[1].Flags[2]");
+        data.GetElementDataAt("HeroAbilArray").GetElementDataAt("1").GetElementDataAt("Abil").GetElementDataAt("0").Field.Should().Be("HeroAbilArray[1].Abil[0]");
+        data.GetElementDataAt("HeroAbilArray").GetElementDataAt("1").GetElementDataAt("Flags").GetElementDataAt("0").Field.Should().Be("HeroAbilArray[1].Flags[0]");
+        data.GetElementDataAt("HeroAbilArray").GetElementDataAt("1").GetElementDataAt("Flags").GetElementDataAt("1").Field.Should().Be("HeroAbilArray[1].Flags[1]");
+        data.GetElementDataAt("HeroAbilArray").GetElementDataAt("1").GetElementDataAt("Flags").GetElementDataAt("2").Field.Should().Be("HeroAbilArray[1].Flags[2]");
 
-        data.GetXmlData("HeroAbilArray").GetXmlData("2").GetXmlData("Abil").GetXmlData("0").Field.Should().Be("HeroAbilArray[2].Abil[0]");
-        data.GetXmlData("HeroAbilArray").GetXmlData("2").GetXmlData("Flags").GetXmlData("0").Field.Should().Be("HeroAbilArray[2].Flags[0]");
-        data.GetXmlData("HeroAbilArray").GetXmlData("2").GetXmlData("Flags").GetXmlData("1").Field.Should().Be("HeroAbilArray[2].Flags[1]");
-        data.GetXmlData("HeroAbilArray").GetXmlData("2").GetXmlData("Flags").GetXmlData("2").Field.Should().Be("HeroAbilArray[2].Flags[2]");
+        data.GetElementDataAt("HeroAbilArray").GetElementDataAt("2").GetElementDataAt("Abil").GetElementDataAt("0").Field.Should().Be("HeroAbilArray[2].Abil[0]");
+        data.GetElementDataAt("HeroAbilArray").GetElementDataAt("2").GetElementDataAt("Flags").GetElementDataAt("0").Field.Should().Be("HeroAbilArray[2].Flags[0]");
+        data.GetElementDataAt("HeroAbilArray").GetElementDataAt("2").GetElementDataAt("Flags").GetElementDataAt("1").Field.Should().Be("HeroAbilArray[2].Flags[1]");
+        data.GetElementDataAt("HeroAbilArray").GetElementDataAt("2").GetElementDataAt("Flags").GetElementDataAt("2").Field.Should().Be("HeroAbilArray[2].Flags[2]");
     }
 
     [TestMethod]
@@ -502,7 +502,7 @@ public class StormElementDataTests
         StormElementData stormElementData = new(xElement);
 
         // assert
-        stormElementData.GetXmlData("Name").Field.Should().Be("Name");
+        stormElementData.GetElementDataAt("Name").Field.Should().Be("Name");
     }
 
     [TestMethod]
@@ -532,14 +532,14 @@ public class StormElementDataTests
         StormElementData data = new(element);
 
         // act
-        bool result = data.TryGetXmlData("HeroAbilArray", out StormElementData? stormElementData);
-        bool resultAsSpan = data.TryGetXmlData("HeroAbilArray".AsSpan(), out StormElementData? stormElementDataAsSpan);
+        bool result = data.TryGetElementDataAt("HeroAbilArray", out StormElementData? stormElementData);
+        bool resultAsSpan = data.TryGetElementDataAt("HeroAbilArray".AsSpan(), out StormElementData? stormElementDataAsSpan);
 
         // assert
         result.Should().BeTrue();
         resultAsSpan.Should().BeTrue();
-        stormElementData!.GetXmlData().ToList().Should().HaveCount(3);
-        stormElementDataAsSpan!.GetXmlData().ToList().Should().HaveCount(3);
+        stormElementData!.GetAllElementData().ToList().Should().HaveCount(3);
+        stormElementDataAsSpan!.GetAllElementData().ToList().Should().HaveCount(3);
     }
 
     [TestMethod]
@@ -569,8 +569,8 @@ public class StormElementDataTests
         StormElementData data = new(element);
 
         // act
-        bool result = data.TryGetXmlData("Damage", out StormElementData? stormElementData);
-        bool resultAsSpan = data.TryGetXmlData("Damage".AsSpan(), out StormElementData? stormElementDataAsSpan);
+        bool result = data.TryGetElementDataAt("Damage", out StormElementData? stormElementData);
+        bool resultAsSpan = data.TryGetElementDataAt("Damage".AsSpan(), out StormElementData? stormElementDataAsSpan);
 
         // assert
         result.Should().BeFalse();

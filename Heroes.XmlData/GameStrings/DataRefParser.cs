@@ -37,15 +37,15 @@ internal class DataRefParser
                 // the part with out the indexer, e.g. PeriodicPeriodArray
                 ReadOnlySpan<char> fieldPartSpanWithoutIndexer = fieldPartSpan[..indexOfStartBracket];
 
-                if (currentElementData.TryGetXmlData(fieldPartSpanWithoutIndexer.ToString(), out StormElementData? withoutIndexerStormElementData))
+                if (currentElementData.TryGetElementDataAt(fieldPartSpanWithoutIndexer.ToString(), out StormElementData? withoutIndexerStormElementData))
                 {
                     if (((numericalIndex is true && withoutIndexerStormElementData.HasNumericalIndex is true) ||
-                        (numericalIndex is false && withoutIndexerStormElementData.HasTextIndex is true)) && withoutIndexerStormElementData.TryGetXmlData(fieldPartIndexValue.ToString(), out StormElementData? indexStormElementData))
+                        (numericalIndex is false && withoutIndexerStormElementData.HasTextIndex is true)) && withoutIndexerStormElementData.TryGetElementDataAt(fieldPartIndexValue.ToString(), out StormElementData? indexStormElementData))
                     {
                         currentElementData = indexStormElementData;
                     }
                     else if (numericalIndex is true && withoutIndexerStormElementData.HasTextIndex is true &&
-                        withoutIndexerStormElementData.XmlDataCount > 0 && indexAsNumber < withoutIndexerStormElementData.XmlDataCount)
+                        withoutIndexerStormElementData.ElementDataCount > 0 && indexAsNumber < withoutIndexerStormElementData.ElementDataCount)
                     {
                         currentElementData = withoutIndexerStormElementData.ElementDataPairs.ElementAt(indexAsNumber).Value;
                     }
@@ -70,8 +70,8 @@ internal class DataRefParser
                     }
                 }
             }
-            else if (currentElementData.TryGetXmlData(fieldPartSpan.ToString(), out StormElementData? stormElementData) ||
-                ((currentElementData.HasNumericalIndex || currentElementData.HasTextIndex) && currentElementData.ElementDataPairs.First().Value.TryGetXmlData(fieldPartSpan.ToString(), out stormElementData)))
+            else if (currentElementData.TryGetElementDataAt(fieldPartSpan.ToString(), out StormElementData? stormElementData) ||
+                ((currentElementData.HasNumericalIndex || currentElementData.HasTextIndex) && currentElementData.ElementDataPairs.First().Value.TryGetElementDataAt(fieldPartSpan.ToString(), out stormElementData)))
             {
                 currentElementData = stormElementData;
             }
@@ -279,7 +279,7 @@ internal class DataRefParser
             StormElementData stormElementData = GetStormElementDataFromLastFieldPart(scalingStormElement.DataValues, fullSpan, xmlParts[2..]);
 
             // AmountArray[Quest]
-            if (!fieldIndexer.IsEmpty && stormElementData.TryGetXmlData(fieldIndexer.ToString(), out StormElementData? innerIndexData))
+            if (!fieldIndexer.IsEmpty && stormElementData.TryGetElementDataAt(fieldIndexer.ToString(), out StormElementData? innerIndexData))
             {
                 stormElementData = innerIndexData;
             }

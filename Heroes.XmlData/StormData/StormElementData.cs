@@ -101,7 +101,7 @@ public class StormElementData : IXmlData
     public bool HasHxdScale => ElementDataPairs.Count == 1 && ElementDataPairs.ContainsKey(ScaleValueParser.ScaleAttributeName);
 
     /// <summary>
-    /// Gets the value which represents a value of an <see cref="XAttribute"/>.
+    /// Gets the original value which represents a value of an <see cref="XAttribute"/>.
     /// </summary>
     public string? Value
     {
@@ -188,11 +188,12 @@ public class StormElementData : IXmlData
     public bool HasTextIndex { get; init; }
 
     /// <inheritdoc/>
-    public int XmlDataCount => ElementDataPairs.Count;
+    public int ElementDataCount => ElementDataPairs.Count;
 
     /// <summary>
     /// Gets the inner data.
     /// </summary>
+    [DebuggerBrowsable(DebuggerBrowsableState.Collapsed)]
     internal Dictionary<string, StormElementData> ElementDataPairs { get; } = new(StringComparer.OrdinalIgnoreCase);
 
     [DebuggerBrowsable(DebuggerBrowsableState.RootHidden)]
@@ -223,7 +224,7 @@ public class StormElementData : IXmlData
     }
 
     /// <inheritdoc/>
-    public StormElementData GetXmlData(ReadOnlySpan<char> index)
+    public StormElementData GetElementDataAt(ReadOnlySpan<char> index)
     {
         if (ElementDataPairs.TryGetValue(index.ToString(), out StormElementData? stormElementData))
             return stormElementData;
@@ -232,7 +233,7 @@ public class StormElementData : IXmlData
     }
 
     /// <inheritdoc/>
-    public StormElementData GetXmlData(string index)
+    public StormElementData GetElementDataAt(string index)
     {
         ArgumentNullException.ThrowIfNull(index);
 
@@ -243,13 +244,13 @@ public class StormElementData : IXmlData
     }
 
     /// <inheritdoc/>
-    public bool TryGetXmlData(ReadOnlySpan<char> index, [NotNullWhen(true)] out StormElementData? stormElementData)
+    public bool TryGetElementDataAt(ReadOnlySpan<char> index, [NotNullWhen(true)] out StormElementData? stormElementData)
     {
-        return TryGetXmlData(index.ToString(), out stormElementData);
+        return TryGetElementDataAt(index.ToString(), out stormElementData);
     }
 
     /// <inheritdoc/>
-    public bool TryGetXmlData(string index, [NotNullWhen(true)] out StormElementData? stormElementData)
+    public bool TryGetElementDataAt(string index, [NotNullWhen(true)] out StormElementData? stormElementData)
     {
         ArgumentNullException.ThrowIfNull(index);
 
@@ -257,7 +258,7 @@ public class StormElementData : IXmlData
     }
 
     /// <inheritdoc/>
-    public IEnumerable<StormElementData> GetXmlData()
+    public IEnumerable<StormElementData> GetAllElementData()
     {
         foreach (StormElementData data in ElementDataPairs.Values)
         {

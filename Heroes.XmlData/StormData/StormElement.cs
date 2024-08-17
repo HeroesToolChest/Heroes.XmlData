@@ -97,7 +97,7 @@ public class StormElement : IXmlData
     public bool HasParentId => DataValues.ElementDataPairs.ContainsKey(ParentAttribute);
 
     /// <inheritdoc/>
-    public int XmlDataCount => DataValues.ElementDataPairs.Count;
+    public int ElementDataCount => DataValues.ElementDataPairs.Count;
 
     [DebuggerBrowsable(DebuggerBrowsableState.RootHidden)]
     private string DebuggerDisplay
@@ -120,31 +120,31 @@ public class StormElement : IXmlData
     }
 
     /// <inheritdoc/>
-    public StormElementData GetXmlData(ReadOnlySpan<char> index)
+    public StormElementData GetElementDataAt(ReadOnlySpan<char> index)
     {
-        return DataValues.GetXmlData(index);
+        return DataValues.GetElementDataAt(index);
     }
 
     /// <inheritdoc/>
-    public StormElementData GetXmlData(string index)
+    public StormElementData GetElementDataAt(string index)
     {
-        return DataValues.GetXmlData(index);
+        return DataValues.GetElementDataAt(index);
     }
 
     /// <inheritdoc/>
-    public bool TryGetXmlData(ReadOnlySpan<char> index, [NotNullWhen(true)] out StormElementData? stormElementData)
+    public bool TryGetElementDataAt(ReadOnlySpan<char> index, [NotNullWhen(true)] out StormElementData? stormElementData)
     {
-        return DataValues.TryGetXmlData(index, out stormElementData);
+        return DataValues.TryGetElementDataAt(index, out stormElementData);
     }
 
     /// <inheritdoc/>
-    public bool TryGetXmlData(string index, [NotNullWhen(true)] out StormElementData? stormElementData)
+    public bool TryGetElementDataAt(string index, [NotNullWhen(true)] out StormElementData? stormElementData)
     {
-        return DataValues.TryGetXmlData(index.ToString(), out stormElementData);
+        return DataValues.TryGetElementDataAt(index.ToString(), out stormElementData);
     }
 
     /// <inheritdoc/>
-    public IEnumerable<StormElementData> GetXmlData()
+    public IEnumerable<StormElementData> GetAllElementData()
     {
         foreach (StormElementData data in DataValues.ElementDataPairs.Values)
         {
