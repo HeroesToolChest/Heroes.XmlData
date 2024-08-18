@@ -37,7 +37,7 @@ public class StormStyleStyleElement : StormElement
         get
         {
             if (HasName)
-                return DataValues.ElementDataPairs[NameAttribute].Value;
+                return DataValues.ElementDataPairs[NameAttribute].RawValue;
             else
                 return null;
         }
@@ -51,7 +51,7 @@ public class StormStyleStyleElement : StormElement
         get
         {
             if (HasTemplate)
-                return DataValues.ElementDataPairs[TemplateAttribute].Value;
+                return DataValues.ElementDataPairs[TemplateAttribute].RawValue;
             else
                 return null;
         }

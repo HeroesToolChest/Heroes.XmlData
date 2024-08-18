@@ -6,7 +6,7 @@ namespace Heroes.XmlData.StormData;
 /// Contains the data that represents an <see cref="XElement"/>.
 /// </summary>
 [DebuggerDisplay("{DebuggerDisplay,nq}")]
-public class StormElementData : IXmlData
+public class StormElementData
 {
     private static readonly HashSet<string> _otherElementArrays = ["On", "Cost", "CatalogModifications", "ConditionalEvents", "CardLayouts"];
 
@@ -44,14 +44,14 @@ public class StormElementData : IXmlData
     internal StormElementData(StormElementData parent, string field, string value, bool isIndex = false)
         : this(parent, field, isIndex)
     {
-        Value = value;
+        RawValue = value;
     }
 
     internal StormElementData(StormElementData parent, string field, string value, string constValue)
         : this(parent, field)
     {
-        Value = value;
-        ConstValue = constValue;
+        RawValue = value;
+        _constValue = constValue;
     }
 
     internal StormElementData(StormElementData parent, string field, XElement rootElement, bool isInnerArray = false, bool isIndex = false)
@@ -89,21 +89,42 @@ public class StormElementData : IXmlData
     public bool HasValue => Value is not null;
 
     /// <summary>
-    /// Gets a value indicating whether <see cref="ConstValue"/> is not <see langword="null"/>.
+    /// Gets a value indicating whether <see cref="Value"/> is evaluated from a const.
     /// </summary>
-    [MemberNotNullWhen(true, nameof(ConstValue))]
-    public bool HasConstValue => ConstValue is not null;
+    public bool IsConstValue
+    {
+        get
+        {
+            if (_constValue is not null)
+            {
+                return true;
+            }
+            else if (ElementDataPairs.Keys.Count == 1)
+            {
+                if (HasNumericalIndex && ElementDataPairs.TryGetValue("0", out StormElementData? data) && data.IsConstValue)
+                {
+                    return data.IsConstValue;
+                }
+                else if (HasTextIndex)
+                {
+                    return ElementDataPairs.First().Value.IsConstValue;
+                }
+            }
+
+            return false;
+        }
+    }
 
     /// <summary>
-    /// Gets a value indicating whether <see cref="ScaleValue"/> is not <see langword="null"/>.
+    /// Gets a value indicating whether <see cref="HxdScaleValue"/> is not <see langword="null"/>.
     /// </summary>
-    [MemberNotNullWhen(true, nameof(ScaleValue))]
+    [MemberNotNullWhen(true, nameof(HxdScaleValue))]
     public bool HasHxdScale => ElementDataPairs.Count == 1 && ElementDataPairs.ContainsKey(ScaleValueParser.ScaleAttributeName);
 
     /// <summary>
     /// Gets the original value which represents a value of an <see cref="XAttribute"/>.
     /// </summary>
-    public string? Value
+    public string? RawValue
     {
         get
         {
@@ -115,13 +136,13 @@ public class StormElementData : IXmlData
             {
                 if (HasNumericalIndex && ElementDataPairs.TryGetValue("0", out StormElementData? data) && data.HasValue)
                 {
-                    return data.Value;
+                    return data.RawValue;
                 }
                 else if (HasTextIndex)
                 {
                     StormElementData firstElementData = ElementDataPairs.First().Value;
                     if (firstElementData.HasValue)
-                        return firstElementData.Value;
+                        return firstElementData.RawValue;
                 }
             }
 
@@ -132,9 +153,9 @@ public class StormElementData : IXmlData
     }
 
     /// <summary>
-    /// Gets the evaluated value of the constant if <see cref="Value"/> contains a constant (starts with $).
+    /// Gets the evaluated value which represents a value of an <see cref="XAttribute"/>.
     /// </summary>
-    public string? ConstValue
+    public string? Value
     {
         get
         {
@@ -142,35 +163,36 @@ public class StormElementData : IXmlData
             {
                 return _constValue;
             }
+            else if (_value is not null)
+            {
+                return _value;
+            }
             else if (ElementDataPairs.Keys.Count == 1)
             {
-                if (HasNumericalIndex && ElementDataPairs.TryGetValue("0", out StormElementData? data) && data.HasConstValue)
+                if (HasNumericalIndex && ElementDataPairs.TryGetValue("0", out StormElementData? data) && data.HasValue)
                 {
-                    return data.ConstValue;
+                    return data.Value;
                 }
                 else if (HasTextIndex)
                 {
-                    StormElementData firstElementData = ElementDataPairs.First().Value;
-                    if (firstElementData.HasConstValue)
-                        return firstElementData.ConstValue;
+                    return ElementDataPairs.First().Value.Value;
                 }
             }
 
             return null;
         }
-        private set => _constValue = value;
     }
 
     /// <summary>
     /// Gets the scaling value.
     /// </summary>
-    public string? ScaleValue
+    public string? HxdScaleValue
     {
         get
         {
             if (HasHxdScale)
             {
-                return ElementDataPairs[ScaleValueParser.ScaleAttributeName].Value;
+                return ElementDataPairs[ScaleValueParser.ScaleAttributeName].RawValue;
             }
 
             return null;
@@ -187,7 +209,9 @@ public class StormElementData : IXmlData
     /// </summary>
     public bool HasTextIndex { get; init; }
 
-    /// <inheritdoc/>
+    /// <summary>
+    /// Gets the amount of elements.
+    /// </summary>
     public int ElementDataCount => ElementDataPairs.Count;
 
     /// <summary>
@@ -205,25 +229,26 @@ public class StormElementData : IXmlData
 
             if (HasValue)
             {
-                return $"Value = \"{Value}\", {display}";
-            }
-            else if (HasConstValue)
-            {
-                return $"ConstValue = \"{ConstValue}\", {display}";
+                return $"{Field}, Value = \"{Value}\", {display}";
             }
             else
             {
                 if (HasNumericalIndex)
-                    return $"{display}, IsNumericalIndex";
+                    return $"{Field}, {display}, IsNumericalIndex";
                 else if (HasTextIndex)
-                    return $"{display}, IsTextIndex";
+                    return $"{Field}, {display}, IsTextIndex";
                 else
-                    return $"{display}";
+                    return $"{Field}, {display}";
             }
         }
     }
 
-    /// <inheritdoc/>
+    /// <summary>
+    /// Gets the inner xml data from the given <paramref name="index"/>.
+    /// </summary>
+    /// <param name="index">A character span that contains the index value which is an element name or attribute name or value. Is case-insensitive.</param>
+    /// <returns>The inner xml data as <see cref="StormElementData"/>.</returns>
+    /// <exception cref="KeyNotFoundException"><paramref name="index"/> was not found.</exception>
     public StormElementData GetElementDataAt(ReadOnlySpan<char> index)
     {
         if (ElementDataPairs.TryGetValue(index.ToString(), out StormElementData? stormElementData))
@@ -232,7 +257,13 @@ public class StormElementData : IXmlData
         throw new KeyNotFoundException();
     }
 
-    /// <inheritdoc/>
+    /// <summary>
+    /// Gets the inner xml data from the given <paramref name="index"/>.
+    /// </summary>
+    /// <param name="index">The index value which is an element name or attribute name or value. Is case-insensitive.</param>
+    /// <returns>The inner xml data as <see cref="StormElementData"/>.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="index"/> is <see langword="null"/>.</exception>
+    /// <exception cref="KeyNotFoundException"><paramref name="index"/> was not found.</exception>
     public StormElementData GetElementDataAt(string index)
     {
         ArgumentNullException.ThrowIfNull(index);
@@ -243,13 +274,24 @@ public class StormElementData : IXmlData
         throw new KeyNotFoundException();
     }
 
-    /// <inheritdoc/>
+    /// <summary>
+    /// Looks up the inner xml data from the given <paramref name="index"/>, returning a value that indicates whether such value exists.
+    /// </summary>
+    /// <param name="index">A character span that contains the index value which is an element name or attribute name or value. Is case-insensitive.</param>
+    /// <param name="stormElementData">The returming <see cref="StormElementData"/> if <paramref name="index"/> is found.</param>
+    /// <returns><see langword="true"/> if the index is found, otherwise <see langword="false"/>.</returns>
     public bool TryGetElementDataAt(ReadOnlySpan<char> index, [NotNullWhen(true)] out StormElementData? stormElementData)
     {
         return TryGetElementDataAt(index.ToString(), out stormElementData);
     }
 
-    /// <inheritdoc/>
+    /// <summary>
+    /// Looks up the inner xml data from the given <paramref name="index"/>, returning a value that indicates whether such value exists.
+    /// </summary>
+    /// <param name="index">The index value which is an element name or attribute name or value. Is case-insensitive.</param>
+    /// <param name="stormElementData">The returming <see cref="StormElementData"/> if <paramref name="index"/> is found.</param>
+    /// <returns><see langword="true"/> if the index is found, otherwise <see langword="false"/>.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="index"/> is <see langword="null"/>.</exception>
     public bool TryGetElementDataAt(string index, [NotNullWhen(true)] out StormElementData? stormElementData)
     {
         ArgumentNullException.ThrowIfNull(index);
@@ -257,12 +299,21 @@ public class StormElementData : IXmlData
         return ElementDataPairs.TryGetValue(index, out stormElementData);
     }
 
-    /// <inheritdoc/>
-    public IEnumerable<StormElementData> GetAllElementData()
+    internal IEnumerable<StormElementData> GetElements()
     {
         foreach (StormElementData data in ElementDataPairs.Values)
         {
-            yield return data;
+            if (data.ElementDataPairs.Count == 0)
+            {
+                yield return data;
+            }
+            else
+            {
+                foreach (StormElementData innerData in data.GetElements())
+                {
+                    yield return innerData;
+                }
+            }
         }
     }
 
@@ -283,13 +334,13 @@ public class StormElementData : IXmlData
 
             if (attribute.Name.LocalName.Equals("value", StringComparison.OrdinalIgnoreCase))
             {
-                Value = attribute.Value;
+                RawValue = attribute.Value;
                 continue;
             }
 
             if (attribute.Name.LocalName.Equals($"{StormModStorage.SelfNameConst}value", StringComparison.OrdinalIgnoreCase))
             {
-                ConstValue = attribute.Value;
+                _constValue = attribute.Value;
                 continue;
             }
 

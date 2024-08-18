@@ -3,10 +3,10 @@
 namespace Heroes.XmlData.StormData;
 
 /// <summary>
-/// Contains the data for an <see cref="XElement"/>.
+/// Represents an top level <see cref="XElement"/>.
 /// </summary>
 [DebuggerDisplay("{DebuggerDisplay,nq}")]
-public class StormElement : IXmlData
+public class StormElement
 {
     private const string IdAttribute = "id";
     private const string ParentAttribute = "parent";
@@ -64,7 +64,7 @@ public class StormElement : IXmlData
         get
         {
             if (HasId)
-                return DataValues.ElementDataPairs[IdAttribute].Value;
+                return DataValues.ElementDataPairs[IdAttribute].RawValue;
             else
                 return null;
         }
@@ -78,7 +78,7 @@ public class StormElement : IXmlData
         get
         {
             if (HasParentId)
-                return DataValues.ElementDataPairs[ParentAttribute].Value;
+                return DataValues.ElementDataPairs[ParentAttribute].RawValue;
             else
                 return null;
         }
@@ -95,9 +95,6 @@ public class StormElement : IXmlData
     /// </summary>
     [MemberNotNullWhen(true, nameof(ParentId))]
     public bool HasParentId => DataValues.ElementDataPairs.ContainsKey(ParentAttribute);
-
-    /// <inheritdoc/>
-    public int ElementDataCount => DataValues.ElementDataPairs.Count;
 
     [DebuggerBrowsable(DebuggerBrowsableState.RootHidden)]
     private string DebuggerDisplay
@@ -119,37 +116,13 @@ public class StormElement : IXmlData
         }
     }
 
-    /// <inheritdoc/>
-    public StormElementData GetElementDataAt(ReadOnlySpan<char> index)
+    /// <summary>
+    /// Gets a collection of all the inner elements and attributes.
+    /// </summary>
+    /// <returns>A collection of all the inner xml data as <see cref="StormElementData"/>.</returns>
+    public IEnumerable<StormElementData> GetElements()
     {
-        return DataValues.GetElementDataAt(index);
-    }
-
-    /// <inheritdoc/>
-    public StormElementData GetElementDataAt(string index)
-    {
-        return DataValues.GetElementDataAt(index);
-    }
-
-    /// <inheritdoc/>
-    public bool TryGetElementDataAt(ReadOnlySpan<char> index, [NotNullWhen(true)] out StormElementData? stormElementData)
-    {
-        return DataValues.TryGetElementDataAt(index, out stormElementData);
-    }
-
-    /// <inheritdoc/>
-    public bool TryGetElementDataAt(string index, [NotNullWhen(true)] out StormElementData? stormElementData)
-    {
-        return DataValues.TryGetElementDataAt(index.ToString(), out stormElementData);
-    }
-
-    /// <inheritdoc/>
-    public IEnumerable<StormElementData> GetAllElementData()
-    {
-        foreach (StormElementData data in DataValues.ElementDataPairs.Values)
-        {
-            yield return data;
-        }
+        return DataValues.GetElements();
     }
 
     /// <summary>

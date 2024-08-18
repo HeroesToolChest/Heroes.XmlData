@@ -37,7 +37,7 @@ public class StormLayoutElement : StormElement
         get
         {
             if (HasName)
-                return DataValues.ElementDataPairs[NameAttribute].Value;
+                return DataValues.ElementDataPairs[NameAttribute].RawValue;
             else
                 return null;
         }
@@ -51,7 +51,7 @@ public class StormLayoutElement : StormElement
         get
         {
             if (HasType)
-                return DataValues.ElementDataPairs[TypeAttribute].Value;
+                return DataValues.ElementDataPairs[TypeAttribute].RawValue;
             else
                 return null;
         }

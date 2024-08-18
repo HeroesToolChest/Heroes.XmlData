@@ -60,7 +60,7 @@ internal class DataRefParser
                             return currentElementData;
                         }
                     }
-                    else if (withoutIndexerStormElementData.HasValue || withoutIndexerStormElementData.HasConstValue)
+                    else if (withoutIndexerStormElementData.HasValue)
                     {
                         currentElementData = withoutIndexerStormElementData;
                     }
@@ -253,16 +253,16 @@ internal class DataRefParser
 
         currentElementData = GetStormElementDataFromLastFieldPart(currentElementData, fullPartSpan, fieldParts);
 
-        if (currentElementData.HasConstValue)
+        if (currentElementData.IsConstValue)
         {
-            return GetValueScale(currentElementData.ConstValue, fullPartSpan, xmlParts);
+            return GetValueScale(currentElementData.Value, fullPartSpan, xmlParts);
         }
         else if (currentElementData.HasValue)
         {
             if (currentElementData.HasTextIndex)
-                return GetValueScale(currentElementData.Value, fullPartSpan, xmlParts, currentElementData.ElementDataPairs.First().Key);
+                return GetValueScale(currentElementData.RawValue, fullPartSpan, xmlParts, currentElementData.ElementDataPairs.First().Key);
             else
-                return GetValueScale(currentElementData.Value, fullPartSpan, xmlParts);
+                return GetValueScale(currentElementData.RawValue, fullPartSpan, xmlParts);
         }
 
         return new ValueScale(0);
@@ -270,27 +270,25 @@ internal class DataRefParser
 
     private ValueScale GetValueScale(ReadOnlySpan<char> stormElementDataValue, ReadOnlySpan<char> fullSpan, ReadOnlySpan<Range> xmlParts, ReadOnlySpan<char> fieldIndexer = default)
     {
-        if (double.TryParse(stormElementDataValue, out double dataValue))
+        if (!double.TryParse(stormElementDataValue, out double dataValue))
+            return new ValueScale(0);
+
+        StormElement? scalingStormElement = _stormStorage.GetScaleValueStormElementById(fullSpan[xmlParts[1]], fullSpan[xmlParts[0]]);
+        if (scalingStormElement is null)
+            return new ValueScale(dataValue);
+
+        StormElementData stormElementData = GetStormElementDataFromLastFieldPart(scalingStormElement.DataValues, fullSpan, xmlParts[2..]);
+
+        // AmountArray[Quest]
+        if (!fieldIndexer.IsEmpty && stormElementData.TryGetElementDataAt(fieldIndexer.ToString(), out StormElementData? innerIndexData))
         {
-            StormElement? scalingStormElement = _stormStorage.GetScaleValueStormElementById(fullSpan[xmlParts[1]], fullSpan[xmlParts[0]]);
-            if (scalingStormElement is null)
-                return new ValueScale(dataValue);
-
-            StormElementData stormElementData = GetStormElementDataFromLastFieldPart(scalingStormElement.DataValues, fullSpan, xmlParts[2..]);
-
-            // AmountArray[Quest]
-            if (!fieldIndexer.IsEmpty && stormElementData.TryGetElementDataAt(fieldIndexer.ToString(), out StormElementData? innerIndexData))
-            {
-                stormElementData = innerIndexData;
-            }
-
-            if (stormElementData.HasHxdScale && double.TryParse(stormElementData.ScaleValue, out double scalingValue))
-                return new ValueScale(dataValue, scalingValue);
-            else
-                return new ValueScale(dataValue);
+            stormElementData = innerIndexData;
         }
 
-        return new ValueScale(0);
+        if (stormElementData.HasHxdScale && double.TryParse(stormElementData.HxdScaleValue, out double scalingValue))
+            return new ValueScale(dataValue, scalingValue);
+        else
+            return new ValueScale(dataValue);
     }
 
     private ValueScale CalculateExpression(ReadOnlySpan<char> dRefSpan, List<ITextSection> dataRefParts)
