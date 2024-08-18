@@ -10,7 +10,7 @@ public class StormElementData
 {
     private static readonly HashSet<string> _otherElementArrays = ["On", "Cost", "CatalogModifications", "ConditionalEvents", "CardLayouts"];
 
-    private string? _value;
+    private string? _rawValue;
     private string? _constValue;
 
     internal StormElementData(XElement rootElement)
@@ -44,13 +44,13 @@ public class StormElementData
     internal StormElementData(StormElementData parent, string field, string value, bool isIndex = false)
         : this(parent, field, isIndex)
     {
-        RawValue = value;
+        _rawValue = value;
     }
 
     internal StormElementData(StormElementData parent, string field, string value, string constValue)
         : this(parent, field)
     {
-        RawValue = value;
+        _rawValue = value;
         _constValue = constValue;
     }
 
@@ -128,9 +128,9 @@ public class StormElementData
     {
         get
         {
-            if (_value is not null)
+            if (_rawValue is not null)
             {
-                return _value;
+                return _rawValue;
             }
             else if (ElementDataPairs.Keys.Count == 1)
             {
@@ -148,12 +148,10 @@ public class StormElementData
 
             return null;
         }
-
-        private set => _value = value;
     }
 
     /// <summary>
-    /// Gets the evaluated value which represents a value of an <see cref="XAttribute"/>.
+    /// Gets the evaluated value of <see cref="RawValue"/>.
     /// </summary>
     public string? Value
     {
@@ -163,9 +161,9 @@ public class StormElementData
             {
                 return _constValue;
             }
-            else if (_value is not null)
+            else if (_rawValue is not null)
             {
-                return _value;
+                return _rawValue;
             }
             else if (ElementDataPairs.Keys.Count == 1)
             {
@@ -229,16 +227,16 @@ public class StormElementData
 
             if (HasValue)
             {
-                return $"{Field}, Value = \"{Value}\", {display}";
+                return $"Value = \"{Value}\", {display}";
             }
             else
             {
                 if (HasNumericalIndex)
-                    return $"{Field}, {display}, IsNumericalIndex";
+                    return $"{display}, IsNumericalIndex";
                 else if (HasTextIndex)
-                    return $"{Field}, {display}, IsTextIndex";
+                    return $"{display}, IsTextIndex";
                 else
-                    return $"{Field}, {display}";
+                    return display;
             }
         }
     }
@@ -334,7 +332,7 @@ public class StormElementData
 
             if (attribute.Name.LocalName.Equals("value", StringComparison.OrdinalIgnoreCase))
             {
-                RawValue = attribute.Value;
+                _rawValue = attribute.Value;
                 continue;
             }
 
