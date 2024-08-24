@@ -150,7 +150,8 @@ public class StormElementData
     }
 
     /// <summary>
-    /// Gets the evaluated value of <see cref="RawValue"/>.
+    /// Gets the evaluated value of <see cref="RawValue"/>. For example, if it contains a const value ($var) or an element replacement (##name##), it will be updated with the new value.
+    /// To get the original value, use <see cref="RawValue"/>.
     /// </summary>
     public StormElementValue Value
     {
