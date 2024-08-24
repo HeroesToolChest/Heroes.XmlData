@@ -36,7 +36,8 @@ public class ScaleValueParserTests
         // assert
         stormElement.Should().NotBeNull();
         stormElement!.Id.Should().BeNull();
-        stormElement.DataValues.GetElementDataAt("Amount").HxdScaleValue.Should().Be("0.040000");
+        stormElement.DataValues.GetElementDataAt("Amount").HxdScaleValue.GetString().Should().Be("0.040000");
+        stormElement.DataValues.GetElementDataAt("Amount").HxdScaleValue.GetAsDouble().Should().Be(0.040000);
     }
 
     [TestMethod]

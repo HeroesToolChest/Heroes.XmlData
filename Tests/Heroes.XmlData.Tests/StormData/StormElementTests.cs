@@ -1,5 +1,4 @@
 ﻿using Heroes.XmlData.Tests;
-using System.Configuration;
 
 namespace Heroes.XmlData.StormData.Tests;
 

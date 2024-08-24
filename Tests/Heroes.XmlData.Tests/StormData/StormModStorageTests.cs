@@ -1,4 +1,6 @@
-﻿namespace Heroes.XmlData.Tests.StormData;
+﻿using Heroes.XmlData.Tests;
+
+namespace Heroes.XmlData.StormData.Tests;
 
 [TestClass]
 public class StormModStorageTests
@@ -327,7 +329,7 @@ public class StormModStorageTests
         // assert
         stormModStorage.AddedXmlDataFilePaths.Should().BeEquivalentTo(new[] { stormPath });
         stormStorage.StormCache.StormElementByElementType["CBehaviorBuff"].DataValues.GetElementDataAt("InfoFlags").GetElementDataAt("Hidden").RawValue.Should().Be("$ChromieBasicAttackRange");
-        stormStorage.StormCache.StormElementByElementType["CBehaviorBuff"].DataValues.GetElementDataAt("InfoFlags").GetElementDataAt("Hidden").Value.Should().Be("7");
+        stormStorage.StormCache.StormElementByElementType["CBehaviorBuff"].DataValues.GetElementDataAt("InfoFlags").GetElementDataAt("Hidden").Value.GetString().Should().Be("7");
     }
 
     [TestMethod]

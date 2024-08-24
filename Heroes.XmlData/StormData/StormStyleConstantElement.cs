@@ -69,7 +69,7 @@ public class StormStyleConstantElement : StormElement
     [MemberNotNullWhen(true, nameof(Val))]
     public bool HasVal => DataValues.ElementDataPairs.ContainsKey(ValAttribute);
 
-    [DebuggerBrowsable(DebuggerBrowsableState.RootHidden)]
+    [DebuggerBrowsable(DebuggerBrowsableState.Never)]
     private string DebuggerDisplay
     {
         get

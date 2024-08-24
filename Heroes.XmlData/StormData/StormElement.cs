@@ -96,7 +96,7 @@ public class StormElement
     [MemberNotNullWhen(true, nameof(ParentId))]
     public bool HasParentId => DataValues.ElementDataPairs.ContainsKey(ParentAttribute);
 
-    [DebuggerBrowsable(DebuggerBrowsableState.RootHidden)]
+    [DebuggerBrowsable(DebuggerBrowsableState.Never)]
     private string DebuggerDisplay
     {
         get

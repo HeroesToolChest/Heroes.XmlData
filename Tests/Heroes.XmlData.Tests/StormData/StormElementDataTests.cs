@@ -320,7 +320,27 @@ public class StormElementDataTests
 
         // assert
         stormElementData.GetElementDataAt("Name").IsConstValue.Should().BeTrue();
-        stormElementData.GetElementDataAt("Name").Value.Should().Be("SomeValue");
+        stormElementData.GetElementDataAt("Name").Value.GetString().Should().Be("SomeValue");
+    }
+
+    [TestMethod]
+    public void StormElementData_ElementHasIntConstAttribute_ReturnsInt()
+    {
+        // arrange
+        XElement xElement = new(
+            "CAbil",
+            new XAttribute("default", "1"),
+            new XElement(
+                "Name",
+                new XAttribute("value", "$Name"),
+                new XAttribute($"{StormModStorage.SelfNameConst}value", "5")));
+
+        // act
+        StormElementData stormElementData = new(xElement);
+
+        // assert
+        stormElementData.GetElementDataAt("Name").IsConstValue.Should().BeTrue();
+        stormElementData.GetElementDataAt("Name").Value.GetAsInt().Should().Be(5);
     }
 
     [TestMethod]
@@ -343,7 +363,7 @@ public class StormElementDataTests
     }
 
     [TestMethod]
-    public void StormElementData_HasScalingElement_ReturnsTrueForHasScale()
+    public void HasHxdScale_HasScalingElement_ReturnsTrueForHasScale()
     {
         // arrange
         XElement xElement = new(
@@ -360,7 +380,29 @@ public class StormElementDataTests
 
         // assert
         stormElementData.GetElementDataAt("Damage").HasHxdScale.Should().BeTrue();
-        stormElementData.GetElementDataAt("Damage").HxdScaleValue.Should().Be("0.1");
+        stormElementData.GetElementDataAt("Damage").HxdScaleValue.GetString().Should().Be("0.1");
+        stormElementData.GetElementDataAt("Damage").HxdScaleValue.GetAsDouble().Should().Be(0.1);
+    }
+
+    [TestMethod]
+    public void StormElementData_HasNoScalingElement_ReturnsTrueForHasScale()
+    {
+        // arrange
+        XElement xElement = new(
+            "CAbil",
+            new XAttribute("default", "1"),
+            new XElement(
+                "Damage",
+                new XElement(
+                    "other",
+                    new XAttribute("Value", "0.1"))));
+
+        // act
+        StormElementData stormElementData = new(xElement);
+
+        // assert
+        stormElementData.GetElementDataAt("Damage").HasHxdScale.Should().BeFalse();
+        stormElementData.GetElementDataAt("Damage").HxdScaleValue.GetString().Should().BeEmpty();
     }
 
     [TestMethod]
@@ -562,7 +604,6 @@ public class StormElementDataTests
     <Flags index=""AffectedByOverdrive"" value=""1"" />
   </HeroAbilArray>
 </CHero>
-
 ");
         StormElementData data = new(element);
 
@@ -575,5 +616,39 @@ public class StormElementDataTests
         resultAsSpan.Should().BeFalse();
         stormElementData.Should().BeNull();
         stormElementDataAsSpan.Should().BeNull();
+    }
+
+    [TestMethod]
+    public void GetElementDataAt_HasNoData_ThrowsException()
+    {
+        // arrange
+        XElement element = XElement.Parse(@"
+<CHero id=""KelThuzad"">
+  <HeroAbilArray Abil=""KelThuzadDeathAndDecay"" Button=""KelThuzadDeathAndDecay"">
+    <Flags index=""ShowInHeroSelect"" value=""1"" />
+    <Flags index=""AffectedByCooldownReduction"" value=""1"" />
+    <Flags index=""AffectedByOverdrive"" value=""1"" />
+  </HeroAbilArray>
+  <HeroAbilArray Abil=""KelThuzadFrostNova"" Button=""KelThuzadFrostNova"">
+    <Flags index=""ShowInHeroSelect"" value=""1"" />
+    <Flags index=""AffectedByCooldownReduction"" value=""1"" />
+    <Flags index=""AffectedByOverdrive"" value=""1"" />
+  </HeroAbilArray>
+  <HeroAbilArray Abil=""KelThuzadChains"" Button=""KelThuzadChains"">
+    <Flags index=""ShowInHeroSelect"" value=""1"" />
+    <Flags index=""AffectedByCooldownReduction"" value=""1"" />
+    <Flags index=""AffectedByOverdrive"" value=""1"" />
+  </HeroAbilArray>
+</CHero>
+");
+        StormElementData data = new(element);
+
+        // act
+        Action action = () => data.GetElementDataAt("Does Not Exists");
+        Action actionSpan = () => data.GetElementDataAt("Does Not Exists".AsSpan());
+
+        // assert
+        action.Should().Throw<KeyNotFoundException>();
+        actionSpan.Should().Throw<KeyNotFoundException>();
     }
 }

@@ -85,8 +85,7 @@ public class StormElementData
     /// <summary>
     /// Gets a value indicating whether <see cref="Value"/> is not <see langword="null"/>.
     /// </summary>
-    [MemberNotNullWhen(true, nameof(Value))]
-    public bool HasValue => Value is not null;
+    public bool HasValue => !Value.IsNull;
 
     /// <summary>
     /// Gets a value indicating whether <see cref="Value"/> is evaluated from a const.
@@ -153,47 +152,56 @@ public class StormElementData
     /// <summary>
     /// Gets the evaluated value of <see cref="RawValue"/>.
     /// </summary>
-    public string? Value
+    public StormElementValue Value
     {
         get
         {
+            string? returnValue = null;
+
             if (_constValue is not null)
             {
-                return _constValue;
+                returnValue = _constValue;
             }
             else if (_rawValue is not null)
             {
-                return _rawValue;
+                returnValue = _rawValue;
             }
             else if (ElementDataPairs.Keys.Count == 1)
             {
                 if (HasNumericalIndex && ElementDataPairs.TryGetValue("0", out StormElementData? data) && data.HasValue)
-                {
-                    return data.Value;
-                }
+                    returnValue = data.Value.GetString();
                 else if (HasTextIndex)
-                {
-                    return ElementDataPairs.First().Value.Value;
-                }
+                    returnValue = ElementDataPairs.First().Value.Value.GetString();
             }
 
-            return null;
+            return new StormElementValue(this)
+            {
+                Value = returnValue,
+                IsNull = returnValue is null,
+            };
         }
     }
 
     /// <summary>
     /// Gets the scaling value.
     /// </summary>
-    public string? HxdScaleValue
+    public StormElementValue HxdScaleValue
     {
         get
         {
             if (HasHxdScale)
             {
-                return ElementDataPairs[ScaleValueParser.ScaleAttributeName].RawValue;
+                return new StormElementValue(this)
+                {
+                    Value = ElementDataPairs[ScaleValueParser.ScaleAttributeName].RawValue,
+                    IsNull = false,
+                };
             }
 
-            return null;
+            return new StormElementValue(this)
+            {
+                IsNull = true,
+            };
         }
     }
 
@@ -218,7 +226,7 @@ public class StormElementData
     [DebuggerBrowsable(DebuggerBrowsableState.Collapsed)]
     internal Dictionary<string, StormElementData> ElementDataPairs { get; } = new(StringComparer.OrdinalIgnoreCase);
 
-    [DebuggerBrowsable(DebuggerBrowsableState.RootHidden)]
+    [DebuggerBrowsable(DebuggerBrowsableState.Never)]
     private string DebuggerDisplay
     {
         get
@@ -227,7 +235,7 @@ public class StormElementData
 
             if (HasValue)
             {
-                return $"Value = \"{Value}\", {display}";
+                return $"Value = \"{Value.GetString()}\", {display}";
             }
             else
             {
@@ -252,7 +260,7 @@ public class StormElementData
         if (ElementDataPairs.TryGetValue(index.ToString(), out StormElementData? stormElementData))
             return stormElementData;
 
-        throw new KeyNotFoundException();
+        throw new KeyNotFoundException($"Value '{index}' was not found.");
     }
 
     /// <summary>
@@ -269,7 +277,7 @@ public class StormElementData
         if (ElementDataPairs.TryGetValue(index, out StormElementData? stormElementData))
             return stormElementData;
 
-        throw new KeyNotFoundException();
+        throw new KeyNotFoundException($"Value '{index}' was not found.");
     }
 
     /// <summary>

@@ -69,7 +69,7 @@ public class StormStyleStyleElement : StormElement
     [MemberNotNullWhen(true, nameof(Template))]
     public bool HasTemplate => DataValues.ElementDataPairs.ContainsKey(TemplateAttribute);
 
-    [DebuggerBrowsable(DebuggerBrowsableState.RootHidden)]
+    [DebuggerBrowsable(DebuggerBrowsableState.Never)]
     private string DebuggerDisplay
     {
         get

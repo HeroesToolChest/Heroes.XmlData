@@ -255,7 +255,7 @@ internal class DataRefParser
 
         if (currentElementData.IsConstValue)
         {
-            return GetValueScale(currentElementData.Value, fullPartSpan, xmlParts);
+            return GetValueScale(currentElementData.Value.GetString(), fullPartSpan, xmlParts);
         }
         else if (currentElementData.HasValue)
         {
@@ -285,7 +285,7 @@ internal class DataRefParser
             stormElementData = innerIndexData;
         }
 
-        if (stormElementData.HasHxdScale && double.TryParse(stormElementData.HxdScaleValue, out double scalingValue))
+        if (stormElementData.HasHxdScale && stormElementData.HxdScaleValue.TryGetAsDouble(out double scalingValue))
             return new ValueScale(dataValue, scalingValue);
         else
             return new ValueScale(dataValue);
