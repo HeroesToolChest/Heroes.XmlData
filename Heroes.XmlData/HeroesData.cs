@@ -40,9 +40,9 @@ public class HeroesData
     /// </summary>
     /// <param name="dataObjectType">A character span that contains the type of the element name (e.g. Effect).</param>
     /// <returns>A collection of all the element types of the data object type.</returns>
-    public IList<string> GetElementTypesByDataObjectType(ReadOnlySpan<char> dataObjectType)
+    public IEnumerable<string> GetElementTypesByDataObjectType(ReadOnlySpan<char> dataObjectType)
     {
-        return _stormStorage.GetElementTypesByDataObjectType(dataObjectType);
+        return _stormStorage.GetElementTypesByDataObjectType(dataObjectType).AsReadOnly();
     }
 
     /// <summary>
@@ -50,9 +50,9 @@ public class HeroesData
     /// </summary>
     /// <param name="dataObjectType">The type of the element name (e.g. Effect).</param>
     /// <returns>A collection of all the element types of the data object type.</returns>
-    public IList<string> GetElementTypesByDataObjectType(string dataObjectType)
+    public IEnumerable<string> GetElementTypesByDataObjectType(string dataObjectType)
     {
-        return _stormStorage.GetElementTypesByDataObjectType(dataObjectType);
+        return _stormStorage.GetElementTypesByDataObjectType(dataObjectType).AsReadOnly();
     }
 
     /// <summary>
@@ -79,7 +79,7 @@ public class HeroesData
     /// Gets a <see cref="StormElement"/> that represents an element that does not have an id attribute value.
     /// </summary>
     /// <param name="elementType">A character span that contains the name of the element.</param>
-    /// <returns>A <see cref="StormElement"/>.</returns>
+    /// <returns>A <see cref="StormElement"/> or <see langword="null"/> if not found.</returns>
     public StormElement? GetStormElement(ReadOnlySpan<char> elementType)
     {
         return _stormStorage.GetStormElementByElementType(elementType);
@@ -89,7 +89,7 @@ public class HeroesData
     /// Gets a <see cref="StormElement"/> that represents an element that does not have an id attribute value.
     /// </summary>
     /// <param name="elementType">The name of the element.</param>
-    /// <returns>A <see cref="StormElement"/>.</returns>
+    /// <returns>A <see cref="StormElement"/> or <see langword="null"/> if not found.</returns>
     public StormElement? GetStormElement(string elementType)
     {
         return _stormStorage.GetStormElementByElementType(elementType);
@@ -100,7 +100,7 @@ public class HeroesData
     /// </summary>
     /// <param name="id">A character span that contains the id of element.</param>
     /// <param name="dataObjectType">A character span that contains the type of the element name (e.g. Effect).</param>
-    /// <returns>A <see cref="StormElement"/>.</returns>
+    /// <returns>A <see cref="StormElement"/> or <see langword="null"/> if not found.</returns>
     public StormElement? GetStormElement(ReadOnlySpan<char> id, ReadOnlySpan<char> dataObjectType)
     {
         return _stormStorage.GetStormElementById(id, dataObjectType);
@@ -111,7 +111,7 @@ public class HeroesData
     /// </summary>
     /// <param name="id">The id of element.</param>
     /// <param name="dataObjectType">The type of the element name (e.g. Effect).</param>
-    /// <returns>A <see cref="StormElement"/>.</returns>
+    /// <returns>A <see cref="StormElement"/> or <see langword="null"/> if not found.</returns>
     public StormElement? GetStormElement(string id, string dataObjectType)
     {
         return _stormStorage.GetStormElementById(id, dataObjectType);
@@ -122,7 +122,7 @@ public class HeroesData
     /// </summary>
     /// <param name="id">A character span that contains the id of element.</param>
     /// <param name="dataObjectType">A character span that contains the type of the element name (e.g. Effect).</param>
-    /// <returns>A <see cref="StormElement"/> that contains a scaling value.</returns>
+    /// <returns>A <see cref="StormElement"/> that contains a scaling value or <see langword="null"/> if not found.</returns>
     public StormElement? GetScaleValueStormElement(ReadOnlySpan<char> id, ReadOnlySpan<char> dataObjectType)
     {
         return _stormStorage.GetScaleValueStormElementById(id, dataObjectType);
@@ -133,7 +133,7 @@ public class HeroesData
     /// </summary>
     /// <param name="id">The id of element.</param>
     /// <param name="dataObjectType">The type of the element name (e.g. Effect).</param>
-    /// <returns>A <see cref="StormElement"/> that contains a scaling value.</returns>
+    /// <returns>A <see cref="StormElement"/> that contains a scaling value or <see langword="null"/> if not found.</returns>
     public StormElement? GetScaleValueStormElement(string id, string dataObjectType)
     {
         return _stormStorage.GetScaleValueStormElementById(id, dataObjectType);
@@ -144,7 +144,7 @@ public class HeroesData
     /// </summary>
     /// <param name="dataObjectType">A character span that contains the type of the element name (e.g. Effect).</param>
     /// <param name="id">A character span that contains the value of an id attribute.</param>
-    /// <returns>A merged from base element <see cref="StormElement"/>.</returns>
+    /// <returns>A merged from base element <see cref="StormElement"/> or <see langword="null"/> if not found.</returns>
     public StormElement? GetCompleteStormElement(ReadOnlySpan<char> dataObjectType, ReadOnlySpan<char> id)
     {
         return _stormStorage.GetCompleteStormElement(id, dataObjectType);
@@ -155,7 +155,7 @@ public class HeroesData
     /// </summary>
     /// <param name="dataObjectType">The type of the element name (e.g. Effect).</param>
     /// <param name="id">The value of an id attribute.</param>
-    /// <returns>A merged from base element <see cref="StormElement"/>.</returns>
+    /// <returns>A merged from base element <see cref="StormElement"/> or <see langword="null"/> if not found.</returns>
     public StormElement? GetCompleteStormElement(string dataObjectType, string id)
     {
         return _stormStorage.GetCompleteStormElement(id, dataObjectType);
@@ -165,7 +165,7 @@ public class HeroesData
     /// Gets <see cref="StormElement"/> that represents a storm style Constant element.
     /// </summary>
     /// <param name="name">A character span that contains the name of the Constant element.</param>
-    /// <returns>A StormStyle Constant <see cref="StormElement"/>.</returns>
+    /// <returns>A StormStyle Constant <see cref="StormElement"/> or <see langword="null"/> if not found.</returns>
     public StormStyleConstantElement? GetStormStyleConstantStormElement(ReadOnlySpan<char> name)
     {
         return _stormStorage.GetStormStyleConstantElementsByName(name);
@@ -175,7 +175,7 @@ public class HeroesData
     /// Gets <see cref="StormElement"/> that represents a StormStyle Constant element.
     /// </summary>
     /// <param name="name">The name of the Constant element.</param>
-    /// <returns>A StormStyle Constant <see cref="StormElement"/>.</returns>
+    /// <returns>A StormStyle Constant <see cref="StormElement"/> or <see langword="null"/> if not found.</returns>
     public StormStyleConstantElement? GetStormStyleConstantStormElement(string name)
     {
         return _stormStorage.GetStormStyleConstantElementsByName(name);
@@ -185,7 +185,7 @@ public class HeroesData
     /// Gets <see cref="StormElement"/> that represents a StormStyle Style element.
     /// </summary>
     /// <param name="name">A character span that contains the name of the Style element.</param>
-    /// <returns>A StormStyle Style <see cref="StormElement"/>.</returns>
+    /// <returns>A StormStyle Style <see cref="StormElement"/> or <see langword="null"/> if not found.</returns>
     public StormStyleStyleElement? GetStormStyleStyleStormElement(ReadOnlySpan<char> name)
     {
         return _stormStorage.GetStormStyleStyleElementsByName(name);
@@ -195,7 +195,7 @@ public class HeroesData
     /// Gets <see cref="StormElement"/> that represents a StormStyle Style element.
     /// </summary>
     /// <param name="name">The name of the Style element.</param>
-    /// <returns>A StormStyle Style <see cref="StormElement"/>.</returns>
+    /// <returns>A StormStyle Style <see cref="StormElement"/> or <see langword="null"/> if not found.</returns>
     public StormStyleStyleElement? GetStormStyleStyleStormElement(string name)
     {
         return _stormStorage.GetStormStyleStyleElementsByName(name);
@@ -205,7 +205,7 @@ public class HeroesData
     /// Gets an unparsed gamestring.
     /// </summary>
     /// <param name="id">A character span that contains the id of the gamestring.</param>
-    /// <returns>An unparsed gamestring.</returns>
+    /// <returns>An unparsed gamestring or <see langword="null"/> if not found.</returns>
     public StormGameString? GetStormGameString(ReadOnlySpan<char> id)
     {
         return _stormStorage.GetStormGameString(id);
@@ -215,7 +215,7 @@ public class HeroesData
     /// Gets an unparsed gamestring.
     /// </summary>
     /// <param name="id">The id of the gamestring.</param>
-    /// <returns>An unparsed gamestring.</returns>
+    /// <returns>An unparsed gamestring or <see langword="null"/> if not found.</returns>
     public StormGameString? GetStormGameString(string id)
     {
         return _stormStorage.GetStormGameString(id);
@@ -225,7 +225,7 @@ public class HeroesData
     /// Gets an asset text string.
     /// </summary>
     /// <param name="id">A character span that contains the id of the asset.</param>
-    /// <returns>The value of the asset.</returns>
+    /// <returns>The value of the asset or <see langword="null"/> if not found.</returns>
     public StormAssetString? GetStormAssetString(ReadOnlySpan<char> id)
     {
         return _stormStorage.GetStormAssetString(id);
@@ -235,7 +235,7 @@ public class HeroesData
     /// Gets an asset text string.
     /// </summary>
     /// <param name="id">The id of the asset.</param>
-    /// <returns>The value of the asset.</returns>
+    /// <returns>The value of the asset or <see langword="null"/> if not found.</returns>
     public StormAssetString? GetStormAssetText(string id)
     {
         return _stormStorage.GetStormAssetString(id);
@@ -245,7 +245,7 @@ public class HeroesData
     /// Get a collection of all the unparsed gamestrings.
     /// </summary>
     /// <returns>A collection of unparsed gamestrings.</returns>
-    public IReadOnlyList<StormGameString> GetStormGameStrings()
+    public IEnumerable<StormGameString> GetStormGameStrings()
     {
         return _stormStorage.GetStormGameStrings().AsReadOnly();
     }
@@ -266,13 +266,28 @@ public class HeroesData
     }
 
     /// <summary>
+    /// Parses and evaluates a gamestring into a <see cref="TooltipDescription"/>.
+    /// </summary>
+    /// <param name="stormGameString">The gamestring to parse.</param>
+    /// <param name="gameStringLocale">The localization of the <paramref name="stormGameString"/>.</param>
+    /// <param name="extractFontValues">
+    /// If <see langword="true"/>, then the font style and constant tags will have their val values saved in <see cref="TooltipDescription.FontStyleValues"/> and  <see cref="TooltipDescription.FontStyleConstantValues"/>.
+    /// If not needing the output with color tags, then set to <see langword="false"/> for faster parsing performance.
+    /// </param>
+    /// <returns>A parsed <see cref="TooltipDescription"/>.</returns>
+    public TooltipDescription ParseGameString(StormGameString stormGameString, StormLocale gameStringLocale = StormLocale.ENUS, bool extractFontValues = false)
+    {
+        return new TooltipDescription(GameStringParser.ParseTooltipDescription(_stormStorage, stormGameString.Value), gameStringLocale, extractFontValues);
+    }
+
+    /// <summary>
     /// Gets a collection of <see cref="StormElement"/> ids by the data object type.
     /// </summary>
     /// <param name="dataObjectType">A character span that contains the type of the element name (e.g. Effect).</param>
     /// <returns>A collection of <see cref="StormElement"/> ids.</returns>
-    public IList<string> GetStormElementIds(ReadOnlySpan<char> dataObjectType)
+    public IEnumerable<string> GetStormElementIds(ReadOnlySpan<char> dataObjectType)
     {
-        return _stormStorage.GetStormElementIds(dataObjectType);
+        return _stormStorage.GetStormElementIds(dataObjectType).AsReadOnly();
     }
 
     /// <summary>
@@ -280,9 +295,9 @@ public class HeroesData
     /// </summary>
     /// <param name="dataObjectType">The type of the element name (e.g. Effect).</param>
     /// <returns>A collection of <see cref="StormElement"/> ids.</returns>
-    public IList<string> GetStormElementIds(string dataObjectType)
+    public IEnumerable<string> GetStormElementIds(string dataObjectType)
     {
-        return _stormStorage.GetStormElementIds(dataObjectType);
+        return _stormStorage.GetStormElementIds(dataObjectType).AsReadOnly();
     }
 
     /// <summary>
