@@ -1,5 +1,4 @@
 ﻿using System.Buffers;
-using System.IO.Abstractions;
 
 namespace Heroes.XmlData.StormMods;
 
@@ -22,16 +21,6 @@ internal abstract class MpqStormMod<T> : StormMod<T>
 
     protected MpqStormMod(T heroesSource, string name, string directoryPath, StormModType stormModType)
         : base(heroesSource, name, directoryPath, stormModType, StormPathType.MPQ)
-    {
-    }
-
-    protected MpqStormMod(IFileSystem fileSystem, T heroesSource, string directoryPath, StormModType stormModType)
-        : base(fileSystem, heroesSource, directoryPath, stormModType, StormPathType.MPQ)
-    {
-    }
-
-    protected MpqStormMod(IFileSystem fileSystem, T heroesSource, string name, string directoryPath, StormModType stormModType)
-        : base(fileSystem, heroesSource, name, directoryPath, stormModType, StormPathType.MPQ)
     {
     }
 
@@ -127,7 +116,7 @@ internal abstract class MpqStormMod<T> : StormMod<T>
         throw new NotImplementedException();
     }
 
-    protected abstract Stream GetMpqFile(string file);
+    protected abstract Stream? GetMpqFile(string file);
 
     private static void CreateFilePaths(MpqFolder root, string file)
     {
@@ -176,7 +165,9 @@ internal abstract class MpqStormMod<T> : StormMod<T>
     // used to set the _mpqHeroesArchive field
     private MpqHeroesArchive GetMpqHeroesArchive()
     {
-        MpqHeroesArchive mpqHeroesArchive = MpqHeroesFile.Open(GetMpqFile(MpqDirectoryPath));
+        Stream? mpqFile = GetMpqFile(MpqDirectoryPath) ?? throw new HeroesXmlDataException($"{nameof(mpqFile)} is null");
+
+        MpqHeroesArchive mpqHeroesArchive = MpqHeroesFile.Open(mpqFile);
         _mpqHeroesArchive = mpqHeroesArchive;
         return _mpqHeroesArchive;
     }

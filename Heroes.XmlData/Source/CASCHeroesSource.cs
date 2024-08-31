@@ -14,6 +14,10 @@ internal class CASCHeroesSource : HeroesSource, ICASCHeroesSource
 
     public ICASCHeroesStorage CASCHeroesStorage => _cascHeroesStorage;
 
+    public override bool FileExists(string path) => CASCHeroesStorage.CASCHandlerWrapper.FileExists(GetValidatedPath(path));
+
+    public override Stream? GetFile(string path) => CASCHeroesStorage.CASCHandlerWrapper.OpenFile(GetValidatedPath(path));
+
     protected override IStormMod GetStormMod(string directoryPath, StormModType stormModType, BackgroundWorkerEx? backgroundWorkerEx = null) => StormModFactory.CreateCASCStormModInstance(this, directoryPath, stormModType);
 
     protected override IStormMod GetMpqStormMod(string name, string directoryPath, StormModType stormModType) => StormModFactory.CreateCASCMpqStormModInstance(this, name, directoryPath, stormModType);

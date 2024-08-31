@@ -81,4 +81,8 @@ internal interface IHeroesSource
     void LoadDepotCache();
 
     void UnloadCustomMods();
+
+    bool FileExists(string path);
+
+    Stream? GetFile(string path);
 }

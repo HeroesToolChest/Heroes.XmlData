@@ -11,5 +11,5 @@ internal class CASCHandlerWrapper : ICASCHandlerWrapper
 
     public bool FileExists(string file) => _caschandler.FileExists(file);
 
-    public Stream OpenFile(string name) => _caschandler.OpenFile(name);
+    public Stream? OpenFile(string name) => _caschandler.OpenFile(name);
 }

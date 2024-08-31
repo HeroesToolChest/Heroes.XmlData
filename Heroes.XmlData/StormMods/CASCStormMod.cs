@@ -56,6 +56,9 @@ internal class CASCStormMod : StormMod<ICASCHeroesSource>, IStormMod
 
         stream = HeroesSource.CASCHeroesStorage.CASCHandlerWrapper.OpenFile(filePath);
 
+        if (stream is null)
+            return false;
+
         return true;
     }
 

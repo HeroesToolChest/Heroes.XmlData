@@ -11,24 +11,12 @@ internal abstract class StormMod<T> : IStormMod
     private readonly List<IStormMod> _includesStormModsCache = [];
 
     public StormMod(T heroesSource, string directoryPath, StormModType stormModType, StormPathType stormPathType)
-        : this(new FileSystem(), heroesSource, Path.GetFileNameWithoutExtension(directoryPath), directoryPath, stormModType, stormPathType)
-    {
-    }
-
-    public StormMod(IFileSystem fileSystem, T heroesSource, string directoryPath, StormModType stormModType, StormPathType stormPathType)
-        : this(fileSystem, heroesSource, Path.GetFileNameWithoutExtension(directoryPath), directoryPath, stormModType, stormPathType)
+        : this(heroesSource, Path.GetFileNameWithoutExtension(directoryPath), directoryPath, stormModType, stormPathType)
     {
     }
 
     public StormMod(T heroesSource, string name, string directoryPath, StormModType stormModType, StormPathType stormPathType)
-        : this(new FileSystem(), heroesSource, name, directoryPath, stormModType, stormPathType)
     {
-    }
-
-    public StormMod(IFileSystem fileSystem, T heroesSource, string name, string directoryPath, StormModType stormModType, StormPathType stormPathType)
-    {
-        FileSystem = fileSystem;
-
         Name = name;
         DirectoryPath = directoryPath;
         StormModType = stormModType;
@@ -91,8 +79,6 @@ internal abstract class StormMod<T> : IStormMod
     /// Gets the layout directory file path.
     /// </summary>
     protected virtual string LayoutDirectoryPath => Path.Join(HeroesSource.ModsBaseDirectoryPath, DirectoryPath, HeroesSource.BaseStormDataDirectory, HeroesSource.UIDirectory, HeroesSource.LayoutDirectory);
-
-    protected IFileSystem FileSystem { get; }
 
     protected T HeroesSource { get; }
 

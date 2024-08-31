@@ -4,29 +4,35 @@ namespace Heroes.XmlData.StormMods;
 
 internal class FileStormMod : StormMod<IFileHeroesSource>
 {
+    private readonly IFileSystem _fileSystem;
+
     public FileStormMod(IFileHeroesSource heroesSource, string directoryPath, StormModType stormModType)
         : base(heroesSource, directoryPath, stormModType, StormPathType.File)
     {
+        _fileSystem = new FileSystem();
     }
 
     public FileStormMod(IFileHeroesSource heroesSource, string name, string directoryPath, StormModType stormModType)
         : base(heroesSource, name, directoryPath, stormModType, StormPathType.File)
     {
+        _fileSystem = new FileSystem();
     }
 
     public FileStormMod(IFileSystem fileSystem, IFileHeroesSource heroesSource, string directoryPath, StormModType stormModType)
-        : base(fileSystem, heroesSource, directoryPath, stormModType, StormPathType.File)
+        : base(heroesSource, directoryPath, stormModType, StormPathType.File)
     {
+        _fileSystem = fileSystem;
     }
 
     public FileStormMod(IFileSystem fileSystem, IFileHeroesSource heroesSource, string name, string directoryPath, StormModType stormModType)
-        : base(fileSystem, heroesSource, name, directoryPath, stormModType, StormPathType.File)
+        : base(heroesSource, name, directoryPath, stormModType, StormPathType.File)
     {
+        _fileSystem = fileSystem;
     }
 
     public override void LoadGameDataDirectory()
     {
-        if (!FileSystem.Directory.Exists(GameDataDirectoryPath))
+        if (!_fileSystem.Directory.Exists(GameDataDirectoryPath))
         {
             StormModStorage.AddDirectoryNotFound(new StormPath()
             {
@@ -38,7 +44,7 @@ internal class FileStormMod : StormMod<IFileHeroesSource>
             return;
         }
 
-        IEnumerable<string> files = FileSystem.Directory.EnumerateFiles(GameDataDirectoryPath, $"*{XmlFileExtension}", new EnumerationOptions()
+        IEnumerable<string> files = _fileSystem.Directory.EnumerateFiles(GameDataDirectoryPath, $"*{XmlFileExtension}", new EnumerationOptions()
         {
             MatchCasing = MatchCasing.CaseInsensitive,
         }).OrderBy(x => x, StringComparer.OrdinalIgnoreCase);
@@ -48,10 +54,10 @@ internal class FileStormMod : StormMod<IFileHeroesSource>
 
     public override void LoadStormLayoutDirectory()
     {
-        if (!FileSystem.Directory.Exists(LayoutDirectoryPath))
+        if (!_fileSystem.Directory.Exists(LayoutDirectoryPath))
             return;
 
-        IEnumerable<string> files = FileSystem.Directory.EnumerateFiles(LayoutDirectoryPath, $"*{StormLayoutFileExtension}", new EnumerationOptions()
+        IEnumerable<string> files = _fileSystem.Directory.EnumerateFiles(LayoutDirectoryPath, $"*{StormLayoutFileExtension}", new EnumerationOptions()
         {
             MatchCasing = MatchCasing.CaseInsensitive,
             RecurseSubdirectories = true,
@@ -69,12 +75,12 @@ internal class FileStormMod : StormMod<IFileHeroesSource>
             return false;
         }
 
-        stream = FileSystem.File.OpenRead(filePath);
+        stream = _fileSystem.File.OpenRead(filePath);
 
         return true;
     }
 
-    protected override bool IsFileExists(string filePath) => FileSystem.File.Exists(filePath);
+    protected override bool IsFileExists(string filePath) => _fileSystem.File.Exists(filePath);
 
     protected override IStormMod GetStormMod(string path, StormModType stormModType) => HeroesSource.StormModFactory.CreateFileStormModInstance(HeroesSource, path, stormModType);
 }

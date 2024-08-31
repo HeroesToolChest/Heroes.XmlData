@@ -18,15 +18,33 @@ public class HeroesXmlLoader
     {
         StormStorage stormStorage = new();
         _heroesSource = new FileHeroesSource(stormStorage, new StormModFactory(), new DepotCacheFactory(), pathToModsDirectory, backgroundWorkerEx);
+
         HeroesData = new HeroesData(stormStorage);
+
+        LoadedType = HeroesXmlLoaderType.File;
+        RootDirectory = _heroesSource.ModsBaseDirectoryPath;
     }
 
     private HeroesXmlLoader(CASCHeroesStorage cascHeroesStorage, IBackgroundWorkerEx? backgroundWorkerEx)
     {
         StormStorage stormStorage = new();
         _heroesSource = new CASCHeroesSource(stormStorage, new StormModFactory(), new DepotCacheFactory(), cascHeroesStorage, backgroundWorkerEx);
+
         HeroesData = new HeroesData(stormStorage);
+
+        LoadedType = HeroesXmlLoaderType.CASC;
+        RootDirectory = _heroesSource.ModsBaseDirectoryPath;
     }
+
+    /// <summary>
+    /// Gets the the type of the loaded source data.
+    /// </summary>
+    public HeroesXmlLoaderType LoadedType { get; }
+
+    /// <summary>
+    /// Gets the root directory.
+    /// </summary>
+    public string RootDirectory { get; }
 
     /// <summary>
     /// Gets the <see cref="HeroesData"/> which contain the xml and gamestrings data.
@@ -45,13 +63,13 @@ public class HeroesXmlLoader
     /// <summary>
     /// Gets an instance of the <see cref="HeroesXmlLoader"/> class. Sets the source of the data to be loaded from an extracted file source.
     /// </summary>
-    /// <param name="pathToModsDirectory">A mods directory.</param>
+    /// <param name="rootDirectory">The root directory, usually the mods directory.</param>
     /// <param name="backgroundWorkerEx">A background worker used to report loading progress.</param>
     /// <returns>A <see cref="HeroesXmlLoader"/> instance.</returns>
     /// <remarks>On linux and macos, all directories and files should be in lowercase characters, otherwise some files and directories may not be found.</remarks>
-    public static HeroesXmlLoader LoadWithFile(string pathToModsDirectory, IBackgroundWorkerEx? backgroundWorkerEx = null)
+    public static HeroesXmlLoader LoadWithFile(string rootDirectory, IBackgroundWorkerEx? backgroundWorkerEx = null)
     {
-        return new HeroesXmlLoader(pathToModsDirectory, backgroundWorkerEx);
+        return new HeroesXmlLoader(rootDirectory, backgroundWorkerEx);
     }
 
     /// <summary>
@@ -226,6 +244,20 @@ public class HeroesXmlLoader
             yield return item;
         }
     }
+
+    /// <summary>
+    /// Determines if a file exists.
+    /// </summary>
+    /// <param name="path">The path of the file to check. The path must be relative to the root directory, as set in <see cref="RootDirectory"/>.</param>
+    /// <returns><see langword="true"/> is the file exists, otherwise <see langword="false"/>.</returns>
+    public bool FileExists(string path) => _heroesSource.FileExists(path);
+
+    /// <summary>
+    /// Opens a file for reading.
+    /// </summary>
+    /// <param name="path">The path of the file to open for reading. The path must be relative to the root directory, as set in <see cref="RootDirectory"/>.</param>
+    /// <returns>Returns a read-only <see cref="FileStream"/>.</returns>
+    public Stream? GetFile(string path) => _heroesSource.GetFile(path);
 
     private static HeroesXmlLoader LoadAsCASCInternal(CASCConfig cascConfig, BackgroundWorkerEx? backgroundWorkerEx)
     {

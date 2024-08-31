@@ -4,5 +4,5 @@ internal interface ICASCHandlerWrapper
 {
     bool FileExists(string file);
 
-    Stream OpenFile(string name);
+    Stream? OpenFile(string name);
 }

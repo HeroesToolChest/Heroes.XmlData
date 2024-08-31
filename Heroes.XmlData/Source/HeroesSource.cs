@@ -212,11 +212,23 @@ internal abstract class HeroesSource : IHeroesSource
         _stormCustomMods.Clear();
     }
 
+    public abstract bool FileExists(string path);
+
+    public abstract Stream? GetFile(string path);
+
     protected abstract IStormMod GetStormMod(string directoryPath, StormModType stormModType, BackgroundWorkerEx? backgroundWorkerEx = null);
 
     protected abstract IStormMod GetMpqStormMod(string name, string directoryPath, StormModType stormModType);
 
     protected abstract IDepotCache GetDepotCache();
+
+    protected string GetValidatedPath(string path)
+    {
+        if (!path.StartsWith(DefaultModsDirectory))
+            path = Path.Join(ModsBaseDirectoryPath, path);
+
+        return path;
+    }
 
     private void AddStormMods()
     {
