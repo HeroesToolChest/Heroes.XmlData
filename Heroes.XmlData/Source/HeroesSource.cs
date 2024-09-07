@@ -5,14 +5,16 @@ internal abstract class HeroesSource : IHeroesSource
     private const string DefaultModsDirectoryConst = "mods";
     private const string GameDataDirectoryConst = "gamedata";
     private const string BaseStormDataDirectoryConst = "base.stormdata";
+    private const string BaseStormAssetsDirectoryConst = "base.stormassets";
     private const string LocalizedDataDirectoryConst = "localizeddata";
+    private const string AssetsDirectoryConst = "assets";
     private const string GameStringFileConst = "gamestrings.txt";
     private const string GameDataXmlFileConst = "gamedata.xml";
     private const string IncludesXmlFileConst = "includes.xml";
     private const string DocumentInfoFileConst = "documentinfo";
     private const string FontStyleFileConst = "fontstyles.stormstyle";
     private const string BuildIdFileConst = "buildid.txt";
-    private const string AssetsFileConst = "assets.txt";
+    private const string AssetsTextFileConst = "assets.txt";
     private const string DescIndexStormLayoutFileConst = "descindex.stormlayout";
 
     private const string CoreStormModDirectoryConst = "core.stormmod";
@@ -58,7 +60,11 @@ internal abstract class HeroesSource : IHeroesSource
 
     public string BaseStormDataDirectory => BaseStormDataDirectoryConst;
 
+    public string BaseStormAssetsDirectory => BaseStormAssetsDirectoryConst;
+
     public string LocalizedDataDirectory => LocalizedDataDirectoryConst;
+
+    public string AssetsDirectory => AssetsDirectoryConst;
 
     public string GameStringFile => GameStringFileConst;
 
@@ -72,7 +78,7 @@ internal abstract class HeroesSource : IHeroesSource
 
     public string BuildIdFile => BuildIdFileConst;
 
-    public string AssetsFile => AssetsFileConst;
+    public string AssetsTextFile => AssetsTextFileConst;
 
     public string DescIndexStormLayoutFile => DescIndexStormLayoutFileConst;
 
@@ -107,6 +113,10 @@ internal abstract class HeroesSource : IHeroesSource
     public List<string> S2MAPaths { get; } = [];
 
     protected IDepotCacheFactory DepotCacheFactory { get; }
+
+    public string GetLocaleStormDataDirectory(StormLocale stormLocale) => $"{stormLocale.ToString().ToLowerInvariant()}.stormdata";
+
+    public string GetLocaleStormAssetsDirectory(StormLocale stormLocale) => $"{stormLocale.ToString().ToLowerInvariant()}.stormassets";
 
     public void LoadStormData()
     {

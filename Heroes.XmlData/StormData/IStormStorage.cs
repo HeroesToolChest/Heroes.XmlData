@@ -30,6 +30,8 @@ internal interface IStormStorage
 
     void AddStormLayoutFilePath(StormModType stormModType, string relativePath, StormPath stormPath);
 
+    void AddAssetFilePath(StormModType stormModType, string relativePath, StormPath stormPath);
+
     bool AddConstantXElement(StormModType stormModType, XElement element, StormPath stormPath);
 
     double GetValueFromConstElementAsNumber(XElement constElement);
@@ -117,4 +119,12 @@ internal interface IStormStorage
     StormAssetString? GetStormAssetString(string id);
 
     bool TryGetFirstStormLayoutStormPath(string relativePath, [NotNullWhen(true)] out StormPath? stormPath);
+
+    bool StormAssetFileExists(ReadOnlySpan<char> relativePath);
+
+    bool StormAssetFileExists(string relativePath);
+
+    StormAssetFile? GetStormAssetFile(ReadOnlySpan<char> relativePath);
+
+    StormAssetFile? GetStormAssetFile(string relativePath);
 }

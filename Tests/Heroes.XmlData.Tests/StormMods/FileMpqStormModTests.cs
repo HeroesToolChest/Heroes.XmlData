@@ -30,7 +30,8 @@ public class FileMpqStormModTests
         // assert
         fileMpqStormMod.StormModStorage.AddedXmlDataFilePaths.Should().ContainSingle();
         fileMpqStormMod.StormModStorage.FoundLayoutFilePaths.Should().HaveCount(2);
-        fileMpqStormMod.StormModStorage.AddedAssetsFilePaths.Should().ContainSingle();
+        fileMpqStormMod.StormModStorage.AddedAssetsTextFilePaths.Should().ContainSingle();
+        fileMpqStormMod.StormModStorage.FoundAssetFilePaths.Should().HaveCount(2);
     }
 
     [TestMethod]
@@ -46,7 +47,7 @@ public class FileMpqStormModTests
         // assert
         fileMpqStormMod.StormModStorage.AddedXmlDataFilePaths.Should().ContainSingle();
         fileMpqStormMod.StormModStorage.FoundLayoutFilePaths.Should().HaveCount(2);
-        fileMpqStormMod.StormModStorage.AddedAssetsFilePaths.Should().ContainSingle();
+        fileMpqStormMod.StormModStorage.AddedAssetsTextFilePaths.Should().ContainSingle();
     }
 
     [TestMethod]
@@ -156,6 +157,25 @@ public class FileMpqStormModTests
 
         // assert
         stormStorage.StormCache.UiStormPathsByRelativeUiPath.Should().BeEmpty();
+    }
+
+    [TestMethod]
+    public void LoadAssetsDirectory_MpqFolderRootNotInitialized_NothingIsAdded()
+    {
+        // arrange
+        MockFileSystem mockFileSystem = new(new Dictionary<string, MockFileData>
+        {
+        });
+
+        StormStorage stormStorage = new(false);
+        FileHeroesSource fileHeroesSource = new(stormStorage, _stormModFactory, _depotCacheFactory, "mods", _backgroundWorkerEx);
+        FileMpqStormMod fileMpqStormMod = new(mockFileSystem, fileHeroesSource, "test.stormmod", StormModType.Normal);
+
+        // act
+        fileMpqStormMod.LoadAssetsDirectory();
+
+        // assert
+        stormStorage.StormCache.AssetFilesByRelativeAssetsPath.Should().BeEmpty();
     }
 
     private FileMpqStormMod ArrangeFileMpqStormMod()

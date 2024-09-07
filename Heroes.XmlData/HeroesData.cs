@@ -4,7 +4,7 @@ using System.Diagnostics;
 namespace Heroes.XmlData;
 
 /// <summary>
-/// Contains the methods and properties to access the xml and gamestring data.
+/// Contains the loaded heroes data, usually from the xml data files.
 /// </summary>
 public class HeroesData
 {
@@ -308,6 +308,90 @@ public class HeroesData
     public StormBattlegroundMap? GetLoadedStormBattleGroundMap()
     {
         return _stormStorage.LoadedStormBattlegroundMap;
+    }
+
+    /// <summary>
+    /// Determines if an asset file exists.
+    /// </summary>
+    /// <param name="path">A character span that contains the path of the asset, which should start with the asset directory.</param>
+    /// <returns><see langword="true"/> is the file exists, otherwise <see langword="false"/>.</returns>
+    public bool StormAssestFileExists(ReadOnlySpan<char> path)
+    {
+        return _stormStorage.StormAssetFileExists(path);
+    }
+
+    /// <summary>
+    /// Determines if an asset file exists.
+    /// </summary>
+    /// <param name="path">The path of the asset, which should start with the asset directory.</param>
+    /// <returns><see langword="true"/> is the file exists, otherwise <see langword="false"/>.</returns>
+    public bool StormAssetFileExists(string path)
+    {
+        return _stormStorage.StormAssetFileExists(path);
+    }
+
+    /// <summary>
+    /// Gets a storm asset file.
+    /// </summary>
+    /// <param name="path">A character span that contains the path of the asset, which should start with the asset directory.</param>
+    /// <returns>A <see cref="StormAssetFile"/> or <see langword="null"/> if not found.</returns>
+    public StormAssetFile? GetStormAssetFile(ReadOnlySpan<char> path)
+    {
+        return _stormStorage.GetStormAssetFile(path);
+    }
+
+    /// <summary>
+    /// Gets a storm asset file.
+    /// </summary>
+    /// <param name="path">The path of the asset, which should start with the asset directory.</param>
+    /// <returns>A <see cref="StormAssetFile"/> or <see langword="null"/> if not found.</returns>
+    public StormAssetFile? GetStormAssetFile(string path)
+    {
+        return _stormStorage.GetStormAssetFile(path);
+    }
+
+    /// <summary>
+    /// Gets a collection of not found files.
+    /// </summary>
+    /// <returns>A collection of not found <see cref="StormPath"/>s that represents not found files.</returns>
+    public IEnumerable<StormPath> GetNotFoundFiles()
+    {
+        foreach (StormPath item in StormStorage.StormCache.NotFoundFilesList)
+        {
+            yield return item;
+        }
+
+        foreach (StormPath item in StormStorage.StormMapCache.NotFoundFilesList)
+        {
+            yield return item;
+        }
+
+        foreach (StormPath item in StormStorage.StormCustomCache.NotFoundFilesList)
+        {
+            yield return item;
+        }
+    }
+
+    /// <summary>
+    /// Gets a collection of not found directories.
+    /// </summary>
+    /// <returns>A collection of not found <see cref="StormPath"/>s that represents not found directories.</returns>
+    public IEnumerable<StormPath> GetNotFoundDirectories()
+    {
+        foreach (StormPath item in StormStorage.StormCache.NotFoundDirectoriesList)
+        {
+            yield return item;
+        }
+
+        foreach (StormPath item in StormStorage.StormMapCache.NotFoundDirectoriesList)
+        {
+            yield return item;
+        }
+
+        foreach (StormPath item in StormStorage.StormCustomCache.NotFoundDirectoriesList)
+        {
+            yield return item;
+        }
     }
 
     internal void SetHeroesLocalization(StormLocale stormLocale)

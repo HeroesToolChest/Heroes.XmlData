@@ -115,6 +115,14 @@ internal partial class StormStorage : IStormStorage
         currentStormCache.UiStormPathsByRelativeUiPath[relativePath] = stormPath;
     }
 
+    public void AddAssetFilePath(StormModType stormModType, string relativePath, StormPath stormPath)
+    {
+        StormCache currentStormCache = GetCurrentStormCache(stormModType);
+
+        // if duplicate just override it
+        currentStormCache.AssetFilesByRelativeAssetsPath[relativePath] = stormPath;
+    }
+
     public bool AddConstantXElement(StormModType stormModType, XElement element, StormPath stormPath)
     {
         if (!element.Name.LocalName.Equals("const", StringComparison.OrdinalIgnoreCase))

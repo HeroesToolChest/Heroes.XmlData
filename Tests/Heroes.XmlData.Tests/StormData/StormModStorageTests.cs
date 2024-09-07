@@ -200,7 +200,7 @@ public class StormModStorageTests
         stormModStorage.AddAssetsTextFile(stream, stormPath1);
 
         // assert
-        stormModStorage.AddedAssetsFilePaths.Should().BeEquivalentTo(new[] { stormPath1 });
+        stormModStorage.AddedAssetsTextFilePaths.Should().BeEquivalentTo(new[] { stormPath1 });
         stormModStorage.AssetTextsById.Should().BeEquivalentTo(new Dictionary<string, AssetText>
         {
             { "id1", new("value2", stormPath1) },
@@ -234,7 +234,7 @@ public class StormModStorageTests
         stormModStorage.AddAssetsTextFile(stream2, stormPath1);
 
         // assert
-        stormModStorage.AddedAssetsFilePaths.Should().BeEquivalentTo(new[] { stormPath1 });
+        stormModStorage.AddedAssetsTextFilePaths.Should().BeEquivalentTo(new[] { stormPath1 });
         stormModStorage.AssetTextsById.Should().BeEquivalentTo(new Dictionary<string, AssetText>
         {
             { "id1", new("value1", stormPath1) },
@@ -479,6 +479,23 @@ public class StormModStorageTests
         // assert
         stormModStorage.FoundLayoutFilePaths.Should().BeEquivalentTo(new[] { stormPath });
         _stormStorage.Received().AddStormLayoutFilePath(Arg.Any<StormModType>(), relativePath, stormPath);
+    }
+
+    [TestMethod]
+    public void AddAssetFilePath_HasFilePath_AddAssetFilePath()
+    {
+        // arrange
+        StormModStorage stormModStorage = new(_stormMod, _stormStorage);
+
+        string relativePath = Path.Join("asset", "this", "file");
+        StormPath stormPath = TestHelpers.GetStormPath(relativePath);
+
+        // act
+        stormModStorage.AddAssetFilePath(relativePath, stormPath);
+
+        // assert
+        stormModStorage.FoundAssetFilePaths.Should().BeEquivalentTo(new[] { stormPath });
+        _stormStorage.Received().AddAssetFilePath(Arg.Any<StormModType>(), relativePath, stormPath);
     }
 
     [TestMethod]

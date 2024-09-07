@@ -1,4 +1,5 @@
 ﻿using CASCLib;
+using System.Collections.Generic;
 using System.IO.Abstractions;
 
 namespace Heroes.XmlData.Tests.StormMods;
@@ -64,7 +65,7 @@ public class FileStormModTests
         fileStormMod.StormModStorage.AddedXmlDataFilePaths.Should().HaveCount(2);
         fileStormMod.StormModStorage.AddedXmlFontStyleFilePaths.Should().ContainSingle();
         fileStormMod.StormModStorage.FoundLayoutFilePaths.Should().HaveCount(2);
-        fileStormMod.StormModStorage.AddedAssetsFilePaths.Should().ContainSingle();
+        fileStormMod.StormModStorage.AddedAssetsTextFilePaths.Should().ContainSingle();
         fileHeroesSource.StormStorage.StormModStorages.Should().ContainSingle();
     }
 
@@ -690,6 +691,67 @@ public class FileStormModTests
         fileSystem.Received().Directory.Exists(Arg.Any<string>());
         fileStormMod.StormModStorage.FoundLayoutFilePaths.Should().BeEmpty();
         stormStorage.StormCache.UiStormPathsByRelativeUiPath.Should().BeEmpty();
+    }
+
+    [TestMethod]
+    public void LoadAssetsDirectory_HasAssetDirectories_LoadsAssetPaths()
+    {
+        // arrange
+        MockFileSystem mockFileSystem = new(new Dictionary<string, MockFileData>
+        {
+            { Path.Join("mods", "test.stormmod", "base.stormassets", "assets", "textures", "075.dds"), new MockFileData("1") },
+            { Path.Join("mods", "test.stormmod", "base.stormassets", "assets", "textures", "33.dds"), new MockFileData("1") },
+            { Path.Join("mods", "test.stormmod", "base.stormassets", "assets", "textures", "img", "075.dds"), new MockFileData("1") },
+            { Path.Join("mods", "test.stormmod", "base.stormassets", "assets", "textures", "img", "33.dds"), new MockFileData("1") },
+            { Path.Join("textures", "55.dds"), new MockFileData("5") },
+        });
+
+        StormStorage stormStorage = new(false);
+        FileHeroesSource fileHeroesSource = new(stormStorage, _stormModFactory, _depotCacheFactory, "mods", _backgroundWorkerEx);
+        FileStormMod fileStormMod = new(mockFileSystem, fileHeroesSource, "test.stormmod", StormModType.Normal);
+
+        // act
+        fileStormMod.LoadAssetsDirectory();
+
+        // assert
+        fileStormMod.StormModStorage.FoundAssetFilePaths.Should().HaveCount(4);
+        stormStorage.StormCache.AssetFilesByRelativeAssetsPath.Should().HaveCount(4).And
+            .SatisfyRespectively(
+                first =>
+                {
+                    first.Key.Should().Be(Path.Join("assets", "textures", "075.dds"));
+                },
+                second =>
+                {
+                    second.Key.Should().Be(Path.Join("assets", "textures", "33.dds"));
+                },
+                third =>
+                {
+                    third.Key.Should().Be(Path.Join("assets", "textures", "img", "075.dds"));
+                },
+                fourth =>
+                {
+                    fourth.Key.Should().Be(Path.Join("assets", "textures", "img", "33.dds"));
+                });
+    }
+
+    [TestMethod]
+    public void LoadAssetsDirectory_NoAssetsDirectoryFound_NothingIsAdded()
+    {
+        // arrange
+        IFileSystem fileSystem = Substitute.For<IFileSystem>();
+
+        StormStorage stormStorage = new(false);
+        FileHeroesSource fileHeroesSource = new(stormStorage, _stormModFactory, _depotCacheFactory, "mods", _backgroundWorkerEx);
+        FileStormMod fileStormMod = new(fileSystem, fileHeroesSource, "test.stormmod", StormModType.Normal);
+
+        // act
+        fileStormMod.LoadAssetsDirectory();
+
+        // assert
+        fileSystem.Received().Directory.Exists(Arg.Any<string>());
+        fileStormMod.StormModStorage.FoundAssetFilePaths.Should().BeEmpty();
+        stormStorage.StormCache.AssetFilesByRelativeAssetsPath.Should().BeEmpty();
     }
 
     private FileStormMod GetFileStormModForMapMods()

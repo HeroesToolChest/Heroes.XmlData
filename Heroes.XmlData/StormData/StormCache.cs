@@ -77,9 +77,14 @@ internal class StormCache
     public Dictionary<LevelScalingEntry, StormStringValue> ScaleValueByEntry { get; } = [];
 
     /// <summary>
-    /// Gets the Storm Layout files by the their releative UI path (relative path will start with UI).
+    /// Gets the Storm Layout files by their relative UI path (relative path will start with UI).
     /// </summary>
     public Dictionary<string, StormPath> UiStormPathsByRelativeUiPath { get; } = [];
+
+    /// <summary>
+    /// Gets the assets files by their relative Assets path (relative path will start with Assets).
+    /// </summary>
+    public Dictionary<string, StormPath> AssetFilesByRelativeAssetsPath { get; } = new(StringComparer.OrdinalIgnoreCase);
 
     public void Clear()
     {
@@ -98,5 +103,6 @@ internal class StormCache
         StormStyleConstantElementsByName.Clear();
         ScaleValueByEntry.Clear();
         UiStormPathsByRelativeUiPath.Clear();
+        AssetFilesByRelativeAssetsPath.Clear();
     }
 }

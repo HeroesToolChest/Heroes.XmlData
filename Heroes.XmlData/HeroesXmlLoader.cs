@@ -1,7 +1,7 @@
 ﻿namespace Heroes.XmlData;
 
 /// <summary>
-/// Class to load the xml data and gamestrings from a given source.
+/// Class to load the heroes data from a given source.
 /// </summary>
 public class HeroesXmlLoader
 {
@@ -202,61 +202,23 @@ public class HeroesXmlLoader
     }
 
     /// <summary>
-    /// Gets a collection of not found files.
-    /// </summary>
-    /// <returns>A collection of not found <see cref="StormPath"/>s that represents not found files.</returns>
-    public IEnumerable<StormPath> GetNotFoundFiles()
-    {
-        foreach (StormPath item in _heroesSource.StormStorage.StormCache.NotFoundFilesList)
-        {
-            yield return item;
-        }
-
-        foreach (StormPath item in _heroesSource.StormStorage.StormMapCache.NotFoundFilesList)
-        {
-            yield return item;
-        }
-
-        foreach (StormPath item in _heroesSource.StormStorage.StormCustomCache.NotFoundFilesList)
-        {
-            yield return item;
-        }
-    }
-
-    /// <summary>
-    /// Gets a collection of not found directories.
-    /// </summary>
-    /// <returns>A collection of not found <see cref="StormPath"/>s that represents not found directories.</returns>
-    public IEnumerable<StormPath> GetNotFoundDirectories()
-    {
-        foreach (StormPath item in _heroesSource.StormStorage.StormCache.NotFoundDirectoriesList)
-        {
-            yield return item;
-        }
-
-        foreach (StormPath item in _heroesSource.StormStorage.StormMapCache.NotFoundDirectoriesList)
-        {
-            yield return item;
-        }
-
-        foreach (StormPath item in _heroesSource.StormStorage.StormCustomCache.NotFoundDirectoriesList)
-        {
-            yield return item;
-        }
-    }
-
-    /// <summary>
     /// Determines if a file exists.
     /// </summary>
-    /// <param name="path">The path of the file to check. The path must be relative to the root directory, as set in <see cref="RootDirectory"/>.</param>
+    /// <param name="path">
+    /// The path of the file to check and must be relative to the root directory, as set in <see cref="RootDirectory"/>.
+    /// The path can start with the root directory.
+    /// </param>
     /// <returns><see langword="true"/> is the file exists, otherwise <see langword="false"/>.</returns>
     public bool FileExists(string path) => _heroesSource.FileExists(path);
 
     /// <summary>
     /// Opens a file for reading.
     /// </summary>
-    /// <param name="path">The path of the file to open for reading. The path must be relative to the root directory, as set in <see cref="RootDirectory"/>.</param>
-    /// <returns>Returns a read-only <see cref="FileStream"/>.</returns>
+    /// <param name="path">
+    /// The path of the file to open for reading and must be relative to the root directory, as set in <see cref="RootDirectory"/>.
+    /// The path can start with the root directory.
+    /// </param>
+    /// <returns>Returns a <see cref="Stream"/>.</returns>
     public Stream? GetFile(string path) => _heroesSource.GetFile(path);
 
     private static HeroesXmlLoader LoadAsCASCInternal(CASCConfig cascConfig, BackgroundWorkerEx? backgroundWorkerEx)

@@ -104,13 +104,13 @@ public class StormElement
             string display;
 
             if (HasId && HasParentId)
-                display = $"<{ElementType} id=\"{Id}\" parent=\"{ParentId}\">";
+                display = $"{{<{ElementType} id=\"{Id}\" parent=\"{ParentId}\">}}";
             else if (HasId && !HasParentId)
-                display = $"<{ElementType} id=\"{Id}\">";
+                display = $"{{<{ElementType} id=\"{Id}\">}}";
             else if (!HasId && HasParentId)
-                display = $"<{ElementType} parent=\"{ParentId}\">";
+                display = $"{{<{ElementType} parent=\"{ParentId}\">}}";
             else
-                display = $"<{ElementType}>";
+                display = $"{{<{ElementType}>}}";
 
             return display;
         }

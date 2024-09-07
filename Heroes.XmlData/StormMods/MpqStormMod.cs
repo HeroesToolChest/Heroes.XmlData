@@ -40,6 +40,8 @@ internal abstract class MpqStormMod<T> : StormMod<T>
 
     protected override string LayoutDirectoryPath => Path.Join(HeroesSource.BaseStormDataDirectory, HeroesSource.UIDirectory, HeroesSource.LayoutDirectory);
 
+    protected override string AssetsDirectoryPath => Path.Join(HeroesSource.BaseStormAssetsDirectory, HeroesSource.AssetsDirectory);
+
     public override void LoadStormData()
     {
         // sets _mpqHeroesArchive field
@@ -90,6 +92,19 @@ internal abstract class MpqStormMod<T> : StormMod<T>
             .OrderBy(x => x);
 
         LoadStormLayoutFiles(files);
+    }
+
+    public override void LoadAssetsDirectory()
+    {
+        if (_mpqFolderRoot is null || !_mpqFolderRoot.TryGetLastDirectory(AssetsDirectoryPath, out MpqFolder? assetsFolder))
+            return;
+
+        IEnumerable<string> files = EnumerateDirectory(assetsFolder)
+            .Where(x => Path.GetExtension(x.FullName).Equals(DDSFileExtension, StringComparison.OrdinalIgnoreCase))
+            .Select(x => PathHelper.NormalizePath(x.FullName))
+            .OrderBy(x => x);
+
+        LoadAssetFiles(files);
     }
 
     protected override string GetGameStringFilePath(StormLocale stormLocale)

@@ -38,6 +38,7 @@ public class CASCMpqStormModTests
         // assert
         cascMpqStormMod.StormModStorage.AddedXmlDataFilePaths.Should().ContainSingle();
         cascMpqStormMod.StormModStorage.FoundLayoutFilePaths.Should().HaveCount(2);
-        cascMpqStormMod.StormModStorage.AddedAssetsFilePaths.Should().ContainSingle();
+        cascMpqStormMod.StormModStorage.AddedAssetsTextFilePaths.Should().ContainSingle();
+        cascMpqStormMod.StormModStorage.FoundAssetFilePaths.Should().HaveCount(2);
     }
 }

@@ -1,12 +1,11 @@
-﻿using System.IO.Abstractions;
-
-namespace Heroes.XmlData.StormMods;
+﻿namespace Heroes.XmlData.StormMods;
 
 internal abstract class StormMod<T> : IStormMod
     where T : IHeroesSource
 {
     protected const string XmlFileExtension = ".xml";
     protected const string StormLayoutFileExtension = ".stormlayout";
+    protected const string DDSFileExtension = ".dds";
 
     private readonly List<IStormMod> _includesStormModsCache = [];
 
@@ -73,12 +72,17 @@ internal abstract class StormMod<T> : IStormMod
     /// <summary>
     /// Gets the Assets.txt file path.
     /// </summary>
-    protected virtual string AssetsFilepath => Path.Join(GameDataDirectoryPath, HeroesSource.AssetsFile);
+    protected virtual string AssetsTextFilePath => Path.Join(GameDataDirectoryPath, HeroesSource.AssetsTextFile);
 
     /// <summary>
-    /// Gets the layout directory file path.
+    /// Gets the layout directory path.
     /// </summary>
     protected virtual string LayoutDirectoryPath => Path.Join(HeroesSource.ModsBaseDirectoryPath, DirectoryPath, HeroesSource.BaseStormDataDirectory, HeroesSource.UIDirectory, HeroesSource.LayoutDirectory);
+
+    /// <summary>
+    /// Gets the Assets directory path.
+    /// </summary>
+    protected virtual string AssetsDirectoryPath => Path.Join(HeroesSource.ModsBaseDirectoryPath, DirectoryPath, HeroesSource.BaseStormAssetsDirectory, HeroesSource.AssetsDirectory);
 
     protected T HeroesSource { get; }
 
@@ -91,7 +95,8 @@ internal abstract class StormMod<T> : IStormMod
         LoadGameDataXmlFile();
         LoadFontStyleFile();
         LoadStormLayoutDirectory();
-        LoadAssetsFile();
+        LoadAssetsDirectory();
+        LoadAssetsTextFile();
 
         LoadIncludesStormMods();
     }
@@ -143,12 +148,12 @@ internal abstract class StormMod<T> : IStormMod
         StormModStorage.AddBuildIdFile(stream);
     }
 
-    public void LoadAssetsFile()
+    public void LoadAssetsTextFile()
     {
-        if (!TryGetFile(AssetsFilepath, out Stream? stream))
+        if (!TryGetFile(AssetsTextFilePath, out Stream? stream))
             return;
 
-        StormModStorage.AddAssetsTextFile(stream, GetStormPath(AssetsFilepath));
+        StormModStorage.AddAssetsTextFile(stream, GetStormPath(AssetsTextFilePath));
     }
 
     /// <summary>
@@ -226,6 +231,11 @@ internal abstract class StormMod<T> : IStormMod
     public abstract void LoadStormLayoutDirectory();
 
     /// <summary>
+    /// Loads the assets files from the <see cref="AssetsDirectoryPath"/>. Include all subdirectories.
+    /// </summary>
+    public abstract void LoadAssetsDirectory();
+
+    /// <summary>
     /// Loads and adds the gamestrings from the gamestrings.txt file.
     /// </summary>
     /// <param name="stormLocale">The localization of the file to load.</param>
@@ -244,7 +254,7 @@ internal abstract class StormMod<T> : IStormMod
     /// <returns>The path to the gamestrings file.</returns>
     protected virtual string GetGameStringFilePath(StormLocale stormLocale)
     {
-        return Path.Join(HeroesSource.ModsBaseDirectoryPath, DirectoryPath, StormLocaleData.GetStormDataFileName(stormLocale), HeroesSource.LocalizedDataDirectory, HeroesSource.GameStringFile);
+        return Path.Join(HeroesSource.ModsBaseDirectoryPath, DirectoryPath, HeroesSource.GetLocaleStormDataDirectory(stormLocale), HeroesSource.LocalizedDataDirectory, HeroesSource.GameStringFile);
     }
 
     protected void LoadGameDataFiles(IEnumerable<string> files)
@@ -260,6 +270,14 @@ internal abstract class StormMod<T> : IStormMod
         foreach (string file in files)
         {
             AddStormLayoutFilePath(file);
+        }
+    }
+
+    protected void LoadAssetFiles(IEnumerable<string> files)
+    {
+        foreach (string file in files)
+        {
+            AddAssetFilePath(file);
         }
     }
 
@@ -343,18 +361,31 @@ internal abstract class StormMod<T> : IStormMod
 
     protected void AddStormLayoutFilePath(string layoutFilePath)
     {
-        ReadOnlySpan<char> uiPath;
+        ReadOnlySpan<char> uiPath = layoutFilePath;
 
-        int indexofBase = layoutFilePath.IndexOf(HeroesSource.BaseStormDataDirectory, StringComparison.OrdinalIgnoreCase);
+        int indexOfBase = layoutFilePath.IndexOf(HeroesSource.BaseStormDataDirectory, StringComparison.OrdinalIgnoreCase);
 
-        if (indexofBase > -1)
-            uiPath = layoutFilePath.AsSpan()[(indexofBase + HeroesSource.BaseStormDataDirectory.Length)..].TrimStart(Path.DirectorySeparatorChar);
-        else
-            uiPath = layoutFilePath;
+        if (indexOfBase > -1)
+            uiPath = layoutFilePath.AsSpan()[(indexOfBase + HeroesSource.BaseStormDataDirectory.Length)..].TrimStart(Path.DirectorySeparatorChar);
 
         if (uiPath.StartsWith(HeroesSource.UIDirectory, StringComparison.OrdinalIgnoreCase))
         {
             StormModStorage.AddStormLayoutFilePath(PathHelper.NormalizePath(uiPath), GetStormPath(layoutFilePath));
+        }
+    }
+
+    protected void AddAssetFilePath(string assetFilePath)
+    {
+        ReadOnlySpan<char> assetsPath = assetFilePath;
+
+        int indexOfBase = assetFilePath.IndexOf(HeroesSource.BaseStormAssetsDirectory, StringComparison.OrdinalIgnoreCase);
+
+        if (indexOfBase > -1)
+            assetsPath = assetFilePath.AsSpan()[(indexOfBase + HeroesSource.BaseStormAssetsDirectory.Length)..].TrimStart(Path.DirectorySeparatorChar);
+
+        if (assetsPath.StartsWith(HeroesSource.AssetsDirectory, StringComparison.OrdinalIgnoreCase))
+        {
+            StormModStorage.AddAssetFilePath(PathHelper.NormalizePath(assetsPath), GetStormPath(assetFilePath));
         }
     }
 

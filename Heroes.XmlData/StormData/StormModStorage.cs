@@ -16,9 +16,10 @@ internal class StormModStorage : IStormModStorage
     private readonly HashSet<StormPath> _addedXmlDataFilePathsList = [];
     private readonly HashSet<StormPath> _addedXmlFontStyleFilePathsList = [];
     private readonly HashSet<StormPath> _addedGameStringFilePathsList = [];
-    private readonly HashSet<StormPath> _addedAssetsFilePathsList = [];
+    private readonly HashSet<StormPath> _addedAssetsTextFilePathsList = [];
 
     private readonly HashSet<StormPath> _foundLayoutFilePathsList = [];
+    private readonly HashSet<StormPath> _foundAssetFilePathsList = [];
 
     internal StormModStorage(IStormMod stormMod, IStormStorage stormStorage)
     {
@@ -42,9 +43,11 @@ internal class StormModStorage : IStormModStorage
 
     public IEnumerable<StormPath> AddedGameStringFilePaths => _addedGameStringFilePathsList;
 
-    public IEnumerable<StormPath> AddedAssetsFilePaths => _addedAssetsFilePathsList;
+    public IEnumerable<StormPath> AddedAssetsTextFilePaths => _addedAssetsTextFilePathsList;
 
     public IEnumerable<StormPath> FoundLayoutFilePaths => _foundLayoutFilePathsList;
+
+    public IEnumerable<StormPath> FoundAssetFilePaths => _foundAssetFilePathsList;
 
     public Dictionary<string, GameStringText> GameStringsById { get; } = [];
 
@@ -103,7 +106,7 @@ internal class StormModStorage : IStormModStorage
     {
         using StreamReader reader = new(stream);
 
-        if (!_addedAssetsFilePathsList.Add(stormPath))
+        if (!_addedAssetsTextFilePathsList.Add(stormPath))
             return;
 
         while (!reader.EndOfStream)
@@ -167,6 +170,12 @@ internal class StormModStorage : IStormModStorage
     {
         _foundLayoutFilePathsList.Add(stormPath);
         _stormStorage.AddStormLayoutFilePath(StormModType, relativePath, stormPath);
+    }
+
+    public void AddAssetFilePath(string relativePath, StormPath stormPath)
+    {
+        _foundAssetFilePathsList.Add(stormPath);
+        _stormStorage.AddAssetFilePath(StormModType, relativePath, stormPath);
     }
 
     public void ClearGameStrings()

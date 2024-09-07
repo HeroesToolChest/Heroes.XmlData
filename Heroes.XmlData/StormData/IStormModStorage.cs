@@ -8,9 +8,11 @@ internal interface IStormModStorage
 
     IEnumerable<StormPath> AddedXmlFontStyleFilePaths { get; }
 
-    IEnumerable<StormPath> AddedAssetsFilePaths { get; }
+    IEnumerable<StormPath> AddedAssetsTextFilePaths { get; }
 
     IEnumerable<StormPath> FoundLayoutFilePaths { get; }
+
+    IEnumerable<StormPath> FoundAssetFilePaths { get; }
 
     int? BuildId { get; }
 
@@ -39,6 +41,8 @@ internal interface IStormModStorage
     void AddXmlDataFile(XDocument document, StormPath stormPath);
 
     void AddStormLayoutFilePath(string relativePath, StormPath stormPath);
+
+    void AddAssetFilePath(string relativePath, StormPath stormPath);
 
     void AddXmlFontStyleFile(XDocument document, StormPath stormPath);
 

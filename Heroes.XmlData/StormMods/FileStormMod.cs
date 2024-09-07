@@ -66,6 +66,20 @@ internal class FileStormMod : StormMod<IFileHeroesSource>
         LoadStormLayoutFiles(files);
     }
 
+    public override void LoadAssetsDirectory()
+    {
+        if (!_fileSystem.Directory.Exists(AssetsDirectoryPath))
+            return;
+
+        IEnumerable<string> files = _fileSystem.Directory.EnumerateFiles(AssetsDirectoryPath, $"*{DDSFileExtension}", new EnumerationOptions()
+        {
+            MatchCasing = MatchCasing.CaseInsensitive,
+            RecurseSubdirectories = true,
+        }).OrderBy(x => x, StringComparer.OrdinalIgnoreCase);
+
+        LoadAssetFiles(files);
+    }
+
     protected override bool TryGetFile(string filePath, [NotNullWhen(true)] out Stream? stream)
     {
         stream = null;

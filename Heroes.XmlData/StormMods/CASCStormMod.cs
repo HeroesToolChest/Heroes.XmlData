@@ -47,6 +47,19 @@ internal class CASCStormMod : StormMod<ICASCHeroesSource>, IStormMod
         LoadStormLayoutFiles(files);
     }
 
+    public override void LoadAssetsDirectory()
+    {
+        if (!HeroesSource.CASCHeroesStorage.CASCFolderRoot.TryGetLastDirectory(AssetsDirectoryPath, out CASCFolder? assetsFolder))
+            return;
+
+        IEnumerable<string> files = EnumerateDirectory(assetsFolder)
+            .Where(x => Path.GetExtension(x.FullName).Equals(DDSFileExtension, StringComparison.OrdinalIgnoreCase))
+            .Select(x => PathHelper.NormalizePath(x.FullName))
+            .OrderBy(x => x);
+
+        LoadAssetFiles(files);
+    }
+
     protected override bool TryGetFile(string filePath, [NotNullWhen(true)] out Stream? stream)
     {
         stream = null;

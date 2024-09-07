@@ -20,7 +20,11 @@ internal interface IHeroesSource
 
     string BaseStormDataDirectory { get; }
 
+    string BaseStormAssetsDirectory { get; }
+
     string LocalizedDataDirectory { get; }
+
+    string AssetsDirectory { get; }
 
     string GameStringFile { get; }
 
@@ -34,7 +38,7 @@ internal interface IHeroesSource
 
     string BuildIdFile { get; }
 
-    string AssetsFile { get; }
+    string AssetsTextFile { get; }
 
     string DescIndexStormLayoutFile { get; }
 
@@ -67,6 +71,8 @@ internal interface IHeroesSource
     Dictionary<string, S2MAProperties> S2MAPropertiesByTitle { get; }
 
     List<string> S2MAPaths { get; }
+
+    string GetLocaleStormDataDirectory(StormLocale stormLocale);
 
     void LoadStormData();
 

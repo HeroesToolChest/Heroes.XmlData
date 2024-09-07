@@ -161,6 +161,72 @@ public class CASCStormModTests
         stormStorage.StormCache.UiStormPathsByRelativeUiPath.Should().BeEmpty();
     }
 
+    [TestMethod]
+    public void LoadAssetsDirectory_HasAssetDirectories_LoadsAssetsPaths()
+    {
+        // arrange
+        StormStorage stormStorage = new(false);
+
+        CASCHeroesSource cascHeroesSource = new(stormStorage, _stormModFactory, _depotCacheFactory, _cascHeroesStorage, _backgroundWorkerEx);
+        CASCStormMod cascStormMod = new(cascHeroesSource, "test.stormmod", StormModType.Normal);
+
+        CASCFolder rootFolder = new("name");
+
+        rootFolder.AddFile("mods/test.stormmod/base.stormassets/assets/textures/075.dds");
+        rootFolder.AddFile("mods/test.stormmod/base.stormassets/assets/textures/33.dds");
+
+        rootFolder.AddFile("mods/test.stormmod/base.stormassets/assets/textures/img/075.dds");
+        rootFolder.AddFile("mods/test.stormmod/base.stormassets/assets/textures/img/33.dds");
+
+        rootFolder.AddFile("textures/55.dds");
+
+        _cascHeroesStorage.CASCFolderRoot.Returns(rootFolder);
+
+        // act
+        cascStormMod.LoadAssetsDirectory();
+
+        // assert
+        cascStormMod.StormModStorage.FoundAssetFilePaths.Should().HaveCount(4);
+        stormStorage.StormCache.AssetFilesByRelativeAssetsPath.Should().HaveCount(4).And
+            .SatisfyRespectively(
+                first =>
+                {
+                    first.Key.Should().Be(Path.Join("assets", "textures", "075.dds"));
+                },
+                second =>
+                {
+                    second.Key.Should().Be(Path.Join("assets", "textures", "33.dds"));
+                },
+                third =>
+                {
+                    third.Key.Should().Be(Path.Join("assets", "textures", "img", "075.dds"));
+                },
+                fourth =>
+                {
+                    fourth.Key.Should().Be(Path.Join("assets", "textures", "img", "33.dds"));
+                });
+    }
+
+    [TestMethod]
+    public void LoadAssetsDirectory_NoAssetsDirectoryFound_NothingIsAdded()
+    {
+        // arrange
+        StormStorage stormStorage = new(false);
+
+        CASCHeroesSource cascHeroesSource = new(stormStorage, _stormModFactory, _depotCacheFactory, _cascHeroesStorage, _backgroundWorkerEx);
+
+        CASCStormMod cascStormMod = new(cascHeroesSource, "test.stormmod", StormModType.Normal);
+
+        _cascHeroesStorage.CASCFolderRoot.Returns(new CASCFolder("cascfolder"));
+
+        // act
+        cascStormMod.LoadAssetsDirectory();
+
+        // assert
+        cascStormMod.StormModStorage.FoundAssetFilePaths.Should().BeEmpty();
+        stormStorage.StormCache.AssetFilesByRelativeAssetsPath.Should().BeEmpty();
+    }
+
     private static MemoryStream GetMockStream(string content)
     {
         MemoryStream stream = new();

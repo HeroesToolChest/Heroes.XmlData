@@ -6,7 +6,7 @@ namespace Heroes.XmlData.StormData;
 /// Contains the methods for obtaining data from the caches.
 /// </content>
 /// <remarks>
-/// <para>The TryGetFirst methods get a reference to a first cache.</para>
+/// <para>The TryGetFirst methods get a reference to the first cache.</para>
 /// <para>The Get methods merges the data from all caches (if it can).</para>
 /// </remarks>
 internal partial class StormStorage
@@ -451,6 +451,64 @@ internal partial class StormStorage
             return true;
 
         return false;
+    }
+
+    public bool StormAssetFileExists(ReadOnlySpan<char> relativePath)
+    {
+        return StormAssetFileExists(relativePath.ToString());
+    }
+
+    public bool StormAssetFileExists(string relativePath)
+    {
+        ArgumentNullException.ThrowIfNull(relativePath);
+
+        relativePath = PathHelper.NormalizePath(relativePath);
+
+        // custom cache always first
+        if (StormCustomCache.AssetFilesByRelativeAssetsPath.ContainsKey(relativePath))
+            return true;
+
+        if (StormMapCache.AssetFilesByRelativeAssetsPath.ContainsKey(relativePath))
+            return true;
+
+        if (StormCache.AssetFilesByRelativeAssetsPath.ContainsKey(relativePath))
+            return true;
+
+        return false;
+    }
+
+    public StormAssetFile? GetStormAssetFile(ReadOnlySpan<char> relativePath)
+    {
+        return GetStormAssetFile(relativePath.ToString());
+    }
+
+    public StormAssetFile? GetStormAssetFile(string relativePath)
+    {
+        ArgumentNullException.ThrowIfNull(relativePath);
+
+        relativePath = PathHelper.NormalizePath(relativePath);
+
+        StormAssetFile? stormImage = null;
+
+        // normal cache first
+        if (StormCache.AssetFilesByRelativeAssetsPath.TryGetValue(relativePath, out StormPath? stormPath))
+            stormImage = Get(stormImage, stormPath);
+
+        if (StormMapCache.AssetFilesByRelativeAssetsPath.TryGetValue(relativePath, out stormPath))
+            stormImage = Get(stormImage, stormPath);
+
+        if (StormCustomCache.AssetFilesByRelativeAssetsPath.TryGetValue(relativePath, out stormPath))
+            stormImage = Get(stormImage, stormPath);
+
+        static StormAssetFile Get(StormAssetFile? stormImage, StormPath stormPath)
+        {
+            stormImage ??= new StormAssetFile();
+            stormImage.AddPath(stormPath);
+
+            return stormImage;
+        }
+
+        return stormImage;
     }
 
     private static void AddStormGameString(Dictionary<string, StormGameString> stormGameStrings, KeyValuePair<string, GameStringText> item)
