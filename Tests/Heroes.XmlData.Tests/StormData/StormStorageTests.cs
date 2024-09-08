@@ -2168,6 +2168,126 @@ public class StormStorageTests
     }
 
     [TestMethod]
+    public void GetGameStringWithId_HasBothIdAndValue_ReturnsIdAndValue()
+    {
+        // arrange
+        StormStorage stormStorage = new(false);
+
+        // act
+        (string Id, GameStringText GameStringText)? gamestring = stormStorage.GetGameStringWithId("id=value", TestHelpers.GetStormPath("normal"));
+
+        // assert
+        gamestring.HasValue.Should().BeTrue();
+        gamestring!.Value.Id.Should().Be("id");
+        gamestring.Value.GameStringText.Value.Should().Be("value");
+    }
+
+    [TestMethod]
+    public void GetGameStringWithId_HasNoDelimeter_ReturnsIdAndNoValue()
+    {
+        // arrange
+        StormStorage stormStorage = new(false);
+
+        // act
+        (string Id, GameStringText GameStringText)? gamestring = stormStorage.GetGameStringWithId("idvalue", TestHelpers.GetStormPath("normal"));
+
+        // assert
+        gamestring.HasValue.Should().BeTrue();
+        gamestring!.Value.Id.Should().Be("idvalue");
+        gamestring.Value.GameStringText.Value.Should().BeEmpty();
+    }
+
+    [TestMethod]
+    public void GetGameStringWithId_NoIdAndHasValue_ReturnsNull()
+    {
+        // arrange
+        StormStorage stormStorage = new(false);
+
+        // act
+        (string Id, GameStringText GameStringText)? gamestring = stormStorage.GetGameStringWithId("=value", TestHelpers.GetStormPath("normal"));
+        (string Id, GameStringText GameStringText)? gamestringSpace = stormStorage.GetGameStringWithId(" =value", TestHelpers.GetStormPath("normal"));
+
+        // assert
+        gamestring.HasValue.Should().BeFalse();
+        gamestringSpace.Should().BeEquivalentTo(gamestring);
+    }
+
+    [TestMethod]
+    public void GetGameStringWithId_NoValueAndHasId_ReturnsIdAndValueEmpty()
+    {
+        // arrange
+        StormStorage stormStorage = new(false);
+
+        // act
+        (string Id, GameStringText GameStringText)? gamestring = stormStorage.GetGameStringWithId("id=", TestHelpers.GetStormPath("normal"));
+
+        // assert
+        gamestring.HasValue.Should().BeTrue();
+        gamestring!.Value.Id.Should().Be("id");
+        gamestring.Value.GameStringText.Value.Should().BeEmpty();
+    }
+
+    [TestMethod]
+    public void GetAssetWithId_HasBothIdAndValue_ReturnsIdAndValue()
+    {
+        // arrange
+        StormStorage stormStorage = new(false);
+
+        // act
+        (string Id, AssetText AssetText)? assetText = stormStorage.GetAssetWithId("id=value", TestHelpers.GetStormPath("normal"));
+
+        // assert
+        assetText.HasValue.Should().BeTrue();
+        assetText!.Value.Id.Should().Be("id");
+        assetText.Value.AssetText.Value.Should().Be("value");
+    }
+
+    [TestMethod]
+    public void GetAssetWithId_HasNoDelimeter_ReturnsIdAndNoValue()
+    {
+        // arrange
+        StormStorage stormStorage = new(false);
+
+        // act
+        (string Id, AssetText AssetText)? assetText = stormStorage.GetAssetWithId("idvalue", TestHelpers.GetStormPath("normal"));
+
+        // assert
+        assetText.HasValue.Should().BeTrue();
+        assetText!.Value.Id.Should().Be("idvalue");
+        assetText.Value.AssetText.Value.Should().BeEmpty();
+    }
+
+    [TestMethod]
+    public void GetAssetWithId_NoIdAndHasValue_ReturnsNull()
+    {
+        // arrange
+        StormStorage stormStorage = new(false);
+
+        // act
+        (string Id, AssetText AssetText)? assetText = stormStorage.GetAssetWithId("=value", TestHelpers.GetStormPath("normal"));
+        (string Id, AssetText AssetText)? assetTextSpace = stormStorage.GetAssetWithId(" =value", TestHelpers.GetStormPath("normal"));
+
+        // assert
+        assetText.HasValue.Should().BeFalse();
+        assetTextSpace.Should().BeEquivalentTo(assetText);
+    }
+
+    [TestMethod]
+    public void GetAssetWithId_NoValueAndHasId_ReturnsIdAndValueEmpty()
+    {
+        // arrange
+        StormStorage stormStorage = new(false);
+
+        // act
+        (string Id, AssetText AssetText)? assetText = stormStorage.GetAssetWithId("id=", TestHelpers.GetStormPath("normal"));
+
+        // assert
+        assetText.HasValue.Should().BeTrue();
+        assetText!.Value.Id.Should().Be("id");
+        assetText.Value.AssetText.Value.Should().BeEmpty();
+    }
+
+    [TestMethod]
     [DataRow("""<const id="$Var1" value="7" />""", "7")]
     [DataRow("""<const id="$Var1" value="" />""", "")]
     [DataRow("""<const id="$Var1" value=" " />""", " ")]
@@ -2199,6 +2319,60 @@ public class StormStorageTests
 
         // assert
         result.Should().Be("9.125");
+    }
+
+    [TestMethod]
+    public void AddStormLayoutFilePath_AddingSingleLayout_AddsOneLayout()
+    {
+        // arrange
+        StormStorage stormStorage = new(false);
+
+        // act
+        stormStorage.AddStormLayoutFilePath(StormModType.Normal, "this/is/a/path/file.txt", TestHelpers.GetStormPath("normal"));
+
+        // assert
+        stormStorage.StormCache.UiStormPathsByRelativeUiPath.Should().ContainSingle();
+    }
+
+    [TestMethod]
+    public void AddStormLayoutFilePath_AddingDuplicateSingleLayout_StillOnlyOneLayout()
+    {
+        // arrange
+        StormStorage stormStorage = new(false);
+        stormStorage.AddStormLayoutFilePath(StormModType.Normal, "this/is/a/path/file.txt", TestHelpers.GetStormPath("normal"));
+
+        // act
+        stormStorage.AddStormLayoutFilePath(StormModType.Normal, "this/is/a/path/file.txt", TestHelpers.GetStormPath("normal"));
+
+        // assert
+        stormStorage.StormCache.UiStormPathsByRelativeUiPath.Should().ContainSingle();
+    }
+
+    [TestMethod]
+    public void AddAssetFilePath_AddingSingleAssetFilePath_AddsOneAssetFilePath()
+    {
+        // arrange
+        StormStorage stormStorage = new(false);
+
+        // act
+        stormStorage.AddAssetFilePath(StormModType.Normal, "this/is/a/path/file.txt", TestHelpers.GetStormPath("normal"));
+
+        // assert
+        stormStorage.StormCache.AssetFilesByRelativeAssetsPath.Should().ContainSingle();
+    }
+
+    [TestMethod]
+    public void AddAssetFilePath_AddingDuplicateAssetFilePath_StillOnlyOneAssetFilePath()
+    {
+        // arrange
+        StormStorage stormStorage = new(false);
+        stormStorage.AddAssetFilePath(StormModType.Normal, "this/is/a/path/file.txt", TestHelpers.GetStormPath("normal"));
+
+        // act
+        stormStorage.AddAssetFilePath(StormModType.Normal, "this/is/a/path/file.txt", TestHelpers.GetStormPath("normal"));
+
+        // assert
+        stormStorage.StormCache.AssetFilesByRelativeAssetsPath.Should().ContainSingle();
     }
 
     [TestMethod]

@@ -8,7 +8,6 @@ namespace Heroes.XmlData.StormData;
 internal partial class StormStorage : IStormStorage
 {
     private readonly StormPath _rootFilePath;
-
     private int _loadedMapMods;
 
     public StormStorage(bool hasRootDefaults = true)
@@ -72,7 +71,7 @@ internal partial class StormStorage : IStormStorage
     {
         Span<Range> ranges = stackalloc Range[2];
 
-        gamestring.Split(ranges, '=', StringSplitOptions.RemoveEmptyEntries);
+        gamestring.Split(ranges, '=', StringSplitOptions.None);
 
         if (gamestring[ranges[0]].IsEmpty || gamestring[ranges[0]].IsWhiteSpace())
             return null;
@@ -95,7 +94,7 @@ internal partial class StormStorage : IStormStorage
     {
         Span<Range> ranges = stackalloc Range[2];
 
-        asset.Split(ranges, '=', StringSplitOptions.RemoveEmptyEntries);
+        asset.Split(ranges, '=', StringSplitOptions.None);
 
         if (asset[ranges[0]].IsEmpty || asset[ranges[0]].IsWhiteSpace())
             return null;
