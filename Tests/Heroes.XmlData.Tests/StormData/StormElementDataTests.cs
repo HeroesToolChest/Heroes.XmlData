@@ -1,4 +1,6 @@
-﻿namespace Heroes.XmlData.StormData.Tests;
+﻿using System.Xml.Linq;
+
+namespace Heroes.XmlData.StormData.Tests;
 
 [TestClass]
 public class StormElementDataTests
@@ -650,5 +652,105 @@ public class StormElementDataTests
         // assert
         action.Should().Throw<KeyNotFoundException>();
         actionSpan.Should().Throw<KeyNotFoundException>();
+    }
+
+    [TestMethod]
+    public void ElementDataIndexes_OnRootElement_ReturnsAllIndexes()
+    {
+        // arrange
+        XElement element = XElement.Parse(
+"""
+<CBundle id="AllStarsBundle">
+    <ProductId value="22143"/>
+    <Universe value="Heroes"/>
+    <HeroArray value="Raynor"/>
+    <HeroArray value="Azmodan"/>
+    <SkinArray Hero="Raynor" Skin="RaynorPatriot"/>
+    <SkinArray Hero="Azmodan" Skin="AzmodunkBundleProduct"/>
+</CBundle>
+""");
+        StormElementData data = new(element);
+
+        // act
+        List<string> results = data.GetElementDataIndexes().ToList();
+
+        // assert
+        results.Should().SatisfyRespectively(
+            first =>
+            {
+                first.Should().BeEquivalentTo("id");
+            },
+            second =>
+            {
+                second.Should().BeEquivalentTo("ProductId");
+            },
+            third =>
+            {
+                third.Should().BeEquivalentTo("Universe");
+            },
+            fourth =>
+            {
+                fourth.Should().BeEquivalentTo("HeroArray");
+            },
+            fifth =>
+            {
+                fifth.Should().BeEquivalentTo("SkinArray");
+            });
+    }
+
+    [TestMethod]
+    public void ElementDataIndexes_OnArrayElement_ReturnsIndexes()
+    {
+        // arrange
+        XElement element = XElement.Parse(
+"""
+<CBundle id="AllStarsBundle">
+    <ProductId value="22143"/>
+    <Universe value="Heroes"/>
+    <HeroArray value="Raynor"/>
+    <HeroArray value="Azmodan"/>
+    <SkinArray Hero="Raynor" Skin="RaynorPatriot"/>
+    <SkinArray Hero="Azmodan" Skin="AzmodunkBundleProduct"/>
+</CBundle>
+""");
+        StormElementData data = new(element);
+
+        // act
+        List<string> results = data.GetElementDataAt("heroarray").GetElementDataIndexes().ToList();
+
+        // assert
+        results.Should().SatisfyRespectively(
+            first =>
+            {
+                first.Should().BeEquivalentTo("0");
+            },
+            second =>
+            {
+                second.Should().BeEquivalentTo("1");
+            });
+    }
+
+    [TestMethod]
+    public void ElementData_OnRootArray_ReturnsKeyValueCollection()
+    {
+        // arrange
+        XElement element = XElement.Parse(
+"""
+<CBundle id="AllStarsBundle">
+    <ProductId value="22143"/>
+    <Universe value="Heroes"/>
+    <HeroArray value="Raynor"/>
+    <HeroArray value="Azmodan"/>
+    <SkinArray Hero="Raynor" Skin="RaynorPatriot"/>
+    <SkinArray Hero="Azmodan" Skin="AzmodunkBundleProduct"/>
+</CBundle>
+""");
+        StormElementData data = new(element);
+
+        // act
+        List<KeyValuePair<string, StormElementData>> result = data.GetElementData().ToList();
+
+        // assert
+        result.Should().HaveCount(5);
     }
 }

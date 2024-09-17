@@ -251,6 +251,24 @@ public class StormElementData
     }
 
     /// <summary>
+    /// Gets a collection of the inner data indexes.
+    /// </summary>
+    /// <returns>A collection of the inner data indexes.</returns>
+    public IEnumerable<string> GetElementDataIndexes()
+    {
+        return ElementDataPairs.Keys;
+    }
+
+    /// <summary>
+    /// Gets a collection of the inner data elements.
+    /// </summary>
+    /// <returns>A collection of <see cref="KeyValuePair"/>s representing the inner data elements.</returns>
+    public IEnumerable<KeyValuePair<string, StormElementData>> GetElementData()
+    {
+        return ElementDataPairs.AsReadOnly();
+    }
+
+    /// <summary>
     /// Gets the inner xml data from the given <paramref name="index"/>.
     /// </summary>
     /// <param name="index">A character span that contains the index value which is an element name or attribute name or value. Is case-insensitive.</param>
