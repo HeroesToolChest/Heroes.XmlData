@@ -1,5 +1,4 @@
 ﻿using Heroes.XmlData.GameStrings;
-using System.Diagnostics;
 
 namespace Heroes.XmlData;
 
@@ -301,16 +300,6 @@ public class HeroesData
     }
 
     /// <summary>
-    /// Gets the current loaded storm map's data. This does not contain data from the xml or gamestring files.
-    /// This data is from the map's s2ma and s2mv files.
-    /// </summary>
-    /// <returns>The current loaded storm map or <see langword="null"/> if no storm map loaded.</returns>
-    public StormBattlegroundMap? GetLoadedStormBattleGroundMap()
-    {
-        return _stormStorage.LoadedStormBattlegroundMap;
-    }
-
-    /// <summary>
     /// Determines if an asset file exists.
     /// </summary>
     /// <param name="path">A character span that contains the path of the asset, which should start with the asset directory.</param>
@@ -331,7 +320,7 @@ public class HeroesData
     }
 
     /// <summary>
-    /// Gets a storm asset file.
+    /// Gets a storm asset file that is from the assets directory.
     /// </summary>
     /// <param name="path">A character span that contains the path of the asset, which should start with the asset directory.</param>
     /// <returns>A <see cref="StormAssetFile"/> or <see langword="null"/> if not found.</returns>
@@ -341,7 +330,7 @@ public class HeroesData
     }
 
     /// <summary>
-    /// Gets a storm asset file.
+    /// Gets a storm asset file that is from the assets directory.
     /// </summary>
     /// <param name="path">The path of the asset, which should start with the asset directory.</param>
     /// <returns>A <see cref="StormAssetFile"/> or <see langword="null"/> if not found.</returns>

@@ -8,7 +8,7 @@ internal interface IStormMod
     string Name { get; }
 
     /// <summary>
-    /// Gets the inner path, after the "mods" and before the "base" directory.
+    /// Gets the inner path, after the "mods" (the root directory) and before the "base" directory.
     /// </summary>
     string DirectoryPath { get; }
 

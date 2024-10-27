@@ -1,6 +1,4 @@
-﻿using System.Diagnostics;
-
-namespace Heroes.XmlData.StormData;
+﻿namespace Heroes.XmlData.StormData;
 
 /// <summary>
 /// Contains the data that represents an <see cref="XElement"/>.

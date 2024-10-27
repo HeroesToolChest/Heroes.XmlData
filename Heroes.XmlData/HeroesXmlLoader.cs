@@ -198,11 +198,63 @@ public class HeroesXmlLoader
     /// <returns>The current <see cref="HeroesXmlLoader"/> instance.</returns>
     public IEnumerable<string> GetMapTitles()
     {
-        return _heroesSource.S2MAPropertiesByTitle.Select(x => x.Key).Order();
+        return _heroesSource.S2MAPropertiesByTitle.Select(x => x.Key);
     }
 
     /// <summary>
-    /// Determines if a file exists.
+    /// Gets a map's data from the s2ma and s2mv files. Does not contain data from the xml or gamestring files.
+    /// </summary>
+    /// <param name="mapTitle">A map's title. Can be found from <see cref="GetMapTitles"/>.</param>
+    /// <returns>The current loaded storm map or <see langword="null"/> if no storm map loaded.</returns>
+    public StormMap? GetStormMap(string mapTitle)
+    {
+        if (_heroesSource.S2MAPropertiesByTitle.TryGetValue(mapTitle, out S2MAProperties? s2maProperties) && s2maProperties.S2MVProperties is not null)
+        {
+            return new()
+            {
+                Name = mapTitle,
+                LoadingScreenImagePath = s2maProperties.S2MVProperties.LoadingImage ?? string.Empty,
+                MapId = s2maProperties.MapId ?? string.Empty,
+                MapLink = s2maProperties.S2MVProperties.MapLink,
+                MapSize = s2maProperties.S2MVProperties.MapSize.GetAsTuple(),
+                ReplayPreviewImagePath = s2maProperties.S2MVProperties.PreviewLargeImage,
+                S2MVFilePath = s2maProperties.S2MVProperties.DirectoryPath,
+                S2MAFilePath = s2maProperties.DirectoryPath,
+            };
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// Gets the collection of the loaded map mod dependencies. These are in ascending order (the order in which they are loaded), where the last mod is currently loaded map mod.
+    /// </summary>
+    /// <returns>A collection of all the map dependencies.</returns>
+    public IEnumerable<StormMapDependency> GetLoadedStormMapDependencies()
+    {
+        return _heroesSource.GetMapDependencies();
+    }
+
+    /// <summary>
+    /// Gets whether a map mod is currently loaded.
+    /// </summary>
+    /// <returns><see langword="true"/> if a map mod is loaded, otherwise <see langword="false"/>.</returns>
+    public bool IsMapModLoaded()
+    {
+        return _heroesSource.IsMapMapLoaded();
+    }
+
+    /// <summary>
+    /// Gets the title of the map mods that is currently loaded (in enUS).
+    /// </summary>
+    /// <returns>The map mods title, othewise <see langword="null"/>.</returns>
+    public string? GetLoadedMapModTitle()
+    {
+        return _heroesSource.LoadedStormMapTitle();
+    }
+
+    /// <summary>
+    /// Determines if a file exists given a path that is relative to the root directory.
     /// </summary>
     /// <param name="path">
     /// The path of the file to check and must be relative to the root directory, as set in <see cref="RootDirectory"/>.
@@ -212,7 +264,7 @@ public class HeroesXmlLoader
     public bool FileExists(string path) => _heroesSource.FileExists(path);
 
     /// <summary>
-    /// Opens a file for reading.
+    /// Opens a file for reading given a path that is relative to the root directory.
     /// </summary>
     /// <param name="path">
     /// The path of the file to open for reading and must be relative to the root directory, as set in <see cref="RootDirectory"/>.

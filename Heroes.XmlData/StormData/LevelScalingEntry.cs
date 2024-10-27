@@ -1,6 +1,4 @@
-﻿using System.Diagnostics;
-
-namespace Heroes.XmlData.StormData;
+﻿namespace Heroes.XmlData.StormData;
 
 // for a <LevelScalingArray> element
 // <Modifications>

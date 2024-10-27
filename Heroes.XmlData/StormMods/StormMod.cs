@@ -1,5 +1,6 @@
 ﻿namespace Heroes.XmlData.StormMods;
 
+[DebuggerDisplay("{Name}")]
 internal abstract class StormMod<T> : IStormMod
     where T : IHeroesSource
 {

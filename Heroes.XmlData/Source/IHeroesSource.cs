@@ -88,6 +88,12 @@ internal interface IHeroesSource
 
     void UnloadCustomMods();
 
+    IEnumerable<StormMapDependency> GetMapDependencies();
+
+    bool IsMapMapLoaded();
+
+    string? LoadedStormMapTitle();
+
     bool FileExists(string path);
 
     Stream? GetFile(string path);

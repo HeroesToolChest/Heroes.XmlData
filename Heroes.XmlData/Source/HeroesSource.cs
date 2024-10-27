@@ -116,8 +116,6 @@ internal abstract class HeroesSource : IHeroesSource
 
     public string GetLocaleStormDataDirectory(StormLocale stormLocale) => $"{stormLocale.ToString().ToLowerInvariant()}.stormdata";
 
-    public string GetLocaleStormAssetsDirectory(StormLocale stormLocale) => $"{stormLocale.ToString().ToLowerInvariant()}.stormassets";
-
     public void LoadStormData()
     {
         BackgroundWorkerEx?.ReportProgress(0, "Loading storm data...");
@@ -189,12 +187,6 @@ internal abstract class HeroesSource : IHeroesSource
             BackgroundWorkerEx?.ReportProgress((int)((i + 1) / (float)_stormMapMods.Count * 100));
         }
 
-        // load the storm map data from the s2ma/v files (non-xml and gamestring data)
-        if (s2maProperties.S2MVProperties is not null)
-        {
-            StormStorage.SetStormBattlegroundMap(mapTitle, s2maProperties);
-        }
-
         StormStorage.BuildDataForScalingAttributes(StormModType.Map);
     }
 
@@ -220,6 +212,24 @@ internal abstract class HeroesSource : IHeroesSource
     public void UnloadCustomMods()
     {
         _stormCustomMods.Clear();
+    }
+
+    public IEnumerable<StormMapDependency> GetMapDependencies()
+    {
+        return _stormMapMods.Select(x => new StormMapDependency() { Name = x.Name, DirectoryPath = x.DirectoryPath });
+    }
+
+    public bool IsMapMapLoaded()
+    {
+        return _stormMapMods.Count > 0;
+    }
+
+    public string? LoadedStormMapTitle()
+    {
+        if (_stormMapMods.Count > 0)
+            return _stormMapMods[^1].Name;
+        else
+            return null;
     }
 
     public abstract bool FileExists(string path);

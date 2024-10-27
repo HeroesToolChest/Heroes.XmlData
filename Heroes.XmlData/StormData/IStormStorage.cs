@@ -8,8 +8,6 @@ internal interface IStormStorage
 
     StormCache StormCustomCache { get; }
 
-    StormBattlegroundMap? LoadedStormBattlegroundMap { get; }
-
     List<IStormModStorage> StormModStorages { get; }
 
     IStormModStorage CreateModStorage(IStormMod stormMod);
@@ -51,8 +49,6 @@ internal interface IStormStorage
     void AddStormStyleElement(StormModType stormModType, XElement element, StormPath stormPath);
 
     void BuildDataForScalingAttributes(StormModType stormModType);
-
-    void SetStormBattlegroundMap(string name, S2MAProperties s2maProperties);
 
     void ClearGamestrings();
 

@@ -1,6 +1,4 @@
-﻿using System.Diagnostics;
-
-namespace Heroes.XmlData.StormData;
+﻿namespace Heroes.XmlData.StormData;
 
 /// <summary>
 /// Represents a storm asset file such as an image file.

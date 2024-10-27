@@ -1,6 +1,4 @@
-﻿using System.Diagnostics;
-
-namespace Heroes.XmlData.StormData;
+﻿namespace Heroes.XmlData.StormData;
 
 /// <summary>
 /// Represents an top level <see cref="XElement"/>.

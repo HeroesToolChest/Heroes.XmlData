@@ -1,6 +1,4 @@
-﻿using System.Diagnostics;
-
-namespace Heroes.XmlData.StormData;
+﻿namespace Heroes.XmlData.StormData;
 
 /// <summary>
 /// Represents a storm element's value.
@@ -104,6 +102,7 @@ public readonly ref struct StormElementValue
 
         while (index < Value.Length)
         {
+            // ##name##
             if (Value[index] == '#' && index + 1 < Value.Length && Value[index + 1] == '#')
             {
                 PushNormalText(ref index, ref startingIndex, elementNameList);
