@@ -131,5 +131,4 @@ internal interface IStormStorage
     StormFile? GetStormAssetFile(ReadOnlySpan<char> relativePath);
 
     StormFile? GetStormAssetFile(string relativePath);
-
 }
