@@ -1,5 +1,4 @@
 ﻿using Heroes.XmlData.Tests;
-using Newtonsoft.Json.Linq;
 
 namespace Heroes.XmlData.StormData.Tests;
 
