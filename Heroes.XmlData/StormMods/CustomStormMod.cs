@@ -58,7 +58,7 @@ internal class CustomStormMod : IStormMod
             }
         }
 
-        StormModStorage.UpdateConstantAttributes(_manualModLoader.Elements.DescendantsAndSelf());
+        StormModStorage.UpdateAttributes(_manualModLoader.Elements.DescendantsAndSelf());
 
         foreach (XElement element in _manualModLoader.Elements)
         {

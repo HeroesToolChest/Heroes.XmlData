@@ -218,6 +218,8 @@ public class HeroesXmlLoader
                 MapLink = s2maProperties.S2MVProperties.MapLink,
                 MapSize = s2maProperties.S2MVProperties.MapSize.GetAsTuple(),
                 ReplayPreviewImagePath = s2maProperties.S2MVProperties.PreviewLargeImage,
+                LayoutFilePath = s2maProperties.S2MVProperties.CustomLayout,
+                LayoutLoadingScreenFrame = s2maProperties.S2MVProperties.CustomFrame,
                 S2MVFilePath = s2maProperties.S2MVProperties.DirectoryPath,
                 S2MAFilePath = s2maProperties.DirectoryPath,
             };

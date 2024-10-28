@@ -6,6 +6,7 @@
 internal class StormModStorage : IStormModStorage
 {
     public const string SelfNameConst = $"{HxdConstants.Name}const-";
+    public const string SelfNameAsset = $"{HxdConstants.Name}asset-";
 
     private readonly IStormMod _stormMod;
     private readonly IStormStorage _stormStorage;
@@ -138,7 +139,7 @@ internal class StormModStorage : IStormModStorage
             if (_stormStorage.AddConstantXElement(StormModType, element, stormPath))
                 continue;
 
-            UpdateConstantAttributes(element.DescendantsAndSelf());
+            UpdateAttributes(element.DescendantsAndSelf());
 
             _stormStorage.AddLevelScalingArrayElement(StormModType, element, stormPath);
             _stormStorage.AddElement(StormModType, element, stormPath);
@@ -183,7 +184,7 @@ internal class StormModStorage : IStormModStorage
         GameStringsById.Clear();
     }
 
-    public void UpdateConstantAttributes(IEnumerable<XElement> elements)
+    public void UpdateAttributes(IEnumerable<XElement> elements)
     {
         foreach (XElement element in elements)
         {
@@ -196,20 +197,8 @@ internal class StormModStorage : IStormModStorage
                 if (attributeSpan.IsEmpty)
                     continue;
 
-                int indexOfConst = attributeSpan.IndexOf('$');
-
-                if (indexOfConst <= -1)
-                    continue;
-
-                ReadOnlySpan<char> attributeOfStartSpan = attributeSpan[indexOfConst..];
-
-                int endIndexOfConst = attributeOfStartSpan.IndexOfAny(" ,.;");
-                if (endIndexOfConst < 0)
-                    endIndexOfConst = attributeOfStartSpan.Length + indexOfConst;
-                else
-                    endIndexOfConst += indexOfConst;
-
-                element.SetAttributeValue($"{SelfNameConst}{attribute.Name}", attribute.Value.Replace(attributeSpan[indexOfConst..endIndexOfConst].ToString(), _stormStorage.GetValueFromConstTextAsText(attributeSpan[indexOfConst..endIndexOfConst])));
+                SetConstantAttribute(element, attribute, attributeSpan);
+                SetAssetAttribute(element, attribute, attributeSpan);
             }
         }
     }
@@ -217,5 +206,31 @@ internal class StormModStorage : IStormModStorage
     public override string ToString()
     {
         return Name;
+    }
+
+    private void SetConstantAttribute(XElement element, XAttribute attribute, ReadOnlySpan<char> attributeSpan)
+    {
+        int indexOfConst = attributeSpan.IndexOf('$');
+
+        if (indexOfConst < 0)
+            return;
+
+        ReadOnlySpan<char> attributeOfStartSpan = attributeSpan[indexOfConst..];
+
+        int endIndexOfConst = attributeOfStartSpan.IndexOfAny(" ,.;");
+        if (endIndexOfConst < 0)
+            endIndexOfConst = attributeOfStartSpan.Length + indexOfConst;
+        else
+            endIndexOfConst += indexOfConst;
+
+        element.SetAttributeValue($"{SelfNameConst}{attribute.Name}", attribute.Value.Replace(attributeSpan[indexOfConst..endIndexOfConst].ToString(), _stormStorage.GetValueFromConstTextAsText(attributeSpan[indexOfConst..endIndexOfConst])));
+    }
+
+    private void SetAssetAttribute(XElement element, XAttribute attribute, ReadOnlySpan<char> attributeSpan)
+    {
+        if (attributeSpan[0] != '@')
+            return;
+
+        element.SetAttributeValue($"{SelfNameAsset}{attribute.Name}", _stormStorage.GetStormAssetString(attributeSpan[1..])?.Value ?? string.Empty);
     }
 }

@@ -1974,6 +1974,200 @@ public class StormStorageTests
     }
 
     [TestMethod]
+    public void StormLayoutFileExists_AllThreeCaches_ReturnsFromCustom()
+    {
+        // arrange
+        StormStorage stormStorage = new(false);
+
+        stormStorage.StormCache.UiStormPathsByRelativeUiPath.Add(Path.Join("ui", "layout", "item1.stormlayout"), TestHelpers.GetStormPath("normal"));
+        stormStorage.StormMapCache.UiStormPathsByRelativeUiPath.Add(Path.Join("ui", "layout", "item1.stormlayout"), TestHelpers.GetStormPath("map"));
+        stormStorage.StormCustomCache.UiStormPathsByRelativeUiPath.Add(Path.Join("ui", "layout", "item1.stormlayout"), TestHelpers.GetStormPath("custom"));
+
+        // act
+        bool exists = stormStorage.StormLayoutFileExists(Path.Join("ui", "layout", "item1.stormlayout"));
+        bool existsSpan = stormStorage.StormLayoutFileExists(Path.Join("ui", "layout", "item1.stormlayout").AsSpan());
+
+        // assert
+        exists.Should().BeTrue();
+        existsSpan.Should().BeTrue();
+    }
+
+    [TestMethod]
+    public void StormLayoutFileExists_InNormalCache_ReturnsFromNormal()
+    {
+        // arrange
+        StormStorage stormStorage = new(false);
+
+        stormStorage.StormCache.UiStormPathsByRelativeUiPath.Add(Path.Join("ui", "layout", "item1.stormlayout"), TestHelpers.GetStormPath("normal"));
+
+        // act
+        bool exists = stormStorage.StormLayoutFileExists(Path.Join("ui", "layout", "item1.stormlayout"));
+        bool existsSpan = stormStorage.StormLayoutFileExists(Path.Join("ui", "layout", "item1.stormlayout").AsSpan());
+
+        // assert
+        exists.Should().BeTrue();
+        existsSpan.Should().BeTrue();
+    }
+
+    [TestMethod]
+    public void StormLayoutFileExists_InMapCache_ReturnsFromMap()
+    {
+        // arrange
+        StormStorage stormStorage = new(false);
+
+        stormStorage.StormMapCache.UiStormPathsByRelativeUiPath.Add(Path.Join("ui", "layout", "item1.stormlayout"), TestHelpers.GetStormPath("map"));
+
+        // act
+        bool exists = stormStorage.StormLayoutFileExists(Path.Join("ui", "layout", "item1.stormlayout"));
+        bool existsSpan = stormStorage.StormLayoutFileExists(Path.Join("ui", "layout", "item1.stormlayout").AsSpan());
+
+        // assert
+        exists.Should().BeTrue();
+        existsSpan.Should().BeTrue();
+    }
+
+    [TestMethod]
+    public void StormLayoutFileExists_InCustomCache_ReturnsFromCustom()
+    {
+        // arrange
+        StormStorage stormStorage = new(false);
+        stormStorage.StormCustomCache.UiStormPathsByRelativeUiPath.Add(Path.Join("ui", "layout", "item1.stormlayout"), TestHelpers.GetStormPath("custom"));
+
+        // act
+        bool exists = stormStorage.StormLayoutFileExists(Path.Join("ui", "layout", "item1.stormlayout"));
+        bool existsSpan = stormStorage.StormLayoutFileExists(Path.Join("ui", "layout", "item1.stormlayout").AsSpan());
+
+        // assert
+        exists.Should().BeTrue();
+        existsSpan.Should().BeTrue();
+    }
+
+    [TestMethod]
+    public void StormLayoutFileExists_InNoCache_ReturnFalse()
+    {
+        // arrange
+        StormStorage stormStorage = new(false);
+
+        stormStorage.StormCache.UiStormPathsByRelativeUiPath.Add(Path.Join("ui", "layout", "item1.stormlayout"), TestHelpers.GetStormPath("normal"));
+        stormStorage.StormMapCache.UiStormPathsByRelativeUiPath.Add(Path.Join("ui", "layout", "item1.stormlayout"), TestHelpers.GetStormPath("map"));
+
+        // act
+        bool exists = stormStorage.StormLayoutFileExists(Path.Join("ui", "layout", "item2.stormlayout"));
+        bool existsSpan = stormStorage.StormLayoutFileExists(Path.Join("ui", "layout", "item2.stormlayout").AsSpan());
+
+        // assert
+        exists.Should().BeFalse();
+        existsSpan.Should().BeFalse();
+    }
+
+    [TestMethod]
+    public void GetStormLayoutFile_AllThreeCaches_MergesFromAll()
+    {
+        // arrange
+        StormStorage stormStorage = new(false);
+
+        stormStorage.StormCache.UiStormPathsByRelativeUiPath.Add(Path.Join("ui", "layout", "item1.stormlayout"), TestHelpers.GetStormPath("normal"));
+        stormStorage.StormMapCache.UiStormPathsByRelativeUiPath.Add(Path.Join("ui", "layout", "item1.stormlayout"), TestHelpers.GetStormPath("map"));
+        stormStorage.StormCustomCache.UiStormPathsByRelativeUiPath.Add(Path.Join("ui", "layout", "item1.stormlayout"), TestHelpers.GetStormPath("custom"));
+
+        // act
+        StormFile? stormAssetFile = stormStorage.GetStormLayoutFile(Path.Join("ui", "layout", "item1.stormlayout"));
+        StormFile? stormAssetFileSpan = stormStorage.GetStormLayoutFile(Path.Join("ui", "layout", "item1.stormlayout").AsSpan());
+
+        // assert
+        stormAssetFile.Should().BeEquivalentTo(stormAssetFileSpan);
+        stormAssetFile.Should().NotBeNull();
+        stormAssetFile!.Path.Should().Be("custom");
+        stormAssetFile.ToString().Should().Be(stormAssetFile.Path);
+        stormAssetFile.StormPaths.Should().HaveCount(3);
+        stormAssetFile.StormPaths[^1].Path.Should().Be("custom");
+    }
+
+    [TestMethod]
+    public void GetStormLayoutFile_InNormalCache_ReturnsFromNormal()
+    {
+        // arrange
+        StormStorage stormStorage = new(false);
+
+        stormStorage.StormCache.UiStormPathsByRelativeUiPath.Add(Path.Join("ui", "layout", "item1.stormlayout"), TestHelpers.GetStormPath("normal"));
+
+        // act
+        StormFile? stormAssetFile = stormStorage.GetStormLayoutFile(Path.Join("ui", "layout", "item1.stormlayout"));
+        StormFile? stormAssetFileSpan = stormStorage.GetStormLayoutFile(Path.Join("ui", "layout", "item1.stormlayout").AsSpan());
+
+        // assert
+        stormAssetFile.Should().BeEquivalentTo(stormAssetFileSpan);
+        stormAssetFile.Should().NotBeNull();
+        stormAssetFile!.Path.Should().Be("normal");
+        stormAssetFile.ToString().Should().Be(stormAssetFile.Path);
+        stormAssetFile.StormPaths.Should().ContainSingle();
+        stormAssetFile.StormPaths[^1].Path.Should().Be("normal");
+    }
+
+    [TestMethod]
+    public void GetStormLayoutFile_InMapCache_ReturnsFromMap()
+    {
+        // arrange
+        StormStorage stormStorage = new(false);
+
+        stormStorage.StormMapCache.UiStormPathsByRelativeUiPath.Add(Path.Join("ui", "layout", "item1.stormlayout"), TestHelpers.GetStormPath("map"));
+
+        // act
+        StormFile? stormAssetFile = stormStorage.GetStormLayoutFile(Path.Join("ui", "layout", "item1.stormlayout"));
+        StormFile? stormAssetFileSpan = stormStorage.GetStormLayoutFile(Path.Join("ui", "layout", "item1.stormlayout").AsSpan());
+
+        // assert
+        stormAssetFile.Should().BeEquivalentTo(stormAssetFileSpan);
+        stormAssetFile.Should().NotBeNull();
+        stormAssetFile!.Path.Should().Be("map");
+        stormAssetFile.ToString().Should().Be(stormAssetFile.Path);
+        stormAssetFile.StormPaths.Should().ContainSingle();
+        stormAssetFile.StormPaths[^1].Path.Should().Be("map");
+    }
+
+    [TestMethod]
+    public void GetStormLayoutFile_InCustomCache_ReturnsFromCustom()
+    {
+        // arrange
+        StormStorage stormStorage = new(false);
+        stormStorage.StormCustomCache.UiStormPathsByRelativeUiPath.Add(Path.Join("ui", "layout", "item1.stormlayout"), TestHelpers.GetStormPath("custom"));
+
+        // act
+        StormFile? stormAssetFile = stormStorage.GetStormLayoutFile(Path.Join("ui", "layout", "item1.stormlayout"));
+        StormFile? stormAssetFileSpan = stormStorage.GetStormLayoutFile(Path.Join("ui", "layout", "item1.stormlayout").AsSpan());
+
+        // assert
+        stormAssetFile.Should().BeEquivalentTo(stormAssetFileSpan);
+        stormAssetFile.Should().NotBeNull();
+        stormAssetFile!.Path.Should().Be("custom");
+        stormAssetFile.ToString().Should().Be(stormAssetFile.Path);
+        stormAssetFile.StormPaths.Should().ContainSingle();
+        stormAssetFile.StormPaths[^1].Path.Should().Be("custom");
+    }
+
+    [TestMethod]
+    public void GetStormLayoutFile_NormalAndMapCache_MergeFromNormalAndMap()
+    {
+        // arrange
+        StormStorage stormStorage = new(false);
+
+        stormStorage.StormCache.UiStormPathsByRelativeUiPath.Add(Path.Join("ui", "layout", "item1.stormlayout"), TestHelpers.GetStormPath("normal"));
+        stormStorage.StormMapCache.UiStormPathsByRelativeUiPath.Add(Path.Join("ui", "layout", "item1.stormlayout"), TestHelpers.GetStormPath("map"));
+
+        // act
+        StormFile? stormAssetFile = stormStorage.GetStormLayoutFile(Path.Join("ui", "layout", "item1.stormlayout"));
+        StormFile? stormAssetFileSpan = stormStorage.GetStormLayoutFile(Path.Join("ui", "layout", "item1.stormlayout").AsSpan());
+
+        // assert
+        stormAssetFile.Should().BeEquivalentTo(stormAssetFileSpan);
+        stormAssetFile.Should().NotBeNull();
+        stormAssetFile!.Path.Should().Be("map");
+        stormAssetFile.ToString().Should().Be(stormAssetFile.Path);
+        stormAssetFile.StormPaths.Should().HaveCount(2);
+        stormAssetFile.StormPaths[^1].Path.Should().Be("map");
+    }
+
+    [TestMethod]
     public void StormAssetFileExists_AllThreeCaches_ReturnsFromCustom()
     {
         // arrange
@@ -2071,8 +2265,8 @@ public class StormStorageTests
         stormStorage.StormCustomCache.AssetFilesByRelativeAssetsPath.Add(Path.Join("assets", "item1.dds"), TestHelpers.GetStormPath("custom"));
 
         // act
-        StormAssetFile? stormAssetFile = stormStorage.GetStormAssetFile(Path.Join("assets", "item1.dds"));
-        StormAssetFile? stormAssetFileSpan = stormStorage.GetStormAssetFile(Path.Join("assets", "item1.dds").AsSpan());
+        StormFile? stormAssetFile = stormStorage.GetStormAssetFile(Path.Join("assets", "item1.dds"));
+        StormFile? stormAssetFileSpan = stormStorage.GetStormAssetFile(Path.Join("assets", "item1.dds").AsSpan());
 
         // assert
         stormAssetFile.Should().BeEquivalentTo(stormAssetFileSpan);
@@ -2092,15 +2286,15 @@ public class StormStorageTests
         stormStorage.StormCache.AssetFilesByRelativeAssetsPath.Add(Path.Join("assets", "item1.dds"), TestHelpers.GetStormPath("normal"));
 
         // act
-        StormAssetFile? stormAssetFile = stormStorage.GetStormAssetFile(Path.Join("assets", "item1.dds"));
-        StormAssetFile? stormAssetFileSpan = stormStorage.GetStormAssetFile(Path.Join("assets", "item1.dds").AsSpan());
+        StormFile? stormAssetFile = stormStorage.GetStormAssetFile(Path.Join("assets", "item1.dds"));
+        StormFile? stormAssetFileSpan = stormStorage.GetStormAssetFile(Path.Join("assets", "item1.dds").AsSpan());
 
         // assert
         stormAssetFile.Should().BeEquivalentTo(stormAssetFileSpan);
         stormAssetFile.Should().NotBeNull();
         stormAssetFile!.Path.Should().Be("normal");
         stormAssetFile.ToString().Should().Be(stormAssetFile.Path);
-        stormAssetFile.StormPaths.Should().HaveCount(1);
+        stormAssetFile.StormPaths.Should().ContainSingle();
         stormAssetFile.StormPaths[^1].Path.Should().Be("normal");
     }
 
@@ -2113,35 +2307,35 @@ public class StormStorageTests
         stormStorage.StormMapCache.AssetFilesByRelativeAssetsPath.Add(Path.Join("assets", "item1.dds"), TestHelpers.GetStormPath("map"));
 
         // act
-        StormAssetFile? stormAssetFile = stormStorage.GetStormAssetFile(Path.Join("assets", "item1.dds"));
-        StormAssetFile? stormAssetFileSpan = stormStorage.GetStormAssetFile(Path.Join("assets", "item1.dds").AsSpan());
+        StormFile? stormAssetFile = stormStorage.GetStormAssetFile(Path.Join("assets", "item1.dds"));
+        StormFile? stormAssetFileSpan = stormStorage.GetStormAssetFile(Path.Join("assets", "item1.dds").AsSpan());
 
         // assert
         stormAssetFile.Should().BeEquivalentTo(stormAssetFileSpan);
         stormAssetFile.Should().NotBeNull();
         stormAssetFile!.Path.Should().Be("map");
         stormAssetFile.ToString().Should().Be(stormAssetFile.Path);
-        stormAssetFile.StormPaths.Should().HaveCount(1);
+        stormAssetFile.StormPaths.Should().ContainSingle();
         stormAssetFile.StormPaths[^1].Path.Should().Be("map");
     }
 
     [TestMethod]
-    public void GetStormAssetFileg_InCustomCache_ReturnsFromCustom()
+    public void GetStormAssetFile_InCustomCache_ReturnsFromCustom()
     {
         // arrange
         StormStorage stormStorage = new(false);
         stormStorage.StormCustomCache.AssetFilesByRelativeAssetsPath.Add(Path.Join("assets", "item1.dds"), TestHelpers.GetStormPath("custom"));
 
         // act
-        StormAssetFile? stormAssetFile = stormStorage.GetStormAssetFile(Path.Join("assets", "item1.dds"));
-        StormAssetFile? stormAssetFileSpan = stormStorage.GetStormAssetFile(Path.Join("assets", "item1.dds").AsSpan());
+        StormFile? stormAssetFile = stormStorage.GetStormAssetFile(Path.Join("assets", "item1.dds"));
+        StormFile? stormAssetFileSpan = stormStorage.GetStormAssetFile(Path.Join("assets", "item1.dds").AsSpan());
 
         // assert
         stormAssetFile.Should().BeEquivalentTo(stormAssetFileSpan);
         stormAssetFile.Should().NotBeNull();
         stormAssetFile!.Path.Should().Be("custom");
         stormAssetFile.ToString().Should().Be(stormAssetFile.Path);
-        stormAssetFile.StormPaths.Should().HaveCount(1);
+        stormAssetFile.StormPaths.Should().ContainSingle();
         stormAssetFile.StormPaths[^1].Path.Should().Be("custom");
     }
 
@@ -2155,8 +2349,8 @@ public class StormStorageTests
         stormStorage.StormMapCache.AssetFilesByRelativeAssetsPath.Add(Path.Join("assets", "item1.dds"), TestHelpers.GetStormPath("map"));
 
         // act
-        StormAssetFile? stormAssetFile = stormStorage.GetStormAssetFile(Path.Join("assets", "item1.dds"));
-        StormAssetFile? stormAssetFileSpan = stormStorage.GetStormAssetFile(Path.Join("assets", "item1.dds").AsSpan());
+        StormFile? stormAssetFile = stormStorage.GetStormAssetFile(Path.Join("assets", "item1.dds"));
+        StormFile? stormAssetFileSpan = stormStorage.GetStormAssetFile(Path.Join("assets", "item1.dds").AsSpan());
 
         // assert
         stormAssetFile.Should().BeEquivalentTo(stormAssetFileSpan);

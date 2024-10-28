@@ -1,4 +1,5 @@
 ﻿using Heroes.XmlData.Tests;
+using Newtonsoft.Json.Linq;
 
 namespace Heroes.XmlData.StormData.Tests;
 
@@ -499,7 +500,7 @@ public class StormModStorageTests
     }
 
     [TestMethod]
-    public void UpdateConstantAttributes_Elements_AttributesWithConstantsAreUpdated()
+    public void UpdateAttributes_ElementsWithConstantValues_AttributesWithConstantsAreUpdated()
     {
         // arrange
         List<XElement> elements =
@@ -523,7 +524,7 @@ public class StormModStorageTests
         StormModStorage stormModStorage = new(_stormMod, stormStorage);
 
         // act
-        stormModStorage.UpdateConstantAttributes(elements.DescendantsAndSelf());
+        stormModStorage.UpdateAttributes(elements.DescendantsAndSelf());
 
         // assert
         elements.Should().BeEquivalentTo(new XElement[]
@@ -539,6 +540,44 @@ public class StormModStorageTests
   <InfoFlags index=""Hidden"" value=""xyz $ChromieBasicAttackRange xyz"" Hxdconst-value=""xyz 7 xyz"" />
 </CBehaviorBuff>
     "),
+        });
+    }
+
+    [TestMethod]
+    public void UpdateAttributes_ElementsWithAssetValues_AttributesWithAssetsAreUpdated()
+    {
+        // arrange
+        List<XElement> elements =
+        [
+            XElement.Parse(
+"""
+<CBehaviorBuff default="1">
+  <InfoFlags index="Hidden" value="5" />
+  <InfoFlags index="Hidden" value="@UI/LoadingScreen_SnowBrawl_Background" />
+  <InfoFlags index="Hidden" value="@other_not_found" />
+</CBehaviorBuff>
+"""),
+        ];
+
+        StormStorage stormStorage = new(false);
+        stormStorage.AddAssetText(StormModType.Normal, "UI/LoadingScreen_SnowBrawl_Background", new AssetText("Assets\\Textures\\storm_ui_homescreenbackground_snowbrawl.dds", TestHelpers.GetStormPath("test")));
+
+        StormModStorage stormModStorage = new(_stormMod, stormStorage);
+
+        // act
+        stormModStorage.UpdateAttributes(elements.DescendantsAndSelf());
+
+        // assert
+        elements.Should().BeEquivalentTo(new XElement[]
+        {
+            XElement.Parse(
+"""
+<CBehaviorBuff default="1">
+  <InfoFlags index="Hidden" value="5" />
+  <InfoFlags index="Hidden" value="@UI/LoadingScreen_SnowBrawl_Background" Hxdasset-value="Assets\Textures\storm_ui_homescreenbackground_snowbrawl.dds" />
+  <InfoFlags index="Hidden" value="@other_not_found" Hxdasset-value="" />
+</CBehaviorBuff>
+"""),
         });
     }
 }

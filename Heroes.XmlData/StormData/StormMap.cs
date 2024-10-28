@@ -50,6 +50,16 @@ public class StormMap
     public required string LoadingScreenImagePath { get; init; }
 
     /// <summary>
+    /// Gets the relative path to the storm layout file.
+    /// </summary>
+    public required string LayoutFilePath { get; init; }
+
+    /// <summary>
+    /// Gets the reference to the loading screen frame in the layout file.
+    /// </summary>
+    public required string LayoutLoadingScreenFrame { get; init; }
+
+    /// <summary>
     /// Gets the relative path of the s2ma (mpq) file.
     /// </summary>
     public required string S2MAFilePath { get; init; }
@@ -58,9 +68,4 @@ public class StormMap
     /// Gets the relative path of the s2mv (json) file.
     /// </summary>
     public required string S2MVFilePath { get; init; }
-
-    ///// <summary>
-    ///// Gets the collection of the map mod file paths (relative to the root directory) for this storm map. These are in ascending order, where the last mod is this current map mod and the others are the map dependencies.
-    ///// </summary>
-    //public required IList<(string Name, string FilePath)> MapModPaths { get; init; }
 }

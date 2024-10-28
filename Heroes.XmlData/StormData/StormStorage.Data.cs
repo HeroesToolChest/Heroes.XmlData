@@ -453,6 +453,56 @@ internal partial class StormStorage
         return false;
     }
 
+    public bool StormLayoutFileExists(ReadOnlySpan<char> relativePath)
+    {
+        return StormLayoutFileExists(relativePath.ToString());
+    }
+
+    public bool StormLayoutFileExists(string relativePath)
+    {
+        ArgumentNullException.ThrowIfNull(relativePath);
+
+        relativePath = PathHelper.NormalizePath(relativePath);
+
+        // custom cache always first
+        if (StormCustomCache.UiStormPathsByRelativeUiPath.ContainsKey(relativePath))
+            return true;
+
+        if (StormMapCache.UiStormPathsByRelativeUiPath.ContainsKey(relativePath))
+            return true;
+
+        if (StormCache.UiStormPathsByRelativeUiPath.ContainsKey(relativePath))
+            return true;
+
+        return false;
+    }
+
+    public StormFile? GetStormLayoutFile(ReadOnlySpan<char> relativePath)
+    {
+        return GetStormLayoutFile(relativePath.ToString());
+    }
+
+    public StormFile? GetStormLayoutFile(string relativePath)
+    {
+        ArgumentNullException.ThrowIfNull(relativePath);
+
+        relativePath = PathHelper.NormalizePath(relativePath);
+
+        StormFile? stormLayoutFile = null;
+
+        // normal cache first
+        if (StormCache.UiStormPathsByRelativeUiPath.TryGetValue(relativePath, out StormPath? stormPath))
+            stormLayoutFile = GetStormFile(stormLayoutFile, stormPath);
+
+        if (StormMapCache.UiStormPathsByRelativeUiPath.TryGetValue(relativePath, out stormPath))
+            stormLayoutFile = GetStormFile(stormLayoutFile, stormPath);
+
+        if (StormCustomCache.UiStormPathsByRelativeUiPath.TryGetValue(relativePath, out stormPath))
+            stormLayoutFile = GetStormFile(stormLayoutFile, stormPath);
+
+        return stormLayoutFile;
+    }
+
     public bool StormAssetFileExists(ReadOnlySpan<char> relativePath)
     {
         return StormAssetFileExists(relativePath.ToString());
@@ -477,36 +527,28 @@ internal partial class StormStorage
         return false;
     }
 
-    public StormAssetFile? GetStormAssetFile(ReadOnlySpan<char> relativePath)
+    public StormFile? GetStormAssetFile(ReadOnlySpan<char> relativePath)
     {
         return GetStormAssetFile(relativePath.ToString());
     }
 
-    public StormAssetFile? GetStormAssetFile(string relativePath)
+    public StormFile? GetStormAssetFile(string relativePath)
     {
         ArgumentNullException.ThrowIfNull(relativePath);
 
         relativePath = PathHelper.NormalizePath(relativePath);
 
-        StormAssetFile? stormImage = null;
+        StormFile? stormImage = null;
 
         // normal cache first
         if (StormCache.AssetFilesByRelativeAssetsPath.TryGetValue(relativePath, out StormPath? stormPath))
-            stormImage = Get(stormImage, stormPath);
+            stormImage = GetStormFile(stormImage, stormPath);
 
         if (StormMapCache.AssetFilesByRelativeAssetsPath.TryGetValue(relativePath, out stormPath))
-            stormImage = Get(stormImage, stormPath);
+            stormImage = GetStormFile(stormImage, stormPath);
 
         if (StormCustomCache.AssetFilesByRelativeAssetsPath.TryGetValue(relativePath, out stormPath))
-            stormImage = Get(stormImage, stormPath);
-
-        static StormAssetFile Get(StormAssetFile? stormImage, StormPath stormPath)
-        {
-            stormImage ??= new StormAssetFile();
-            stormImage.AddPath(stormPath);
-
-            return stormImage;
-        }
+            stormImage = GetStormFile(stormImage, stormPath);
 
         return stormImage;
     }
@@ -526,6 +568,14 @@ internal partial class StormStorage
 
             stormGameStrings.Add(item.Key, stormGameString);
         }
+    }
+
+    private static StormFile GetStormFile(StormFile? stormFile, StormPath stormPath)
+    {
+        stormFile ??= new StormFile();
+        stormFile.AddPath(stormPath);
+
+        return stormFile;
     }
 
     private StormElement? MergeUpStormElement(string dataObjectType, string? id, ElementType currentElementType)

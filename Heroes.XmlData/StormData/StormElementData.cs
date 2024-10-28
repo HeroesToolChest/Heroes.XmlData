@@ -9,7 +9,8 @@ public class StormElementData
     private static readonly HashSet<string> _otherElementArrays = ["On", "Cost", "CatalogModifications", "ConditionalEvents", "CardLayouts"];
 
     private string? _rawValue;
-    private string? _constValue;
+    private string? _constValue; // starts with $
+    private string? _assetValue; // starts with @
 
     internal StormElementData(XElement rootElement)
     {
@@ -45,11 +46,12 @@ public class StormElementData
         _rawValue = value;
     }
 
-    internal StormElementData(StormElementData parent, string field, string value, string constValue)
+    internal StormElementData(StormElementData parent, string field, string value, string? constValue, string? assetValue)
         : this(parent, field)
     {
         _rawValue = value;
         _constValue = constValue;
+        _assetValue = assetValue;
     }
 
     internal StormElementData(StormElementData parent, string field, XElement rootElement, bool isInnerArray = false, bool isIndex = false)
@@ -113,6 +115,33 @@ public class StormElementData
     }
 
     /// <summary>
+    /// Gets a value indicating whether <see cref="Value"/> is evaluated from an asset.
+    /// </summary>
+    public bool IsAssetValue
+    {
+        get
+        {
+            if (_assetValue is not null)
+            {
+                return true;
+            }
+            else if (ElementDataPairs.Keys.Count == 1)
+            {
+                if (HasNumericalIndex && ElementDataPairs.TryGetValue("0", out StormElementData? data) && data.IsAssetValue)
+                {
+                    return data.IsAssetValue;
+                }
+                else if (HasTextIndex)
+                {
+                    return ElementDataPairs.First().Value.IsAssetValue;
+                }
+            }
+
+            return false;
+        }
+    }
+
+    /// <summary>
     /// Gets a value indicating whether <see cref="HxdScaleValue"/> is not <see langword="null"/>.
     /// </summary>
     [MemberNotNullWhen(true, nameof(HxdScaleValue))]
@@ -160,6 +189,10 @@ public class StormElementData
             if (_constValue is not null)
             {
                 returnValue = _constValue;
+            }
+            else if (_assetValue is not null)
+            {
+                returnValue = _assetValue;
             }
             else if (_rawValue is not null)
             {
@@ -367,6 +400,12 @@ public class StormElementData
                 continue;
             }
 
+            if (attribute.Name.LocalName.Equals($"{StormModStorage.SelfNameAsset}value", StringComparison.OrdinalIgnoreCase))
+            {
+                _assetValue = attribute.Value;
+                continue;
+            }
+
             if (isInnerArray)
             {
                 ElementDataPairs[attribute.Name.LocalName] = new StormElementData(this, attribute.Name.LocalName, attribute, "0")
@@ -437,11 +476,9 @@ public class StormElementData
             else
             {
                 string? constValueAtt = element.Attribute($"{StormModStorage.SelfNameConst}value")?.Value ?? element.Attribute($"{StormModStorage.SelfNameConst}Value")?.Value;
+                string? assetValueAtt = element.Attribute($"{StormModStorage.SelfNameAsset}value")?.Value ?? element.Attribute($"{StormModStorage.SelfNameAsset}Value")?.Value;
 
-                if (string.IsNullOrEmpty(constValueAtt))
-                    ElementDataPairs[elementName] = new StormElementData(this, elementName, valueAtt);
-                else
-                    ElementDataPairs[elementName] = new StormElementData(this, elementName, valueAtt, constValueAtt);
+                ElementDataPairs[elementName] = new StormElementData(this, elementName, valueAtt, constValueAtt, assetValueAtt);
             }
         }
     }

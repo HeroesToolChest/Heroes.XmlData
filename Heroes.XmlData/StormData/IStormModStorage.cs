@@ -48,7 +48,7 @@ internal interface IStormModStorage
 
     void ClearGameStrings();
 
-    void UpdateConstantAttributes(IEnumerable<XElement> elements);
+    void UpdateAttributes(IEnumerable<XElement> elements);
 
     string ToString();
 }

@@ -1,5 +1,4 @@
 ﻿using CASCLib;
-using System.Collections.Generic;
 using System.IO.Abstractions;
 
 namespace Heroes.XmlData.Tests.StormMods;

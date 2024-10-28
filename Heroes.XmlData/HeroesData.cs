@@ -303,7 +303,7 @@ public class HeroesData
     /// Determines if an asset file exists.
     /// </summary>
     /// <param name="path">A character span that contains the path of the asset, which should start with the asset directory.</param>
-    /// <returns><see langword="true"/> is the file exists, otherwise <see langword="false"/>.</returns>
+    /// <returns><see langword="true"/> if the file exists, otherwise <see langword="false"/>.</returns>
     public bool StormAssestFileExists(ReadOnlySpan<char> path)
     {
         return _stormStorage.StormAssetFileExists(path);
@@ -313,7 +313,7 @@ public class HeroesData
     /// Determines if an asset file exists.
     /// </summary>
     /// <param name="path">The path of the asset, which should start with the asset directory.</param>
-    /// <returns><see langword="true"/> is the file exists, otherwise <see langword="false"/>.</returns>
+    /// <returns><see langword="true"/> if the file exists, otherwise <see langword="false"/>.</returns>
     public bool StormAssetFileExists(string path)
     {
         return _stormStorage.StormAssetFileExists(path);
@@ -323,8 +323,8 @@ public class HeroesData
     /// Gets a storm asset file that is from the assets directory.
     /// </summary>
     /// <param name="path">A character span that contains the path of the asset, which should start with the asset directory.</param>
-    /// <returns>A <see cref="StormAssetFile"/> or <see langword="null"/> if not found.</returns>
-    public StormAssetFile? GetStormAssetFile(ReadOnlySpan<char> path)
+    /// <returns>A <see cref="StormFile"/> or <see langword="null"/> if not found.</returns>
+    public StormFile? GetStormAssetFile(ReadOnlySpan<char> path)
     {
         return _stormStorage.GetStormAssetFile(path);
     }
@@ -333,10 +333,50 @@ public class HeroesData
     /// Gets a storm asset file that is from the assets directory.
     /// </summary>
     /// <param name="path">The path of the asset, which should start with the asset directory.</param>
-    /// <returns>A <see cref="StormAssetFile"/> or <see langword="null"/> if not found.</returns>
-    public StormAssetFile? GetStormAssetFile(string path)
+    /// <returns>A <see cref="StormFile"/> or <see langword="null"/> if not found.</returns>
+    public StormFile? GetStormAssetFile(string path)
     {
         return _stormStorage.GetStormAssetFile(path);
+    }
+
+    /// <summary>
+    /// Determines if a layout file exists.
+    /// </summary>
+    /// <param name="path">A character span that contains the path of the layout file, which should start with the ui directory.</param>
+    /// <returns><see langword="true"/> if the file exists, otherwise <see langword="false"/>.</returns>
+    public bool StormLayoutFileExists(ReadOnlySpan<char> path)
+    {
+        return _stormStorage.StormAssetFileExists(path);
+    }
+
+    /// <summary>
+    /// Determines if a layout file exists.
+    /// </summary>
+    /// <param name="path">The path of the asset, which should start with the ui directory.</param>
+    /// <returns><see langword="true"/> if the file exists, otherwise <see langword="false"/>.</returns>
+    public bool StormLayoutFileExists(string path)
+    {
+        return _stormStorage.StormAssetFileExists(path);
+    }
+
+    /// <summary>
+    /// Gets a storm layout file that is from the ui directory.
+    /// </summary>
+    /// <param name="path">A character span that contains the path of the layout file, which should start with the ui directory.</param>
+    /// <returns>A <see cref="StormFile"/> or <see langword="null"/> if not found.</returns>
+    public StormFile? GetStormLayoutFile(ReadOnlySpan<char> path)
+    {
+        return _stormStorage.GetStormLayoutFile(path);
+    }
+
+    /// <summary>
+    /// Gets a storm layout file that is from the ui directory.
+    /// </summary>
+    /// <param name="path">The path of the layout file, which should start with the ui directory.</param>
+    /// <returns>A <see cref="StormFile"/> or <see langword="null"/> if not found.</returns>
+    public StormFile? GetStormLayoutFile(string path)
+    {
+        return _stormStorage.GetStormLayoutFile(path);
     }
 
     /// <summary>

@@ -92,12 +92,13 @@ internal abstract class StormMod<T> : IStormMod
     public virtual void LoadStormData()
     {
         LoadBuildIdFile();
-        LoadGameDataDirectory();
-        LoadGameDataXmlFile();
         LoadFontStyleFile();
         LoadStormLayoutDirectory();
         LoadAssetsDirectory();
         LoadAssetsTextFile();
+
+        LoadGameDataDirectory();
+        LoadGameDataXmlFile();
 
         LoadIncludesStormMods();
     }

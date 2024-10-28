@@ -1,6 +1,4 @@
-﻿using System.Xml.Linq;
-
-namespace Heroes.XmlData.StormData.Tests;
+﻿namespace Heroes.XmlData.StormData.Tests;
 
 [TestClass]
 public class StormElementDataTests
@@ -346,7 +344,7 @@ public class StormElementDataTests
     }
 
     [TestMethod]
-    public void StormElementData_ElementHasConstAttributeThatIsEmtpy_ReturnsNoConstValue()
+    public void StormElementData_ElementHasConstAttributeThatIsEmtpy_ReturnsHasConstValue()
     {
         // arrange
         XElement xElement = new(
@@ -361,7 +359,66 @@ public class StormElementDataTests
         StormElementData stormElementData = new(xElement);
 
         // assert
-        stormElementData.GetElementDataAt("Name").IsConstValue.Should().BeFalse();
+        stormElementData.GetElementDataAt("Name").IsConstValue.Should().BeTrue();
+    }
+
+    [TestMethod]
+    public void StormElementData_ElementHasAssetAttribute_ReturnsAssetValue()
+    {
+        // arrange
+        XElement xElement = new(
+            "CAbil",
+            new XAttribute("default", "1"),
+            new XElement(
+                "Name",
+                new XAttribute("value", "@Name"),
+                new XAttribute($"{StormModStorage.SelfNameAsset}value", "SomeValue")));
+
+        // act
+        StormElementData stormElementData = new(xElement);
+
+        // assert
+        stormElementData.GetElementDataAt("Name").IsAssetValue.Should().BeTrue();
+        stormElementData.GetElementDataAt("Name").Value.GetString().Should().Be("SomeValue");
+    }
+
+    [TestMethod]
+    public void StormElementData_ElementHasIntAssetAttribute_ReturnsInt()
+    {
+        // arrange
+        XElement xElement = new(
+            "CAbil",
+            new XAttribute("default", "1"),
+            new XElement(
+                "Name",
+                new XAttribute("value", "@Name"),
+                new XAttribute($"{StormModStorage.SelfNameAsset}value", "5")));
+
+        // act
+        StormElementData stormElementData = new(xElement);
+
+        // assert
+        stormElementData.GetElementDataAt("Name").IsAssetValue.Should().BeTrue();
+        stormElementData.GetElementDataAt("Name").Value.GetAsInt().Should().Be(5);
+    }
+
+    [TestMethod]
+    public void StormElementData_ElementHasAssetAttributeThatIsEmtpy_ReturnsHasAssetValue()
+    {
+        // arrange
+        XElement xElement = new(
+            "CAbil",
+            new XAttribute("default", "1"),
+            new XElement(
+                "Name",
+                new XAttribute("value", "@Name"),
+                new XAttribute($"{StormModStorage.SelfNameAsset}value", string.Empty)));
+
+        // act
+        StormElementData stormElementData = new(xElement);
+
+        // assert
+        stormElementData.GetElementDataAt("Name").IsAssetValue.Should().BeTrue();
     }
 
     [TestMethod]

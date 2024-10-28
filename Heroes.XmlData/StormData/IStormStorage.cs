@@ -116,11 +116,20 @@ internal interface IStormStorage
 
     bool TryGetFirstStormLayoutStormPath(string relativePath, [NotNullWhen(true)] out StormPath? stormPath);
 
+    bool StormLayoutFileExists(ReadOnlySpan<char> relativePath);
+
+    bool StormLayoutFileExists(string relativePath);
+
+    StormFile? GetStormLayoutFile(ReadOnlySpan<char> relativePath);
+
+    StormFile? GetStormLayoutFile(string relativePath);
+
     bool StormAssetFileExists(ReadOnlySpan<char> relativePath);
 
     bool StormAssetFileExists(string relativePath);
 
-    StormAssetFile? GetStormAssetFile(ReadOnlySpan<char> relativePath);
+    StormFile? GetStormAssetFile(ReadOnlySpan<char> relativePath);
 
-    StormAssetFile? GetStormAssetFile(string relativePath);
+    StormFile? GetStormAssetFile(string relativePath);
+
 }
