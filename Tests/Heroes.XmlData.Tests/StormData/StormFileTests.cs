@@ -4,104 +4,93 @@
 public class StormFileTests
 {
     [TestMethod]
-    public void Equals_DifferentCasing_ShouldBeTrue()
+    public void ToString_GetString_ReturnsPath()
     {
         // arrange
-        StormPath stormFile1 = new()
+        StormFile stormFile = new(new StormPath()
         {
-            StormModName = "modname",
-            Path = "somepath",
-            PathType = StormPathType.Hxd,
-        };
-
-        StormPath stormFile2 = new()
-        {
-            StormModName = "ModName",
-            Path = "SomePath",
-            PathType = StormPathType.Hxd,
-        };
+            Path = "path",
+            PathType = StormPathType.File,
+            StormModName = "name",
+            StormModPath = "modpath",
+        });
 
         // act
-        bool result = stormFile1.Equals(stormFile2);
+        string result = stormFile.ToString();
 
         // assert
-        result.Should().BeTrue();
+        result.Should().Be(stormFile.StormPath.Path);
     }
 
     [TestMethod]
-    public void Equals_DifferentValues_ShouldBeFalse()
+    public void AddPath_AddsStormPaths_HasCount()
     {
         // arrange
-        StormPath stormFile1 = new()
+        StormFile stormFile = new(new StormPath()
         {
-            StormModName = "modname",
-            Path = "somepath",
-            PathType = StormPathType.Hxd,
-        };
-
-        StormPath stormFile2 = new()
-        {
-            StormModName = "ModName2",
-            Path = "SomePath2",
-            PathType = StormPathType.Hxd,
-        };
+            Path = "path",
+            PathType = StormPathType.File,
+            StormModName = "name",
+            StormModPath = "modpath",
+        });
 
         // act
-        bool result = stormFile1.Equals(stormFile2);
+        stormFile.AddPath(new StormPath()
+        {
+            Path = "path2",
+            PathType = StormPathType.File,
+            StormModName = "name2",
+            StormModPath = "modpath2",
+        });
+        stormFile.AddPath(new StormPath()
+        {
+            Path = "path3",
+            PathType = StormPathType.File,
+            StormModName = "name3",
+            StormModPath = "modpath3",
+        });
 
         // assert
-        result.Should().BeFalse();
+        stormFile.StormPaths.Should().HaveCount(3);
     }
 
     [TestMethod]
-    public void GetHashCode_DifferentCasing_ShouldHaveSameHashCode()
+    public void StormPath_HasStormPaths_ReturnsLastPath()
     {
         // arrange
-        StormPath stormFile1 = new()
+        StormFile stormFile = new(new()
         {
-            StormModName = "modname",
-            Path = "somepath",
-            PathType = StormPathType.Hxd,
+            Path = "path",
+            PathType = StormPathType.File,
+            StormModName = "name",
+            StormModPath = "modpath",
+        });
+
+        StormPath stormPath2 = new()
+        {
+            Path = "path2",
+            PathType = StormPathType.File,
+            StormModName = "name2",
+            StormModPath = "modpath2",
         };
 
-        StormPath stormFile2 = new()
-        {
-            StormModName = "ModName",
-            Path = "SomePath",
-            PathType = StormPathType.Hxd,
-        };
+        stormFile.AddPath(stormPath2);
 
         // act
-        int hashCode1 = stormFile1.GetHashCode();
-        int hashCode2 = stormFile2.GetHashCode();
+        StormPath result = stormFile.StormPath;
 
         // assert
-        hashCode1.Should().Be(hashCode2);
+        result.Should().Be(stormPath2);
     }
 
     [TestMethod]
-    public void GetHashCode_DifferentValues_ShouldHaveDifferentHashCode()
+    public void StormPath_HasNoStormPaths_()
     {
         // arrange
-        StormPath stormFile1 = new()
-        {
-            StormModName = "modname",
-            Path = "somepath",
-            PathType = StormPathType.Hxd,
-        };
-
-        StormPath stormFile2 = new()
-        {
-            StormModName = "ModName2",
-            Path = "SomePath2",
-            PathType = StormPathType.Hxd,
-        };
-
         // act
-        int hashCode1 = stormFile1.GetHashCode();
-        int hashCode2 = stormFile2.GetHashCode();
+        Action act = static () => new StormFile(null!);
 
         // assert
-        hashCode1.Should().NotBe(hashCode2);
+        act.Should().Throw<ArgumentNullException>();
     }
 }

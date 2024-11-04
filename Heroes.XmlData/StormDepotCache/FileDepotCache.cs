@@ -21,6 +21,7 @@ internal class FileDepotCache : DepotCache<IFileHeroesSource>
             StormStorage.AddDirectoryNotFound(StormModType.Normal, new StormPath()
             {
                 StormModName = string.Empty,
+                StormModPath = DepotCacheDirectoryPath,
                 Path = DepotCacheDirectoryPath,
                 PathType = StormPathType.File,
             });

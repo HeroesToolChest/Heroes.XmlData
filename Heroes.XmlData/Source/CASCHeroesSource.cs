@@ -14,9 +14,48 @@ internal class CASCHeroesSource : HeroesSource, ICASCHeroesSource
 
     public ICASCHeroesStorage CASCHeroesStorage => _cascHeroesStorage;
 
-    public override bool FileExists(string path) => CASCHeroesStorage.CASCHandlerWrapper.FileExists(GetValidatedPath(path));
+    public override bool FileExists(string path, string? mpqPath = null)
+    {
+        if (mpqPath is null)
+            return CASCHeroesStorage.CASCHandlerWrapper.FileExists(GetValidatedPath(path));
+        else
+            return IsMpqFileEntryExists(GetValidatedPath(mpqPath), path);
+    }
 
-    public override Stream? GetFile(string path) => CASCHeroesStorage.CASCHandlerWrapper.OpenFile(GetValidatedPath(path));
+    public override bool FileExists(StormFile stormFile)
+    {
+        if (stormFile.StormPath.PathType == StormPathType.MPQ)
+            return IsMpqFileEntryExists(GetValidatedPath(stormFile.StormPath.StormModPath), stormFile.StormPath.Path);
+        else
+            return FileExists(stormFile.StormPath.Path);
+    }
+
+    public override Stream GetFile(string path, string? mpqPath = null)
+    {
+        Stream? stream;
+
+        if (mpqPath is null)
+        {
+            stream = CASCHeroesStorage.CASCHandlerWrapper.OpenFile(GetValidatedPath(path));
+
+            if (stream is null)
+                throw new FileNotFoundException("Could not find file", path);
+
+            return stream;
+        }
+        else
+        {
+            return GetMpqFileEntry(mpqPath, path);
+        }
+    }
+
+    public override Stream GetFile(StormFile stormFile)
+    {
+        if (stormFile.StormPath.PathType == StormPathType.MPQ)
+            return GetMpqFileEntry(stormFile.StormPath.StormModPath, stormFile.StormPath.Path);
+        else
+            return GetFile(stormFile.StormPath.Path);
+    }
 
     protected override IStormMod GetStormMod(string directoryPath, StormModType stormModType, BackgroundWorkerEx? backgroundWorkerEx = null) => StormModFactory.CreateCASCStormModInstance(this, directoryPath, stormModType);
 

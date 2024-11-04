@@ -572,8 +572,10 @@ internal partial class StormStorage
 
     private static StormFile GetStormFile(StormFile? stormFile, StormPath stormPath)
     {
-        stormFile ??= new StormFile();
-        stormFile.AddPath(stormPath);
+        if (stormFile is null)
+            stormFile = new(stormPath);
+        else
+            stormFile.AddPath(stormPath);
 
         return stormFile;
     }

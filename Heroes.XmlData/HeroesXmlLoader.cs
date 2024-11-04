@@ -205,7 +205,7 @@ public class HeroesXmlLoader
     /// Gets a map's data from the s2ma and s2mv files. Does not contain data from the xml or gamestring files.
     /// </summary>
     /// <param name="mapTitle">A map's title. Can be found from <see cref="GetMapTitles"/>.</param>
-    /// <returns>The current loaded storm map or <see langword="null"/> if no storm map loaded.</returns>
+    /// <returns>Map data for the specified map or <see langword="null"/> if map not found.</returns>
     public StormMap? GetStormMap(string mapTitle)
     {
         if (_heroesSource.S2MAPropertiesByTitle.TryGetValue(mapTitle, out S2MAProperties? s2maProperties) && s2maProperties.S2MVProperties is not null)
@@ -256,24 +256,48 @@ public class HeroesXmlLoader
     }
 
     /// <summary>
-    /// Determines if a file exists given a path that is relative to the root directory.
+    /// Determines if a file exists.
+    /// <para>
+    /// If <paramref name="mpqPath"/> is <see langword="null"/>, then <paramref name="path"/> must be a path relative to the <see cref="RootDirectory"/>.
+    /// </para>
+    /// <para>
+    /// If <paramref name="mpqPath"/> is not <see langword="null"/>, then <paramref name="path"/> must be relative to the <paramref name="mpqPath"/>.
+    /// </para>
     /// </summary>
-    /// <param name="path">
-    /// The path of the file to check and must be relative to the root directory, as set in <see cref="RootDirectory"/>.
-    /// The path can start with the root directory.
-    /// </param>
-    /// <returns><see langword="true"/> is the file exists, otherwise <see langword="false"/>.</returns>
-    public bool FileExists(string path) => _heroesSource.FileExists(path);
+    /// <param name="path">The relative path of the file to check.</param>
+    /// <param name="mpqPath">The relative path of the mpq file.</param>
+    /// <returns><see langword="true"/> if the file exists, otherwise <see langword="false"/>. Will return <see langword="false"/> if <paramref name="mpqPath"/> was not found.</returns>
+    public bool FileExists(string path, string? mpqPath = null) => _heroesSource.FileExists(path, mpqPath);
 
     /// <summary>
-    /// Opens a file for reading given a path that is relative to the root directory.
+    /// Determines if a file exists.
     /// </summary>
-    /// <param name="path">
-    /// The path of the file to open for reading and must be relative to the root directory, as set in <see cref="RootDirectory"/>.
-    /// The path can start with the root directory.
-    /// </param>
-    /// <returns>Returns a <see cref="Stream"/>.</returns>
-    public Stream? GetFile(string path) => _heroesSource.GetFile(path);
+    /// <param name="stormFile">The file to check.</param>
+    /// <returns><see langword="true"/> if the file exists, otherwise <see langword="false"/>.</returns>
+    public bool FileExists(StormFile stormFile) => _heroesSource.FileExists(stormFile);
+
+    /// <summary>
+    /// Opens a file for reading.
+    /// <para>
+    /// If <paramref name="mpqPath"/> is <see langword="null"/>, then <paramref name="path"/> must be a path relative to the <see cref="RootDirectory"/>.
+    /// </para>
+    /// <para>
+    /// If <paramref name="mpqPath"/> is not <see langword="null"/>, then <paramref name="path"/> must be relative to the <paramref name="mpqPath"/>.
+    /// </para>
+    /// </summary>
+    /// <param name="path">The relative path of the file to open.</param>
+    /// <param name="mpqPath">The relative path of the mpq file to open.</param>
+    /// <returns>Returns a <see cref="Stream"/> or else throws an exception.</returns>
+    /// <exception cref="FileNotFoundException">File was not found, or <paramref name="mpqPath"/> was not found.</exception>
+    public Stream GetFile(string path, string? mpqPath = null) => _heroesSource.GetFile(path, mpqPath);
+
+    /// <summary>
+    /// Opens a file for reading.
+    /// </summary>
+    /// <param name="stormFile">The file to open.</param>
+    /// <returns>Returns a <see cref="Stream"/> or else throws an exception.</returns>
+    /// <exception cref="FileNotFoundException">File was not found.</exception>
+    public Stream GetFile(StormFile stormFile) => _heroesSource.GetFile(stormFile);
 
     private static HeroesXmlLoader LoadAsCASCInternal(CASCConfig cascConfig, BackgroundWorkerEx? backgroundWorkerEx)
     {

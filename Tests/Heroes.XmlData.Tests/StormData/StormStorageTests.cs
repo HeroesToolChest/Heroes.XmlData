@@ -2077,8 +2077,8 @@ public class StormStorageTests
         // assert
         stormAssetFile.Should().BeEquivalentTo(stormAssetFileSpan);
         stormAssetFile.Should().NotBeNull();
-        stormAssetFile!.Path.Should().Be("custom");
-        stormAssetFile.ToString().Should().Be(stormAssetFile.Path);
+        stormAssetFile!.StormPath.Path.Should().Be("custom");
+        stormAssetFile.ToString().Should().Be(stormAssetFile.StormPath.Path);
         stormAssetFile.StormPaths.Should().HaveCount(3);
         stormAssetFile.StormPaths[^1].Path.Should().Be("custom");
     }
@@ -2098,8 +2098,8 @@ public class StormStorageTests
         // assert
         stormAssetFile.Should().BeEquivalentTo(stormAssetFileSpan);
         stormAssetFile.Should().NotBeNull();
-        stormAssetFile!.Path.Should().Be("normal");
-        stormAssetFile.ToString().Should().Be(stormAssetFile.Path);
+        stormAssetFile!.StormPath.Path.Should().Be("normal");
+        stormAssetFile.ToString().Should().Be(stormAssetFile.StormPath.Path);
         stormAssetFile.StormPaths.Should().ContainSingle();
         stormAssetFile.StormPaths[^1].Path.Should().Be("normal");
     }
@@ -2119,8 +2119,8 @@ public class StormStorageTests
         // assert
         stormAssetFile.Should().BeEquivalentTo(stormAssetFileSpan);
         stormAssetFile.Should().NotBeNull();
-        stormAssetFile!.Path.Should().Be("map");
-        stormAssetFile.ToString().Should().Be(stormAssetFile.Path);
+        stormAssetFile!.StormPath.Path.Should().Be("map");
+        stormAssetFile.ToString().Should().Be(stormAssetFile.StormPath.Path);
         stormAssetFile.StormPaths.Should().ContainSingle();
         stormAssetFile.StormPaths[^1].Path.Should().Be("map");
     }
@@ -2139,8 +2139,8 @@ public class StormStorageTests
         // assert
         stormAssetFile.Should().BeEquivalentTo(stormAssetFileSpan);
         stormAssetFile.Should().NotBeNull();
-        stormAssetFile!.Path.Should().Be("custom");
-        stormAssetFile.ToString().Should().Be(stormAssetFile.Path);
+        stormAssetFile!.StormPath.Path.Should().Be("custom");
+        stormAssetFile.ToString().Should().Be(stormAssetFile.StormPath.Path);
         stormAssetFile.StormPaths.Should().ContainSingle();
         stormAssetFile.StormPaths[^1].Path.Should().Be("custom");
     }
@@ -2161,8 +2161,8 @@ public class StormStorageTests
         // assert
         stormAssetFile.Should().BeEquivalentTo(stormAssetFileSpan);
         stormAssetFile.Should().NotBeNull();
-        stormAssetFile!.Path.Should().Be("map");
-        stormAssetFile.ToString().Should().Be(stormAssetFile.Path);
+        stormAssetFile!.StormPath.Path.Should().Be("map");
+        stormAssetFile.ToString().Should().Be(stormAssetFile.StormPath.Path);
         stormAssetFile.StormPaths.Should().HaveCount(2);
         stormAssetFile.StormPaths[^1].Path.Should().Be("map");
     }
@@ -2271,8 +2271,8 @@ public class StormStorageTests
         // assert
         stormAssetFile.Should().BeEquivalentTo(stormAssetFileSpan);
         stormAssetFile.Should().NotBeNull();
-        stormAssetFile!.Path.Should().Be("custom");
-        stormAssetFile.ToString().Should().Be(stormAssetFile.Path);
+        stormAssetFile!.StormPath.Path.Should().Be("custom");
+        stormAssetFile.ToString().Should().Be(stormAssetFile.StormPath.Path);
         stormAssetFile.StormPaths.Should().HaveCount(3);
         stormAssetFile.StormPaths[^1].Path.Should().Be("custom");
     }
@@ -2292,8 +2292,8 @@ public class StormStorageTests
         // assert
         stormAssetFile.Should().BeEquivalentTo(stormAssetFileSpan);
         stormAssetFile.Should().NotBeNull();
-        stormAssetFile!.Path.Should().Be("normal");
-        stormAssetFile.ToString().Should().Be(stormAssetFile.Path);
+        stormAssetFile!.StormPath.Path.Should().Be("normal");
+        stormAssetFile.ToString().Should().Be(stormAssetFile.StormPath.Path);
         stormAssetFile.StormPaths.Should().ContainSingle();
         stormAssetFile.StormPaths[^1].Path.Should().Be("normal");
     }
@@ -2313,8 +2313,8 @@ public class StormStorageTests
         // assert
         stormAssetFile.Should().BeEquivalentTo(stormAssetFileSpan);
         stormAssetFile.Should().NotBeNull();
-        stormAssetFile!.Path.Should().Be("map");
-        stormAssetFile.ToString().Should().Be(stormAssetFile.Path);
+        stormAssetFile!.StormPath.Path.Should().Be("map");
+        stormAssetFile.ToString().Should().Be(stormAssetFile.StormPath.Path);
         stormAssetFile.StormPaths.Should().ContainSingle();
         stormAssetFile.StormPaths[^1].Path.Should().Be("map");
     }
@@ -2333,8 +2333,8 @@ public class StormStorageTests
         // assert
         stormAssetFile.Should().BeEquivalentTo(stormAssetFileSpan);
         stormAssetFile.Should().NotBeNull();
-        stormAssetFile!.Path.Should().Be("custom");
-        stormAssetFile.ToString().Should().Be(stormAssetFile.Path);
+        stormAssetFile!.StormPath.Path.Should().Be("custom");
+        stormAssetFile.ToString().Should().Be(stormAssetFile.StormPath.Path);
         stormAssetFile.StormPaths.Should().ContainSingle();
         stormAssetFile.StormPaths[^1].Path.Should().Be("custom");
     }
@@ -2355,8 +2355,8 @@ public class StormStorageTests
         // assert
         stormAssetFile.Should().BeEquivalentTo(stormAssetFileSpan);
         stormAssetFile.Should().NotBeNull();
-        stormAssetFile!.Path.Should().Be("map");
-        stormAssetFile.ToString().Should().Be(stormAssetFile.Path);
+        stormAssetFile!.StormPath.Path.Should().Be("map");
+        stormAssetFile.ToString().Should().Be(stormAssetFile.StormPath.Path);
         stormAssetFile.StormPaths.Should().HaveCount(2);
         stormAssetFile.StormPaths[^1].Path.Should().Be("map");
     }

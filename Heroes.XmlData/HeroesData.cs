@@ -221,7 +221,7 @@ public class HeroesData
     }
 
     /// <summary>
-    /// Gets an asset text string.
+    /// Gets an asset text string (from the assets.txt file).
     /// </summary>
     /// <param name="id">A character span that contains the id of the asset.</param>
     /// <returns>The value of the asset or <see langword="null"/> if not found.</returns>
@@ -231,11 +231,11 @@ public class HeroesData
     }
 
     /// <summary>
-    /// Gets an asset text string.
+    /// Gets an asset text string (from the assets.txt file).
     /// </summary>
     /// <param name="id">The id of the asset.</param>
     /// <returns>The value of the asset or <see langword="null"/> if not found.</returns>
-    public StormAssetString? GetStormAssetText(string id)
+    public StormAssetString? GetStormAssetString(string id)
     {
         return _stormStorage.GetStormAssetString(id);
     }

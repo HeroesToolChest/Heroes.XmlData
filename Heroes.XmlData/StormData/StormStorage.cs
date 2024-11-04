@@ -15,6 +15,7 @@ internal partial class StormStorage : IStormStorage
         _rootFilePath = new StormPath()
         {
             StormModName = HxdConstants.Name,
+            StormModPath = $"{HxdConstants.Name}-mod",
             Path = $"{HxdConstants.Name}-root",
             PathType = StormPathType.Hxd,
         };

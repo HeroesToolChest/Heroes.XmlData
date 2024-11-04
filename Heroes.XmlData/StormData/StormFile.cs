@@ -9,12 +9,23 @@ public class StormFile
     private readonly List<StormPath> _stormPaths = [];
 
     /// <summary>
-    /// Gets the path relative to the root directory.
+    /// Initializes a new instance of the <see cref="StormFile"/> class.
     /// </summary>
-    public string Path => StormPaths[^1].Path;
+    /// <param name="stormPath">The location of the path.</param>
+    public StormFile(StormPath stormPath)
+    {
+        ArgumentNullException.ThrowIfNull(stormPath);
+
+        AddPath(stormPath);
+    }
 
     /// <summary>
-    /// Gets a collection of paths where the file resides. The <see cref="Path"/> is from the last entry.
+    /// Gets the paths of this file.
+    /// </summary>
+    public StormPath StormPath => StormPaths[^1];
+
+    /// <summary>
+    /// Gets a collection of paths where the file resides. .
     /// </summary>
     public IReadOnlyList<StormPath> StormPaths => _stormPaths.AsReadOnly();
 
@@ -23,17 +34,21 @@ public class StormFile
     {
         get
         {
-            return $"{{{System.IO.Path.GetFileName(Path)}}}";
+            return $"{{{System.IO.Path.GetFileName(StormPath.Path)}}}";
         }
     }
 
     /// <inheritdoc/>
     public override string ToString()
     {
-        return Path;
+        return StormPath.Path;
     }
 
-    internal void AddPath(StormPath stormPath)
+    /// <summary>
+    /// Adds an additional path where the file file resides in.
+    /// </summary>
+    /// <param name="stormPath">The location of the path.</param>
+    public void AddPath(StormPath stormPath)
     {
         _stormPaths.Add(stormPath);
     }

@@ -37,6 +37,7 @@ internal class FileStormMod : StormMod<IFileHeroesSource>
             StormModStorage.AddDirectoryNotFound(new StormPath()
             {
                 StormModName = Name,
+                StormModPath = DirectoryPath,
                 Path = GameDataDirectoryPath,
                 PathType = StormPathType.File,
             });

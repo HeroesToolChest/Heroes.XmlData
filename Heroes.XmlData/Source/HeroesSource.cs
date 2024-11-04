@@ -232,9 +232,13 @@ internal abstract class HeroesSource : IHeroesSource
             return null;
     }
 
-    public abstract bool FileExists(string path);
+    public abstract bool FileExists(string path, string? mpqPath = null);
 
-    public abstract Stream? GetFile(string path);
+    public abstract bool FileExists(StormFile stormFile);
+
+    public abstract Stream GetFile(string path, string? mpqPath = null);
+
+    public abstract Stream GetFile(StormFile stormFile);
 
     protected abstract IStormMod GetStormMod(string directoryPath, StormModType stormModType, BackgroundWorkerEx? backgroundWorkerEx = null);
 
@@ -248,6 +252,29 @@ internal abstract class HeroesSource : IHeroesSource
             path = Path.Join(ModsBaseDirectoryPath, path);
 
         return path;
+    }
+
+    protected bool IsMpqFileEntryExists(string mpqPath, string filePath)
+    {
+        if (!FileExists(mpqPath))
+            return false;
+
+        using MpqHeroesArchive mpqFile = MpqHeroesFile.Open(GetFile(mpqPath));
+        return mpqFile.FileEntryExists(filePath);
+    }
+
+    protected Stream GetMpqFileEntry(string mpqPath, string filePath)
+    {
+        if (!FileExists(mpqPath))
+            throw new FileNotFoundException($"Could not find mpq file", mpqPath);
+
+        using MpqHeroesArchive mpqFile = MpqHeroesFile.Open(GetFile(mpqPath));
+        if (mpqFile.TryGetEntry(filePath, out MpqHeroesArchiveEntry? mpqHeroesArchiveEntry))
+        {
+            return mpqFile.DecompressEntry(mpqHeroesArchiveEntry.Value);
+        }
+
+        throw new FileNotFoundException($"Could not find file in mpq (mpq path: {mpqPath}", filePath);
     }
 
     private void AddStormMods()

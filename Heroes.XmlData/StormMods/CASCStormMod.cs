@@ -19,6 +19,7 @@ internal class CASCStormMod : StormMod<ICASCHeroesSource>, IStormMod
             StormModStorage.AddDirectoryNotFound(new StormPath()
             {
                 StormModName = Name,
+                StormModPath = DirectoryPath,
                 Path = GameDataDirectoryPath,
                 PathType = StormPathType.CASC,
             });

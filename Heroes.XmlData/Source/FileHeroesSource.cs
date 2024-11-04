@@ -17,16 +17,44 @@ internal class FileHeroesSource : HeroesSource, IFileHeroesSource
         _fileSystem = fileSystem;
     }
 
-    public override bool FileExists(string path) => _fileSystem.File.Exists(GetValidatedPath(path));
-
-    public override Stream? GetFile(string path)
+    public override bool FileExists(string path, string? mpqPath = null)
     {
-        path = GetValidatedPath(path);
-
-        if (_fileSystem.File.Exists(path))
-            return _fileSystem.File.OpenRead(path);
+        if (mpqPath is null)
+            return _fileSystem.File.Exists(GetValidatedPath(path));
         else
-            return null;
+            return IsMpqFileEntryExists(GetValidatedPath(mpqPath), path);
+    }
+
+    public override bool FileExists(StormFile stormFile)
+    {
+        if (stormFile.StormPath.PathType == StormPathType.MPQ)
+            return IsMpqFileEntryExists(GetValidatedPath(stormFile.StormPath.StormModPath), stormFile.StormPath.Path);
+        else
+            return FileExists(stormFile.StormPath.Path);
+    }
+
+    public override Stream GetFile(string path, string? mpqPath = null)
+    {
+        if (mpqPath is null)
+        {
+            string validatedPath = GetValidatedPath(path);
+            if (_fileSystem.File.Exists(validatedPath))
+                return _fileSystem.File.OpenRead(validatedPath);
+            else
+                throw new FileNotFoundException("Could not find file", path);
+        }
+        else
+        {
+            return GetMpqFileEntry(mpqPath, path);
+        }
+    }
+
+    public override Stream GetFile(StormFile stormFile)
+    {
+        if (stormFile.StormPath.PathType == StormPathType.MPQ)
+            return GetMpqFileEntry(stormFile.StormPath.StormModPath, stormFile.StormPath.Path);
+        else
+            return GetFile(stormFile.StormPath.Path);
     }
 
     protected override IStormMod GetStormMod(string directoryPath, StormModType stormModType, BackgroundWorkerEx? backgroundWorkerEx = null) => StormModFactory.CreateFileStormModInstance(this, directoryPath, stormModType);

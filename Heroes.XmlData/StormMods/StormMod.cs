@@ -423,6 +423,7 @@ internal abstract class StormMod<T> : IStormMod
     private StormPath GetStormPath(string filePath) => new()
     {
         StormModName = Name,
+        StormModPath = DirectoryPath,
         Path = GetModlessPath(filePath).ToString(),
         PathType = StormPathType,
     };

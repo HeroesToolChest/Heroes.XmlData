@@ -94,7 +94,11 @@ internal interface IHeroesSource
 
     string? LoadedStormMapTitle();
 
-    bool FileExists(string path);
+    bool FileExists(string path, string? mpqPath = null);
 
-    Stream? GetFile(string path);
+    bool FileExists(StormFile stormFile);
+
+    Stream GetFile(string path, string? mpqPath = null);
+
+    Stream GetFile(StormFile stormFile);
 }

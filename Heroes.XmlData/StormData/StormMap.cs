@@ -19,7 +19,7 @@ public class StormMap
     /// <summary>
     /// Gets the map link id. This is the id found in the xml files for CMap.
     /// <para>
-    /// This is not unique. See Cursed Hollow.
+    /// This is not unique. Cursed Hollow and Cursed Hollow (Sandbox) share the same map link.
     /// </para>
     /// </summary>
     public required string MapLink { get; init; }

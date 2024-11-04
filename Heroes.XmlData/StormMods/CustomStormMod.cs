@@ -18,6 +18,7 @@ internal class CustomStormMod : IStormMod
         _stormPath = new StormPath()
         {
             StormModName = $"custom-{Name}",
+            StormModPath = DirectoryPath,
             Path = CustomPath,
             PathType = StormPathType.File,
         };
