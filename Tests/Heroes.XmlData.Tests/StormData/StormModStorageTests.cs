@@ -1,4 +1,5 @@
 ﻿using Heroes.XmlData.Tests;
+using System.IO;
 
 namespace Heroes.XmlData.StormData.Tests;
 
@@ -578,5 +579,36 @@ public class StormModStorageTests
 </CBehaviorBuff>
 """),
         });
+    }
+
+    [TestMethod]
+    public void ClearGameStrings_HasAddedGameStringFile_ClearsGameStrings()
+    {
+        // arrange
+        StormStorage stormStorage = new(false);
+        StormModStorage stormModStorage = new(_stormMod, stormStorage);
+
+        StormPath stormPath1 = TestHelpers.GetStormPath("test1");
+
+        using MemoryStream stream = new();
+        using StreamWriter writer = new(stream);
+        writer.WriteLine("id1=value1");
+        writer.WriteLine("id1=value2");
+        writer.WriteLine("id2=value3");
+        writer.WriteLine(string.Empty);
+        writer.WriteLine(" ");
+        writer.WriteLine("id");
+        writer.WriteLine("id=");
+        writer.Flush();
+        stream.Position = 0;
+
+        stormModStorage.AddGameStringFile(stream, stormPath1);
+
+        // act
+        stormModStorage.ClearGameStrings();
+
+        // assert
+        stormModStorage.GameStringsById.Should().BeEmpty();
+        stormModStorage.AddedGameStringFilePaths.Should().BeEmpty();
     }
 }

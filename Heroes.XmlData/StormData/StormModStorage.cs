@@ -182,6 +182,7 @@ internal class StormModStorage : IStormModStorage
     public void ClearGameStrings()
     {
         GameStringsById.Clear();
+        _addedGameStringFilePathsList.Clear();
     }
 
     public void UpdateAttributes(IEnumerable<XElement> elements)
