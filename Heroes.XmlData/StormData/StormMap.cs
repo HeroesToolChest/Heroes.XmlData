@@ -12,6 +12,11 @@ public class StormMap
     public required string Name { get; init; }
 
     /// <summary>
+    /// Gets a dictionary of the map name by their locale.
+    /// </summary>
+    public required IReadOnlyDictionary<StormLocale, string> NameByLocale { get; init; }
+
+    /// <summary>
     /// Gets the map id. This id is found in a replay's tracker events. It is not always set.
     /// </summary>
     public required string MapId { get; init; }

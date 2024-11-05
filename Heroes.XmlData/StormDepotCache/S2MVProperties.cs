@@ -15,6 +15,12 @@ internal class S2MVProperties : S2mapDependencies
     // UsedStrings:DocInfo/Name:enUS
     public string HeaderTitle { get; set; } = string.Empty;
 
+    /// <summary>
+    /// Gets or sets the name of the map by the locale.
+    /// </summary>
+    // UsedStrings:DocInfo/Name:enUS
+    public Dictionary<StormLocale, string> NameByStormLocale { get; set; } = [];
+
     // MapInfo:Properties:Size
     public Point MapSize { get; set; }
 

@@ -213,6 +213,7 @@ public class HeroesXmlLoader
             return new()
             {
                 Name = mapTitle,
+                NameByLocale = s2maProperties.S2MVProperties.NameByStormLocale.AsReadOnly(),
                 LoadingScreenImagePath = s2maProperties.S2MVProperties.LoadingImage ?? string.Empty,
                 MapId = s2maProperties.MapId ?? string.Empty,
                 MapLink = s2maProperties.S2MVProperties.MapLink,

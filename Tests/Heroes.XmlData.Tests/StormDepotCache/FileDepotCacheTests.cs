@@ -1,4 +1,5 @@
 ﻿using CASCLib;
+using System.Collections.Generic;
 
 namespace Heroes.XmlData.Tests.StormDepotCache;
 
@@ -59,6 +60,27 @@ public class FileDepotCacheTests
                     first.Value.DirectoryPath.Should().Be(Path.Join(Path.DirectorySeparatorChar.ToString(), "core.stormmod", "base.stormdata", "depotcache", "94a00.s2mv"));
                     first.Value.DocInfoIconFile.Should().Be(Path.Join("assets", "textures", "storm_ui_homescreenbackground_volskaya.dds"));
                     first.Value.HeaderTitle.Should().Be("Volskaya Foundry");
+                    first.Value.NameByStormLocale.Should().SatisfyRespectively(
+                        key1 =>
+                        {
+                            key1.Key.Should().Be(StormLocale.PTBR);
+                            key1.Value.Should().Be("Fundição Volskaya");
+                        },
+                        key2 =>
+                        {
+                            key2.Key.Should().Be(StormLocale.FRFR);
+                            key2.Value.Should().Be("La fonderie Volskaya");
+                        },
+                        key3 =>
+                        {
+                            key3.Key.Should().Be(StormLocale.KOKR);
+                            key3.Value.Should().Be("볼스카야 공장");
+                        },
+                        key4 =>
+                        {
+                            key4.Key.Should().Be(StormLocale.ENUS);
+                            key4.Value.Should().Be("Volskaya Foundry");
+                        });
                     first.Value.LoadingImage.Should().Be(Path.Join("assets", "textures", "storm_ui_homescreenbackground_volskaya.dds"));
                     first.Value.MapSize.Should().Be(new Point(248, 208));
                     first.Value.PreviewLargeImage.Should().Be(Path.Join("assets", "textures", "storm_ui_homescreenbackground_volskaya.dds"));
@@ -99,6 +121,27 @@ public class FileDepotCacheTests
                     second.Value.DirectoryPath.Should().Be(Path.Join(Path.DirectorySeparatorChar.ToString(), "core.stormmod", "base.stormdata", "depotcache", "81f5f8.s2mv"));
                     second.Value.DocInfoIconFile.Should().Be("storm_ui_gamemode_mapselect_cursedhollow.png");
                     second.Value.HeaderTitle.Should().Be("Cursed Hollow");
+                    second.Value.NameByStormLocale.Should().SatisfyRespectively(
+                        key1 =>
+                        {
+                            key1.Key.Should().Be(StormLocale.PTBR);
+                            key1.Value.Should().Be("Clareira Maldita");
+                        },
+                        key2 =>
+                        {
+                            key2.Key.Should().Be(StormLocale.FRFR);
+                            key2.Value.Should().Be("Le val maudit");
+                        },
+                        key3 =>
+                        {
+                            key3.Key.Should().Be(StormLocale.KOKR);
+                            key3.Value.Should().Be("저주받은 골짜기");
+                        },
+                        key4 =>
+                        {
+                            key4.Key.Should().Be(StormLocale.ENUS);
+                            key4.Value.Should().Be("Cursed Hollow");
+                        });
                     second.Value.LoadingImage.Should().Be(Path.Join("assets", "textures", "ui_ingame_mapmechanic_loadscreen_cursedhollow.dds"));
                     second.Value.MapSize.Should().Be(new Point(256, 216));
                     second.Value.PreviewLargeImage.Should().Be("replayspreviewimage.tga");

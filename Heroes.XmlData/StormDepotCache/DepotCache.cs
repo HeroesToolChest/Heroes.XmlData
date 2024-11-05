@@ -84,6 +84,12 @@ internal abstract class DepotCache<T> : IDepotCache
             CustomFrame = PathHelper.NormalizePath(loadingElement.GetProperty("CustomFrame").GetString() ?? string.Empty),
         };
 
+        foreach (JsonProperty docInfoNameProperty in docInfoNameElement.EnumerateObject())
+        {
+            if (Enum.TryParse(docInfoNameProperty.Name, true, out StormLocale stormLocale))
+                s2mvProperties.NameByStormLocale.TryAdd(stormLocale, docInfoNameProperty.Value.GetString() ?? string.Empty);
+        }
+
         foreach (JsonElement dependencyElement in dependenciesElement.EnumerateArray())
         {
             s2mvProperties.MapDependencies.Add(new MapDependency()
