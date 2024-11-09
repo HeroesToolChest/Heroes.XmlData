@@ -232,6 +232,14 @@ internal class StormModStorage : IStormModStorage
         if (attributeSpan[0] != '@')
             return;
 
-        element.SetAttributeValue($"{SelfNameAsset}{attribute.Name}", _stormStorage.GetStormAssetString(attributeSpan[1..])?.Value ?? string.Empty);
+#if NET9_0_OR_GREATER
+        string assetValue = string.Empty;
+        if (_stormStorage.TryGetStormAssetStringValue(attributeSpan[1..], out string? value))
+            assetValue = value;
+
+        element.SetAttributeValue($"{SelfNameAsset}{attribute.Name}", assetValue);
+#else
+        element.SetAttributeValue($"{SelfNameAsset}{attribute.Name}", _stormStorage.GetStormAssetString(attributeSpan[1..].ToString())?.Value ?? string.Empty);
+#endif
     }
 }

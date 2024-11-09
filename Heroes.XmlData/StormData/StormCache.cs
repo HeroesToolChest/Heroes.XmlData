@@ -5,6 +5,14 @@
 /// </summary>
 internal class StormCache
 {
+    public StormCache()
+    {
+#if NET9_0_OR_GREATER
+        ConstantXElementByIdAltLookup = ConstantXElementById.GetAlternateLookup<ReadOnlySpan<char>>();
+        AssetTextsByIdAltLookup = AssetTextsById.GetAlternateLookup<ReadOnlySpan<char>>();
+#endif
+    }
+
     /// <summary>
     /// Gets a collection of directories that were not found.
     /// </summary>
@@ -86,6 +94,12 @@ internal class StormCache
     /// </summary>
     public Dictionary<string, StormPath> AssetFilesByRelativeAssetsPath { get; } = new(StringComparer.OrdinalIgnoreCase);
 
+#if NET9_0_OR_GREATER
+    public Dictionary<string, StormXElementValuePath>.AlternateLookup<ReadOnlySpan<char>> ConstantXElementByIdAltLookup { get; }
+
+    public Dictionary<string, AssetText>.AlternateLookup<ReadOnlySpan<char>> AssetTextsByIdAltLookup { get; }
+
+#endif
     public void Clear()
     {
         NotFoundDirectoriesList.Clear();

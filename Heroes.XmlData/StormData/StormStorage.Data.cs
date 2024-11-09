@@ -13,6 +13,20 @@ internal partial class StormStorage
 {
     public bool TryGetFirstConstantXElementById(ReadOnlySpan<char> id, [NotNullWhen(true)] out StormXElementValuePath? stormXElementValuePath)
     {
+#if NET9_0_OR_GREATER
+        // custom cache always first
+        if (StormCustomCache.ConstantXElementByIdAltLookup.TryGetValue(id, out stormXElementValuePath))
+            return true;
+
+        if (StormMapCache.ConstantXElementByIdAltLookup.TryGetValue(id, out stormXElementValuePath))
+            return true;
+
+        if (StormCache.ConstantXElementByIdAltLookup.TryGetValue(id, out stormXElementValuePath))
+            return true;
+
+        return false;
+    }
+#else
         return TryGetFirstConstantXElementById(id.ToString(), out stormXElementValuePath);
     }
 
@@ -32,11 +46,7 @@ internal partial class StormStorage
 
         return false;
     }
-
-    public List<string> GetElementTypesByDataObjectType(ReadOnlySpan<char> dataObjectType)
-    {
-        return GetElementTypesByDataObjectType(dataObjectType.ToString());
-    }
+#endif
 
     public List<string> GetElementTypesByDataObjectType(string dataObjectType)
     {
@@ -69,11 +79,6 @@ internal partial class StormStorage
         return [.. elementTypes ?? []];
     }
 
-    public bool TryGetFirstDataObjectTypeByElementType(ReadOnlySpan<char> elementType, [NotNullWhen(true)] out string? dataObjectType)
-    {
-        return TryGetFirstDataObjectTypeByElementType(elementType.ToString(), out dataObjectType);
-    }
-
     public bool TryGetFirstDataObjectTypeByElementType(string elementType, [NotNullWhen(true)] out string? dataObjectType)
     {
         ArgumentNullException.ThrowIfNull(elementType);
@@ -91,22 +96,12 @@ internal partial class StormStorage
         return false;
     }
 
-    public string? GetDataObjectTypeByElementType(ReadOnlySpan<char> elementType)
-    {
-        return GetDataObjectTypeByElementType(elementType.ToString());
-    }
-
     public string? GetDataObjectTypeByElementType(string elementType)
     {
         if (TryGetFirstDataObjectTypeByElementType(elementType, out string? dataObjectType))
             return dataObjectType;
 
         return null;
-    }
-
-    public StormElement? GetStormElementByElementType(ReadOnlySpan<char> elementType)
-    {
-        return GetStormElementByElementType(elementType.ToString());
     }
 
     public StormElement? GetStormElementByElementType(string elementType)
@@ -138,11 +133,6 @@ internal partial class StormStorage
         }
 
         return stormElement;
-    }
-
-    public StormElement? GetStormElementById(ReadOnlySpan<char> id, ReadOnlySpan<char> dataObjectType)
-    {
-        return GetStormElementById(id.ToString(), dataObjectType.ToString());
     }
 
     public StormElement? GetStormElementById(string id, string dataObjectType)
@@ -180,11 +170,6 @@ internal partial class StormStorage
         return stormElement;
     }
 
-    public StormElement? GetScaleValueStormElementById(ReadOnlySpan<char> id, ReadOnlySpan<char> dataObjectType)
-    {
-        return GetScaleValueStormElementById(id.ToString(), dataObjectType.ToString());
-    }
-
     public StormElement? GetScaleValueStormElementById(string id, string dataObjectType)
     {
         ArgumentNullException.ThrowIfNull(dataObjectType);
@@ -220,19 +205,9 @@ internal partial class StormStorage
         return stormElement;
     }
 
-    public StormElement? GetCompleteStormElement(ReadOnlySpan<char> id, ReadOnlySpan<char> dataObjectType)
-    {
-        return GetCompleteStormElement(id.ToString(), dataObjectType.ToString());
-    }
-
     public StormElement? GetCompleteStormElement(string id, string dataObjectType)
     {
         return MergeUpStormElement(dataObjectType, id, ElementType.Normal);
-    }
-
-    public StormElement? GetBaseStormElement(ReadOnlySpan<char> elementType)
-    {
-        return GetBaseStormElement(elementType.ToString());
     }
 
     public StormElement? GetBaseStormElement(string elementType)
@@ -246,11 +221,6 @@ internal partial class StormStorage
         }
 
         return null;
-    }
-
-    public StormStyleConstantElement? GetStormStyleConstantElementsByName(ReadOnlySpan<char> name)
-    {
-        return GetStormStyleConstantElementsByName(name.ToString());
     }
 
     public StormStyleConstantElement? GetStormStyleConstantElementsByName(string name)
@@ -284,11 +254,6 @@ internal partial class StormStorage
         return stormElement;
     }
 
-    public StormStyleStyleElement? GetStormStyleStyleElementsByName(ReadOnlySpan<char> name)
-    {
-        return GetStormStyleStyleElementsByName(name.ToString());
-    }
-
     public StormStyleStyleElement? GetStormStyleStyleElementsByName(string name)
     {
         ArgumentNullException.ThrowIfNull(name);
@@ -318,11 +283,6 @@ internal partial class StormStorage
         }
 
         return stormElement;
-    }
-
-    public StormGameString? GetStormGameString(ReadOnlySpan<char> id)
-    {
-        return GetStormGameString(id.ToString());
     }
 
     public StormGameString? GetStormGameString(string id)
@@ -375,11 +335,6 @@ internal partial class StormStorage
         return stormGameStrings.Select(x => x.Value).ToList();
     }
 
-    public List<string> GetStormElementIds(ReadOnlySpan<char> dataObjectType)
-    {
-        return GetStormElementIds(dataObjectType.ToString());
-    }
-
     public List<string> GetStormElementIds(string dataObjectType)
     {
         ArgumentNullException.ThrowIfNull(dataObjectType);
@@ -403,11 +358,6 @@ internal partial class StormStorage
         }
 
         return [.. ids];
-    }
-
-    public StormAssetString? GetStormAssetString(ReadOnlySpan<char> id)
-    {
-        return GetStormAssetString(id.ToString());
     }
 
     public StormAssetString? GetStormAssetString(string id)
@@ -438,6 +388,34 @@ internal partial class StormStorage
         return stormAssetText;
     }
 
+#if NET9_0_OR_GREATER
+    public bool TryGetStormAssetStringValue(ReadOnlySpan<char> id, [NotNullWhen(true)] out string? value)
+    {
+        value = null;
+
+        // custom cache first
+        if (StormCustomCache.AssetTextsByIdAltLookup.TryGetValue(id, out AssetText? assetText))
+        {
+            value = assetText.Value;
+            return true;
+        }
+
+        if (StormMapCache.AssetTextsByIdAltLookup.TryGetValue(id, out assetText))
+        {
+            value = assetText.Value;
+            return true;
+        }
+
+        if (StormCache.AssetTextsByIdAltLookup.TryGetValue(id, out assetText))
+        {
+            value = assetText.Value;
+            return true;
+        }
+
+        return false;
+    }
+
+#endif
     public bool TryGetFirstStormLayoutStormPath(string relativePath, [NotNullWhen(true)] out StormPath? stormPath)
     {
         // custom cache always first
@@ -451,11 +429,6 @@ internal partial class StormStorage
             return true;
 
         return false;
-    }
-
-    public bool StormLayoutFileExists(ReadOnlySpan<char> relativePath)
-    {
-        return StormLayoutFileExists(relativePath.ToString());
     }
 
     public bool StormLayoutFileExists(string relativePath)
@@ -475,11 +448,6 @@ internal partial class StormStorage
             return true;
 
         return false;
-    }
-
-    public StormFile? GetStormLayoutFile(ReadOnlySpan<char> relativePath)
-    {
-        return GetStormLayoutFile(relativePath.ToString());
     }
 
     public StormFile? GetStormLayoutFile(string relativePath)
@@ -503,11 +471,6 @@ internal partial class StormStorage
         return stormLayoutFile;
     }
 
-    public bool StormAssetFileExists(ReadOnlySpan<char> relativePath)
-    {
-        return StormAssetFileExists(relativePath.ToString());
-    }
-
     public bool StormAssetFileExists(string relativePath)
     {
         ArgumentNullException.ThrowIfNull(relativePath);
@@ -525,11 +488,6 @@ internal partial class StormStorage
             return true;
 
         return false;
-    }
-
-    public StormFile? GetStormAssetFile(ReadOnlySpan<char> relativePath)
-    {
-        return GetStormAssetFile(relativePath.ToString());
     }
 
     public StormFile? GetStormAssetFile(string relativePath)

@@ -58,77 +58,45 @@ internal interface IStormStorage
 
     bool TryGetFirstConstantXElementById(ReadOnlySpan<char> id, [NotNullWhen(true)] out StormXElementValuePath? stormXElementValuePath);
 
-    bool TryGetFirstConstantXElementById(string id, [NotNullWhen(true)] out StormXElementValuePath? stormXElementValuePath);
-
-    List<string> GetElementTypesByDataObjectType(ReadOnlySpan<char> dataObjectType);
-
     List<string> GetElementTypesByDataObjectType(string dataObjectType);
-
-    bool TryGetFirstDataObjectTypeByElementType(ReadOnlySpan<char> elementType, [NotNullWhen(true)] out string? dataObjectType);
 
     bool TryGetFirstDataObjectTypeByElementType(string elementType, [NotNullWhen(true)] out string? dataObjectType);
 
-    string? GetDataObjectTypeByElementType(ReadOnlySpan<char> elementType);
-
     string? GetDataObjectTypeByElementType(string elementType);
-
-    StormElement? GetStormElementByElementType(ReadOnlySpan<char> elementType);
 
     StormElement? GetStormElementByElementType(string elementType);
 
-    StormElement? GetStormElementById(ReadOnlySpan<char> id, ReadOnlySpan<char> dataObjectType);
-
     StormElement? GetStormElementById(string id, string dataObjectType);
-
-    StormElement? GetScaleValueStormElementById(ReadOnlySpan<char> id, ReadOnlySpan<char> dataObjectType);
 
     StormElement? GetScaleValueStormElementById(string id, string dataObjectType);
 
-    StormElement? GetCompleteStormElement(ReadOnlySpan<char> id, ReadOnlySpan<char> dataObjectType);
-
     StormElement? GetCompleteStormElement(string id, string dataObjectType);
-
-    StormElement? GetBaseStormElement(ReadOnlySpan<char> elementType);
 
     StormElement? GetBaseStormElement(string elementType);
 
-    StormStyleConstantElement? GetStormStyleConstantElementsByName(ReadOnlySpan<char> name);
-
     StormStyleConstantElement? GetStormStyleConstantElementsByName(string name);
 
-    StormStyleStyleElement? GetStormStyleStyleElementsByName(ReadOnlySpan<char> name);
-
     StormStyleStyleElement? GetStormStyleStyleElementsByName(string name);
-
-    StormGameString? GetStormGameString(ReadOnlySpan<char> id);
 
     StormGameString? GetStormGameString(string id);
 
     List<StormGameString> GetStormGameStrings();
 
-    List<string> GetStormElementIds(ReadOnlySpan<char> dataObjectType);
-
     List<string> GetStormElementIds(string dataObjectType);
-
-    StormAssetString? GetStormAssetString(ReadOnlySpan<char> id);
 
     StormAssetString? GetStormAssetString(string id);
 
-    bool TryGetFirstStormLayoutStormPath(string relativePath, [NotNullWhen(true)] out StormPath? stormPath);
+#if NET9_0_OR_GREATER
+    bool TryGetStormAssetStringValue(ReadOnlySpan<char> id, [NotNullWhen(true)] out string? value);
+#endif
 
-    bool StormLayoutFileExists(ReadOnlySpan<char> relativePath);
+    bool TryGetFirstStormLayoutStormPath(string relativePath, [NotNullWhen(true)] out StormPath? stormPath);
 
     bool StormLayoutFileExists(string relativePath);
 
-    StormFile? GetStormLayoutFile(ReadOnlySpan<char> relativePath);
-
     StormFile? GetStormLayoutFile(string relativePath);
 
-    bool StormAssetFileExists(ReadOnlySpan<char> relativePath);
-
     bool StormAssetFileExists(string relativePath);
-
-    StormFile? GetStormAssetFile(ReadOnlySpan<char> relativePath);
 
     StormFile? GetStormAssetFile(string relativePath);
 }

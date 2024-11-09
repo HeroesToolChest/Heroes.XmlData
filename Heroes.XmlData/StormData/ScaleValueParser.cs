@@ -1,4 +1,5 @@
 ﻿using Heroes.XmlData.GameStrings;
+using System;
 
 namespace Heroes.XmlData.StormData;
 
@@ -13,15 +14,8 @@ internal static class ScaleValueParser
 
         if (validatedField is not null)
         {
-            ReadOnlySpan<char> fieldSpan = validatedField;
-            int splitterCount = fieldSpan.Count('.');
-
-            Span<Range> fieldParts = stackalloc Range[splitterCount + 1];
-
-            fieldSpan.Split(fieldParts, '.', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
-
             // builds an XElement from the internal field
-            XElement newScalingElement = CreateXElement(levelScalingEntry, stormStringValue, fieldSpan, fieldParts);
+            XElement newScalingElement = CreateXElement(levelScalingEntry, stormStringValue, validatedField);
 
             // creates a storm element from the internal field
             StormElement stormScalingElement = new(new StormXElementValuePath(newScalingElement, stormStringValue.StormPath));
@@ -62,15 +56,30 @@ internal static class ScaleValueParser
     }
 
     // builds an XElement from the the field given along with the scale value from the level scaling entry
-    private static XElement CreateXElement(LevelScalingEntry levelScalingEntry, StormStringValue stormStringValue, ReadOnlySpan<char> fullField, ReadOnlySpan<Range> fieldParts)
+    private static XElement CreateXElement(LevelScalingEntry levelScalingEntry, StormStringValue stormStringValue, ReadOnlySpan<char> fullField)
     {
         XElement xElement = new(levelScalingEntry.Catalog);
         XElement innerElement = xElement;
 
-        foreach (Range fieldPart in fieldParts)
+#if NET9_0_OR_GREATER
+        foreach (Range fieldPart in fullField.Split('.'))
         {
             ReadOnlySpan<char> fieldPartSpan = fullField[fieldPart];
 
+            if (fieldPartSpan.IsWhiteSpace() || fieldPartSpan.IsEmpty)
+                continue;
+
+#else
+
+        int splitterCount = fullField.Count('.');
+        Span<Range> fieldParts = stackalloc Range[splitterCount + 1];
+
+        fullField.Split(fieldParts, '.', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+
+        foreach (Range fieldPart in fieldParts)
+        {
+            ReadOnlySpan<char> fieldPartSpan = fullField[fieldPart];
+#endif
             innerElement = BuildInnerXElement(innerElement, fieldPartSpan);
         }
 

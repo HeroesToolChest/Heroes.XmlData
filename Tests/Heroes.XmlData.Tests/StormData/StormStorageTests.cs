@@ -45,6 +45,7 @@ public class StormStorageTests
         resultPath.Should().BeNull();
     }
 
+#if !NET9_0_OR_GREATER
     [TestMethod]
     public void TryGetExistingConstantXElementByIde_NullParam_ThrowsException()
     {
@@ -58,6 +59,7 @@ public class StormStorageTests
         result.Should().Throw<ArgumentNullException>();
     }
 
+#endif
     [TestMethod]
     [DataRow("CEffectDamage", "Effect")]
     [DataRow("CEffectLaunchMissile", "Effect")]
@@ -77,11 +79,8 @@ public class StormStorageTests
 
         // act
         bool result = stormStorage.TryGetFirstDataObjectTypeByElementType(elementType, out string? resultDataObjectType);
-        bool resultSpan = stormStorage.TryGetFirstDataObjectTypeByElementType(elementType.AsSpan(), out string? resultDataObjectTypeSpan);
 
         // assert
-        result.Should().Be(resultSpan);
-        resultDataObjectType.Should().BeEquivalentTo(resultDataObjectTypeSpan);
         result.Should().BeTrue();
         resultDataObjectType.Should().Be(dataObjectType);
     }
@@ -93,7 +92,7 @@ public class StormStorageTests
         StormStorage stormStorage = new();
 
         // act
-        bool result = stormStorage.TryGetFirstDataObjectTypeByElementType("elementType".AsSpan(), out string? resultDataObjectType);
+        bool result = stormStorage.TryGetFirstDataObjectTypeByElementType("elementType", out string? resultDataObjectType);
 
         // assert
         result.Should().BeFalse();
@@ -122,10 +121,8 @@ public class StormStorageTests
 
         // act
         string? result = stormStorage.GetDataObjectTypeByElementType("CEffectDamage");
-        string? resultSpan = stormStorage.GetDataObjectTypeByElementType("CEffectDamage".AsSpan());
 
         // assert
-        result.Should().BeEquivalentTo(resultSpan);
         result.Should().Be("Effect");
     }
 
@@ -137,10 +134,8 @@ public class StormStorageTests
 
         // act
         string? result = stormStorage.GetDataObjectTypeByElementType("CEffectDamage");
-        string? resultSpan = stormStorage.GetDataObjectTypeByElementType("CEffectDamage".AsSpan());
 
         // assert
-        result.Should().BeEquivalentTo(resultSpan);
         result.Should().BeNull();
     }
 
@@ -179,10 +174,8 @@ public class StormStorageTests
 
         // act
         List<string> result = stormStorage.GetElementTypesByDataObjectType("Effect");
-        List<string> resultSpan = stormStorage.GetElementTypesByDataObjectType("Effect".AsSpan());
 
         // assert
-        result.Should().BeEquivalentTo(resultSpan);
         result.Should().Equal("CEffectSet", "CEffectLaunchMissile", "CEffectDamage");
     }
 
@@ -201,10 +194,8 @@ public class StormStorageTests
 
         // act
         List<string> result = stormStorage.GetElementTypesByDataObjectType("Effect");
-        List<string> resultSpan = stormStorage.GetElementTypesByDataObjectType("Effect".AsSpan());
 
         // assert
-        result.Should().BeEquivalentTo(resultSpan);
         result.Should().Equal("CEffectLaunchMissile", "CEffectDamage");
     }
 
@@ -220,10 +211,8 @@ public class StormStorageTests
 
         // act
         List<string> result = stormStorage.GetElementTypesByDataObjectType("Effect");
-        List<string> resultSpan = stormStorage.GetElementTypesByDataObjectType("Effect".AsSpan());
 
         // assert
-        result.Should().BeEquivalentTo(resultSpan);
         result.Should().Equal("CEffectDamage", "CEffectLaunchMissile");
     }
 
@@ -235,10 +224,8 @@ public class StormStorageTests
 
         // act
         List<string> result = stormStorage.GetElementTypesByDataObjectType("Effect");
-        List<string> resultSpan = stormStorage.GetElementTypesByDataObjectType("Effect".AsSpan());
 
         // assert
-        result.Should().BeEquivalentTo(resultSpan);
         result.Should().BeEmpty();
     }
 
@@ -258,7 +245,7 @@ public class StormStorageTests
         stormStorage.StormCustomCache.ElementTypesByDataObjectType.Add("Behavior", ["CBehaviorBuff", "CBehaviorAbility"]);
 
         // act
-        List<string>? result = stormStorage.GetElementTypesByDataObjectType("Effect".AsSpan());
+        List<string>? result = stormStorage.GetElementTypesByDataObjectType("Effect");
         result!.Add("CWhatever");
 
         // assert
@@ -301,10 +288,8 @@ public class StormStorageTests
 
         // act
         StormElement? result = stormStorage.GetStormElementByElementType("CUnit");
-        StormElement? resultSpan = stormStorage.GetStormElementByElementType("CUnit".AsSpan());
 
         // assert
-        result.Should().BeEquivalentTo(resultSpan, options => options.Excluding(e => e.Type.IsByRefLike));
         result!.DataValues.GetElementDataAt("Name").HasValue.Should().BeTrue();
         result.DataValues.GetElementDataAt("Element2").HasValue.Should().BeTrue();
         result.DataValues.GetElementDataAt("Element3").HasValue.Should().BeTrue();
@@ -336,10 +321,8 @@ public class StormStorageTests
 
         // act
         StormElement? result = stormStorage.GetStormElementByElementType("CUnit");
-        StormElement? resultSpan = stormStorage.GetStormElementByElementType("CUnit".AsSpan());
 
         // assert
-        result.Should().BeEquivalentTo(resultSpan, options => options.Excluding(e => e.Type.IsByRefLike));
         result!.DataValues.GetElementDataAt("Name").HasValue.Should().BeTrue();
         result.DataValues.GetElementDataAt("Element2").HasValue.Should().BeTrue();
         result.DataValues.ElementDataCount.Should().Be(4);
@@ -361,7 +344,7 @@ public class StormStorageTests
 
         // act
         StormElement? result = stormStorage.GetStormElementByElementType("CUnit");
-        StormElement? resultSpan = stormStorage.GetStormElementByElementType("CUnit".AsSpan());
+        StormElement? resultSpan = stormStorage.GetStormElementByElementType("CUnit");
 
         // assert
         result.Should().BeEquivalentTo(resultSpan, options => options.Excluding(e => e.Type.IsByRefLike));
@@ -386,10 +369,8 @@ public class StormStorageTests
 
         // act
         StormElement? result = stormStorage.GetStormElementByElementType("CUnit");
-        StormElement? resultSpan = stormStorage.GetStormElementByElementType("CUnit".AsSpan());
 
         // assert
-        result.Should().BeEquivalentTo(resultSpan, options => options.Excluding(e => e.Type.IsByRefLike));
         result!.DataValues.GetElementDataAt("Name").HasValue.Should().BeTrue();
         result.DataValues.GetElementDataAt("Element2").HasValue.Should().BeTrue();
         result.DataValues.ElementDataCount.Should().Be(4);
@@ -403,10 +384,8 @@ public class StormStorageTests
 
         // act
         StormElement? result = stormStorage.GetStormElementByElementType("CUnit");
-        StormElement? resultSpan = stormStorage.GetStormElementByElementType("CUnit".AsSpan());
 
         // assert
-        result.Should().BeEquivalentTo(resultSpan);
         result.Should().BeNull();
     }
 
@@ -444,7 +423,7 @@ public class StormStorageTests
             TestHelpers.GetStormPath("custom"))));
 
         // act
-        StormElement? result = stormStorage.GetStormElementByElementType("CUnit".AsSpan());
+        StormElement? result = stormStorage.GetStormElementByElementType("CUnit");
 
         result!.AddValue(new StormElement(new StormXElementValuePath(
             XElement.Parse(@"
@@ -514,10 +493,8 @@ public class StormStorageTests
 
         // act
         StormElement? result = stormStorage.GetStormElementById("Hero1", "Unit");
-        StormElement? resultSpan = stormStorage.GetStormElementById("Hero1".AsSpan(), "Unit".AsSpan());
 
         // assert
-        result.Should().BeEquivalentTo(resultSpan, options => options.Excluding(e => e.Type.IsByRefLike));
         result!.DataValues.GetElementDataAt("Name").HasValue.Should().BeTrue();
         result.DataValues.GetElementDataAt("Element1").HasValue.Should().BeTrue();
         result.DataValues.GetElementDataAt("Element2").HasValue.Should().BeTrue();
@@ -547,10 +524,8 @@ public class StormStorageTests
 
         // act
         StormElement? result = stormStorage.GetStormElementById("Hero1", "Unit");
-        StormElement? resultSpan = stormStorage.GetStormElementById("Hero1".AsSpan(), "Unit".AsSpan());
 
         // assert
-        result.Should().BeEquivalentTo(resultSpan, options => options.Excluding(e => e.Type.IsByRefLike));
         result!.DataValues.GetElementDataAt("Name").HasValue.Should().BeTrue();
         result.DataValues.GetElementDataAt("Element1").HasValue.Should().BeTrue();
         result.DataValues.ElementDataCount.Should().Be(3);
@@ -578,10 +553,8 @@ public class StormStorageTests
 
         // act
         StormElement? result = stormStorage.GetStormElementById("Hero1", "Unit");
-        StormElement? resultSpan = stormStorage.GetStormElementById("Hero1".AsSpan(), "Unit".AsSpan());
 
         // assert
-        result.Should().BeEquivalentTo(resultSpan, options => options.Excluding(e => e.Type.IsByRefLike));
         result!.DataValues.GetElementDataAt("Name").HasValue.Should().BeTrue();
         result.DataValues.GetElementDataAt("Element2").HasValue.Should().BeTrue();
         result.DataValues.ElementDataCount.Should().Be(3);
@@ -623,10 +596,8 @@ public class StormStorageTests
 
         // act
         StormElement? result = stormStorage.GetStormElementById("Hero1", "Unit");
-        StormElement? resultSpan = stormStorage.GetStormElementById("Hero1".AsSpan(), "Unit".AsSpan());
 
         // assert
-        result.Should().BeEquivalentTo(resultSpan, options => options.Excluding(e => e.Type.IsByRefLike));
         result!.DataValues.GetElementDataAt("Name").HasValue.Should().BeTrue();
         result.DataValues.GetElementDataAt("Element1").HasValue.Should().BeTrue();
         result.DataValues.GetElementDataAt("Element2").HasValue.Should().BeTrue();
@@ -641,10 +612,8 @@ public class StormStorageTests
 
         // act
         StormElement? result = stormStorage.GetStormElementById("Hero1", "Unit");
-        StormElement? resultSpan = stormStorage.GetStormElementById("Hero1".AsSpan(), "Unit".AsSpan());
 
         // assert
-        result.Should().BeEquivalentTo(resultSpan);
         result.Should().BeNull();
     }
 
@@ -700,7 +669,7 @@ public class StormStorageTests
         });
 
         // act
-        StormElement? result = stormStorage.GetStormElementById("Hero1".AsSpan(), "Unit".AsSpan());
+        StormElement? result = stormStorage.GetStormElementById("Hero1", "Unit");
 
         result!.AddValue(new StormElement(new StormXElementValuePath(
             XElement.Parse(@"
@@ -770,10 +739,8 @@ public class StormStorageTests
 
         // act
         StormElement? result = stormStorage.GetScaleValueStormElementById("Hero1", "Unit");
-        StormElement? resultSpan = stormStorage.GetScaleValueStormElementById("Hero1".AsSpan(), "Unit".AsSpan());
 
         // assert
-        result.Should().BeEquivalentTo(resultSpan, options => options.Excluding(e => e.Type.IsByRefLike));
         result!.DataValues.GetElementDataAt("Name").HasValue.Should().BeTrue();
         result.DataValues.GetElementDataAt("Element1").HasValue.Should().BeTrue();
         result.DataValues.GetElementDataAt("Element2").HasValue.Should().BeTrue();
@@ -803,10 +770,8 @@ public class StormStorageTests
 
         // act
         StormElement? result = stormStorage.GetScaleValueStormElementById("Hero1", "Unit");
-        StormElement? resultSpan = stormStorage.GetScaleValueStormElementById("Hero1".AsSpan(), "Unit".AsSpan());
 
         // assert
-        result.Should().BeEquivalentTo(resultSpan, options => options.Excluding(e => e.Type.IsByRefLike));
         result!.DataValues.GetElementDataAt("Name").HasValue.Should().BeTrue();
         result.DataValues.GetElementDataAt("Element1").HasValue.Should().BeTrue();
         result.DataValues.ElementDataCount.Should().Be(3);
@@ -834,10 +799,8 @@ public class StormStorageTests
 
         // act
         StormElement? result = stormStorage.GetScaleValueStormElementById("Hero1", "Unit");
-        StormElement? resultSpan = stormStorage.GetScaleValueStormElementById("Hero1".AsSpan(), "Unit".AsSpan());
 
         // assert
-        result.Should().BeEquivalentTo(resultSpan, options => options.Excluding(e => e.Type.IsByRefLike));
         result!.DataValues.GetElementDataAt("Name").HasValue.Should().BeTrue();
         result.DataValues.GetElementDataAt("Element2").HasValue.Should().BeTrue();
         result.DataValues.ElementDataCount.Should().Be(3);
@@ -879,10 +842,8 @@ public class StormStorageTests
 
         // act
         StormElement? result = stormStorage.GetScaleValueStormElementById("Hero1", "Unit");
-        StormElement? resultSpan = stormStorage.GetScaleValueStormElementById("Hero1".AsSpan(), "Unit".AsSpan());
 
         // assert
-        result.Should().BeEquivalentTo(resultSpan, options => options.Excluding(e => e.Type.IsByRefLike));
         result!.DataValues.GetElementDataAt("Name").HasValue.Should().BeTrue();
         result.DataValues.GetElementDataAt("Element1").HasValue.Should().BeTrue();
         result.DataValues.GetElementDataAt("Element2").HasValue.Should().BeTrue();
@@ -897,10 +858,8 @@ public class StormStorageTests
 
         // act
         StormElement? result = stormStorage.GetScaleValueStormElementById("Hero1", "Unit");
-        StormElement? resultSpan = stormStorage.GetScaleValueStormElementById("Hero1".AsSpan(), "Unit".AsSpan());
 
         // assert
-        result.Should().BeEquivalentTo(resultSpan);
         result.Should().BeNull();
     }
 
@@ -956,7 +915,7 @@ public class StormStorageTests
         });
 
         // act
-        StormElement? result = stormStorage.GetScaleValueStormElementById("Hero1".AsSpan(), "Unit".AsSpan());
+        StormElement? result = stormStorage.GetScaleValueStormElementById("Hero1", "Unit");
 
         result!.AddValue(new StormElement(new StormXElementValuePath(
             XElement.Parse(@"
@@ -984,10 +943,8 @@ public class StormStorageTests
 
         // act
         StormElement? stormElement = stormStorage.GetCompleteStormElement("ZagaraInfestApplyBuffBehavior", "Effect");
-        StormElement? stormElementSpan = stormStorage.GetCompleteStormElement("ZagaraInfestApplyBuffBehavior".AsSpan(), "Effect".AsSpan());
 
         // assert
-        stormElement.Should().BeEquivalentTo(stormElementSpan, options => options.Excluding(e => e.Type.IsByRefLike));
         stormElement.Should().BeNull();
     }
 
@@ -1032,10 +989,8 @@ public class StormStorageTests
 
         // act
         StormElement? stormElement = stormStorage.GetCompleteStormElement("ZagaraInfestApplyBuffBehavior", "Effect");
-        StormElement? stormElementSpan = stormStorage.GetCompleteStormElement("ZagaraInfestApplyBuffBehavior".AsSpan(), "Effect".AsSpan());
 
         // assert
-        stormElement.Should().BeEquivalentTo(stormElementSpan, options => options.Excluding(e => e.Type.IsByRefLike));
         stormElement.Should().NotBeNull();
         stormElement!.OriginalStormXElementValues.Should().HaveCount(3);
     }
@@ -1072,10 +1027,8 @@ public class StormStorageTests
 
         // act
         StormElement? stormElement = stormStorage.GetCompleteStormElement("KelThuzadMasterOfTheColdDarkModifyToken", "Effect");
-        StormElement? stormElementSpan = stormStorage.GetCompleteStormElement("KelThuzadMasterOfTheColdDarkModifyToken".AsSpan(), "Effect".AsSpan());
 
         // assert
-        stormElement.Should().BeEquivalentTo(stormElementSpan, options => options.Excluding(e => e.Type.IsByRefLike));
         stormElement.Should().NotBeNull();
         stormElement!.OriginalStormXElementValues.Should().HaveCount(2);
     }
@@ -1103,10 +1056,8 @@ public class StormStorageTests
 
         // act
         StormElement? stormElement = stormStorage.GetCompleteStormElement("KelThuzadMasterOfTheColdDarkModifyToken", "Effect");
-        StormElement? stormElementSpan = stormStorage.GetCompleteStormElement("KelThuzadMasterOfTheColdDarkModifyToken".AsSpan(), "Effect".AsSpan());
 
         // assert
-        stormElement.Should().BeEquivalentTo(stormElementSpan, options => options.Excluding(e => e.Type.IsByRefLike));
         stormElement.Should().NotBeNull();
         stormElement!.OriginalStormXElementValues.Should().ContainSingle();
     }
@@ -1151,10 +1102,8 @@ public class StormStorageTests
 
         // act
         StormElement? stormElement = stormStorage.GetCompleteStormElement("StormBasicHeroicUnit", "Unit");
-        StormElement? stormElementSpan = stormStorage.GetCompleteStormElement("StormBasicHeroicUnit".AsSpan(), "Unit".AsSpan());
 
         // assert
-        stormElement.Should().BeEquivalentTo(stormElementSpan, options => options.Excluding(e => e.Type.IsByRefLike));
         stormElement.Should().NotBeNull();
         stormElement!.OriginalStormXElementValues.Should().HaveCount(3);
     }
@@ -1177,10 +1126,8 @@ public class StormStorageTests
 
         // act
         StormElement? stormElement = stormStorage.GetBaseStormElement("CEffectApplyBehavior");
-        StormElement? stormElementSpan = stormStorage.GetBaseStormElement("CEffectApplyBehavior".AsSpan());
 
         // assert
-        stormElement.Should().BeEquivalentTo(stormElementSpan, options => options.Excluding(e => e.Type.IsByRefLike));
         stormElement.Should().NotBeNull();
         stormElement!.DataValues.ElementDataCount.Should().Be(2);
     }
@@ -1195,10 +1142,8 @@ public class StormStorageTests
 
         // act
         StormElement? stormElement = stormStorage.GetBaseStormElement("CEffectApplyBehavior");
-        StormElement? stormElementSpan = stormStorage.GetBaseStormElement("CEffectApplyBehavior".AsSpan());
 
         // assert
-        stormElement.Should().BeEquivalentTo(stormElementSpan);
         stormElement.Should().BeNull();
     }
 
@@ -1210,10 +1155,8 @@ public class StormStorageTests
 
         // act
         StormElement? stormElement = stormStorage.GetBaseStormElement("CEffectApplyBehavior");
-        StormElement? stormElementSpan = stormStorage.GetBaseStormElement("CEffectApplyBehavior".AsSpan());
 
         // assert
-        stormElement.Should().BeEquivalentTo(stormElementSpan);
         stormElement.Should().BeNull();
     }
 
@@ -1243,10 +1186,8 @@ public class StormStorageTests
 
         // act
         StormStyleConstantElement? stormStyleConstantElement = stormStorage.GetStormStyleConstantElementsByName("TooltipNumbers");
-        StormStyleConstantElement? stormStyleConstantElementSpan = stormStorage.GetStormStyleConstantElementsByName("TooltipNumbers".AsSpan());
 
         // assert
-        stormStyleConstantElement.Should().BeEquivalentTo(stormStyleConstantElementSpan, options => options.Excluding(e => e.Type.IsByRefLike));
         stormStyleConstantElement.Should().NotBeNull();
         stormStyleConstantElement!.DataValues.ElementDataCount.Should().Be(4);
     }
@@ -1265,10 +1206,8 @@ public class StormStorageTests
 
         // act
         StormStyleConstantElement? stormStyleConstantElement = stormStorage.GetStormStyleConstantElementsByName("TooltipNumbers");
-        StormStyleConstantElement? stormStyleConstantElementSpan = stormStorage.GetStormStyleConstantElementsByName("TooltipNumbers".AsSpan());
 
         // assert
-        stormStyleConstantElement.Should().BeEquivalentTo(stormStyleConstantElementSpan, options => options.Excluding(e => e.Type.IsByRefLike));
         stormStyleConstantElement.Should().NotBeNull();
         stormStyleConstantElement!.DataValues.ElementDataCount.Should().Be(2);
     }
@@ -1287,10 +1226,8 @@ public class StormStorageTests
 
         // act
         StormStyleConstantElement? stormStyleConstantElement = stormStorage.GetStormStyleConstantElementsByName("TooltipNumbers");
-        StormStyleConstantElement? stormStyleConstantElementSpan = stormStorage.GetStormStyleConstantElementsByName("TooltipNumbers".AsSpan());
 
         // assert
-        stormStyleConstantElement.Should().BeEquivalentTo(stormStyleConstantElementSpan, options => options.Excluding(e => e.Type.IsByRefLike));
         stormStyleConstantElement.Should().NotBeNull();
         stormStyleConstantElement!.DataValues.ElementDataCount.Should().Be(2);
     }
@@ -1309,10 +1246,8 @@ public class StormStorageTests
 
         // act
         StormStyleConstantElement? stormStyleConstantElement = stormStorage.GetStormStyleConstantElementsByName("TooltipNumbers");
-        StormStyleConstantElement? stormStyleConstantElementSpan = stormStorage.GetStormStyleConstantElementsByName("TooltipNumbers".AsSpan());
 
         // assert
-        stormStyleConstantElement.Should().BeEquivalentTo(stormStyleConstantElementSpan, options => options.Excluding(e => e.Type.IsByRefLike));
         stormStyleConstantElement.Should().NotBeNull();
         stormStyleConstantElement!.DataValues.ElementDataCount.Should().Be(2);
     }
@@ -1337,10 +1272,8 @@ public class StormStorageTests
 
         // act
         StormStyleConstantElement? stormStyleConstantElement = stormStorage.GetStormStyleConstantElementsByName("TooltipNumbers");
-        StormStyleConstantElement? stormStyleConstantElementSpan = stormStorage.GetStormStyleConstantElementsByName("TooltipNumbers".AsSpan());
 
         // assert
-        stormStyleConstantElement.Should().BeEquivalentTo(stormStyleConstantElementSpan, options => options.Excluding(e => e.Type.IsByRefLike));
         stormStyleConstantElement.Should().NotBeNull();
         stormStyleConstantElement!.DataValues.ElementDataCount.Should().Be(3);
     }
@@ -1352,7 +1285,7 @@ public class StormStorageTests
         StormStorage stormStorage = new(false);
 
         // act
-        StormElement? result = stormStorage.GetStormStyleConstantElementsByName("TooltipNumbers".AsSpan());
+        StormElement? result = stormStorage.GetStormStyleConstantElementsByName("TooltipNumbers");
 
         // assert
         result.Should().BeNull();
@@ -1396,7 +1329,7 @@ public class StormStorageTests
             TestHelpers.GetStormPath("custom"))));
 
         // act
-        StormStyleConstantElement? result = stormStorage.GetStormStyleConstantElementsByName("TooltipNumbers".AsSpan());
+        StormStyleConstantElement? result = stormStorage.GetStormStyleConstantElementsByName("TooltipNumbers");
 
         result!.AddValue(new StormStyleConstantElement(new StormXElementValuePath(
             XElement.Parse(@"
@@ -1436,10 +1369,8 @@ public class StormStorageTests
 
         // act
         StormStyleStyleElement? stormStyleStyleElement = stormStorage.GetStormStyleStyleElementsByName("ReticleEnemy");
-        StormStyleStyleElement? stormStyleStyleElementSpan = stormStorage.GetStormStyleStyleElementsByName("ReticleEnemy".AsSpan());
 
         // assert
-        stormStyleStyleElement.Should().BeEquivalentTo(stormStyleStyleElementSpan, options => options.Excluding(e => e.Type.IsByRefLike));
         stormStyleStyleElement.Should().NotBeNull();
         stormStyleStyleElement!.DataValues.ElementDataCount.Should().Be(5);
     }
@@ -1458,10 +1389,8 @@ public class StormStorageTests
 
         // act
         StormStyleStyleElement? stormStyleStyleElement = stormStorage.GetStormStyleStyleElementsByName("ReticleEnemy");
-        StormStyleStyleElement? stormStyleStyleElementSpan = stormStorage.GetStormStyleStyleElementsByName("ReticleEnemy".AsSpan());
 
         // assert
-        stormStyleStyleElement.Should().BeEquivalentTo(stormStyleStyleElementSpan, options => options.Excluding(e => e.Type.IsByRefLike));
         stormStyleStyleElement.Should().NotBeNull();
         stormStyleStyleElement!.DataValues.ElementDataCount.Should().Be(3);
     }
@@ -1480,10 +1409,8 @@ public class StormStorageTests
 
         // act
         StormStyleStyleElement? stormStyleStyleElement = stormStorage.GetStormStyleStyleElementsByName("ReticleEnemy");
-        StormStyleStyleElement? stormStyleStyleElementSpan = stormStorage.GetStormStyleStyleElementsByName("ReticleEnemy".AsSpan());
 
         // assert
-        stormStyleStyleElement.Should().BeEquivalentTo(stormStyleStyleElementSpan, options => options.Excluding(e => e.Type.IsByRefLike));
         stormStyleStyleElement.Should().NotBeNull();
         stormStyleStyleElement!.DataValues.ElementDataCount.Should().Be(4);
     }
@@ -1502,10 +1429,8 @@ public class StormStorageTests
 
         // act
         StormStyleStyleElement? stormStyleStyleElement = stormStorage.GetStormStyleStyleElementsByName("ReticleEnemy");
-        StormStyleStyleElement? stormStyleStyleElementSpan = stormStorage.GetStormStyleStyleElementsByName("ReticleEnemy".AsSpan());
 
         // assert
-        stormStyleStyleElement.Should().BeEquivalentTo(stormStyleStyleElementSpan, options => options.Excluding(e => e.Type.IsByRefLike));
         stormStyleStyleElement.Should().NotBeNull();
         stormStyleStyleElement!.DataValues.ElementDataCount.Should().Be(4);
     }
@@ -1530,10 +1455,8 @@ public class StormStorageTests
 
         // act
         StormStyleStyleElement? stormStyleStyleElement = stormStorage.GetStormStyleStyleElementsByName("ReticleEnemy");
-        StormStyleStyleElement? stormStyleStyleElementSpan = stormStorage.GetStormStyleStyleElementsByName("ReticleEnemy".AsSpan());
 
         // assert
-        stormStyleStyleElement.Should().BeEquivalentTo(stormStyleStyleElementSpan, options => options.Excluding(e => e.Type.IsByRefLike));
         stormStyleStyleElement.Should().NotBeNull();
         stormStyleStyleElement!.DataValues.ElementDataCount.Should().Be(4);
     }
@@ -1546,7 +1469,7 @@ public class StormStorageTests
 
         // act
         StormElement? result = stormStorage.GetStormStyleStyleElementsByName("ReticleEnemy");
-        StormElement? resultSpan = stormStorage.GetStormStyleStyleElementsByName("ReticleEnemy".AsSpan());
+        StormElement? resultSpan = stormStorage.GetStormStyleStyleElementsByName("ReticleEnemy");
 
         // assert
         result.Should().BeEquivalentTo(resultSpan);
@@ -1591,7 +1514,7 @@ public class StormStorageTests
             TestHelpers.GetStormPath("custom"))));
 
         // act
-        StormStyleStyleElement? result = stormStorage.GetStormStyleStyleElementsByName("ReticleEnemy".AsSpan());
+        StormStyleStyleElement? result = stormStorage.GetStormStyleStyleElementsByName("ReticleEnemy");
 
         result!.AddValue(new StormStyleStyleElement(new StormXElementValuePath(
             XElement.Parse(@"
@@ -1618,9 +1541,7 @@ public class StormStorageTests
 
         // assert
         StormGameString? stormGameString = stormStorage.GetStormGameString("id1");
-        StormGameString? stormGameStringSpan = stormStorage.GetStormGameString("id1".AsSpan());
 
-        stormGameString.Should().BeEquivalentTo(stormGameStringSpan);
         stormGameString.Should().NotBeNull();
         stormGameString!.Id.Should().Be("id1");
         stormGameString.Value.Should().Be("After a short delay");
@@ -1639,9 +1560,7 @@ public class StormStorageTests
 
         // assert
         StormGameString? stormGameString = stormStorage.GetStormGameString("id1");
-        StormGameString? stormGameStringSpan = stormStorage.GetStormGameString("id1".AsSpan());
 
-        stormGameString.Should().BeEquivalentTo(stormGameStringSpan);
         stormGameString.Should().NotBeNull();
         stormGameString!.Id.Should().Be("id1");
         stormGameString.Value.Should().Be("If Chomp hits a Hero");
@@ -1660,9 +1579,7 @@ public class StormStorageTests
 
         // assert
         StormGameString? stormGameString = stormStorage.GetStormGameString("id1");
-        StormGameString? stormGameStringSpan = stormStorage.GetStormGameString("id1".AsSpan());
 
-        stormGameString.Should().BeEquivalentTo(stormGameStringSpan);
         stormGameString.Should().NotBeNull();
         stormGameString!.Id.Should().Be("id1");
         stormGameString.Value.Should().Be("Shadow Waltz deals an increased");
@@ -1681,9 +1598,7 @@ public class StormStorageTests
 
         // assert
         StormGameString? stormGameString = stormStorage.GetStormGameString("id1");
-        StormGameString? stormGameStringSpan = stormStorage.GetStormGameString("id1".AsSpan());
 
-        stormGameString.Should().BeEquivalentTo(stormGameStringSpan);
         stormGameString.Should().NotBeNull();
         stormGameString!.Id.Should().Be("id1");
         stormGameString.Value.Should().Be("After a short delay");
@@ -1703,9 +1618,7 @@ public class StormStorageTests
 
         // assert
         StormGameString? stormGameString = stormStorage.GetStormGameString("id1");
-        StormGameString? stormGameStringSpan = stormStorage.GetStormGameString("id1".AsSpan());
 
-        stormGameString.Should().BeEquivalentTo(stormGameStringSpan);
         stormGameString.Should().NotBeNull();
         stormGameString!.Id.Should().Be("id1");
         stormGameString.Value.Should().Be("Shadow Waltz deals an increased");
@@ -1830,10 +1743,8 @@ public class StormStorageTests
 
         // act
         List<string> ids = stormStorage.GetStormElementIds("Unit");
-        List<string> idsSpan = stormStorage.GetStormElementIds("Unit".AsSpan());
 
         // assert
-        ids.Should().BeEquivalentTo(idsSpan);
         ids.Should().HaveCount(3)
             .And
             .SatisfyRespectively(
@@ -1859,10 +1770,8 @@ public class StormStorageTests
 
         // act
         List<string> ids = stormStorage.GetStormElementIds("Unit");
-        List<string> idsSpan = stormStorage.GetStormElementIds("Unit".AsSpan());
 
         // assert
-        ids.Should().BeEquivalentTo(idsSpan);
         ids.Should().BeEmpty();
     }
 
@@ -1878,10 +1787,8 @@ public class StormStorageTests
 
         // act
         StormAssetString? stormAssetString = stormStorage.GetStormAssetString("id1");
-        StormAssetString? stormAssetStringSpan = stormStorage.GetStormAssetString("id1".AsSpan());
 
         // assert
-        stormAssetString.Should().BeEquivalentTo(stormAssetStringSpan);
         stormAssetString.Should().NotBeNull();
         stormAssetString!.Id.Should().Be("id1");
         stormAssetString.Value.Should().Be("storm_tutorial_veteran.ogv");
@@ -1899,10 +1806,8 @@ public class StormStorageTests
 
         // act
         StormAssetString? stormAssetString = stormStorage.GetStormAssetString("id1");
-        StormAssetString? stormAssetStringSpan = stormStorage.GetStormAssetString("id1".AsSpan());
 
         // assert
-        stormAssetString.Should().BeEquivalentTo(stormAssetStringSpan);
         stormAssetString.Should().NotBeNull();
         stormAssetString!.Id.Should().Be("id1");
         stormAssetString.Value.Should().Be("storm_ui_ingame_tooltipframe.dds");
@@ -1920,10 +1825,8 @@ public class StormStorageTests
 
         // act
         StormAssetString? stormAssetString = stormStorage.GetStormAssetString("id1");
-        StormAssetString? stormAssetStringSpan = stormStorage.GetStormAssetString("id1".AsSpan());
 
         // assert
-        stormAssetString.Should().BeEquivalentTo(stormAssetStringSpan);
         stormAssetString.Should().NotBeNull();
         stormAssetString!.Id.Should().Be("id1");
         stormAssetString.Value.Should().Be("storm_standardbuttonmini_gold_normal.dds");
@@ -1940,10 +1843,8 @@ public class StormStorageTests
 
         // act
         StormAssetString? stormAssetString = stormStorage.GetStormAssetString("id1");
-        StormAssetString? stormAssetStringSpan = stormStorage.GetStormAssetString("id1".AsSpan());
 
         // assert
-        stormAssetString.Should().BeEquivalentTo(stormAssetStringSpan);
         stormAssetString.Should().NotBeNull();
         stormAssetString!.Id.Should().Be("id1");
         stormAssetString.Value.Should().Be("storm_tutorial_veteran.ogv");
@@ -1962,10 +1863,8 @@ public class StormStorageTests
 
         // act
         StormAssetString? stormAssetString = stormStorage.GetStormAssetString("id1");
-        StormAssetString? stormAssetStringSpan = stormStorage.GetStormAssetString("id1".AsSpan());
 
         // assert
-        stormAssetString.Should().BeEquivalentTo(stormAssetStringSpan);
         stormAssetString.Should().NotBeNull();
         stormAssetString!.Id.Should().Be("id1");
         stormAssetString.Value.Should().Be("storm_tutorial_veteran.ogv");
@@ -1985,11 +1884,9 @@ public class StormStorageTests
 
         // act
         bool exists = stormStorage.StormLayoutFileExists(Path.Join("ui", "layout", "item1.stormlayout"));
-        bool existsSpan = stormStorage.StormLayoutFileExists(Path.Join("ui", "layout", "item1.stormlayout").AsSpan());
 
         // assert
         exists.Should().BeTrue();
-        existsSpan.Should().BeTrue();
     }
 
     [TestMethod]
@@ -2002,11 +1899,9 @@ public class StormStorageTests
 
         // act
         bool exists = stormStorage.StormLayoutFileExists(Path.Join("ui", "layout", "item1.stormlayout"));
-        bool existsSpan = stormStorage.StormLayoutFileExists(Path.Join("ui", "layout", "item1.stormlayout").AsSpan());
 
         // assert
         exists.Should().BeTrue();
-        existsSpan.Should().BeTrue();
     }
 
     [TestMethod]
@@ -2019,11 +1914,9 @@ public class StormStorageTests
 
         // act
         bool exists = stormStorage.StormLayoutFileExists(Path.Join("ui", "layout", "item1.stormlayout"));
-        bool existsSpan = stormStorage.StormLayoutFileExists(Path.Join("ui", "layout", "item1.stormlayout").AsSpan());
 
         // assert
         exists.Should().BeTrue();
-        existsSpan.Should().BeTrue();
     }
 
     [TestMethod]
@@ -2035,11 +1928,9 @@ public class StormStorageTests
 
         // act
         bool exists = stormStorage.StormLayoutFileExists(Path.Join("ui", "layout", "item1.stormlayout"));
-        bool existsSpan = stormStorage.StormLayoutFileExists(Path.Join("ui", "layout", "item1.stormlayout").AsSpan());
 
         // assert
         exists.Should().BeTrue();
-        existsSpan.Should().BeTrue();
     }
 
     [TestMethod]
@@ -2053,11 +1944,9 @@ public class StormStorageTests
 
         // act
         bool exists = stormStorage.StormLayoutFileExists(Path.Join("ui", "layout", "item2.stormlayout"));
-        bool existsSpan = stormStorage.StormLayoutFileExists(Path.Join("ui", "layout", "item2.stormlayout").AsSpan());
 
         // assert
         exists.Should().BeFalse();
-        existsSpan.Should().BeFalse();
     }
 
     [TestMethod]
@@ -2072,10 +1961,8 @@ public class StormStorageTests
 
         // act
         StormFile? stormAssetFile = stormStorage.GetStormLayoutFile(Path.Join("ui", "layout", "item1.stormlayout"));
-        StormFile? stormAssetFileSpan = stormStorage.GetStormLayoutFile(Path.Join("ui", "layout", "item1.stormlayout").AsSpan());
 
         // assert
-        stormAssetFile.Should().BeEquivalentTo(stormAssetFileSpan);
         stormAssetFile.Should().NotBeNull();
         stormAssetFile!.StormPath.Path.Should().Be("custom");
         stormAssetFile.ToString().Should().Be(stormAssetFile.StormPath.Path);
@@ -2093,10 +1980,8 @@ public class StormStorageTests
 
         // act
         StormFile? stormAssetFile = stormStorage.GetStormLayoutFile(Path.Join("ui", "layout", "item1.stormlayout"));
-        StormFile? stormAssetFileSpan = stormStorage.GetStormLayoutFile(Path.Join("ui", "layout", "item1.stormlayout").AsSpan());
 
         // assert
-        stormAssetFile.Should().BeEquivalentTo(stormAssetFileSpan);
         stormAssetFile.Should().NotBeNull();
         stormAssetFile!.StormPath.Path.Should().Be("normal");
         stormAssetFile.ToString().Should().Be(stormAssetFile.StormPath.Path);
@@ -2114,10 +1999,8 @@ public class StormStorageTests
 
         // act
         StormFile? stormAssetFile = stormStorage.GetStormLayoutFile(Path.Join("ui", "layout", "item1.stormlayout"));
-        StormFile? stormAssetFileSpan = stormStorage.GetStormLayoutFile(Path.Join("ui", "layout", "item1.stormlayout").AsSpan());
 
         // assert
-        stormAssetFile.Should().BeEquivalentTo(stormAssetFileSpan);
         stormAssetFile.Should().NotBeNull();
         stormAssetFile!.StormPath.Path.Should().Be("map");
         stormAssetFile.ToString().Should().Be(stormAssetFile.StormPath.Path);
@@ -2134,10 +2017,8 @@ public class StormStorageTests
 
         // act
         StormFile? stormAssetFile = stormStorage.GetStormLayoutFile(Path.Join("ui", "layout", "item1.stormlayout"));
-        StormFile? stormAssetFileSpan = stormStorage.GetStormLayoutFile(Path.Join("ui", "layout", "item1.stormlayout").AsSpan());
 
         // assert
-        stormAssetFile.Should().BeEquivalentTo(stormAssetFileSpan);
         stormAssetFile.Should().NotBeNull();
         stormAssetFile!.StormPath.Path.Should().Be("custom");
         stormAssetFile.ToString().Should().Be(stormAssetFile.StormPath.Path);
@@ -2156,10 +2037,8 @@ public class StormStorageTests
 
         // act
         StormFile? stormAssetFile = stormStorage.GetStormLayoutFile(Path.Join("ui", "layout", "item1.stormlayout"));
-        StormFile? stormAssetFileSpan = stormStorage.GetStormLayoutFile(Path.Join("ui", "layout", "item1.stormlayout").AsSpan());
 
         // assert
-        stormAssetFile.Should().BeEquivalentTo(stormAssetFileSpan);
         stormAssetFile.Should().NotBeNull();
         stormAssetFile!.StormPath.Path.Should().Be("map");
         stormAssetFile.ToString().Should().Be(stormAssetFile.StormPath.Path);
@@ -2179,11 +2058,9 @@ public class StormStorageTests
 
         // act
         bool exists = stormStorage.StormAssetFileExists(Path.Join("assets", "item1.dds"));
-        bool existsSpan = stormStorage.StormAssetFileExists(Path.Join("assets", "item1.dds").AsSpan());
 
         // assert
         exists.Should().BeTrue();
-        existsSpan.Should().BeTrue();
     }
 
     [TestMethod]
@@ -2196,11 +2073,9 @@ public class StormStorageTests
 
         // act
         bool exists = stormStorage.StormAssetFileExists(Path.Join("assets", "item1.dds"));
-        bool existsSpan = stormStorage.StormAssetFileExists(Path.Join("assets", "item1.dds").AsSpan());
 
         // assert
         exists.Should().BeTrue();
-        existsSpan.Should().BeTrue();
     }
 
     [TestMethod]
@@ -2213,11 +2088,9 @@ public class StormStorageTests
 
         // act
         bool exists = stormStorage.StormAssetFileExists(Path.Join("assets", "item1.dds"));
-        bool existsSpan = stormStorage.StormAssetFileExists(Path.Join("assets", "item1.dds").AsSpan());
 
         // assert
         exists.Should().BeTrue();
-        existsSpan.Should().BeTrue();
     }
 
     [TestMethod]
@@ -2229,11 +2102,9 @@ public class StormStorageTests
 
         // act
         bool exists = stormStorage.StormAssetFileExists(Path.Join("assets", "item1.dds"));
-        bool existsSpan = stormStorage.StormAssetFileExists(Path.Join("assets", "item1.dds").AsSpan());
 
         // assert
         exists.Should().BeTrue();
-        existsSpan.Should().BeTrue();
     }
 
     [TestMethod]
@@ -2247,11 +2118,9 @@ public class StormStorageTests
 
         // act
         bool exists = stormStorage.StormAssetFileExists(Path.Join("assets", "item2.dds"));
-        bool existsSpan = stormStorage.StormAssetFileExists(Path.Join("assets", "item2.dds").AsSpan());
 
         // assert
         exists.Should().BeFalse();
-        existsSpan.Should().BeFalse();
     }
 
     [TestMethod]
@@ -2266,10 +2135,8 @@ public class StormStorageTests
 
         // act
         StormFile? stormAssetFile = stormStorage.GetStormAssetFile(Path.Join("assets", "item1.dds"));
-        StormFile? stormAssetFileSpan = stormStorage.GetStormAssetFile(Path.Join("assets", "item1.dds").AsSpan());
 
         // assert
-        stormAssetFile.Should().BeEquivalentTo(stormAssetFileSpan);
         stormAssetFile.Should().NotBeNull();
         stormAssetFile!.StormPath.Path.Should().Be("custom");
         stormAssetFile.ToString().Should().Be(stormAssetFile.StormPath.Path);
@@ -2287,10 +2154,8 @@ public class StormStorageTests
 
         // act
         StormFile? stormAssetFile = stormStorage.GetStormAssetFile(Path.Join("assets", "item1.dds"));
-        StormFile? stormAssetFileSpan = stormStorage.GetStormAssetFile(Path.Join("assets", "item1.dds").AsSpan());
 
         // assert
-        stormAssetFile.Should().BeEquivalentTo(stormAssetFileSpan);
         stormAssetFile.Should().NotBeNull();
         stormAssetFile!.StormPath.Path.Should().Be("normal");
         stormAssetFile.ToString().Should().Be(stormAssetFile.StormPath.Path);
@@ -2308,10 +2173,8 @@ public class StormStorageTests
 
         // act
         StormFile? stormAssetFile = stormStorage.GetStormAssetFile(Path.Join("assets", "item1.dds"));
-        StormFile? stormAssetFileSpan = stormStorage.GetStormAssetFile(Path.Join("assets", "item1.dds").AsSpan());
 
         // assert
-        stormAssetFile.Should().BeEquivalentTo(stormAssetFileSpan);
         stormAssetFile.Should().NotBeNull();
         stormAssetFile!.StormPath.Path.Should().Be("map");
         stormAssetFile.ToString().Should().Be(stormAssetFile.StormPath.Path);
@@ -2328,10 +2191,8 @@ public class StormStorageTests
 
         // act
         StormFile? stormAssetFile = stormStorage.GetStormAssetFile(Path.Join("assets", "item1.dds"));
-        StormFile? stormAssetFileSpan = stormStorage.GetStormAssetFile(Path.Join("assets", "item1.dds").AsSpan());
 
         // assert
-        stormAssetFile.Should().BeEquivalentTo(stormAssetFileSpan);
         stormAssetFile.Should().NotBeNull();
         stormAssetFile!.StormPath.Path.Should().Be("custom");
         stormAssetFile.ToString().Should().Be(stormAssetFile.StormPath.Path);
@@ -2350,10 +2211,8 @@ public class StormStorageTests
 
         // act
         StormFile? stormAssetFile = stormStorage.GetStormAssetFile(Path.Join("assets", "item1.dds"));
-        StormFile? stormAssetFileSpan = stormStorage.GetStormAssetFile(Path.Join("assets", "item1.dds").AsSpan());
 
         // assert
-        stormAssetFile.Should().BeEquivalentTo(stormAssetFileSpan);
         stormAssetFile.Should().NotBeNull();
         stormAssetFile!.StormPath.Path.Should().Be("map");
         stormAssetFile.ToString().Should().Be(stormAssetFile.StormPath.Path);

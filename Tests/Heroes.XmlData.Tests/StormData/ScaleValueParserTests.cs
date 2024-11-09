@@ -16,22 +16,32 @@ public class ScaleValueParserTests
     public void CreateStormElement_EntryAndStormElementExists_ReturnsNewScaleStormElement()
     {
         // arrange
+        StormStorage stormStorage = new(false);
+
+        stormStorage.StormCustomCache.DataObjectTypeByElementType.Add("CEffectDamage", "Effect");
+
+        stormStorage.StormCustomCache.StormElementsByDataObjectType.Add("Effect", new Dictionary<string, StormElement>()
+        {
+            {
+                "AzmodanDemonicInvasionImpactDamage", new StormElement(new StormXElementValuePath(
+                    XElement.Parse(
+"""
+<CEffectDamage id="AzmodanDemonicInvasionImpactDamage">
+  <Amount value="85" />
+  <PeriodicPeriodArray value="0" />
+  <PeriodicPeriodArray value="0.25" />
+  <PeriodicPeriodArray value="0.25" />
+</CEffectDamage>
+"""),
+                    TestHelpers.GetStormPath("custom")))
+            },
+        });
+
         LevelScalingEntry levelScalingEntry = new("Effect", "AzmodanDemonicInvasionImpactDamage", "Amount");
         StormStringValue stormStringValue = new("0.040000", TestHelpers.GetStormPath("custom"));
 
-        _stormStorage.GetCompleteStormElement(levelScalingEntry.Entry, levelScalingEntry.Catalog).Returns(new StormElement(new StormXElementValuePath(
-            XElement.Parse(@"
-<CEffectDamage id=""AzmodanDemonicInvasionImpactDamage"">
-  <Amount value=""85"" />
-  <PeriodicPeriodArray value=""0"" />
-  <PeriodicPeriodArray value=""0.25"" />
-  <PeriodicPeriodArray value=""0.25"" />
-</CEffectDamage>
-"),
-            TestHelpers.GetStormPath("custom"))));
-
         // act
-        StormElement? stormElement = ScaleValueParser.CreateStormElement(_stormStorage, levelScalingEntry, stormStringValue);
+        StormElement? stormElement = ScaleValueParser.CreateStormElement(stormStorage, levelScalingEntry, stormStringValue);
 
         // assert
         stormElement.Should().NotBeNull();
@@ -44,13 +54,13 @@ public class ScaleValueParserTests
     public void CreateStormElement_EntryAndStormElementDoesNotExists_ReturnsNull()
     {
         // arrange
+        StormStorage stormStorage = new(false);
+
         LevelScalingEntry levelScalingEntry = new("Effect", "AzmodanDemonicInvasionImpactDamage", "Amount");
         StormStringValue stormStringValue = new("0.040000", TestHelpers.GetStormPath("custom"));
 
-        _stormStorage.GetCompleteStormElement(levelScalingEntry.Entry, levelScalingEntry.Catalog).Returns((StormElement)null!);
-
         // act
-        StormElement? stormElement = ScaleValueParser.CreateStormElement(_stormStorage, levelScalingEntry, stormStringValue);
+        StormElement? stormElement = ScaleValueParser.CreateStormElement(stormStorage, levelScalingEntry, stormStringValue);
 
         // assert
         stormElement.Should().BeNull();
@@ -60,21 +70,31 @@ public class ScaleValueParserTests
     public void CreateStormElement_FieldDoesNotExist_ReturnsNull()
     {
         // arrange
+        StormStorage stormStorage = new(false);
+
+        stormStorage.StormCustomCache.DataObjectTypeByElementType.Add("CEffectDamage", "Effect");
+
+        stormStorage.StormCustomCache.StormElementsByDataObjectType.Add("Effect", new Dictionary<string, StormElement>()
+        {
+            {
+                "AzmodanDemonicInvasionImpactDamage", new StormElement(new StormXElementValuePath(
+                    XElement.Parse(
+"""
+<CEffectDamage id="AzmodanDemonicInvasionImpactDamage">
+  <PeriodicPeriodArray value="0" />
+  <PeriodicPeriodArray value="0.25" />
+  <PeriodicPeriodArray value="0.25" />
+</CEffectDamage>
+"""),
+                    TestHelpers.GetStormPath("custom")))
+            },
+        });
+
         LevelScalingEntry levelScalingEntry = new("Effect", "AzmodanDemonicInvasionImpactDamage", "Amount");
         StormStringValue stormStringValue = new("0.040000", TestHelpers.GetStormPath("custom"));
 
-        _stormStorage.GetCompleteStormElement(levelScalingEntry.Entry, levelScalingEntry.Catalog).Returns(new StormElement(new StormXElementValuePath(
-            XElement.Parse(@"
-<CEffectDamage id=""AzmodanDemonicInvasionImpactDamage"">
-  <PeriodicPeriodArray value=""0"" />
-  <PeriodicPeriodArray value=""0.25"" />
-  <PeriodicPeriodArray value=""0.25"" />
-</CEffectDamage>
-"),
-            TestHelpers.GetStormPath("custom"))));
-
         // act
-        StormElement? stormElement = ScaleValueParser.CreateStormElement(_stormStorage, levelScalingEntry, stormStringValue);
+        StormElement? stormElement = ScaleValueParser.CreateStormElement(stormStorage, levelScalingEntry, stormStringValue);
 
         // assert
         stormElement.Should().BeNull();
