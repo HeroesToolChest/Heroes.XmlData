@@ -7,7 +7,8 @@ jobs:
     uses: koliva8245/github.workflows/.github/workflows/dotnet-build.yml@main
     with:
       dotnet-sdk: |
-        8.0.X
+        8.0.X |
+        9.0.X
       main-project: Heroes.XmlData/Heroes.XmlData.csproj
       artifact-name-prefix: Heroes.XmlData
       is-tool: false
