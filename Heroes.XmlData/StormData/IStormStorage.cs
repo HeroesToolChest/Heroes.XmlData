@@ -82,7 +82,7 @@ internal interface IStormStorage
 
     List<StormGameString> GetStormGameStrings();
 
-    List<string> GetStormElementIds(string dataObjectType);
+    List<string> GetStormElementIds(string dataObjectType, StormCacheType stormCacheType = StormCacheType.All);
 
     StormAssetString? GetStormAssetString(string id);
 

@@ -180,10 +180,11 @@ public class HeroesData
     /// Gets a collection of <see cref="StormElement"/> ids by the data object type.
     /// </summary>
     /// <param name="dataObjectType">The type of the element name (e.g. Effect).</param>
+    /// <param name="stormCacheType">The internal caches to get obtain the ids from. It will always be in the following order: <see cref="StormCacheType.Normal"/>, <see cref="StormCacheType.Map"/>, and then <see cref="StormCacheType.Custom"/>.</param>
     /// <returns>A collection of <see cref="StormElement"/> ids.</returns>
-    public IEnumerable<string> GetStormElementIds(string dataObjectType)
+    public IEnumerable<string> GetStormElementIds(string dataObjectType, StormCacheType stormCacheType = StormCacheType.All)
     {
-        return _stormStorage.GetStormElementIds(dataObjectType).AsReadOnly();
+        return _stormStorage.GetStormElementIds(dataObjectType, stormCacheType).AsReadOnly();
     }
 
     /// <summary>

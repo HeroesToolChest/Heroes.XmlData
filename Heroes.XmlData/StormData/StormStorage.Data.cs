@@ -335,24 +335,24 @@ internal partial class StormStorage
         return stormGameStrings.Select(x => x.Value).ToList();
     }
 
-    public List<string> GetStormElementIds(string dataObjectType)
+    public List<string> GetStormElementIds(string dataObjectType, StormCacheType stormCacheType = StormCacheType.All)
     {
         ArgumentNullException.ThrowIfNull(dataObjectType);
 
         HashSet<string> ids = [];
 
         // normal cache first
-        if (StormCache.StormElementsByDataObjectType.TryGetValue(dataObjectType, out var foundStormElementById))
+        if (stormCacheType.HasFlag(StormCacheType.Normal) && StormCache.StormElementsByDataObjectType.TryGetValue(dataObjectType, out var foundStormElementById))
         {
             ids.UnionWith(foundStormElementById.Values.Select(x => x.Id!));
         }
 
-        if (StormMapCache.StormElementsByDataObjectType.TryGetValue(dataObjectType, out foundStormElementById))
+        if (stormCacheType.HasFlag(StormCacheType.Map) && StormMapCache.StormElementsByDataObjectType.TryGetValue(dataObjectType, out foundStormElementById))
         {
             ids.UnionWith(foundStormElementById.Values.Select(x => x.Id!));
         }
 
-        if (StormCustomCache.StormElementsByDataObjectType.TryGetValue(dataObjectType, out foundStormElementById))
+        if (stormCacheType.HasFlag(StormCacheType.Custom) && StormCustomCache.StormElementsByDataObjectType.TryGetValue(dataObjectType, out foundStormElementById))
         {
             ids.UnionWith(foundStormElementById.Values.Select(x => x.Id!));
         }
