@@ -1763,6 +1763,180 @@ public class StormStorageTests
     }
 
     [TestMethod]
+    public void GetStormElementIds_OnlySelectFromNormal_ReturnsIdFromNormal()
+    {
+        // arrange
+        StormStorage stormStorage = new(false);
+
+        stormStorage.StormCache.StormElementsByDataObjectType.Add("Unit", new Dictionary<string, StormElement>()
+        {
+            {
+                "Hero1", new StormElement(new StormXElementValuePath(
+                    XElement.Parse(@"
+<CUnit id=""Hero1"">
+  <Name value=""Unit/Name/##id##"" />
+</CUnit>
+"),
+                    TestHelpers.GetStormPath("normal")))
+            },
+        });
+
+        stormStorage.StormMapCache.StormElementsByDataObjectType.Add("Unit", new Dictionary<string, StormElement>()
+        {
+            {
+                "Hero2", new StormElement(new StormXElementValuePath(
+                    XElement.Parse(@"
+<CUnit id=""Hero2"">
+  <Name value=""Unit/Name/##id##"" />
+</CUnit>
+"),
+                    TestHelpers.GetStormPath("map")))
+            },
+        });
+
+        stormStorage.StormCustomCache.StormElementsByDataObjectType.Add("Unit", new Dictionary<string, StormElement>()
+        {
+            {
+                "Hero3", new StormElement(new StormXElementValuePath(
+                    XElement.Parse(@"
+<CUnit id=""Hero3"">
+  <Name value=""Unit/Name/##id##"" />
+</CUnit>
+"),
+                    TestHelpers.GetStormPath("custom")))
+            },
+        });
+
+        // act
+        List<string> ids = stormStorage.GetStormElementIds("Unit", StormCacheType.Normal);
+
+        // assert
+        ids.Should().ContainSingle()
+            .And
+            .SatisfyRespectively(
+                first =>
+                {
+                    first.Should().Be("Hero1");
+                });
+    }
+
+    [TestMethod]
+    public void GetStormElementIds_OnlySelectFromMap_ReturnsIdFromMap()
+    {
+        // arrange
+        StormStorage stormStorage = new(false);
+
+        stormStorage.StormCache.StormElementsByDataObjectType.Add("Unit", new Dictionary<string, StormElement>()
+        {
+            {
+                "Hero1", new StormElement(new StormXElementValuePath(
+                    XElement.Parse(@"
+<CUnit id=""Hero1"">
+  <Name value=""Unit/Name/##id##"" />
+</CUnit>
+"),
+                    TestHelpers.GetStormPath("normal")))
+            },
+        });
+
+        stormStorage.StormMapCache.StormElementsByDataObjectType.Add("Unit", new Dictionary<string, StormElement>()
+        {
+            {
+                "Hero2", new StormElement(new StormXElementValuePath(
+                    XElement.Parse(@"
+<CUnit id=""Hero2"">
+  <Name value=""Unit/Name/##id##"" />
+</CUnit>
+"),
+                    TestHelpers.GetStormPath("map")))
+            },
+        });
+
+        stormStorage.StormCustomCache.StormElementsByDataObjectType.Add("Unit", new Dictionary<string, StormElement>()
+        {
+            {
+                "Hero3", new StormElement(new StormXElementValuePath(
+                    XElement.Parse(@"
+<CUnit id=""Hero3"">
+  <Name value=""Unit/Name/##id##"" />
+</CUnit>
+"),
+                    TestHelpers.GetStormPath("custom")))
+            },
+        });
+
+        // act
+        List<string> ids = stormStorage.GetStormElementIds("Unit", StormCacheType.Map);
+
+        // assert
+        ids.Should().ContainSingle()
+            .And
+            .SatisfyRespectively(
+                first =>
+                {
+                    first.Should().Be("Hero2");
+                });
+    }
+
+    [TestMethod]
+    public void GetStormElementIds_OnlySelectFromCustom_ReturnsIdFromCustom()
+    {
+        // arrange
+        StormStorage stormStorage = new(false);
+
+        stormStorage.StormCache.StormElementsByDataObjectType.Add("Unit", new Dictionary<string, StormElement>()
+        {
+            {
+                "Hero1", new StormElement(new StormXElementValuePath(
+                    XElement.Parse(@"
+<CUnit id=""Hero1"">
+  <Name value=""Unit/Name/##id##"" />
+</CUnit>
+"),
+                    TestHelpers.GetStormPath("normal")))
+            },
+        });
+
+        stormStorage.StormMapCache.StormElementsByDataObjectType.Add("Unit", new Dictionary<string, StormElement>()
+        {
+            {
+                "Hero2", new StormElement(new StormXElementValuePath(
+                    XElement.Parse(@"
+<CUnit id=""Hero2"">
+  <Name value=""Unit/Name/##id##"" />
+</CUnit>
+"),
+                    TestHelpers.GetStormPath("map")))
+            },
+        });
+
+        stormStorage.StormCustomCache.StormElementsByDataObjectType.Add("Unit", new Dictionary<string, StormElement>()
+        {
+            {
+                "Hero3", new StormElement(new StormXElementValuePath(
+                    XElement.Parse(@"
+<CUnit id=""Hero3"">
+  <Name value=""Unit/Name/##id##"" />
+</CUnit>
+"),
+                    TestHelpers.GetStormPath("custom")))
+            },
+        });
+
+        // act
+        List<string> ids = stormStorage.GetStormElementIds("Unit", StormCacheType.Custom);
+
+        // assert
+        ids.Should().ContainSingle()
+            .And
+            .SatisfyRespectively(
+                first =>
+                {
+                    first.Should().Be("Hero3");
+                });
+    }
+
+    [TestMethod]
     public void GetStormElementIds_HasNoStormElements_ReturnsEmpty()
     {
         // arrange
