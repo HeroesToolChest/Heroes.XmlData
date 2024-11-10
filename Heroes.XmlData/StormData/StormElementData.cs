@@ -14,11 +14,19 @@ public class StormElementData
 
     internal StormElementData(XElement rootElement)
     {
+#if NET9_0_OR_GREATER
+        ElementDataPairsAltLookup = ElementDataPairs.GetAlternateLookup<ReadOnlySpan<char>>();
+#endif
+
         Parse(rootElement);
     }
 
     internal StormElementData(StormElementData parent, string field, bool isArray = false)
     {
+#if NET9_0_OR_GREATER
+        ElementDataPairsAltLookup = ElementDataPairs.GetAlternateLookup<ReadOnlySpan<char>>();
+#endif
+
         Parent = parent;
 
         if (!string.IsNullOrWhiteSpace(parent.Field))
@@ -258,6 +266,11 @@ public class StormElementData
     [DebuggerBrowsable(DebuggerBrowsableState.Collapsed)]
     internal Dictionary<string, StormElementData> ElementDataPairs { get; } = new(StringComparer.OrdinalIgnoreCase);
 
+#if NET9_0_OR_GREATER
+    [DebuggerBrowsable(DebuggerBrowsableState.Collapsed)]
+    internal Dictionary<string, StormElementData>.AlternateLookup<ReadOnlySpan<char>> ElementDataPairsAltLookup { get; }
+#endif
+
     [DebuggerBrowsable(DebuggerBrowsableState.Never)]
     private string DebuggerDisplay
     {
@@ -307,10 +320,14 @@ public class StormElementData
     /// <exception cref="KeyNotFoundException"><paramref name="index"/> was not found.</exception>
     public StormElementData GetElementDataAt(ReadOnlySpan<char> index)
     {
-        if (ElementDataPairs.TryGetValue(index.ToString(), out StormElementData? stormElementData))
+#if NET9_0_OR_GREATER
+        if (ElementDataPairsAltLookup.TryGetValue(index, out StormElementData? stormElementData))
             return stormElementData;
 
         throw new KeyNotFoundException($"Value '{index}' was not found.");
+#else
+        return GetElementDataAt(index.ToString());
+#endif
     }
 
     /// <summary>
@@ -338,7 +355,11 @@ public class StormElementData
     /// <returns><see langword="true"/> if the index is found, otherwise <see langword="false"/>.</returns>
     public bool TryGetElementDataAt(ReadOnlySpan<char> index, [NotNullWhen(true)] out StormElementData? stormElementData)
     {
+#if NET9_0_OR_GREATER
+        return ElementDataPairsAltLookup.TryGetValue(index, out stormElementData);
+#else
         return TryGetElementDataAt(index.ToString(), out stormElementData);
+#endif
     }
 
     /// <summary>

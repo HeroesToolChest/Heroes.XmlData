@@ -40,7 +40,7 @@ internal class DataRefParser
                 if (currentElementData.TryGetElementDataAt(fieldPartSpanWithoutIndexer.ToString(), out StormElementData? withoutIndexerStormElementData))
                 {
                     if (((numericalIndex is true && withoutIndexerStormElementData.HasNumericalIndex is true) ||
-                        (numericalIndex is false && withoutIndexerStormElementData.HasTextIndex is true)) && withoutIndexerStormElementData.TryGetElementDataAt(fieldPartIndexValue.ToString(), out StormElementData? indexStormElementData))
+                        (numericalIndex is false && withoutIndexerStormElementData.HasTextIndex is true)) && withoutIndexerStormElementData.TryGetElementDataAt(fieldPartIndexValue, out StormElementData? indexStormElementData))
                     {
                         currentElementData = indexStormElementData;
                     }
@@ -71,7 +71,7 @@ internal class DataRefParser
                 }
             }
             else if (currentElementData.TryGetElementDataAt(fieldPartSpan.ToString(), out StormElementData? stormElementData) ||
-                ((currentElementData.HasNumericalIndex || currentElementData.HasTextIndex) && currentElementData.ElementDataPairs.First().Value.TryGetElementDataAt(fieldPartSpan.ToString(), out stormElementData)))
+                ((currentElementData.HasNumericalIndex || currentElementData.HasTextIndex) && currentElementData.ElementDataPairs.First().Value.TryGetElementDataAt(fieldPartSpan, out stormElementData)))
             {
                 currentElementData = stormElementData;
             }
