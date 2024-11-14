@@ -111,7 +111,7 @@ public class StormElementTests
         stormElement.DataValues.GetElementDataAt("CmdButtonArray").GetElementDataAt("Execute").GetElementDataAt("AutoQueueId").GetElementDataAt("0").RawValue.Should().Be("Spell");
         stormElement.DataValues.GetElementDataAt("CmdButtonArray").GetElementDataAt("Execute").GetElementDataAt("Flags").GetElementDataAt("Continuous").RawValue.Should().Be("1");
 
-        stormElement.OriginalStormXElementValues.Count.Should().Be(2);
+        stormElement.OriginalXElements.Count.Should().Be(2);
     }
 
     [TestMethod]
@@ -234,13 +234,13 @@ public class StormElementTests
         stormElement.AddValue(new StormXElementValuePath(mergingElement, TestHelpers.GetStormPath("some\\other\\path")));
 
         // assert
-        stormElement.OriginalStormXElementValues.Should().HaveCount(2);
+        stormElement.OriginalXElements.Should().HaveCount(2);
 
-        stormElement.OriginalStormXElementValues[0].Value.Equals(element);
-        stormElement.OriginalStormXElementValues[0].StormPath.Path.Equals("some\\path");
+        stormElement.OriginalXElements[0].Value.Equals(element);
+        stormElement.OriginalXElements[0].StormPath.Path.Equals("some\\path");
 
-        stormElement.OriginalStormXElementValues[1].Value.Equals(mergingElement);
-        stormElement.OriginalStormXElementValues[1].Value.Equals("some\\other\\path");
+        stormElement.OriginalXElements[1].Value.Equals(mergingElement);
+        stormElement.OriginalXElements[1].Value.Equals("some\\other\\path");
     }
 
     [TestMethod]

@@ -992,7 +992,7 @@ public class StormStorageTests
 
         // assert
         stormElement.Should().NotBeNull();
-        stormElement!.OriginalStormXElementValues.Should().HaveCount(3);
+        stormElement!.OriginalXElements.Should().HaveCount(3);
     }
 
     [TestMethod]
@@ -1030,7 +1030,7 @@ public class StormStorageTests
 
         // assert
         stormElement.Should().NotBeNull();
-        stormElement!.OriginalStormXElementValues.Should().HaveCount(2);
+        stormElement!.OriginalXElements.Should().HaveCount(2);
     }
 
     [TestMethod]
@@ -1059,7 +1059,7 @@ public class StormStorageTests
 
         // assert
         stormElement.Should().NotBeNull();
-        stormElement!.OriginalStormXElementValues.Should().ContainSingle();
+        stormElement!.OriginalXElements.Should().ContainSingle();
     }
 
     [TestMethod]
@@ -1105,7 +1105,7 @@ public class StormStorageTests
 
         // assert
         stormElement.Should().NotBeNull();
-        stormElement!.OriginalStormXElementValues.Should().HaveCount(3);
+        stormElement!.OriginalXElements.Should().HaveCount(3);
     }
 
     [TestMethod]

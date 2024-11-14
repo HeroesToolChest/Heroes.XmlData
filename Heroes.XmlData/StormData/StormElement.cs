@@ -8,15 +8,15 @@ public class StormElement
 {
     private const string IdAttribute = "id";
     private const string ParentAttribute = "parent";
-    private readonly List<StormXElementValuePath> _originalStormXElementValues = [];
+    private readonly List<StormXElementValuePath> _originalXElements = [];
 
     /// <summary>
     /// Initializes a new instance of the <see cref="StormElement"/> class.
     /// </summary>
     /// <param name="baseValue">A <see cref="StormXElementValuePath"/>.</param>
-    public StormElement(StormXElementValuePath baseValue)
+    internal StormElement(StormXElementValuePath baseValue)
     {
-        _originalStormXElementValues.Add(baseValue);
+        _originalXElements.Add(baseValue);
         ElementType = baseValue.Value.Name.LocalName;
 
         DataValues = new StormElementData(baseValue.Value);
@@ -26,14 +26,14 @@ public class StormElement
     /// Initializes a new instance of the <see cref="StormElement"/> class.
     /// </summary>
     /// <param name="baseValue">Another <see cref="StormElement"/> instance.</param>
-    public StormElement(StormElement baseValue)
+    internal StormElement(StormElement baseValue)
     {
-        _originalStormXElementValues = [.. baseValue.OriginalStormXElementValues];
-        DataValues = new StormElementData(OriginalStormXElementValues[0].Value);
+        _originalXElements = [.. baseValue.OriginalXElements];
+        DataValues = new StormElementData(OriginalXElements[0].Value);
 
-        for (int i = 1; i < OriginalStormXElementValues.Count; i++)
+        for (int i = 1; i < OriginalXElements.Count; i++)
         {
-            DataValues.AddXElement(OriginalStormXElementValues[i].Value);
+            AddToDataValues(OriginalXElements[i].Value);
         }
 
         ElementType = baseValue.ElementType;
@@ -42,7 +42,7 @@ public class StormElement
     /// <summary>
     /// Gets a collection of all the original <see cref="XElement"/>s.
     /// </summary>
-    public IReadOnlyList<StormXElementValuePath> OriginalStormXElementValues => _originalStormXElementValues.AsReadOnly();
+    public IReadOnlyList<StormXElementValuePath> OriginalXElements => _originalXElements.AsReadOnly();
 
     /// <summary>
     /// Gets the data values.
@@ -129,9 +129,9 @@ public class StormElement
     /// <param name="stormXElementValue">An <see cref="XElement"/> along with its file path.</param>
     public void AddValue(StormXElementValuePath stormXElementValue)
     {
-        _originalStormXElementValues.Add(stormXElementValue);
+        _originalXElements.Add(stormXElementValue);
 
-        DataValues.AddXElement(stormXElementValue.Value);
+        AddToDataValues(stormXElementValue.Value);
     }
 
     /// <summary>
@@ -140,11 +140,16 @@ public class StormElement
     /// <param name="stormElement">Another <see cref="StormElement"/>.</param>
     public void AddValue(StormElement stormElement)
     {
-        _originalStormXElementValues.AddRange(stormElement.OriginalStormXElementValues);
+        _originalXElements.AddRange(stormElement.OriginalXElements);
 
-        foreach (StormXElementValuePath item in stormElement.OriginalStormXElementValues)
+        foreach (StormXElementValuePath item in stormElement.OriginalXElements)
         {
-            DataValues.AddXElement(item.Value);
+            AddToDataValues(item.Value);
         }
+    }
+
+    private void AddToDataValues(XElement xElement)
+    {
+        DataValues.AddXElement(xElement);
     }
 }
