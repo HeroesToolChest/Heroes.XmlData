@@ -106,9 +106,9 @@ internal class PathHelper
         if (bufferAsReadOnly.IsWhiteSpace())
             return string.Empty;
 
-        NormalizePath(buffer);
-
         int indexOfMods = bufferAsReadOnly.IndexOf(modsDirectory, StringComparison.OrdinalIgnoreCase);
+
+        NormalizePath(buffer);
 
         if (indexOfMods < 0)
             return buffer.ToString();
