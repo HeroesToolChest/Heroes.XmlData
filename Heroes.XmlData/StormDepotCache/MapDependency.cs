@@ -1,4 +1,7 @@
-﻿namespace Heroes.XmlData.StormDepotCache;
+﻿using System.Text;
+using U8Xml;
+
+namespace Heroes.XmlData.StormDepotCache;
 
 internal record MapDependency
 {
@@ -12,21 +15,24 @@ internal record MapDependency
 
     public required string LocalFile { get; init; } = string.Empty;
 
-    public static IEnumerable<MapDependency> GetMapDependencies(IEnumerable<XElement> dependencies, string modsDirectory)
+    public static IEnumerable<MapDependency> GetMapDependencies(XmlNodeList dependencies, string modsDirectory)
     {
-        foreach (XElement valueElement in dependencies)
+        foreach (XmlNode valueNode in dependencies)
         {
-            yield return GetMapDependency(valueElement, modsDirectory);
+            yield return GetMapDependency(valueNode, modsDirectory);
         }
     }
 
-    private static MapDependency GetMapDependency(XElement valueElement, string modsDirectory)
+    private static MapDependency GetMapDependency(XmlNode valueNode, string modsDirectory)
     {
+        RawString rawString = valueNode.InnerText;
+        Span<char> buffer = stackalloc char[rawString.GetCharCount()];
+        Encoding.UTF8.TryGetChars(rawString.AsSpan(), buffer, out int charsWritten);
+
         Span<Range> valueParts = stackalloc Range[2];
         Span<Range> bnetParts = stackalloc Range[3];
 
-        ReadOnlySpan<char> value = valueElement.Value;
-
+        ReadOnlySpan<char> value = buffer;
         value.Split(valueParts, ',');
 
         // bnet:<file name>/<major>.<minor>/<namespace>

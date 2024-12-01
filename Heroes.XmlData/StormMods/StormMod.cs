@@ -1,4 +1,7 @@
-﻿namespace Heroes.XmlData.StormMods;
+﻿using System.Text;
+using U8Xml;
+
+namespace Heroes.XmlData.StormMods;
 
 [DebuggerDisplay("{Name}")]
 internal abstract class StormMod<T> : IStormMod
@@ -123,11 +126,12 @@ internal abstract class StormMod<T> : IStormMod
         if (!TryGetFile(DocumentInfoPath, out Stream? stream))
             return [];
 
-        XDocument document = XDocument.Load(stream);
-        XElement rootElement = document.Root!;
+        using XmlObject xmlObject = XmlParser.Parse(stream);
 
-        IEnumerable<XElement> dependencies = rootElement.Element("Dependencies")?.Elements() ?? [];
-        IEnumerable<MapDependency> mapDependencies = MapDependency.GetMapDependencies(dependencies, HeroesSource.DefaultModsDirectory);
+        if (!xmlObject.Root.Children.TryFind("Dependencies", out XmlNode dependenciesNode))
+            return [];
+
+        IEnumerable<MapDependency> mapDependencies = MapDependency.GetMapDependencies(dependenciesNode.Children, HeroesSource.DefaultModsDirectory);
 
         return GetStormMapModDependencies(mapDependencies);
     }
@@ -137,9 +141,9 @@ internal abstract class StormMod<T> : IStormMod
         if (!TryGetFile(FontStyleFilePath, out Stream? stream))
             return;
 
-        XDocument document = XDocument.Load(stream);
+        using XmlObject xmlObject = XmlParser.Parse(stream);
 
-        StormModStorage.AddXmlFontStyleFile(document, GetStormPath(FontStyleFilePath));
+        StormModStorage.AddXmlFontStyleFile(xmlObject, GetStormPath(FontStyleFilePath));
     }
 
     public void LoadBuildIdFile()
@@ -164,29 +168,20 @@ internal abstract class StormMod<T> : IStormMod
     /// <exception cref="InvalidOperationException">The root element does not exist in the xml file.</exception>
     public void LoadGameDataXmlFile()
     {
-        if (!ValidateXmlFile(GameDataFilePath, out XDocument? document, isRequired: false))
+        if (!ValidateXmlFile(GameDataFilePath, out XmlObject? xmlObject, isRequired: false))
             return;
 
-        if (document.Root is null)
-            throw new InvalidOperationException();
+        using XmlObject xml = xmlObject;
 
-        IEnumerable<XElement> catalogElements = document.Root.Elements("Catalog");
-
-        foreach (XElement catalogElement in catalogElements)
+        foreach (XmlNode xmlNode in xml.Root.Children)
         {
-            ReadOnlySpan<char> catalogPathValue = catalogElement.Attribute("path")?.Value;
-
-            if (catalogPathValue.IsEmpty || catalogPathValue.IsWhiteSpace())
+            if (xmlNode.Name != "Catalog")
                 continue;
 
-            string path = PathHelper.NormalizePath(catalogPathValue, HeroesSource.DefaultModsDirectory);
+            if (!xmlNode.TryFindAttribute("path", out XmlAttribute pathAttribute) || pathAttribute.Value.Trim().IsEmpty)
+                continue;
 
-            if (path.StartsWith(HeroesSource.GameDataDirectory, StringComparison.OrdinalIgnoreCase))
-            {
-                string xmlFilePath = Path.Join(HeroesSource.ModsBaseDirectoryPath, DirectoryPath, HeroesSource.BaseStormDataDirectory, path);
-
-                AddXmlFile(xmlFilePath);
-            }
+            ProcessPathAttribute(pathAttribute);
         }
     }
 
@@ -196,22 +191,21 @@ internal abstract class StormMod<T> : IStormMod
     /// <exception cref="InvalidOperationException">The root element does not exist in the xml file.</exception>
     public void LoadIncludesStormMods()
     {
-        if (!ValidateXmlFile(IncludesFilePath, out XDocument? document, isRequired: false))
+        if (!ValidateXmlFile(IncludesFilePath, out XmlObject? xmlObject, isRequired: false))
             return;
 
-        if (document.Root is null)
-            throw new InvalidOperationException();
+        using XmlObject xml = xmlObject;
 
-        IEnumerable<XElement> pathElements = document.Root.Elements("Path");
-
-        foreach (XElement pathElement in pathElements)
+        foreach (XmlNode xmlNode in xml.Root.Children)
         {
-            ReadOnlySpan<char> pathValuePath = pathElement.Attribute("value")?.Value;
-
-            if (pathValuePath.IsEmpty || pathValuePath.IsWhiteSpace())
+            if (xmlNode.Name != "Path")
                 continue;
 
-            string path = PathHelper.NormalizePath(pathValuePath, HeroesSource.DefaultModsDirectory);
+            if (!xmlNode.TryFindAttribute("value", out XmlAttribute valueAttribute) || valueAttribute.Value.Trim().IsEmpty)
+                continue;
+
+            string path = PathHelper.NormalizePath(valueAttribute.Value.AsSpan(), HeroesSource.DefaultModsDirectory);
+
             IStormMod stormMod = GetStormMod(path, StormModType.Normal);
 
             _includesStormModsCache.Add(stormMod);
@@ -289,22 +283,22 @@ internal abstract class StormMod<T> : IStormMod
     /// <param name="xmlFilePath">The path to the xml file.</param>
     protected void AddXmlFile(string xmlFilePath)
     {
-        if (!ValidateXmlFile(xmlFilePath, out XDocument? document))
+        if (!ValidateXmlFile(xmlFilePath, out XmlObject? xmlObject))
             return;
 
-        StormModStorage.AddXmlDataFile(document, GetStormPath(xmlFilePath));
+        StormModStorage.AddXmlDataFile(xmlObject, GetStormPath(xmlFilePath));
     }
 
     /// <summary>
     /// Validates an xml file, returning a value that indicates whether the file exists.
     /// </summary>
     /// <param name="xmlFilePath">The file path of the file.</param>
-    /// <param name="document">When this method returns, contains an <see cref="XDocument"/> of the <paramref name="xmlFilePath"/>.</param>
+    /// <param name="xmlObject">When this method returns, contains an <see cref="XmlObject"/> of the <paramref name="xmlFilePath"/>.</param>
     /// <param name="isRequired">If <see langword="true"/>, if file does not exist, then add the <paramref name="xmlFilePath"/> as a missing file.</param>
     /// <returns><see langword="true"/> if the xml file was found; otherwise <see langword="false"/>.</returns>
-    protected bool ValidateXmlFile(string xmlFilePath, [NotNullWhen(true)] out XDocument? document, bool isRequired = true)
+    protected bool ValidateXmlFile(string xmlFilePath, [NotNullWhen(true)] out XmlObject? xmlObject, bool isRequired = true)
     {
-        document = null;
+        xmlObject = null;
 
         if (!TryGetFile(xmlFilePath, out Stream? stream))
         {
@@ -316,9 +310,14 @@ internal abstract class StormMod<T> : IStormMod
             return false;
         }
 
-        using Stream fileStream = stream;
-
-        document = XDocument.Load(fileStream);
+        try
+        {
+            xmlObject = XmlParser.Parse(stream, Encoding.UTF8);
+        }
+        catch (Exception ex)
+        {
+            throw;
+        }
 
         return true;
     }
@@ -345,7 +344,7 @@ internal abstract class StormMod<T> : IStormMod
     }
 
     /// <summary>
-    /// Gets a file if it exists, return a value that indicates whether the file exists.
+    /// Gets a <see cref="Stream"/> if it exists, returns a value that indicates whether the file exists.
     /// </summary>
     /// <param name="filePath">The file path of the file.</param>
     /// <param name="stream">When this method returns, contains a <see cref="Stream"/> of the file.</param>
@@ -435,5 +434,24 @@ internal abstract class StormMod<T> : IStormMod
             return path.ToString();
 
         return path[(indexOfMods + HeroesSource.ModsBaseDirectoryPath.Length)..];
+    }
+
+    private void ProcessPathAttribute(XmlAttribute pathAttribute)
+    {
+        Span<char> buffer = stackalloc char[pathAttribute.Value.GetCharCount()];
+        Encoding.UTF8.TryGetChars(pathAttribute.Value.AsSpan(), buffer, out int charsWritten);
+
+        PathHelper.NormalizePath(buffer);
+
+        int modsIndex = buffer.IndexOf(HeroesSource.DefaultModsDirectory);
+        if (modsIndex >= 0)
+            buffer = buffer[(modsIndex + HeroesSource.DefaultModsDirectory.Length)..];
+
+        if (buffer.TrimStart(Path.DirectorySeparatorChar).StartsWith(HeroesSource.GameDataDirectory))
+        {
+            string xmlFilePath = Path.Join(HeroesSource.ModsBaseDirectoryPath, DirectoryPath, HeroesSource.BaseStormDataDirectory, buffer);
+
+            AddXmlFile(xmlFilePath);
+        }
     }
 }

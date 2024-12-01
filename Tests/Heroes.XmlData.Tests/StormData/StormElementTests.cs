@@ -1,4 +1,5 @@
 ﻿using Heroes.XmlData.Tests;
+using U8Xml;
 
 namespace Heroes.XmlData.StormData.Tests;
 
@@ -8,38 +9,42 @@ public class StormElementTests
     [TestMethod]
     public void AddValue_MergingSingleElement_DataValuesAreMerged()
     {
-        XElement element = XElement.Parse(@"
-<CAbil default=""1"">
-  <Name value=""Abil/Name/##id##"" />
-  <TechPlayer value=""Upkeep"" />
-  <TargetMessage value=""Abil/TargetMessage/DefaultTargetMessage"" />
-  <OrderArray>
-    <Color value=""255,0,255,0"" />
-    <Model value=""Assets\UI\Feedback\WayPointConfirm\WayPointConfirm.m3"" />
-    <LineTexture value=""Assets\Textures\WayPointLine.dds"" />
-  </OrderArray>
-  <SharedFlags index=""DisableWhileDead"" value=""1"" />
-  <SharedFlags index=""AllowQuickCastCustomization"" value=""1"" />
-  <SharedFlags index=""TargetCursorVisibleInBlackMask"" value=""1"" />
-</CAbil>
-");
+        // arrange
+        using XmlObject element = XmlParser.Parse(
+            """
+            <CAbil default="1">
+              <Name value="Abil/Name/##id##" />
+              <TechPlayer value="Upkeep" />
+              <TargetMessage value="Abil/TargetMessage/DefaultTargetMessage" />
+              <OrderArray>
+                <Color value="255,0,255,0" />
+                <Model value="Assets\UI\Feedback\WayPointConfirm\WayPointConfirm.m3" />
+                <LineTexture value="Assets\Textures\WayPointLine.dds" />
+              </OrderArray>
+              <SharedFlags index="DisableWhileDead" value="1" />
+              <SharedFlags index="AllowQuickCastCustomization" value="1" />
+              <SharedFlags index="TargetCursorVisibleInBlackMask" value="1" />
+            </CAbil>
+            """);
 
-        XElement mergingElement = XElement.Parse(@"
-<CAbilEffectInstant default=""1"">
-  <CmdButtonArray index=""Execute"" AutoQueueId=""Spell"">
-    <Flags index=""Continuous"" value=""1"" />
-  </CmdButtonArray>
-  <OrderArray index=""0"" LineTexture=""Assets\Textures\Storm_WayPointLine.dds"" />
-  <Flags index=""AllowMovement"" value=""1"" />
-  <Flags index=""WaitToSpend"" value=""0"" />
-  <Flags index=""ValidateButtonState"" value=""1"" />
-  <SharedFlags index=""DisableWhileDead"" value=""0"" />
-</CAbilEffectInstant>
-");
-        StormElement stormElement = new(new StormXElementValuePath(element, TestHelpers.GetStormPath("some\\path")));
+        using XmlObject mergingElement = XmlParser.Parse(
+            """
+            <CAbilEffectInstant default="1">
+              <CmdButtonArray index="Execute" AutoQueueId="Spell">
+                <Flags index="Continuous" value="1" />
+              </CmdButtonArray>
+              <OrderArray index="0" LineTexture="Assets\Textures\Storm_WayPointLine.dds" />
+              <Flags index="AllowMovement" value="1" />
+              <Flags index="WaitToSpend" value="0" />
+              <Flags index="ValidateButtonState" value="1" />
+              <SharedFlags index="DisableWhileDead" value="0" />
+            </CAbilEffectInstant>
+            """);
+
+        StormElement stormElement = new(new StormXmlValuePath(element, TestHelpers.GetStormPath("some\\path")));
 
         // act
-        stormElement.AddValue(new StormXElementValuePath(mergingElement, TestHelpers.GetStormPath("some\\other\\path")));
+        stormElement.AddValue(new StormXmlValuePath(mergingElement, TestHelpers.GetStormPath("some\\other\\path")));
 
         // assert
         stormElement.ElementType.Should().Be("CAbil");
@@ -61,36 +66,40 @@ public class StormElementTests
     [TestMethod]
     public void AddValue_MergingOtherStormElement_DataValuesAreMerged()
     {
-        XElement element = XElement.Parse(@"
-<CAbil default=""1"">
-  <Name value=""Abil/Name/##id##"" />
-  <TechPlayer value=""Upkeep"" />
-  <TargetMessage value=""Abil/TargetMessage/DefaultTargetMessage"" />
-  <OrderArray>
-    <Color value=""255,0,255,0"" />
-    <Model value=""Assets\UI\Feedback\WayPointConfirm\WayPointConfirm.m3"" />
-    <LineTexture value=""Assets\Textures\WayPointLine.dds"" />
-  </OrderArray>
-  <SharedFlags index=""DisableWhileDead"" value=""1"" />
-  <SharedFlags index=""AllowQuickCastCustomization"" value=""1"" />
-  <SharedFlags index=""TargetCursorVisibleInBlackMask"" value=""1"" />
-</CAbil>
-");
+        // arrange
+        using XmlObject element = XmlParser.Parse(
+            """
+            <CAbil default="1">
+              <Name value="Abil/Name/##id##" />
+              <TechPlayer value="Upkeep" />
+              <TargetMessage value="Abil/TargetMessage/DefaultTargetMessage" />
+              <OrderArray>
+                <Color value="255,0,255,0" />
+                <Model value="Assets\UI\Feedback\WayPointConfirm\WayPointConfirm.m3" />
+                <LineTexture value="Assets\Textures\WayPointLine.dds" />
+              </OrderArray>
+              <SharedFlags index="DisableWhileDead" value="1" />
+              <SharedFlags index="AllowQuickCastCustomization" value="1" />
+              <SharedFlags index="TargetCursorVisibleInBlackMask" value="1" />
+            </CAbil>
+            """);
 
-        XElement mergingElement = XElement.Parse(@"
-<CAbilEffectInstant default=""1"">
-  <CmdButtonArray index=""Execute"" AutoQueueId=""Spell"">
-    <Flags index=""Continuous"" value=""1"" />
-  </CmdButtonArray>
-  <OrderArray index=""0"" LineTexture=""Assets\Textures\Storm_WayPointLine.dds"" />
-  <Flags index=""AllowMovement"" value=""1"" />
-  <Flags index=""WaitToSpend"" value=""0"" />
-  <Flags index=""ValidateButtonState"" value=""1"" />
-  <SharedFlags index=""DisableWhileDead"" value=""0"" />
-</CAbilEffectInstant>
-");
-        StormElement stormElement = new(new StormXElementValuePath(element, TestHelpers.GetStormPath("some\\path")));
-        StormElement otherStormElement = new(new StormXElementValuePath(mergingElement, TestHelpers.GetStormPath("some\\path\\two")));
+        using XmlObject mergingElement = XmlParser.Parse(
+            """
+            <CAbilEffectInstant default="1">
+              <CmdButtonArray index="Execute" AutoQueueId="Spell">
+                <Flags index="Continuous" value="1" />
+              </CmdButtonArray>
+              <OrderArray index="0" LineTexture="Assets\Textures\Storm_WayPointLine.dds" />
+              <Flags index="AllowMovement" value="1" />
+              <Flags index="WaitToSpend" value="0" />
+              <Flags index="ValidateButtonState" value="1" />
+              <SharedFlags index="DisableWhileDead" value="0" />
+            </CAbilEffectInstant>
+            """);
+
+        StormElement stormElement = new(new StormXmlValuePath(element, TestHelpers.GetStormPath("some\\path")));
+        StormElement otherStormElement = new(new StormXmlValuePath(mergingElement, TestHelpers.GetStormPath("some\\path\\two")));
 
         // act
         stormElement.AddValue(otherStormElement);
@@ -111,78 +120,85 @@ public class StormElementTests
         stormElement.DataValues.GetElementDataAt("CmdButtonArray").GetElementDataAt("Execute").GetElementDataAt("AutoQueueId").GetElementDataAt("0").RawValue.Should().Be("Spell");
         stormElement.DataValues.GetElementDataAt("CmdButtonArray").GetElementDataAt("Execute").GetElementDataAt("Flags").GetElementDataAt("Continuous").RawValue.Should().Be("1");
 
-        stormElement.OriginalXElements.Count.Should().Be(2);
+        stormElement.OriginalXmlElements.Count.Should().Be(2);
     }
 
     [TestMethod]
     public void AddValue_AddMultipleValuesWithIdThatHasParents_DataValuesAreMerged()
     {
-        XElement element = XElement.Parse(@"
-<CEffect default=""1"">
-  <Chance value=""1"" />
-  <Marker Link=""Effect/##id##"" />
-  <DamageModifierSource Value=""Unknown"" />
-</CEffect>
-");
+        // arrange
+        using XmlObject element = XmlParser.Parse(
+            """
+            <CEffect default="1">
+              <Chance value="1" />
+              <Marker Link="Effect/##id##" />
+              <DamageModifierSource Value="Unknown" />
+            </CEffect>
+            """);
 
-        XElement mergingElement1 = XElement.Parse(@"
-<CEffectDamage default=""1"">
-  <Visibility value=""Snapshot"" />
-  <MaxCount value=""4294967295"" />
-  <MinCountError value=""CantFindEnoughTargets"" />
-  <LaunchLocation Value=""SourceUnit"" />
-  <ImpactLocation Value=""TargetUnitOrPoint"" />
-  <SearchFlags index=""SameCliff"" value=""1"" />
-  <Kind value=""Basic"" />
-  <KindSplash value=""Basic"" />
-</CEffectDamage>
-");
+        using XmlObject mergingElement1 = XmlParser.Parse(
+            """
+            <CEffectDamage default="1">
+              <Visibility value="Snapshot" />
+              <MaxCount value="4294967295" />
+              <MinCountError value="CantFindEnoughTargets" />
+              <LaunchLocation Value="SourceUnit" />
+              <ImpactLocation Value="TargetUnitOrPoint" />
+              <SearchFlags index="SameCliff" value="1" />
+              <Kind value="Basic" />
+              <KindSplash value="Basic" />
+            </CEffectDamage>
+            """);
 
-        XElement mergingElement2 = XElement.Parse(@"
-<CEffectDamage default=""1"" id=""StormDamage"">
-  <ValidatorArray value=""TargetNotInvulnerable"" />
-  <ResponseFlags index=""Acquire"" value=""1"" />
-  <LeechScoreArray Value=""SelfHealing"" />
-  <Visibility value=""Visible"" />
-  <ImpactLocation History=""Damage"" />
-  <AmountScoreArray Validator=""IsHeroAndNotVehicleAndNotHallucination"" Value=""HeroDamage"" />
-  <AmountScoreArray Validator=""IsStructureAndNotDestructible"" Value=""StructureDamage"" />
-  <AmountScoreArray Validator=""IsStructureAndNotDestructible"" Value=""SiegeDamage"" />
-  <AmountScoreArray Validator=""TargetMinion"" Value=""MinionDamage"" />
-  <AmountScoreArray Validator=""TargetMinion"" Value=""SiegeDamage"" />
-  <AmountScoreArray Validator=""TargetIsMercLaner"" Value=""SiegeDamage"" />
-  <AmountScoreArray Validator=""TargetIsMercDefender"" Value=""CreepDamage"" />
-  <AmountScoreArray Validator=""IsSummonedUnit"" Value=""SummonDamage"" />
-  <AmountScoreArray Validator=""TargetIsSummonedandNotHeroic"" Value=""SiegeDamage"" />
-  <SplashHistory value=""Damage"" />
-  <DamageModifierSource Value=""Caster"" />
-  <LeechRecipientArray />
-</CEffectDamage>
-");
+        using XmlObject mergingElement2 = XmlParser.Parse(
+            """
+            <CEffectDamage default="1" id="StormDamage">
+                <ValidatorArray value="TargetNotInvulnerable" />
+              <ResponseFlags index="Acquire" value="1" />
+              <LeechScoreArray Value="SelfHealing" />
+              <Visibility value="Visible" />
+              <ImpactLocation History="Damage" />
+              <AmountScoreArray Validator="IsHeroAndNotVehicleAndNotHallucination" Value="HeroDamage" />
+              <AmountScoreArray Validator="IsStructureAndNotDestructible" Value="StructureDamage" />
+              <AmountScoreArray Validator="IsStructureAndNotDestructible" Value="SiegeDamage" />
+              <AmountScoreArray Validator="TargetMinion" Value="MinionDamage" />
+              <AmountScoreArray Validator="TargetMinion" Value="SiegeDamage" />
+              <AmountScoreArray Validator="TargetIsMercLaner" Value="SiegeDamage" />
+              <AmountScoreArray Validator="TargetIsMercDefender" Value="CreepDamage" />
+              <AmountScoreArray Validator="IsSummonedUnit" Value="SummonDamage" />
+              <AmountScoreArray Validator="TargetIsSummonedandNotHeroic" Value="SiegeDamage" />
+              <SplashHistory value="Damage" />
+              <DamageModifierSource Value="Caster" />
+              <LeechRecipientArray />
+            </CEffectDamage>
+            """);
 
-        XElement mergingElement3 = XElement.Parse(@"
-<CEffectDamage default=""1"" id=""StormSpell"" parent=""StormDamage"">
-  <CritValidatorArray value=""CritAliasSpellPower"" />
-  <Kind value=""Ability"" />
-  <KindSplash value=""Ability"" />
-</CEffectDamage>
-");
+        using XmlObject mergingElement3 = XmlParser.Parse(
+            """
+            <CEffectDamage default="1" id="StormSpell" parent="StormDamage">
+              <CritValidatorArray value="CritAliasSpellPower" />
+              <Kind value="Ability" />
+              <KindSplash value="Ability" />
+            </CEffectDamage>
+            """);
 
-        XElement mergingElement4 = XElement.Parse(@"
-<CEffectDamage id=""StormBoltDamage"" parent=""StormSpell"">
-  <Amount value=""110"" />
-  <CritValidatorArray index=""0"" value=""CritAliasSpellPowerOrMuradinSledgehammerCombine"" />
-  <FlatModifierArray index=""MuradinStormboltPerfectStorm"" Accumulator=""MuradinStormboltPerfectStormAccumulator"" />
-  <MultiplicativeModifierArray index=""MuradinStormboltSledgehammer"" Validator=""HasMuradinStormhammerSledgehammerAndTargetNotHeroic"" Modifier=""2.5"" />
-</CEffectDamage>
-");
-        StormElement stormElement = new(new StormXElementValuePath(element, TestHelpers.GetStormPath("some\\path")));
+        using XmlObject mergingElement4 = XmlParser.Parse(
+            """
+            <CEffectDamage id="StormBoltDamage" parent="StormSpell">
+              <Amount value="110" />
+              <CritValidatorArray index="0" value="CritAliasSpellPowerOrMuradinSledgehammerCombine" />
+              <FlatModifierArray index="MuradinStormboltPerfectStorm" Accumulator="MuradinStormboltPerfectStormAccumulator" />
+              <MultiplicativeModifierArray index="MuradinStormboltSledgehammer" Validator="HasMuradinStormhammerSledgehammerAndTargetNotHeroic" Modifier="2.5" />
+            </CEffectDamage>
+            """);
+
+        StormElement stormElement = new(new StormXmlValuePath(element, TestHelpers.GetStormPath("some\\path")));
 
         // act
-        stormElement.AddValue(new StormXElementValuePath(mergingElement1, TestHelpers.GetStormPath("some\\other1\\path")));
-        stormElement.AddValue(new StormXElementValuePath(mergingElement2, TestHelpers.GetStormPath("some\\other2\\path")));
-        stormElement.AddValue(new StormXElementValuePath(mergingElement3, TestHelpers.GetStormPath("some\\other3\\path")));
-        stormElement.AddValue(new StormXElementValuePath(mergingElement4, TestHelpers.GetStormPath("some\\other4\\path")));
+        stormElement.AddValue(new StormXmlValuePath(mergingElement1, TestHelpers.GetStormPath("some\\other1\\path")));
+        stormElement.AddValue(new StormXmlValuePath(mergingElement2, TestHelpers.GetStormPath("some\\other2\\path")));
+        stormElement.AddValue(new StormXmlValuePath(mergingElement3, TestHelpers.GetStormPath("some\\other3\\path")));
+        stormElement.AddValue(new StormXmlValuePath(mergingElement4, TestHelpers.GetStormPath("some\\other4\\path")));
 
         // assert
         stormElement.DataValues.GetElementDataAt("ResponseFlags").GetElementDataAt("Acquire").RawValue.Should().Be("1");
@@ -200,60 +216,67 @@ public class StormElementTests
     [TestMethod]
     public void AddValue_AddingElement_ReturnOriginalElements()
     {
-        XElement element = XElement.Parse(@"
-<CAbil default=""1"">
-  <Name value=""Abil/Name/##id##"" />
-  <TechPlayer value=""Upkeep"" />
-  <TargetMessage value=""Abil/TargetMessage/DefaultTargetMessage"" />
-  <OrderArray>
-    <Color value=""255,0,255,0"" />
-    <Model value=""Assets\UI\Feedback\WayPointConfirm\WayPointConfirm.m3"" />
-    <LineTexture value=""Assets\Textures\WayPointLine.dds"" />
-  </OrderArray>
-  <SharedFlags index=""DisableWhileDead"" value=""1"" />
-  <SharedFlags index=""AllowQuickCastCustomization"" value=""1"" />
-  <SharedFlags index=""TargetCursorVisibleInBlackMask"" value=""1"" />
-</CAbil>
-");
+        // arrange
+        using XmlObject element = XmlParser.Parse(
+            """
+            <CAbil default="1">
+              <Name value="Abil/Name/##id##" />
+              <TechPlayer value="Upkeep" />
+              <TargetMessage value="Abil/TargetMessage/DefaultTargetMessage" />
+              <OrderArray>
+                <Color value="255,0,255,0" />
+                <Model value="Assets\UI\Feedback\WayPointConfirm\WayPointConfirm.m3" />
+                <LineTexture value="Assets\Textures\WayPointLine.dds" />
+              </OrderArray>
+              <SharedFlags index="DisableWhileDead" value="1" />
+              <SharedFlags index="AllowQuickCastCustomization" value="1" />
+              <SharedFlags index="TargetCursorVisibleInBlackMask" value="1" />
+            </CAbil>
+            """);
 
-        XElement mergingElement = XElement.Parse(@"
-<CAbilEffectInstant default=""1"">
-  <CmdButtonArray index=""Execute"" AutoQueueId=""Spell"">
-    <Flags index=""Continuous"" value=""1"" />
-  </CmdButtonArray>
-  <OrderArray index=""0"" LineTexture=""Assets\Textures\Storm_WayPointLine.dds"" />
-  <Flags index=""AllowMovement"" value=""1"" />
-  <Flags index=""WaitToSpend"" value=""0"" />
-  <Flags index=""ValidateButtonState"" value=""1"" />
-  <SharedFlags index=""DisableWhileDead"" value=""0"" />
-</CAbilEffectInstant>
-");
-        StormElement stormElement = new(new StormXElementValuePath(element, TestHelpers.GetStormPath("some\\path")));
+        using XmlObject mergingElement = XmlParser.Parse(
+            """
+            <CAbilEffectInstant default="1">
+              <CmdButtonArray index="Execute" AutoQueueId="Spell">
+                <Flags index="Continuous" value="1" />
+              </CmdButtonArray>
+              <OrderArray index="0" LineTexture="Assets\Textures\Storm_WayPointLine.dds" />
+              <Flags index="AllowMovement" value="1" />
+              <Flags index="WaitToSpend" value="0" />
+              <Flags index="ValidateButtonState" value="1" />
+              <SharedFlags index="DisableWhileDead" value="0" />
+            </CAbilEffectInstant>
+            """);
+
+        StormElement stormElement = new(new StormXmlValuePath(element, TestHelpers.GetStormPath("some\\path")));
 
         // act
-        stormElement.AddValue(new StormXElementValuePath(mergingElement, TestHelpers.GetStormPath("some\\other\\path")));
+        stormElement.AddValue(new StormXmlValuePath(mergingElement, TestHelpers.GetStormPath("some\\other\\path")));
 
         // assert
-        stormElement.OriginalXElements.Should().HaveCount(2);
+        stormElement.OriginalXmlElements.Should().HaveCount(2);
 
-        stormElement.OriginalXElements[0].Value.Equals(element);
-        stormElement.OriginalXElements[0].StormPath.Path.Equals("some\\path");
+        stormElement.OriginalXmlElements[0].Value.Equals(element);
+        stormElement.OriginalXmlElements[0].StormPath.Path.Equals("some\\path");
 
-        stormElement.OriginalXElements[1].Value.Equals(mergingElement);
-        stormElement.OriginalXElements[1].Value.Equals("some\\other\\path");
+        stormElement.OriginalXmlElements[1].Value.Equals(mergingElement);
+        stormElement.OriginalXmlElements[1].Value.Equals("some\\other\\path");
     }
 
     [TestMethod]
     public void Id_HasIdAttribute_ReturnsId()
     {
         // arrange
-        XElement element = XElement.Parse(@"
-<CEffectDamage id=""StormBoltDamage"" parent=""StormSpell"">
-  <Amount value=""110"" />
-</CEffectDamage>
-");
-        StormElement stormElement = new(new StormXElementValuePath(element, TestHelpers.GetStormPath("some\\path")));
+        using XmlObject xmlObject = XmlParser.Parse(
+            """
+            <CEffectDamage id="StormBoltDamage" parent="StormSpell">
+              <Amount value="110" />
+            </CEffectDamage>
+            """);
+        XmlNode node = xmlObject.Root;
+        StormElement stormElement = new(new StormXmlValuePath(xmlObject, TestHelpers.GetStormPath("some\\path")));
 
+        xmlObject.Dispose();
         // act
         string? resultValue = stormElement.Id;
         bool result = stormElement.HasId;
@@ -267,12 +290,14 @@ public class StormElementTests
     public void Id_HasNoId_ReturnsNull()
     {
         // arrange
-        XElement element = XElement.Parse(@"
-<CEffectDamage parent=""StormSpell"">
-  <Amount value=""110"" />
-</CEffectDamage>
-");
-        StormElement stormElement = new(new StormXElementValuePath(element, TestHelpers.GetStormPath("some\\path")));
+        using XmlObject xmlObject = XmlParser.Parse(
+            """
+            <CEffectDamage parent="StormSpell">
+              <Amount value="110" />
+            </CEffectDamage>
+            """);
+
+        StormElement stormElement = new(new StormXmlValuePath(xmlObject, TestHelpers.GetStormPath("some\\path")));
 
         // act
         string? resultValue = stormElement.Id;
@@ -287,12 +312,14 @@ public class StormElementTests
     public void ParentId_HasParentAttribute_ReturnsParentId()
     {
         // arrange
-        XElement element = XElement.Parse(@"
-<CEffectDamage id=""StormBoltDamage"" parent=""StormSpell"">
-  <Amount value=""110"" />
-</CEffectDamage>
-");
-        StormElement stormElement = new(new StormXElementValuePath(element, TestHelpers.GetStormPath("some\\path")));
+        using XmlObject xmlObject = XmlParser.Parse(
+            """
+            <CEffectDamage id="StormBoltDamage" parent="StormSpell">
+              <Amount value="110" />
+            </CEffectDamage>
+            """);
+
+        StormElement stormElement = new(new StormXmlValuePath(xmlObject, TestHelpers.GetStormPath("some\\path")));
 
         // act
         string? resultValue = stormElement.ParentId;
@@ -307,12 +334,14 @@ public class StormElementTests
     public void ParentId_HasNoParentAttribute_ReturnsNull()
     {
         // arrange
-        XElement element = XElement.Parse(@"
-<CEffectDamage id=""StormBoltDamage"">
-  <Amount value=""110"" />
-</CEffectDamage>
-");
-        StormElement stormElement = new(new StormXElementValuePath(element, TestHelpers.GetStormPath("some\\path")));
+        using XmlObject xmlObject = XmlParser.Parse(
+            """
+            <CEffectDamage id="StormBoltDamage">
+              <Amount value="110" />
+            </CEffectDamage>
+            """);
+
+        StormElement stormElement = new(new StormXmlValuePath(xmlObject, TestHelpers.GetStormPath("some\\path")));
 
         // act
         string? resultValue = stormElement.ParentId;
@@ -327,14 +356,16 @@ public class StormElementTests
     public void GetDescendants_GetAllInnerElements_ReturnsAll()
     {
         // arrange
-        XElement element = XElement.Parse(@"
-<CAbilEffectInstant default=""1"">
-  <CmdButtonArray index=""Execute"" AutoQueueId=""Spell"">
-    <Flags index=""Continuous"" value=""1"" />
-  </CmdButtonArray>
-</CAbilEffectInstant>
-");
-        StormElement stormElement = new(new StormXElementValuePath(element, TestHelpers.GetStormPath("some\\path")));
+        using XmlObject xmlObject = XmlParser.Parse(
+            """
+            <CAbilEffectInstant default="1">
+                <CmdButtonArray index="Execute" AutoQueueId="Spell">
+                    <Flags index="Continuous" value="1" />
+                </CmdButtonArray>
+            </CAbilEffectInstant>
+            """);
+
+        StormElement stormElement = new(new StormXmlValuePath(xmlObject, TestHelpers.GetStormPath("some\\path")));
 
         // act
         List<StormElementData> stormElementData = stormElement.GetElements().ToList();
@@ -361,12 +392,14 @@ public class StormElementTests
     public void TryGetElementDataAt_HasData_ReturnsStormElementData()
     {
         // arrange
-        XElement element = XElement.Parse(@"
-<CEffectDamage id=""StormBoltDamage"">
-  <Amount value=""110"" />
-</CEffectDamage>
-");
-        StormElement stormElement = new(new StormXElementValuePath(element, TestHelpers.GetStormPath("some\\path")));
+        using XmlObject xmlObject = XmlParser.Parse(
+            """
+            <CEffectDamage id="StormBoltDamage">
+                <Amount value="110" />
+            </CEffectDamage>
+            """);
+
+        StormElement stormElement = new(new StormXmlValuePath(xmlObject, TestHelpers.GetStormPath("some\\path")));
 
         // act
         bool result = stormElement.DataValues.TryGetElementDataAt("amount", out StormElementData? _);
@@ -381,12 +414,14 @@ public class StormElementTests
     public void TryGetElementDataAt_HasNoData_ReturnsNull()
     {
         // arrange
-        XElement element = XElement.Parse(@"
-<CEffectDamage id=""StormBoltDamage"">
-  <Damage value=""110"" />
-</CEffectDamage>
-");
-        StormElement stormElement = new(new StormXElementValuePath(element, TestHelpers.GetStormPath("some\\path")));
+        using XmlObject xmlObject = XmlParser.Parse(
+            """
+            <CEffectDamage id="StormBoltDamage">
+                <Damage value="110" />
+            </CEffectDamage>
+            """);
+
+        StormElement stormElement = new(new StormXmlValuePath(xmlObject, TestHelpers.GetStormPath("some\\path")));
 
         // act
         bool result = stormElement.DataValues.TryGetElementDataAt("amount", out StormElementData? stormElementData);

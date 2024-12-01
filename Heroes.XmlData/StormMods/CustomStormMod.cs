@@ -1,4 +1,6 @@
-﻿namespace Heroes.XmlData.StormMods;
+﻿using U8Xml;
+
+namespace Heroes.XmlData.StormMods;
 
 internal class CustomStormMod : IStormMod
 {
@@ -48,7 +50,8 @@ internal class CustomStormMod : IStormMod
     {
         foreach (XElement constantXElement in _manualModLoader.ConstantXElements)
         {
-            _heroesSource.StormStorage.AddConstantXElement(StormModType, constantXElement, _stormPath);
+            using XmlObject xmlObject = XmlParser.Parse(constantXElement.ToString());
+            _heroesSource.StormStorage.AddConstantElement(StormModType, xmlObject.Root, _stormPath);
         }
 
         foreach (var items in _manualModLoader.ElementNamesByDataObjectType)
@@ -63,17 +66,20 @@ internal class CustomStormMod : IStormMod
 
         foreach (XElement element in _manualModLoader.Elements)
         {
-            _heroesSource.StormStorage.AddElement(StormModType, element, _stormPath);
+            using XmlObject xmlObject = XmlParser.Parse(element.ToString());
+            _heroesSource.StormStorage.AddElement(StormModType, xmlObject.Root, _stormPath);
         }
 
         foreach (XElement element in _manualModLoader.LevelScalingArrayElements)
         {
-            _heroesSource.StormStorage.AddLevelScalingArrayElement(StormModType, element, _stormPath);
+            using XmlObject xmlObject = XmlParser.Parse(element.ToString());
+            _heroesSource.StormStorage.AddLevelScalingArrayElement(StormModType, xmlObject.Root, _stormPath);
         }
 
         foreach (XElement element in _manualModLoader.StormStyleElements)
         {
-            _heroesSource.StormStorage.AddStormStyleElement(StormModType, element, _stormPath);
+            using XmlObject xmlObject = XmlParser.Parse(element.ToString());
+            _heroesSource.StormStorage.AddStormStyleElement(StormModType, xmlObject.Root, _stormPath);
         }
     }
 

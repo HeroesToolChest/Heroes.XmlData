@@ -1,21 +1,28 @@
-﻿namespace Heroes.XmlData.StormData;
+﻿using System.Text;
+using U8Xml;
+
+namespace Heroes.XmlData.StormData;
 
 /// <summary>
-/// Contains the data that represents an <see cref="XElement"/>.
+/// Contains the data that is parsed from an <see cref="XmlObject"/>.
 /// </summary>
 [DebuggerDisplay("{DebuggerDisplay,nq}")]
 public class StormElementData
 {
     private static readonly HashSet<string> _otherElementArrays = ["On", "Cost", "CatalogModifications", "ConditionalEvents", "CardLayouts"];
+#if NET9_0_OR_GREATER
+    private static readonly HashSet<string>.AlternateLookup<ReadOnlySpan<char>> _otherElementArraysAltLookup = _otherElementArrays.GetAlternateLookup<ReadOnlySpan<char>>();
+#endif
 
     private string? _rawValue;
     private string? _constValue; // starts with $
     private string? _assetValue; // starts with @
 
-    internal StormElementData(XElement rootElement)
+    internal StormElementData(XmlNode rootElement)
     {
 #if NET9_0_OR_GREATER
         ElementDataPairsAltLookup = ElementDataPairs.GetAlternateLookup<ReadOnlySpan<char>>();
+        HashSet<string>.AlternateLookup<ReadOnlySpan<char>> a = _otherElementArrays.GetAlternateLookup<ReadOnlySpan<char>>();
 #endif
 
         Parse(rootElement);
@@ -42,7 +49,7 @@ public class StormElementData
         }
     }
 
-    internal StormElementData(StormElementData parent, string field, XElement rootElement)
+    internal StormElementData(StormElementData parent, string field, XmlNode rootElement)
         : this(parent, field)
     {
         Parse(rootElement);
@@ -62,22 +69,22 @@ public class StormElementData
         _assetValue = assetValue;
     }
 
-    internal StormElementData(StormElementData parent, string field, XElement rootElement, bool isInnerArray = false, bool isIndex = false)
+    internal StormElementData(StormElementData parent, string field, XmlNode rootElement, bool isInnerArray = false, bool isIndex = false)
         : this(parent, field, isIndex)
     {
         Parse(rootElement, isInnerArray);
     }
 
-    internal StormElementData(StormElementData parent, string field, XElement element, string index, bool isInnerArray = false)
+    internal StormElementData(StormElementData parent, string field, XmlNode element, string index, bool isInnerArray = false)
         : this(parent, field)
     {
         ElementDataPairs[index] = new StormElementData(this, index, element, isInnerArray, true);
     }
 
-    internal StormElementData(StormElementData parent, string field, XAttribute attribute, string index)
+    internal StormElementData(StormElementData parent, string field, XmlAttribute attribute, string index)
         : this(parent, field)
     {
-        ElementDataPairs[index] = new StormElementData(this, index, attribute.Value, true);
+        ElementDataPairs[index] = new StormElementData(this, index, attribute.Value.ToString(), true);
     }
 
     /// <summary>
@@ -394,113 +401,158 @@ public class StormElementData
         }
     }
 
-    internal void AddXElement(XElement element, bool isInnerArray = false)
+    internal void AddElement(XmlNode element, bool isInnerArray = false)
     {
         Parse(element, isInnerArray);
     }
 
-    private void Parse(XElement rootElement, bool isInnerArray = false)
+    private void Parse(XmlNode rootElement, bool isInnerArray = false)
     {
-        IEnumerable<XAttribute> attributes = rootElement.Attributes();
-        IEnumerable<XElement> elements = rootElement.Elements();
+        ProcessAttributes(rootElement, isInnerArray);
 
-        foreach (XAttribute attribute in attributes)
+        XmlNodeList elements = rootElement.Children;
+
+        foreach (XmlNode element in elements)
         {
-            if (attribute.Name.LocalName.Equals("index", StringComparison.OrdinalIgnoreCase))
+            ProcessElement(element, isInnerArray);
+        }
+    }
+
+    private void ProcessElement(XmlNode element, bool isInnerArray)
+    {
+        RawString elementName = element.Name;
+
+        Span<char> buffer = stackalloc char[elementName.GetCharCount()];
+        Encoding.UTF8.TryGetChars(elementName.AsSpan(), buffer, out int charsWritten);
+        ReadOnlySpan<char> elementNameSpan = buffer;
+
+        if (element.TryFindAttribute("index", out XmlAttribute indexAttribute) || element.TryFindAttribute("Index", out indexAttribute))
+        {
+            ProcessIndexAttribute(element, elementNameSpan, indexAttribute.Value);
+        }
+        else if (isInnerArray ||
+            elementNameSpan.EndsWith("array", StringComparison.OrdinalIgnoreCase) ||
+#if NET9_0_OR_GREATER
+            _otherElementArraysAltLookup.Contains(elementNameSpan))
+#else
+            _otherElementArrays.Contains(elementName.ToString()))
+#endif
+        {
+            if (TryGetElementDataAt(elementNameSpan, out StormElementData? existingData))
+            {
+                string nextIndex = existingData.ElementDataPairs.Keys.Count.ToString();
+                existingData.ElementDataPairs[nextIndex] = new StormElementData(existingData, nextIndex, element, true, true);
+            }
+            else
+            {
+                string elementNameString = elementNameSpan.ToString();
+                ElementDataPairs[elementNameString] = new StormElementData(this, elementNameString, element, "0", true)
+                {
+                    HasNumericalIndex = true,
+                };
+            }
+        }
+        else if (TryGetElementDataAt(elementNameSpan, out StormElementData? existingData))
+        {
+            existingData.AddElement(element);
+        }
+        else if (!(element.TryFindAttribute("value", out XmlAttribute valueAttribute) || element.TryFindAttribute("Value", out valueAttribute)))
+        {
+            string elementNameString = elementNameSpan.ToString();
+            ElementDataPairs[elementNameString] = new StormElementData(this, elementNameString, element);
+        }
+        else
+        {
+            string? constValueAtt = null;
+            string? assetValueAtt = null;
+
+            if (element.TryFindAttribute($"{StormModStorage.SelfNameConst}value", out XmlAttribute constValueAttribute) ||
+                element.TryFindAttribute($"{StormModStorage.SelfNameConst}Value", out constValueAttribute))
+            {
+                constValueAtt = constValueAttribute.Value.ToString();
+            }
+
+            if (element.TryFindAttribute($"{StormModStorage.SelfNameAsset}value", out XmlAttribute assetValueAttribute) ||
+                element.TryFindAttribute($"{StormModStorage.SelfNameAsset}Value", out assetValueAttribute))
+            {
+                assetValueAtt = assetValueAttribute.Value.ToString();
+            }
+
+            string elementNameString = elementNameSpan.ToString();
+            ElementDataPairs[elementNameString] = new StormElementData(this, elementNameString, valueAttribute.Value.ToString(), constValueAtt, assetValueAtt);
+        }
+    }
+
+    private void ProcessAttributes(XmlNode rootElement, bool isInnerArray)
+    {
+        XmlAttributeList attributes = rootElement.Attributes;
+
+        foreach (XmlAttribute attribute in attributes)
+        {
+            if (attribute.Name == "index" || attribute.Name == "Index")
                 continue;
 
-            if (attribute.Name.LocalName.Equals("value", StringComparison.OrdinalIgnoreCase))
+            if (attribute.Name == "value" || attribute.Name == "Value")
             {
-                _rawValue = attribute.Value;
+                _rawValue = attribute.Value.ToString();
                 continue;
             }
 
-            if (attribute.Name.LocalName.Equals($"{StormModStorage.SelfNameConst}value", StringComparison.OrdinalIgnoreCase))
+            if (attribute.Name == $"{StormModStorage.SelfNameConst}value" || attribute.Name == $"{StormModStorage.SelfNameConst}Value")
             {
-                _constValue = attribute.Value;
+                _constValue = attribute.Value.ToString();
                 continue;
             }
 
-            if (attribute.Name.LocalName.Equals($"{StormModStorage.SelfNameAsset}value", StringComparison.OrdinalIgnoreCase))
+            if (attribute.Name == $"{StormModStorage.SelfNameAsset}value" || attribute.Name == $"{StormModStorage.SelfNameAsset}Value")
             {
-                _assetValue = attribute.Value;
+                _assetValue = attribute.Value.ToString();
                 continue;
             }
+
+            string attributeName = attribute.Name.ToString();
 
             if (isInnerArray)
             {
-                ElementDataPairs[attribute.Name.LocalName] = new StormElementData(this, attribute.Name.LocalName, attribute, "0")
+                ElementDataPairs[attributeName] = new StormElementData(this, attributeName, attribute, "0")
                 {
                     HasNumericalIndex = true,
                 };
             }
             else
             {
-                ElementDataPairs[attribute.Name.LocalName] = new StormElementData(this, attribute.Name.LocalName, attribute.Value);
+                ElementDataPairs[attributeName] = new StormElementData(this, attributeName, attribute.Value.ToString());
             }
         }
+    }
 
-        foreach (XElement element in elements)
+    private void ProcessIndexAttribute(XmlNode element, ReadOnlySpan<char> elementNameSpan, RawString index)
+    {
+        Span<char> indexSpan = stackalloc char[index.GetCharCount()];
+        Encoding.UTF8.TryGetChars(index.AsSpan(), indexSpan, out int charsWritten);
+
+        if (TryGetElementDataAt(elementNameSpan, out StormElementData? existingElementData))
         {
-            string elementName = element.Name.LocalName;
-            string? indexAtt = element.Attribute("index")?.Value ?? element.Attribute("Index")?.Value;
-            string? valueAtt = element.Attribute("value")?.Value ?? element.Attribute("Value")?.Value;
-
-            if (!string.IsNullOrEmpty(indexAtt))
+            if (existingElementData.TryGetElementDataAt(indexSpan, out StormElementData? existingIndexedData))
             {
-                if (ElementDataPairs.TryGetValue(elementName, out StormElementData? existingElementData))
-                {
-                    if (existingElementData.ElementDataPairs.TryGetValue(indexAtt, out StormElementData? existingIndexedData))
-                    {
-                        existingIndexedData.AddXElement(element, true);
-                    }
-                    else
-                    {
-                        existingElementData.ElementDataPairs[indexAtt] = new StormElementData(existingElementData, indexAtt, element, true, true);
-                    }
-                }
-                else
-                {
-                    bool numericalIndex = int.TryParse(indexAtt, out _);
-
-                    ElementDataPairs[elementName] = new StormElementData(this, element.Name.LocalName, element, indexAtt, true)
-                    {
-                        HasNumericalIndex = numericalIndex,
-                        HasTextIndex = !numericalIndex,
-                    };
-                }
-            }
-            else if (isInnerArray || elementName.AsSpan().EndsWith("array", StringComparison.OrdinalIgnoreCase) || _otherElementArrays.Contains(elementName))
-            {
-                if (ElementDataPairs.TryGetValue(elementName, out StormElementData? existingData))
-                {
-                    string nextIndex = existingData.ElementDataPairs.Keys.Count.ToString();
-
-                    existingData.ElementDataPairs[nextIndex] = new StormElementData(existingData, nextIndex, element, true, true);
-                }
-                else
-                {
-                    ElementDataPairs[elementName] = new StormElementData(this, element.Name.LocalName, element, "0", true)
-                    {
-                        HasNumericalIndex = true,
-                    };
-                }
-            }
-            else if (ElementDataPairs.TryGetValue(elementName, out StormElementData? existingData))
-            {
-                existingData.AddXElement(element);
-            }
-            else if (string.IsNullOrEmpty(valueAtt))
-            {
-                ElementDataPairs[elementName] = new StormElementData(this, element.Name.LocalName, element);
+                existingIndexedData.AddElement(element, true);
             }
             else
             {
-                string? constValueAtt = element.Attribute($"{StormModStorage.SelfNameConst}value")?.Value ?? element.Attribute($"{StormModStorage.SelfNameConst}Value")?.Value;
-                string? assetValueAtt = element.Attribute($"{StormModStorage.SelfNameAsset}value")?.Value ?? element.Attribute($"{StormModStorage.SelfNameAsset}Value")?.Value;
-
-                ElementDataPairs[elementName] = new StormElementData(this, elementName, valueAtt, constValueAtt, assetValueAtt);
+                string indexValue = index.ToString();
+                existingElementData.ElementDataPairs[indexValue] = new StormElementData(existingElementData, indexValue, element, true, true);
             }
+        }
+        else
+        {
+            bool numericalIndex = index.TryToInt32(out int _);
+
+            string elementNameString = elementNameSpan.ToString();
+            ElementDataPairs[elementNameString] = new StormElementData(this, elementNameString, element, indexSpan.ToString(), true)
+            {
+                HasNumericalIndex = numericalIndex,
+                HasTextIndex = !numericalIndex,
+            };
         }
     }
 }

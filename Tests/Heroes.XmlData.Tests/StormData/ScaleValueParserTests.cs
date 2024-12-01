@@ -1,15 +1,13 @@
 ﻿using Heroes.XmlData.Tests;
+using U8Xml;
 
 namespace Heroes.XmlData.StormData.Tests;
 
 [TestClass]
 public class ScaleValueParserTests
 {
-    private readonly IStormStorage _stormStorage;
-
     public ScaleValueParserTests()
     {
-        _stormStorage = Substitute.For<IStormStorage>();
     }
 
     [TestMethod]
@@ -20,20 +18,20 @@ public class ScaleValueParserTests
 
         stormStorage.StormCustomCache.DataObjectTypeByElementType.Add("CEffectDamage", "Effect");
 
+        using XmlObject xmlObject = XmlParser.Parse(
+            """
+            <CEffectDamage id="AzmodanDemonicInvasionImpactDamage">
+              <Amount value="85" />
+              <PeriodicPeriodArray value="0" />
+              <PeriodicPeriodArray value="0.25" />
+              <PeriodicPeriodArray value="0.25" />
+            </CEffectDamage>
+            """);
+
         stormStorage.StormCustomCache.StormElementsByDataObjectType.Add("Effect", new Dictionary<string, StormElement>()
         {
             {
-                "AzmodanDemonicInvasionImpactDamage", new StormElement(new StormXElementValuePath(
-                    XElement.Parse(
-"""
-<CEffectDamage id="AzmodanDemonicInvasionImpactDamage">
-  <Amount value="85" />
-  <PeriodicPeriodArray value="0" />
-  <PeriodicPeriodArray value="0.25" />
-  <PeriodicPeriodArray value="0.25" />
-</CEffectDamage>
-"""),
-                    TestHelpers.GetStormPath("custom")))
+                "AzmodanDemonicInvasionImpactDamage", new StormElement(new StormXmlValuePath(xmlObject.Root, TestHelpers.GetStormPath("custom")))
             },
         });
 
@@ -74,19 +72,19 @@ public class ScaleValueParserTests
 
         stormStorage.StormCustomCache.DataObjectTypeByElementType.Add("CEffectDamage", "Effect");
 
+        using XmlObject xmlObject = XmlParser.Parse(
+            """
+            <CEffectDamage id="AzmodanDemonicInvasionImpactDamage">
+              <PeriodicPeriodArray value="0" />
+              <PeriodicPeriodArray value="0.25" />
+              <PeriodicPeriodArray value="0.25" />
+            </CEffectDamage>
+            """);
+
         stormStorage.StormCustomCache.StormElementsByDataObjectType.Add("Effect", new Dictionary<string, StormElement>()
         {
             {
-                "AzmodanDemonicInvasionImpactDamage", new StormElement(new StormXElementValuePath(
-                    XElement.Parse(
-"""
-<CEffectDamage id="AzmodanDemonicInvasionImpactDamage">
-  <PeriodicPeriodArray value="0" />
-  <PeriodicPeriodArray value="0.25" />
-  <PeriodicPeriodArray value="0.25" />
-</CEffectDamage>
-"""),
-                    TestHelpers.GetStormPath("custom")))
+                "AzmodanDemonicInvasionImpactDamage", new StormElement(new StormXmlValuePath(xmlObject.Root, TestHelpers.GetStormPath("custom")))
             },
         });
 

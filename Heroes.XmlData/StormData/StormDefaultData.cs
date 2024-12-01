@@ -10,40 +10,39 @@ internal static class StormDefaultData
             ("Unit", "CUnit"),
         ];
 
-    public static List<XElement> DefaultXElements =>
+    public static List<string> DefaultXmlElements =>
         [
-            XElement.Parse(
-"""
-<CBehaviorBuff>
-  <DamageResponse ModifyLimit="0" />
-  <Modification>
-    <DamageDealtScaled index="Basic" value="0" />
-    <DamageDealtScaled index="Ability" value="0" />
-    <DamageDealtFraction index="Basic" value="0" />
-    <DamageDealtFraction index="Ability" value="0" />
-    <VitalMaxArray index="Life" value="0" />
-    <VitalMaxArray index="Shields" value="0" />
-    <VitalMaxArray index="Energy" value="0" />
-    <VitalRegenArray index="Life" value="0" />
-    <VitalRegenArray index="Shields" value="0" />
-    <VitalRegenArray index="Energy" value="0" />
-  </Modification>
-</CBehaviorBuff>
-"""),
-            XElement.Parse("""
-<CEffectDamage>
-  <Amount value="0" /> 
-</CEffectDamage>
-"""),
-            XElement.Parse("""
-<CEffectCreateHealer>
-  <RechargeVitalRate value="0" />
-</CEffectCreateHealer>
-"""),
-            XElement.Parse("""
-<CUnit>
-    <ShieldRegenRate value="0" />
-</CUnit>
-"""),
+            """
+            <CBehaviorBuff>
+              <DamageResponse ModifyLimit="0" />
+              <Modification>
+                <DamageDealtScaled index="Basic" value="0" />
+                <DamageDealtScaled index="Ability" value="0" />
+                <DamageDealtFraction index="Basic" value="0" />
+                <DamageDealtFraction index="Ability" value="0" />
+                <VitalMaxArray index="Life" value="0" />
+                <VitalMaxArray index="Shields" value="0" />
+                <VitalMaxArray index="Energy" value="0" />
+                <VitalRegenArray index="Life" value="0" />
+                <VitalRegenArray index="Shields" value="0" />
+                <VitalRegenArray index="Energy" value="0" />
+              </Modification>
+            </CBehaviorBuff>
+            """,
+            """
+            <CEffectDamage>
+              <Amount value="0" /> 
+            </CEffectDamage>
+            """,
+            """
+            <CEffectCreateHealer>
+              <RechargeVitalRate value="0" />
+            </CEffectCreateHealer>
+            """,
+            """
+            <CUnit>
+                <ShieldRegenRate value="0" />
+            </CUnit>
+            """,
         ];
 }

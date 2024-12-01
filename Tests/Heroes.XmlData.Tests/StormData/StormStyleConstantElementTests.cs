@@ -1,4 +1,5 @@
 ﻿using Heroes.XmlData.Tests;
+using U8Xml;
 
 namespace Heroes.XmlData.StormData.Tests;
 
@@ -9,10 +10,12 @@ public class StormStyleConstantElementTests
     public void Name_HasNameAttribute_ReturnsName()
     {
         // arrange
-        XElement element = XElement.Parse(@"
-<Constant name=""PingAlly"" val=""3184ff"" />
-");
-        StormStyleConstantElement stormStyleConstantElement = new(new StormXElementValuePath(element, TestHelpers.GetStormPath("some\\path")));
+        using XmlObject xmlObject = XmlParser.Parse(
+            """
+            <Constant name="PingAlly" val="3184ff" />
+            """);
+
+        StormStyleConstantElement stormStyleConstantElement = new(new StormXmlValuePath(xmlObject, TestHelpers.GetStormPath("some\\path")));
 
         // act
         string? resultValue = stormStyleConstantElement.Name;
@@ -27,10 +30,12 @@ public class StormStyleConstantElementTests
     public void Name_HasNoNameAttribute_ReturnsNull()
     {
         // arrange
-        XElement element = XElement.Parse(@"
-<Constant val=""3184ff"" />
-");
-        StormStyleConstantElement stormStyleConstantElement = new(new StormXElementValuePath(element, TestHelpers.GetStormPath("some\\path")));
+        using XmlObject xmlObject = XmlParser.Parse(
+            """
+            <Constant val="3184ff" />
+            """);
+
+        StormStyleConstantElement stormStyleConstantElement = new(new StormXmlValuePath(xmlObject, TestHelpers.GetStormPath("some\\path")));
 
         // act
         string? resultValue = stormStyleConstantElement.Name;
@@ -45,10 +50,12 @@ public class StormStyleConstantElementTests
     public void Val_HasValAttribute_ReturnsValue()
     {
         // arrange
-        XElement element = XElement.Parse(@"
-<Constant name=""PingAlly"" val=""3184ff"" />
-");
-        StormStyleConstantElement stormStyleConstantElement = new(new StormXElementValuePath(element, TestHelpers.GetStormPath("some\\path")));
+        using XmlObject xmlObject = XmlParser.Parse(
+            """
+            <Constant name="PingAlly" val="3184ff" />
+            """);
+
+        StormStyleConstantElement stormStyleConstantElement = new(new StormXmlValuePath(xmlObject, TestHelpers.GetStormPath("some\\path")));
 
         // act
         string? resultValue = stormStyleConstantElement.Val;
@@ -63,10 +70,12 @@ public class StormStyleConstantElementTests
     public void Val_HasNoValAttribute_ReturnsNull()
     {
         // arrange
-        XElement element = XElement.Parse(@"
-<Constant name=""PingAlly"" />
-");
-        StormStyleConstantElement stormStyleConstantElement = new(new StormXElementValuePath(element, TestHelpers.GetStormPath("some\\path")));
+        using XmlObject xmlObject = XmlParser.Parse(
+            """
+            <Constant name="PingAlly" />
+            """);
+
+        StormStyleConstantElement stormStyleConstantElement = new(new StormXmlValuePath(xmlObject, TestHelpers.GetStormPath("some\\path")));
 
         // act
         string? resultValue = stormStyleConstantElement.Val;

@@ -1,5 +1,5 @@
 ﻿using Heroes.XmlData.GameStrings;
-using System;
+using System.Text;
 
 namespace Heroes.XmlData.StormData;
 
@@ -18,7 +18,7 @@ internal static class ScaleValueParser
             XElement newScalingElement = CreateXElement(levelScalingEntry, stormStringValue, validatedField);
 
             // creates a storm element from the internal field
-            StormElement stormScalingElement = new(new StormXElementValuePath(newScalingElement, stormStringValue.StormPath));
+            StormElement stormScalingElement = new(new StormXmlValuePath(Encoding.UTF8.GetBytes(newScalingElement.ToString()), stormStringValue.StormPath));
 
             return stormScalingElement;
         }

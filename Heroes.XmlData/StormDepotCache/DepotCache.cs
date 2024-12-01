@@ -1,5 +1,6 @@
 ﻿using System.IO.Abstractions;
 using System.Text.Json;
+using U8Xml;
 
 namespace Heroes.XmlData.StormDepotCache;
 
@@ -133,19 +134,24 @@ internal abstract class DepotCache<T> : IDepotCache
 
         string? mapId = GetMapId(mpqHeroesArchive, mapScriptEntry.Value);
 
-        XDocument document = XDocument.Load(mpqHeroesArchive.DecompressEntry(documentInfoEntry.Value));
-        XElement rootElement = document.Root!;
-
-        IEnumerable<XElement> dependencies = rootElement.Element("Dependencies")!.Elements();
-        IEnumerable<XElement> modifiableDependencies = rootElement.Element("ModifiableDependencies")!.Elements();
-
         S2MAProperties s2maProperties = new()
         {
-            DocInfoIconFile = PathHelper.NormalizePath(rootElement.Element("Icon")?.Value),
             MapId = mapId,
-            MapDependencies = MapDependency.GetMapDependencies(dependencies, HeroesSource.DefaultModsDirectory).ToList(),
-            ModifiableDependencies = GetMapModifiableDependencies(modifiableDependencies, HeroesSource.DefaultModsDirectory).ToList(),
         };
+
+        using XmlObject xmlObject = XmlParser.Parse(mpqHeroesArchive.DecompressEntry(documentInfoEntry.Value));
+
+        XmlNode rootNode = xmlObject.Root;
+        XmlNodeList rootChildren = rootNode.Children;
+
+        if (rootChildren.TryFind("Icon", out XmlNode iconNode) && iconNode.Children.TryFind("Value", out XmlNode valueNode))
+            s2maProperties.DocInfoIconFile = PathHelper.NormalizePath(valueNode.InnerText.AsSpan());
+
+        if (rootChildren.TryFind("Dependencies", out XmlNode dependenciesNode))
+            s2maProperties.MapDependencies = MapDependency.GetMapDependencies(dependenciesNode.Children, HeroesSource.DefaultModsDirectory).ToList();
+
+        if (rootChildren.TryFind("ModifiableDependencies", out XmlNode modifiableDependenciesNode))
+            s2maProperties.ModifiableDependencies = GetMapModifiableDependencies(modifiableDependenciesNode.Children, HeroesSource.DefaultModsDirectory).ToList();
 
         // find the s2mv file equivalent
         if (HeroesSource.S2MVPropertiesByHashCode.TryGetValue(s2maProperties.GetHashCode(), out S2MVProperties? s2mvProperties))
@@ -180,11 +186,11 @@ internal abstract class DepotCache<T> : IDepotCache
         return null;
     }
 
-    private static IEnumerable<string> GetMapModifiableDependencies(IEnumerable<XElement> modifiableDependencies, string modsDirectory)
+    private static IEnumerable<string> GetMapModifiableDependencies(XmlNodeList modifiableDependencies, string modsDirectory)
     {
-        foreach (XElement valueElement in modifiableDependencies)
+        foreach (XmlNode valueNode in modifiableDependencies)
         {
-            yield return PathHelper.NormalizePath(valueElement.Value, modsDirectory);
+            yield return PathHelper.NormalizePath(valueNode.InnerText.AsSpan(), modsDirectory);
         }
     }
 }

@@ -1,4 +1,6 @@
 ﻿using Heroes.XmlData.StormMath;
+using System.Text;
+using U8Xml;
 
 namespace Heroes.XmlData.StormData;
 
@@ -121,56 +123,56 @@ internal partial class StormStorage : IStormStorage
         currentStormCache.AssetFilesByRelativeAssetsPath[relativePath] = stormPath;
     }
 
-    public bool AddConstantXElement(StormModType stormModType, XElement element, StormPath stormPath)
+    public bool AddConstantElement(StormModType stormModType, XmlNode xmlNode, StormPath stormPath)
     {
-        if (!element.Name.LocalName.Equals("const", StringComparison.OrdinalIgnoreCase))
+        if (xmlNode.Name != "const")
             return false;
 
         StormCache currentStormCache = GetCurrentStormCache(stormModType);
 
-        string? id = element.Attribute("id")?.Value;
-
-        if (string.IsNullOrEmpty(id))
+        if (!xmlNode.TryFindAttribute("id", out XmlAttribute xmlAttribute) || xmlAttribute.Value.IsEmpty)
             return false;
 
-        currentStormCache.ConstantXElementById.TryAdd(id, new StormXElementValuePath(element, stormPath));
+        currentStormCache.ConstantElementById.TryAdd(xmlAttribute.Value.ToString(), new StormXmlValuePath(xmlNode, stormPath));
 
         return true;
     }
 
-    public string GetValueFromConstElement(XElement constElement)
+    public string GetValueFromConstElement(XmlNode constNode)
     {
-        string? valueAttribute = constElement.Attribute("value")?.Value;
-        string? isExpressionAttribute = constElement.Attribute("evaluateAsExpression")?.Value;
+        if (!constNode.TryFindAttribute("value", out XmlAttribute valueAttribute) || valueAttribute.Value.IsEmpty)
+            return string.Empty;
 
-        if (string.IsNullOrWhiteSpace(valueAttribute))
-            return valueAttribute ?? string.Empty;
-
-        if (!string.IsNullOrWhiteSpace(isExpressionAttribute) && isExpressionAttribute == "1")
+        if (constNode.TryFindAttribute("evaluateAsExpression", out XmlAttribute evaluateAsExpressionAttribute) &&
+            evaluateAsExpressionAttribute.Value.TryToInt32(out int expressionValue) && expressionValue == 1)
         {
-            return HeroesPrefixNotation.Compute(this, valueAttribute).ToString();
+            Span<char> valueCharBuffer = stackalloc char[valueAttribute.Value.GetCharCount()];
+            Encoding.UTF8.GetChars(valueAttribute.Value.AsSpan(), valueCharBuffer);
+
+            return HeroesPrefixNotation.Compute(this, valueCharBuffer).ToString();
         }
-        else if (double.TryParse(valueAttribute, out double value))
+        else if (valueAttribute.Value.TryToFloat64(out double value))
         {
             return value.ToString();
         }
 
-        return valueAttribute;
+        return valueAttribute.Value.ToString();
     }
 
-    public double GetValueFromConstElementAsNumber(XElement constElement)
+    public double GetValueFromConstElementAsNumber(XmlNode constNode)
     {
-        string? valueAttribute = constElement.Attribute("value")?.Value;
-        string? isExpressionAttribute = constElement.Attribute("evaluateAsExpression")?.Value;
-
-        if (string.IsNullOrWhiteSpace(valueAttribute))
+        if (!constNode.TryFindAttribute("value", out XmlAttribute valueAttribute) || valueAttribute.Value.IsEmpty)
             return 0;
 
-        if (!string.IsNullOrWhiteSpace(isExpressionAttribute) && isExpressionAttribute == "1")
+        if (constNode.TryFindAttribute("evaluateAsExpression", out XmlAttribute evaluateAsExpressionAttribute) &&
+            evaluateAsExpressionAttribute.Value.TryToInt32(out int expressionValue) && expressionValue == 1)
         {
-            return HeroesPrefixNotation.Compute(this, valueAttribute);
+            Span<char> valueCharBuffer = stackalloc char[valueAttribute.Value.GetCharCount()];
+            Encoding.UTF8.GetChars(valueAttribute.Value.AsSpan(), valueCharBuffer);
+
+            return HeroesPrefixNotation.Compute(this, valueCharBuffer);
         }
-        else if (double.TryParse(valueAttribute, out double value))
+        else if (valueAttribute.Value.TryToFloat64(out double value))
         {
             return value;
         }
@@ -185,9 +187,10 @@ internal partial class StormStorage : IStormStorage
 
         if (text[0] == '$')
         {
-            if (TryGetFirstConstantXElementById(text, out StormXElementValuePath? stormXElementValuePath))
+            if (TryGetFirstConstantElementById(text, out StormXmlValuePath? stormXmlValuePath))
             {
-                return GetValueFromConstElement(stormXElementValuePath.Value);
+                using XmlObject xmlObject = XmlParser.Parse(stormXmlValuePath.Value);
+                return GetValueFromConstElement(xmlObject.Root);
             }
         }
         else if (double.TryParse(text, out double result))
@@ -205,9 +208,10 @@ internal partial class StormStorage : IStormStorage
 
         if (text[0] == '$')
         {
-            if (TryGetFirstConstantXElementById(text, out StormXElementValuePath? stormXElementValuePath))
+            if (TryGetFirstConstantElementById(text, out StormXmlValuePath? stormXmlValuePath))
             {
-                return GetValueFromConstElementAsNumber(stormXElementValuePath.Value);
+                using XmlObject xmlObject = XmlParser.Parse(stormXmlValuePath.Value);
+                return GetValueFromConstElementAsNumber(xmlObject.Root);
             }
         }
         else if (double.TryParse(text, out double result))
@@ -218,27 +222,26 @@ internal partial class StormStorage : IStormStorage
         return 0;
     }
 
-    public void AddElement(StormModType stormModType, XElement element, StormPath stormPath)
+    public void AddElement(StormModType stormModType, XmlNode xmlNode, StormPath stormPath)
     {
-        string elementName = element.Name.LocalName;
+        string elementName = xmlNode.Name.ToString();
 
         if (!elementName.StartsWith('C'))
             return;
 
-        string? idAtt = element.Attribute("id")?.Value;
         string? dataObjectType = GetDataObjectTypeFromFileName(stormPath.Path);
 
         StormCache currentStormCache = GetCurrentStormCache(stormModType);
-        StormXElementValuePath stormXElementValuePath = new(element, stormPath);
+        StormXmlValuePath stormXmlValuePath = new(xmlNode, stormPath);
 
         if (!string.IsNullOrWhiteSpace(dataObjectType) && elementName.AsSpan(1).StartsWith(dataObjectType, StringComparison.OrdinalIgnoreCase))
         {
             AddBaseElementType(elementName, dataObjectType, currentStormCache);
         }
 
-        if (string.IsNullOrEmpty(idAtt))
+        if (!xmlNode.TryFindAttribute("id", out XmlAttribute idAttribute) || idAttribute.Value.IsEmpty)
         {
-            AddElementWithNoId(elementName, currentStormCache, stormXElementValuePath);
+            AddElementWithNoId(elementName, currentStormCache, stormXmlValuePath);
         }
         else
         {
@@ -252,18 +255,19 @@ internal partial class StormStorage : IStormStorage
                 existingDataObjectType = foundExistingDataObjectType;
             }
 
+            string idAtt = idAttribute.Value.ToString();
             if (currentStormCache.StormElementsByDataObjectType.TryGetValue(existingDataObjectType, out var stormElementById))
             {
                 if (stormElementById.TryGetValue(idAtt, out StormElement? stormElement))
-                    stormElement.AddValue(stormXElementValuePath);
+                    stormElement.AddValue(stormXmlValuePath);
                 else
-                    stormElementById[idAtt] = new StormElement(stormXElementValuePath);
+                    stormElementById[idAtt] = new StormElement(stormXmlValuePath);
             }
             else
             {
                 currentStormCache.StormElementsByDataObjectType[existingDataObjectType] = new()
                 {
-                    { idAtt, new StormElement(stormXElementValuePath) },
+                    { idAtt, new StormElement(stormXmlValuePath) },
                 };
             }
         }
@@ -284,59 +288,64 @@ internal partial class StormStorage : IStormStorage
         currentStormCache.DataObjectTypeByElementType.TryAdd(elementName, dataObjectType);
     }
 
-    public void SetStormStyleCache(StormModType stormModType, XDocument document, StormPath stormPath)
+    public void SetStormStyleCache(StormModType stormModType, XmlObject xmlObject, StormPath stormPath)
     {
-        foreach (XElement element in document.Root!.Elements())
+        foreach (XmlNode xmlNode in xmlObject.Root.Children)
         {
-            AddStormStyleElement(stormModType, element, stormPath);
+            AddStormStyleElement(stormModType, xmlNode, stormPath);
         }
     }
 
-    public void AddStormStyleElement(StormModType stormModType, XElement element, StormPath stormPath)
+    public void AddStormStyleElement(StormModType stormModType, XmlNode xmlNode, StormPath stormPath)
     {
         StormCache currentStormCache = GetCurrentStormCache(stormModType);
 
-        string elementName = element.Name.LocalName;
-        if (elementName.Equals("Constant", StringComparison.OrdinalIgnoreCase))
+        RawString nodeName = xmlNode.Name;
+        if (nodeName == "Constant")
         {
-            string? name = element.Attribute("name")?.Value;
-
-            if (string.IsNullOrEmpty(name))
+            if (!xmlNode.TryFindAttribute("name", out XmlAttribute attribute))
                 return;
 
-            currentStormCache.StormStyleConstantElementsByName[name] = new StormStyleConstantElement(new StormXElementValuePath(element, stormPath));
+            RawString nameValue = attribute.Value;
+            if (nameValue.IsEmpty)
+                return;
+
+            currentStormCache.StormStyleConstantElementsByName[nameValue.ToString()] = new StormStyleConstantElement(new StormXmlValuePath(xmlNode, stormPath));
         }
-        else if (elementName.Equals("Style", StringComparison.OrdinalIgnoreCase))
+        else if (nodeName == "Style")
         {
-            string? name = element.Attribute("name")?.Value;
-
-            if (string.IsNullOrEmpty(name))
+            if (!xmlNode.TryFindAttribute("name", out XmlAttribute attribute))
                 return;
 
-            currentStormCache.StormStyleStyleElementsByName[name] = new StormStyleStyleElement(new StormXElementValuePath(element, stormPath));
+            RawString nameValue = attribute.Value;
+            if (nameValue.IsEmpty)
+                return;
+
+            currentStormCache.StormStyleStyleElementsByName[nameValue.ToString()] = new StormStyleStyleElement(new StormXmlValuePath(xmlNode, stormPath));
         }
     }
 
-    public void AddLevelScalingArrayElement(StormModType stormModType, XElement element, StormPath stormPath)
+    public void AddLevelScalingArrayElement(StormModType stormModType, XmlNode xmlNode, StormPath stormPath)
     {
+        if (xmlNode.Name != "LevelScalingArray")
+            return;
+
         StormCache currentStormCache = GetCurrentStormCache(stormModType);
 
-        foreach (XElement levelScalingArrayElement in element.DescendantsAndSelf("LevelScalingArray"))
+        foreach (XmlNode levelScalingArrayNode in xmlNode.Children)
         {
-            foreach (XElement modificationElement in levelScalingArrayElement.Elements("Modifications"))
-            {
-                string? catalog = modificationElement.Element("Catalog")?.Attribute("value")?.Value;
-                string? entry = modificationElement.Element("Entry")?.Attribute("value")?.Value;
-                string? field = modificationElement.Element("Field")?.Attribute("value")?.Value;
-                string? value = modificationElement.Element("Value")?.Attribute("value")?.Value;
+            if (levelScalingArrayNode.Name != "Modifications")
+                continue;
 
-                if (string.IsNullOrEmpty(value) || catalog is null || entry is null || field is null)
-                    continue;
+            if ((!levelScalingArrayNode.TryFindChild("Catalog", out XmlNode catalogNode) || !catalogNode.TryFindAttribute("value", out XmlAttribute catalogValueAttribute) || catalogValueAttribute.Value.IsEmpty) ||
+                (!levelScalingArrayNode.TryFindChild("Entry", out XmlNode entryNode) || !entryNode.TryFindAttribute("value", out XmlAttribute entryValueAttribute) || entryValueAttribute.Value.IsEmpty) ||
+                (!levelScalingArrayNode.TryFindChild("Field", out XmlNode fieldNode) || !fieldNode.TryFindAttribute("value", out XmlAttribute fieldValueAttribute) || fieldValueAttribute.Value.IsEmpty) ||
+                (!levelScalingArrayNode.TryFindChild("Value", out XmlNode valueNode) || !valueNode.TryFindAttribute("value", out XmlAttribute valueValueAttribute) || valueValueAttribute.Value.IsEmpty))
+                continue;
 
-                StormStringValue stormStringValue = new(value, stormPath);
+            StormStringValue stormStringValue = new(valueValueAttribute.Value.ToString(), stormPath);
 
-                currentStormCache.ScaleValueByEntry[new(catalog, entry, field)] = stormStringValue;
-            }
+            currentStormCache.ScaleValueByEntry[new LevelScalingEntry(catalogValueAttribute.Value.ToString(), entryValueAttribute.Value.ToString(), fieldValueAttribute.Value.ToString())] = stormStringValue;
         }
     }
 
@@ -414,27 +423,28 @@ internal partial class StormStorage : IStormStorage
         currentStormCache.DataObjectTypeByElementType.TryAdd(elementName, dataObjectType);
     }
 
-    private static void AddElementWithNoId(string elementName, StormCache currentStormCache, StormXElementValuePath stormXElementValuePath)
+    private static void AddElementWithNoId(string elementName, StormCache currentStormCache, StormXmlValuePath stormXmlValuePath)
     {
         if (currentStormCache.StormElementByElementType.TryGetValue(elementName, out StormElement? stormElement))
-            stormElement.AddValue(stormXElementValuePath);
+            stormElement.AddValue(stormXmlValuePath);
         else
-            currentStormCache.StormElementByElementType.Add(elementName, new StormElement(stormXElementValuePath));
+            currentStormCache.StormElementByElementType.Add(elementName, new StormElement(stormXmlValuePath));
     }
 
     private void AddRootDefaults()
     {
         List<(string DataObjectType, string ElementName)> defaultBaseElementTypes = StormDefaultData.DefaultBaseElementsTypes;
-        List<XElement> defaultXElements = StormDefaultData.DefaultXElements;
+        List<string> defaultElements = StormDefaultData.DefaultXmlElements;
 
         foreach ((string dataObjectType, string elementName) in defaultBaseElementTypes)
         {
             AddBaseElementTypes(StormModType.Normal, dataObjectType, elementName);
         }
 
-        foreach (XElement element in defaultXElements)
+        foreach (string element in defaultElements)
         {
-            AddElement(StormModType.Normal, element, _rootFilePath);
+            using XmlObject xmlObject = XmlParser.Parse(element);
+            AddElement(StormModType.Normal, xmlObject.Root, _rootFilePath);
         }
     }
 

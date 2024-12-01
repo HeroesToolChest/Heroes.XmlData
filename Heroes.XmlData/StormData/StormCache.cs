@@ -8,7 +8,7 @@ internal class StormCache
     public StormCache()
     {
 #if NET9_0_OR_GREATER
-        ConstantXElementByIdAltLookup = ConstantXElementById.GetAlternateLookup<ReadOnlySpan<char>>();
+        ConstantXElementByIdAltLookup = ConstantElementById.GetAlternateLookup<ReadOnlySpan<char>>();
         AssetTextsByIdAltLookup = AssetTextsById.GetAlternateLookup<ReadOnlySpan<char>>();
 #endif
     }
@@ -51,7 +51,7 @@ internal class StormCache
     /// <summary>
     /// Gets a dictionary of const elements by id.
     /// </summary>
-    public Dictionary<string, StormXElementValuePath> ConstantXElementById { get; } = [];
+    public Dictionary<string, StormXmlValuePath> ConstantElementById { get; } = [];
 
     /// <summary>
     /// Gets a dictionary of <see cref="StormElement"/>s that have no id attribute by their element type (e.g. CEffectDamage).
@@ -95,7 +95,7 @@ internal class StormCache
     public Dictionary<string, StormPath> AssetFilesByRelativeAssetsPath { get; } = new(StringComparer.OrdinalIgnoreCase);
 
 #if NET9_0_OR_GREATER
-    public Dictionary<string, StormXElementValuePath>.AlternateLookup<ReadOnlySpan<char>> ConstantXElementByIdAltLookup { get; }
+    public Dictionary<string, StormXmlValuePath>.AlternateLookup<ReadOnlySpan<char>> ConstantXElementByIdAltLookup { get; }
 
     public Dictionary<string, AssetText>.AlternateLookup<ReadOnlySpan<char>> AssetTextsByIdAltLookup { get; }
 
@@ -109,7 +109,7 @@ internal class StormCache
         AssetTextsById.Clear();
         ElementTypesByDataObjectType.Clear();
         DataObjectTypeByElementType.Clear();
-        ConstantXElementById.Clear();
+        ConstantElementById.Clear();
         StormElementByElementType.Clear();
         StormElementsByDataObjectType.Clear();
         ScaleValueStormElementsByDataObjectType.Clear();

@@ -3,7 +3,6 @@
 /// <summary>
 /// Represents a storm element's value.
 /// </summary>
-[DebuggerDisplay("{DebuggerDisplay,nq}")]
 public readonly ref struct StormElementValue
 {
     private readonly StormElementData _stormElementData;

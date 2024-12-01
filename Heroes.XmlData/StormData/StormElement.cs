@@ -1,25 +1,29 @@
-﻿namespace Heroes.XmlData.StormData;
+﻿using U8Xml;
+
+namespace Heroes.XmlData.StormData;
 
 /// <summary>
-/// Represents an top level <see cref="XElement"/>.
+/// Represents an xml element.
 /// </summary>
 [DebuggerDisplay("{DebuggerDisplay,nq}")]
 public class StormElement
 {
     private const string IdAttribute = "id";
     private const string ParentAttribute = "parent";
-    private readonly List<StormXElementValuePath> _originalXElements = [];
+    private readonly List<StormXmlValuePath> _originalXmlElements = [];
 
     /// <summary>
     /// Initializes a new instance of the <see cref="StormElement"/> class.
     /// </summary>
-    /// <param name="baseValue">A <see cref="StormXElementValuePath"/>.</param>
-    internal StormElement(StormXElementValuePath baseValue)
+    /// <param name="baseValue">A <see cref="StormXmlValuePath"/>.</param>
+    internal StormElement(StormXmlValuePath baseValue)
     {
-        _originalXElements.Add(baseValue);
-        ElementType = baseValue.Value.Name.LocalName;
+        _originalXmlElements.Add(baseValue);
 
-        DataValues = new StormElementData(baseValue.Value);
+        using XmlObject xmlObject = XmlParser.Parse(baseValue.Value);
+        ElementType = xmlObject.Root.Name.ToString();
+
+        DataValues = new StormElementData(xmlObject.Root);
     }
 
     /// <summary>
@@ -28,21 +32,26 @@ public class StormElement
     /// <param name="baseValue">Another <see cref="StormElement"/> instance.</param>
     internal StormElement(StormElement baseValue)
     {
-        _originalXElements = [.. baseValue.OriginalXElements];
-        DataValues = new StormElementData(OriginalXElements[0].Value);
+        _originalXmlElements = [.. baseValue._originalXmlElements];
 
-        for (int i = 1; i < OriginalXElements.Count; i++)
+        using (XmlObject xmlObject = XmlParser.Parse(OriginalXmlElements[0].Value))
         {
-            AddToDataValues(OriginalXElements[i].Value);
+            DataValues = new StormElementData(xmlObject.Root);
+        }
+
+        for (int i = 1; i < OriginalXmlElements.Count; i++)
+        {
+            using XmlObject xmlObject = XmlParser.Parse(OriginalXmlElements[i].Value);
+            AddToDataValues(xmlObject.Root);
         }
 
         ElementType = baseValue.ElementType;
     }
 
     /// <summary>
-    /// Gets a collection of all the original <see cref="XElement"/>s.
+    /// Gets a collection of all the original xml elements.
     /// </summary>
-    public IReadOnlyList<StormXElementValuePath> OriginalXElements => _originalXElements.AsReadOnly();
+    public IReadOnlyList<StormXmlValuePath> OriginalXmlElements => _originalXmlElements.AsReadOnly();
 
     /// <summary>
     /// Gets the data values.
@@ -124,14 +133,15 @@ public class StormElement
     }
 
     /// <summary>
-    /// Merges a <see cref="XElement"/> into this current <see cref="StormElement"/>.
+    /// Merges a xml element into this current <see cref="StormElement"/>.
     /// </summary>
-    /// <param name="stormXElementValue">An <see cref="XElement"/> along with its file path.</param>
-    public void AddValue(StormXElementValuePath stormXElementValue)
+    /// <param name="stormXmlValuePath">An xml element along with it's file path.</param>
+    public void AddValue(StormXmlValuePath stormXmlValuePath)
     {
-        _originalXElements.Add(stormXElementValue);
+        _originalXmlElements.Add(stormXmlValuePath);
 
-        AddToDataValues(stormXElementValue.Value);
+        using XmlObject xmlObject = XmlParser.Parse(stormXmlValuePath.Value);
+        AddToDataValues(xmlObject.Root);
     }
 
     /// <summary>
@@ -140,16 +150,17 @@ public class StormElement
     /// <param name="stormElement">Another <see cref="StormElement"/>.</param>
     public void AddValue(StormElement stormElement)
     {
-        _originalXElements.AddRange(stormElement.OriginalXElements);
+        _originalXmlElements.AddRange(stormElement.OriginalXmlElements);
 
-        foreach (StormXElementValuePath item in stormElement.OriginalXElements)
+        foreach (StormXmlValuePath item in stormElement.OriginalXmlElements)
         {
-            AddToDataValues(item.Value);
+            using XmlObject xmlObject = XmlParser.Parse(item.Value);
+            AddToDataValues(xmlObject.Root);
         }
     }
 
-    private void AddToDataValues(XElement xElement)
+    private void AddToDataValues(XmlNode xmlNode)
     {
-        DataValues.AddXElement(xElement);
+        DataValues.AddElement(xmlNode);
     }
 }

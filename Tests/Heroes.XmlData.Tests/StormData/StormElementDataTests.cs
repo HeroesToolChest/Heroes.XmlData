@@ -1,4 +1,6 @@
-﻿namespace Heroes.XmlData.StormData.Tests;
+﻿using U8Xml;
+
+namespace Heroes.XmlData.StormData.Tests;
 
 [TestClass]
 public class StormElementDataTests
@@ -7,15 +9,15 @@ public class StormElementDataTests
     public void StormElementData_AttributesAndElements_ShouldBeSavedAsSameLevelXmlData()
     {
         // arrange
-        XElement xElement = new(
-            "CAbil",
-            new XAttribute("default", "1"),
-            new XElement(
-                "Name",
-                new XAttribute("value", "Abil/Name/abil1")));
+        using XmlObject xmlObject = XmlParser.Parse(
+            """
+            <Cbil default="1">
+                <Name value="Abil/Name/abil1" />
+            </Cbil>
+            """);
 
         // act
-        StormElementData stormElementData = new(xElement);
+        StormElementData stormElementData = new(xmlObject.Root);
 
         // assert
         stormElementData.GetElementDataAt("default").HasValue.Should().BeTrue();
@@ -28,19 +30,21 @@ public class StormElementDataTests
     public void StormElementData_EquivalentAttributAndElement_SameXmlData()
     {
         // arrange
-        XElement withAttributes = new(
-            "CAbil",
-            new XAttribute("default", "1"));
+        using XmlObject withAttributes = XmlParser.Parse(
+            """
+            <Cbil default="1" />
+            """);
 
-        XElement withElement = new(
-            "CAbil",
-            new XElement(
-                "default",
-                new XAttribute("value", "1")));
+        using XmlObject withElement = XmlParser.Parse(
+            """
+            <Cbil>
+                <default value="1" />
+            </Cbil>
+            """);
 
         // act
-        StormElementData asAttributes = new(withAttributes);
-        StormElementData asElement = new(withElement);
+        StormElementData asAttributes = new(withAttributes.Root);
+        StormElementData asElement = new(withElement.Root);
 
         // assert
         asAttributes.GetElementDataAt("default").RawValue.Should().Be("1");
@@ -51,24 +55,25 @@ public class StormElementDataTests
     public void StormElementData_EquivalentArrayAttributAndElement_SameXmlData()
     {
         // arrange
-        XElement withAttributes = new(
-            "CAbil",
-            new XElement(
-                "OrderArray",
-                new XAttribute("index", "0"),
-                new XAttribute("LineTexture", "Assets\\Textures\\Storm_WayPointLine.dds")));
+        using XmlObject withAttributes = XmlParser.Parse(
+        """
+        <Cbil>
+            <OrderArray index="0" LineTexture="Assets\Textures\Storm_WayPointLine.dds" />
+        </Cbil>
+        """);
 
-        XElement withElements = new(
-            "CAbil",
-            new XElement(
-                "OrderArray",
-                new XElement(
-                    "LineTexture",
-                    new XAttribute("value", "Assets\\Textures\\Storm_WayPointLine.dds"))));
+        using XmlObject withElements = XmlParser.Parse(
+        """
+        <Cbil>
+            <OrderArray>
+                <LineTexture value="Assets\Textures\Storm_WayPointLine.dds" />
+            </OrderArray>
+        </Cbil>
+        """);
 
         // act
-        StormElementData stormElementDataAsAttributes = new(withAttributes);
-        StormElementData stormElementDataAsElements = new(withElements);
+        StormElementData stormElementDataAsAttributes = new(withAttributes.Root);
+        StormElementData stormElementDataAsElements = new(withElements.Root);
 
         // assert
         stormElementDataAsAttributes.GetElementDataAt("OrderArray").GetElementDataAt("0").GetElementDataAt("LineTexture").GetElementDataAt("0").RawValue.Should().Be("Assets\\Textures\\Storm_WayPointLine.dds");
@@ -82,20 +87,16 @@ public class StormElementDataTests
     public void StormElementData_ArrayWithTextIndex_InnerDataHasSharedIndex()
     {
         // arrange
-        XElement element = new(
-            "CAbil",
-            new XAttribute("default", "1"),
-            new XElement(
-                "SharedFlags",
-                new XAttribute("index", "DisableWhileDead"),
-                new XAttribute("value", "1")),
-            new XElement(
-                "SharedFlags",
-                new XAttribute("index", "AllowQuickCastCustomization"),
-                new XAttribute("value", "1")));
+        using XmlObject xmlObject = XmlParser.Parse(
+            """
+            <Cbil default="1">
+                <SharedFlags index="DisableWhileDead" value="1" />
+                <SharedFlags index="AllowQuickCastCustomization" value="1" />
+            </Cbil>
+            """);
 
         // act
-        StormElementData data = new(element);
+        StormElementData data = new(xmlObject.Root);
 
         // assert
         data.GetElementDataAt("SharedFlags").GetElementDataAt("DisableWhileDead").RawValue.Should().Be("1");
@@ -106,22 +107,18 @@ public class StormElementDataTests
     public void StormElementData_ElementWithNoIndexHasAttributesAndElement_AttributeAndElementOnSameLevelIndex()
     {
         // arrange
-        XElement element = new(
-            "CBehaviorTokenCounter",
-            new XAttribute("id", "KelThuzadMasterOfTheColdDarkToken"),
-            new XElement(
-                "Max",
-                new XAttribute("value", "30")),
-            new XElement(
-                "ConditionalEvents",
-                new XAttribute("Compare", "GE"),
-                new XAttribute("CompareValue", "15"),
-                new XElement(
-                    "Event",
-                    new XAttribute("Effect", "KelThuzadMasterOfTheColdDarkTier1ModifyPlayer"))));
+        using XmlObject xmlObject = XmlParser.Parse(
+            """
+            <CBehaviorTokenCounter id="KelThuzadMasterOfTheColdDarkToken">
+                <Max value="30" />
+                <ConditionalEvents Compare="GE" CompareValue="15">
+                    <Event Effect="KelThuzadMasterOfTheColdDarkTier1ModifyPlayer" />
+                </ConditionalEvents>
+            </CBehaviorTokenCounter>
+            """);
 
         // act
-        StormElementData data = new(element);
+        StormElementData data = new(xmlObject.Root);
 
         // assert
         data.GetElementDataAt("ConditionalEvents").GetElementDataAt("0").GetElementDataAt("Compare").RawValue.Should().Be("GE");
@@ -133,38 +130,28 @@ public class StormElementDataTests
     public void StormElementData_ModficationsIsArray_AttributeAndElementOnSameLevelKey()
     {
         // arrange
-        XElement element = new(
-            "CTalent",
-            new XAttribute("id", "AnubarakMasteryEpicenterBurrowCharge"),
-            new XElement(
-                "AbilityModificationArray",
-                new XElement(
-                    "Modifications",
-                    new XElement(
-                        "Field",
-                        new XAttribute("value", "AreaArray[0].Radius")),
-                    new XElement(
-                        "Value",
-                        new XAttribute("value", "1.600000"))),
-                new XElement(
-                    "Modifications",
-                    new XElement(
-                        "Field",
-                        new XAttribute("value", "Chance")),
-                    new XElement(
-                        "Value",
-                        new XAttribute("value", "1.000000"))),
-                new XElement(
-                    "Modifications",
-                    new XElement(
-                        "Field",
-                        new XAttribute("value", "AnubarakBurrowChargeCursorSplat")),
-                    new XElement(
-                        "Value",
-                        new XAttribute("value", "0.600000")))));
+        using XmlObject xmlObject = XmlParser.Parse(
+            """
+            <CTalent id="AnubarakMasteryEpicenterBurrowCharge">
+                <AbilityModificationArray>
+                    <Modifications>
+                        <Field value="AreaArray[0].Radius" />
+                        <Value value="1.600000" />
+                    </Modifications>
+                    <Modifications>
+                        <Field value="Chance" />
+                        <Value value="1.000000" />
+                    </Modifications>
+                    <Modifications>
+                        <Field value="AnubarakBurrowChargeCursorSplat" />
+                        <Value value="0.600000" />
+                    </Modifications>
+                </AbilityModificationArray>
+            </CTalent>
+            """);
 
         // act
-        StormElementData data = new(element);
+        StormElementData data = new(xmlObject.Root);
 
         // assert
         data.GetElementDataAt("AbilityModificationArray").GetElementDataAt("0").GetElementDataAt("Modifications").GetElementDataAt("0").GetElementDataAt("Field").RawValue.Should().Be("AreaArray[0].Radius");
@@ -180,22 +167,17 @@ public class StormElementDataTests
     public void StormElementData_NumericalIndexes_ShouldReturnTrue()
     {
         // arrange
-        XElement element = new(
-            "CAbil",
-            new XElement(
-                "OrderArray",
-                new XAttribute("index", "0"),
-                new XAttribute("LineTexture", "Assets\\Textures\\Storm_WayPointLine0.dds")),
-            new XElement(
-                "OrderArray",
-                new XAttribute("LineTexture", "Assets\\Textures\\Storm_WayPointLine1.dds")),
-            new XElement(
-                "OrderArray",
-                new XAttribute("index", "2"),
-                new XAttribute("LineTexture", "Assets\\Textures\\Storm_WayPointLine2.dds")));
+        using XmlObject xmlObject = XmlParser.Parse(
+            """
+            <CAbil>
+                <OrderArray index="0" LineTexture="Assets\Textures\Storm_WayPointLine0.dds" />
+                <OrderArray LineTexture="Assets\Textures\Storm_WayPointLine1.dds" />
+                <OrderArray index="2" LineTexture="Assets\Textures\Storm_WayPointLine2.dds" />
+            </CAbil>
+            """);
 
         // act
-        StormElementData data = new(element);
+        StormElementData data = new(xmlObject.Root);
 
         // assert
         data.GetElementDataAt("OrderArray").HasNumericalIndex.Should().BeTrue();
@@ -217,29 +199,29 @@ public class StormElementDataTests
     public void StormElementData_HasTextInnerArray_IndexedArrayShouldHaveTextIndex()
     {
         // arrange
-        XElement element = XElement.Parse(@"
-<CHero id=""KelThuzad"">
-  <HeroAbilArray Abil=""KelThuzadDeathAndDecay"" Button=""KelThuzadDeathAndDecay"">
-    <Flags index=""ShowInHeroSelect"" value=""1"" />
-    <Flags index=""AffectedByCooldownReduction"" value=""1"" />
-    <Flags index=""AffectedByOverdrive"" value=""1"" />
-  </HeroAbilArray>
-  <HeroAbilArray Abil=""KelThuzadFrostNova"" Button=""KelThuzadFrostNova"">
-    <Flags index=""ShowInHeroSelect"" value=""1"" />
-    <Flags index=""AffectedByCooldownReduction"" value=""1"" />
-    <Flags index=""AffectedByOverdrive"" value=""1"" />
-  </HeroAbilArray>
-  <HeroAbilArray Abil=""KelThuzadChains"" Button=""KelThuzadChains"">
-    <Flags index=""ShowInHeroSelect"" value=""1"" />
-    <Flags index=""AffectedByCooldownReduction"" value=""1"" />
-    <Flags index=""AffectedByOverdrive"" value=""1"" />
-  </HeroAbilArray>
-</CHero>
-
-");
+        using XmlObject xmlObject = XmlParser.Parse(
+            """
+            <CHero id="KelThuzad">
+              <HeroAbilArray Abil="KelThuzadDeathAndDecay" Button="KelThuzadDeathAndDecay">
+                <Flags index="ShowInHeroSelect" value="1" />
+                <Flags index="AffectedByCooldownReduction" value="1" />
+                <Flags index="AffectedByOverdrive" value="1" />
+              </HeroAbilArray>
+              <HeroAbilArray Abil="KelThuzadFrostNova" Button="KelThuzadFrostNova">
+                <Flags index="ShowInHeroSelect" value="1" />
+                <Flags index="AffectedByCooldownReduction" value="1" />
+                <Flags index="AffectedByOverdrive" value="1" />
+              </HeroAbilArray>
+              <HeroAbilArray Abil="KelThuzadChains" Button="KelThuzadChains">
+                <Flags index="ShowInHeroSelect" value="1" />
+                <Flags index="AffectedByCooldownReduction" value="1" />
+                <Flags index="AffectedByOverdrive" value="1" />
+              </HeroAbilArray>
+            </CHero>
+            """);
 
         // act
-        StormElementData data = new(element);
+        StormElementData data = new(xmlObject.Root);
 
         // assert
         data.GetElementDataAt("HeroAbilArray").HasNumericalIndex.Should().BeTrue();
@@ -261,29 +243,29 @@ public class StormElementDataTests
     public void StormElementData_HasNumericalIndexInnerArray_IndexedArrayShouldHaveNumericalIndex()
     {
         // arrange
-        XElement element = XElement.Parse(@"
-<CHero id=""KelThuzad"">
-  <HeroAbilArray Abil=""KelThuzadDeathAndDecay"" Button=""KelThuzadDeathAndDecay"">
-    <Flags index=""0"" value=""1"" />
-    <Flags value=""2"" />
-    <Flags value=""3"" />
-  </HeroAbilArray>
-  <HeroAbilArray Abil=""KelThuzadFrostNova"" Button=""KelThuzadFrostNova"">
-    <Flags index=""0"" value=""1"" />
-    <Flags value=""2"" />
-    <Flags value=""3"" />
-  </HeroAbilArray>
-  <HeroAbilArray Abil=""KelThuzadChains"" Button=""KelThuzadChains"">
-    <Flags index=""0"" value=""1"" />
-    <Flags value=""2"" />
-    <Flags value=""3"" />
-  </HeroAbilArray>
-</CHero>
-
-");
+        using XmlObject xmlObject = XmlParser.Parse(
+            """
+            <CHero id="KelThuzad">
+              <HeroAbilArray Abil="KelThuzadDeathAndDecay" Button="KelThuzadDeathAndDecay">
+                <Flags index="0" value="1" />
+                <Flags value="2" />
+                <Flags value="3" />
+              </HeroAbilArray>
+              <HeroAbilArray Abil="KelThuzadFrostNova" Button="KelThuzadFrostNova">
+                <Flags index="0" value="1" />
+                <Flags value="2" />
+                <Flags value="3" />
+              </HeroAbilArray>
+              <HeroAbilArray Abil="KelThuzadChains" Button="KelThuzadChains">
+                <Flags index="0" value="1" />
+                <Flags value="2" />
+                <Flags value="3" />
+              </HeroAbilArray>
+            </CHero>
+            """);
 
         // act
-        StormElementData data = new(element);
+        StormElementData data = new(xmlObject.Root);
 
         // assert
         data.GetElementDataAt("HeroAbilArray").HasNumericalIndex.Should().BeTrue();
@@ -307,16 +289,15 @@ public class StormElementDataTests
     public void StormElementData_ElementHasConstAttribute_ReturnsConstValue()
     {
         // arrange
-        XElement xElement = new(
-            "CAbil",
-            new XAttribute("default", "1"),
-            new XElement(
-                "Name",
-                new XAttribute("value", "$Name"),
-                new XAttribute($"{StormModStorage.SelfNameConst}value", "SomeValue")));
+        using XmlObject xmlObject = XmlParser.Parse(
+            $"""
+            <CAbil default="1">
+                <Name value="$Name" {StormModStorage.SelfNameConst}value="SomeValue" />
+            </CAbil>
+            """);
 
         // act
-        StormElementData stormElementData = new(xElement);
+        StormElementData stormElementData = new(xmlObject.Root);
 
         // assert
         stormElementData.GetElementDataAt("Name").IsConstValue.Should().BeTrue();
@@ -327,16 +308,15 @@ public class StormElementDataTests
     public void StormElementData_ElementHasIntConstAttribute_ReturnsInt()
     {
         // arrange
-        XElement xElement = new(
-            "CAbil",
-            new XAttribute("default", "1"),
-            new XElement(
-                "Name",
-                new XAttribute("value", "$Name"),
-                new XAttribute($"{StormModStorage.SelfNameConst}value", "5")));
+        using XmlObject xmlObject = XmlParser.Parse(
+            $"""
+            <CAbil default="1">
+                <Name value="$Name" {StormModStorage.SelfNameConst}value="5" />
+            </CAbil>
+            """);
 
         // act
-        StormElementData stormElementData = new(xElement);
+        StormElementData stormElementData = new(xmlObject.Root);
 
         // assert
         stormElementData.GetElementDataAt("Name").IsConstValue.Should().BeTrue();
@@ -347,16 +327,15 @@ public class StormElementDataTests
     public void StormElementData_ElementHasConstAttributeThatIsEmtpy_ReturnsHasConstValue()
     {
         // arrange
-        XElement xElement = new(
-            "CAbil",
-            new XAttribute("default", "1"),
-            new XElement(
-                "Name",
-                new XAttribute("value", "$Name"),
-                new XAttribute($"{StormModStorage.SelfNameConst}value", string.Empty)));
+        using XmlObject xmlObject = XmlParser.Parse(
+            $"""
+            <CAbil default="1">
+                <Name value="$Name" {StormModStorage.SelfNameConst}value="" />
+            </CAbil>
+            """);
 
         // act
-        StormElementData stormElementData = new(xElement);
+        StormElementData stormElementData = new(xmlObject.Root);
 
         // assert
         stormElementData.GetElementDataAt("Name").IsConstValue.Should().BeTrue();
@@ -366,16 +345,15 @@ public class StormElementDataTests
     public void StormElementData_ElementHasAssetAttribute_ReturnsAssetValue()
     {
         // arrange
-        XElement xElement = new(
-            "CAbil",
-            new XAttribute("default", "1"),
-            new XElement(
-                "Name",
-                new XAttribute("value", "@Name"),
-                new XAttribute($"{StormModStorage.SelfNameAsset}value", "SomeValue")));
+        using XmlObject xmlObject = XmlParser.Parse(
+            $"""
+            <CAbil default="1">
+                <Name value="@Name" {StormModStorage.SelfNameAsset}value="SomeValue" />
+            </CAbil>
+            """);
 
         // act
-        StormElementData stormElementData = new(xElement);
+        StormElementData stormElementData = new(xmlObject.Root);
 
         // assert
         stormElementData.GetElementDataAt("Name").IsAssetValue.Should().BeTrue();
@@ -386,16 +364,15 @@ public class StormElementDataTests
     public void StormElementData_ElementHasIntAssetAttribute_ReturnsInt()
     {
         // arrange
-        XElement xElement = new(
-            "CAbil",
-            new XAttribute("default", "1"),
-            new XElement(
-                "Name",
-                new XAttribute("value", "@Name"),
-                new XAttribute($"{StormModStorage.SelfNameAsset}value", "5")));
+        using XmlObject xmlObject = XmlParser.Parse(
+            $"""
+            <CAbil default="1">
+                <Name value="@Name" {StormModStorage.SelfNameAsset}value="5" />
+            </CAbil>
+            """);
 
         // act
-        StormElementData stormElementData = new(xElement);
+        StormElementData stormElementData = new(xmlObject.Root);
 
         // assert
         stormElementData.GetElementDataAt("Name").IsAssetValue.Should().BeTrue();
@@ -406,16 +383,15 @@ public class StormElementDataTests
     public void StormElementData_ElementHasAssetAttributeThatIsEmtpy_ReturnsHasAssetValue()
     {
         // arrange
-        XElement xElement = new(
-            "CAbil",
-            new XAttribute("default", "1"),
-            new XElement(
-                "Name",
-                new XAttribute("value", "@Name"),
-                new XAttribute($"{StormModStorage.SelfNameAsset}value", string.Empty)));
+        using XmlObject xmlObject = XmlParser.Parse(
+            $"""
+            <CAbil default="1">
+                <Name value="@Name" {StormModStorage.SelfNameAsset}value="" />
+            </CAbil>
+            """);
 
         // act
-        StormElementData stormElementData = new(xElement);
+        StormElementData stormElementData = new(xmlObject.Root);
 
         // assert
         stormElementData.GetElementDataAt("Name").IsAssetValue.Should().BeTrue();
@@ -425,17 +401,17 @@ public class StormElementDataTests
     public void HasHxdScale_HasScalingElement_ReturnsTrueForHasScale()
     {
         // arrange
-        XElement xElement = new(
-            "CAbil",
-            new XAttribute("default", "1"),
-            new XElement(
-                "Damage",
-                new XElement(
-                    ScaleValueParser.ScaleAttributeName,
-                    new XAttribute("Value", "0.1"))));
+        using XmlObject xmlObject = XmlParser.Parse(
+            $"""
+            <CAbil default="1">
+                <Damage>
+                    <{ScaleValueParser.ScaleAttributeName} Value="0.1" />
+                </Damage>
+            </CAbil>
+            """);
 
         // act
-        StormElementData stormElementData = new(xElement);
+        StormElementData stormElementData = new(xmlObject.Root);
 
         // assert
         stormElementData.GetElementDataAt("Damage").HasHxdScale.Should().BeTrue();
@@ -447,17 +423,17 @@ public class StormElementDataTests
     public void StormElementData_HasNoScalingElement_ReturnsTrueForHasScale()
     {
         // arrange
-        XElement xElement = new(
-            "CAbil",
-            new XAttribute("default", "1"),
-            new XElement(
-                "Damage",
-                new XElement(
-                    "other",
-                    new XAttribute("Value", "0.1"))));
+        using XmlObject xmlObject = XmlParser.Parse(
+            """
+            <CAbil default="1">
+                <Damage>
+                    <other Value="0.1" />
+                </Damage>
+            </CAbil>
+            """);
 
         // act
-        StormElementData stormElementData = new(xElement);
+        StormElementData stormElementData = new(xmlObject.Root);
 
         // assert
         stormElementData.GetElementDataAt("Damage").HasHxdScale.Should().BeFalse();
@@ -468,22 +444,17 @@ public class StormElementDataTests
     public void Field_NumericalIndexes_ReturnsCorrectFields()
     {
         // arrange
-        XElement element = new(
-            "CAbil",
-            new XElement(
-                "OrderArray",
-                new XAttribute("index", "0"),
-                new XAttribute("LineTexture", "Assets\\Textures\\Storm_WayPointLine0.dds")),
-            new XElement(
-                "OrderArray",
-                new XAttribute("LineTexture", "Assets\\Textures\\Storm_WayPointLine1.dds")),
-            new XElement(
-                "OrderArray",
-                new XAttribute("index", "2"),
-                new XAttribute("LineTexture", "Assets\\Textures\\Storm_WayPointLine2.dds")));
+        using XmlObject xmlObject = XmlParser.Parse(
+            """
+            <CAbil>
+                <OrderArray index="0" LineTexture="Assets\Textures\Storm_WayPointLine0.dds" />
+                <OrderArray LineTexture="Assets\Textures\Storm_WayPointLine1.dds" />
+                <OrderArray index="2" LineTexture="Assets\Textures\Storm_WayPointLine2.dds" />
+            </CAbil>
+            """);
 
         // act
-        StormElementData data = new(element);
+        StormElementData data = new(xmlObject.Root);
 
         // assert
         data.GetElementDataAt("OrderArray").Field.Should().Be("OrderArray");
@@ -499,29 +470,29 @@ public class StormElementDataTests
     public void Field_HasTextInnerArray_ReturnsCorrectFields()
     {
         // arrange
-        XElement element = XElement.Parse(@"
-<CHero id=""KelThuzad"">
-  <HeroAbilArray Abil=""KelThuzadDeathAndDecay"" Button=""KelThuzadDeathAndDecay"">
-    <Flags index=""ShowInHeroSelect"" value=""1"" />
-    <Flags index=""AffectedByCooldownReduction"" value=""1"" />
-    <Flags index=""AffectedByOverdrive"" value=""1"" />
-  </HeroAbilArray>
-  <HeroAbilArray Abil=""KelThuzadFrostNova"" Button=""KelThuzadFrostNova"">
-    <Flags index=""ShowInHeroSelect"" value=""1"" />
-    <Flags index=""AffectedByCooldownReduction"" value=""1"" />
-    <Flags index=""AffectedByOverdrive"" value=""1"" />
-  </HeroAbilArray>
-  <HeroAbilArray Abil=""KelThuzadChains"" Button=""KelThuzadChains"">
-    <Flags index=""ShowInHeroSelect"" value=""1"" />
-    <Flags index=""AffectedByCooldownReduction"" value=""1"" />
-    <Flags index=""AffectedByOverdrive"" value=""1"" />
-  </HeroAbilArray>
-</CHero>
-
-");
+        using XmlObject xmlObject = XmlParser.Parse(
+            """
+            <CHero id="KelThuzad">
+              <HeroAbilArray Abil="KelThuzadDeathAndDecay" Button="KelThuzadDeathAndDecay">
+                <Flags index="ShowInHeroSelect" value="1" />
+                <Flags index="AffectedByCooldownReduction" value="1" />
+                <Flags index="AffectedByOverdrive" value="1" />
+              </HeroAbilArray>
+              <HeroAbilArray Abil="KelThuzadFrostNova" Button="KelThuzadFrostNova">
+                <Flags index="ShowInHeroSelect" value="1" />
+                <Flags index="AffectedByCooldownReduction" value="1" />
+                <Flags index="AffectedByOverdrive" value="1" />
+              </HeroAbilArray>
+              <HeroAbilArray Abil="KelThuzadChains" Button="KelThuzadChains">
+                <Flags index="ShowInHeroSelect" value="1" />
+                <Flags index="AffectedByCooldownReduction" value="1" />
+                <Flags index="AffectedByOverdrive" value="1" />
+              </HeroAbilArray>
+            </CHero>
+            """);
 
         // act
-        StormElementData data = new(element);
+        StormElementData data = new(xmlObject.Root);
 
         // assert
         data.GetElementDataAt("HeroAbilArray").Field.Should().Be("HeroAbilArray");
@@ -545,29 +516,29 @@ public class StormElementDataTests
     public void Field_HasNumericalIndexInnerArray_ReturnsCorrectFields()
     {
         // arrange
-        XElement element = XElement.Parse(@"
-<CHero id=""KelThuzad"">
-  <HeroAbilArray Abil=""KelThuzadDeathAndDecay"" Button=""KelThuzadDeathAndDecay"">
-    <Flags index=""0"" value=""1"" />
-    <Flags value=""2"" />
-    <Flags value=""3"" />
-  </HeroAbilArray>
-  <HeroAbilArray Abil=""KelThuzadFrostNova"" Button=""KelThuzadFrostNova"">
-    <Flags index=""0"" value=""1"" />
-    <Flags value=""2"" />
-    <Flags value=""3"" />
-  </HeroAbilArray>
-  <HeroAbilArray Abil=""KelThuzadChains"" Button=""KelThuzadChains"">
-    <Flags index=""0"" value=""1"" />
-    <Flags value=""2"" />
-    <Flags value=""3"" />
-  </HeroAbilArray>
-</CHero>
-
-");
+        using XmlObject xmlObject = XmlParser.Parse(
+            """
+            <CHero id="KelThuzad">
+              <HeroAbilArray Abil="KelThuzadDeathAndDecay" Button="KelThuzadDeathAndDecay">
+                <Flags index="0" value="1" />
+                <Flags value="2" />
+                <Flags value="3" />
+              </HeroAbilArray>
+              <HeroAbilArray Abil="KelThuzadFrostNova" Button="KelThuzadFrostNova">
+                <Flags index="0" value="1" />
+                <Flags value="2" />
+                <Flags value="3" />
+              </HeroAbilArray>
+              <HeroAbilArray Abil="KelThuzadChains" Button="KelThuzadChains">
+                <Flags index="0" value="1" />
+                <Flags value="2" />
+                <Flags value="3" />
+              </HeroAbilArray>
+            </CHero>
+            """);
 
         // act
-        StormElementData data = new(element);
+        StormElementData data = new(xmlObject.Root);
 
         // assert
         data.GetElementDataAt("HeroAbilArray").Field.Should().Be("HeroAbilArray");
@@ -591,16 +562,15 @@ public class StormElementDataTests
     public void Field_ElementHasConstAttribute_ReturnsCorrectField()
     {
         // arrange
-        XElement xElement = new(
-            "CAbil",
-            new XAttribute("default", "1"),
-            new XElement(
-                "Name",
-                new XAttribute("value", "$Name"),
-                new XAttribute($"{StormModStorage.SelfNameConst}value", "SomeValue")));
+        using XmlObject xmlObject = XmlParser.Parse(
+            $"""
+            <CAbil default="1">
+                <Name value="$Name" {StormModStorage.SelfNameConst}value="SomeValue" />
+            </CAbil>
+            """);
 
         // act
-        StormElementData stormElementData = new(xElement);
+        StormElementData stormElementData = new(xmlObject.Root);
 
         // assert
         stormElementData.GetElementDataAt("Name").Field.Should().Be("Name");
@@ -610,27 +580,28 @@ public class StormElementDataTests
     public void TryGetElementDataAt_HasData_ReturnsStormElementData()
     {
         // arrange
-        XElement element = XElement.Parse(@"
-<CHero id=""KelThuzad"">
-  <HeroAbilArray Abil=""KelThuzadDeathAndDecay"" Button=""KelThuzadDeathAndDecay"">
-    <Flags index=""ShowInHeroSelect"" value=""1"" />
-    <Flags index=""AffectedByCooldownReduction"" value=""1"" />
-    <Flags index=""AffectedByOverdrive"" value=""1"" />
-  </HeroAbilArray>
-  <HeroAbilArray Abil=""KelThuzadFrostNova"" Button=""KelThuzadFrostNova"">
-    <Flags index=""ShowInHeroSelect"" value=""1"" />
-    <Flags index=""AffectedByCooldownReduction"" value=""1"" />
-    <Flags index=""AffectedByOverdrive"" value=""1"" />
-  </HeroAbilArray>
-  <HeroAbilArray Abil=""KelThuzadChains"" Button=""KelThuzadChains"">
-    <Flags index=""ShowInHeroSelect"" value=""1"" />
-    <Flags index=""AffectedByCooldownReduction"" value=""1"" />
-    <Flags index=""AffectedByOverdrive"" value=""1"" />
-  </HeroAbilArray>
-</CHero>
+        using XmlObject xmlObject = XmlParser.Parse(
+            """
+            <CHero id="KelThuzad">
+              <HeroAbilArray Abil="KelThuzadDeathAndDecay" Button="KelThuzadDeathAndDecay">
+                <Flags index="ShowInHeroSelect" value="1" />
+                <Flags index="AffectedByCooldownReduction" value="1" />
+                <Flags index="AffectedByOverdrive" value="1" />
+              </HeroAbilArray>
+              <HeroAbilArray Abil="KelThuzadFrostNova" Button="KelThuzadFrostNova">
+                <Flags index="ShowInHeroSelect" value="1" />
+                <Flags index="AffectedByCooldownReduction" value="1" />
+                <Flags index="AffectedByOverdrive" value="1" />
+              </HeroAbilArray>
+              <HeroAbilArray Abil="KelThuzadChains" Button="KelThuzadChains">
+                <Flags index="ShowInHeroSelect" value="1" />
+                <Flags index="AffectedByCooldownReduction" value="1" />
+                <Flags index="AffectedByOverdrive" value="1" />
+              </HeroAbilArray>
+            </CHero>
+            """);
 
-");
-        StormElementData data = new(element);
+        StormElementData data = new(xmlObject.Root);
 
         // act
         bool result = data.TryGetElementDataAt("HeroAbilArray", out StormElementData? _);
@@ -645,26 +616,28 @@ public class StormElementDataTests
     public void TryGetElementDataAt_HasNoData_ReturnsNull()
     {
         // arrange
-        XElement element = XElement.Parse(@"
-<CHero id=""KelThuzad"">
-  <HeroAbilArray Abil=""KelThuzadDeathAndDecay"" Button=""KelThuzadDeathAndDecay"">
-    <Flags index=""ShowInHeroSelect"" value=""1"" />
-    <Flags index=""AffectedByCooldownReduction"" value=""1"" />
-    <Flags index=""AffectedByOverdrive"" value=""1"" />
-  </HeroAbilArray>
-  <HeroAbilArray Abil=""KelThuzadFrostNova"" Button=""KelThuzadFrostNova"">
-    <Flags index=""ShowInHeroSelect"" value=""1"" />
-    <Flags index=""AffectedByCooldownReduction"" value=""1"" />
-    <Flags index=""AffectedByOverdrive"" value=""1"" />
-  </HeroAbilArray>
-  <HeroAbilArray Abil=""KelThuzadChains"" Button=""KelThuzadChains"">
-    <Flags index=""ShowInHeroSelect"" value=""1"" />
-    <Flags index=""AffectedByCooldownReduction"" value=""1"" />
-    <Flags index=""AffectedByOverdrive"" value=""1"" />
-  </HeroAbilArray>
-</CHero>
-");
-        StormElementData data = new(element);
+        using XmlObject xmlObject = XmlParser.Parse(
+            """
+            <CHero id="KelThuzad">
+              <HeroAbilArray Abil="KelThuzadDeathAndDecay" Button="KelThuzadDeathAndDecay">
+                <Flags index="ShowInHeroSelect" value="1" />
+                <Flags index="AffectedByCooldownReduction" value="1" />
+                <Flags index="AffectedByOverdrive" value="1" />
+              </HeroAbilArray>
+              <HeroAbilArray Abil="KelThuzadFrostNova" Button="KelThuzadFrostNova">
+                <Flags index="ShowInHeroSelect" value="1" />
+                <Flags index="AffectedByCooldownReduction" value="1" />
+                <Flags index="AffectedByOverdrive" value="1" />
+              </HeroAbilArray>
+              <HeroAbilArray Abil="KelThuzadChains" Button="KelThuzadChains">
+                <Flags index="ShowInHeroSelect" value="1" />
+                <Flags index="AffectedByCooldownReduction" value="1" />
+                <Flags index="AffectedByOverdrive" value="1" />
+              </HeroAbilArray>
+            </CHero>
+            """);
+
+        StormElementData data = new(xmlObject.Root);
 
         // act
         bool result = data.TryGetElementDataAt("Damage", out StormElementData? stormElementData);
@@ -681,26 +654,28 @@ public class StormElementDataTests
     public void GetElementDataAt_HasNoData_ThrowsException()
     {
         // arrange
-        XElement element = XElement.Parse(@"
-<CHero id=""KelThuzad"">
-  <HeroAbilArray Abil=""KelThuzadDeathAndDecay"" Button=""KelThuzadDeathAndDecay"">
-    <Flags index=""ShowInHeroSelect"" value=""1"" />
-    <Flags index=""AffectedByCooldownReduction"" value=""1"" />
-    <Flags index=""AffectedByOverdrive"" value=""1"" />
-  </HeroAbilArray>
-  <HeroAbilArray Abil=""KelThuzadFrostNova"" Button=""KelThuzadFrostNova"">
-    <Flags index=""ShowInHeroSelect"" value=""1"" />
-    <Flags index=""AffectedByCooldownReduction"" value=""1"" />
-    <Flags index=""AffectedByOverdrive"" value=""1"" />
-  </HeroAbilArray>
-  <HeroAbilArray Abil=""KelThuzadChains"" Button=""KelThuzadChains"">
-    <Flags index=""ShowInHeroSelect"" value=""1"" />
-    <Flags index=""AffectedByCooldownReduction"" value=""1"" />
-    <Flags index=""AffectedByOverdrive"" value=""1"" />
-  </HeroAbilArray>
-</CHero>
-");
-        StormElementData data = new(element);
+        using XmlObject xmlObject = XmlParser.Parse(
+            """
+            <CHero id="KelThuzad">
+              <HeroAbilArray Abil="KelThuzadDeathAndDecay" Button="KelThuzadDeathAndDecay">
+                <Flags index="ShowInHeroSelect" value="1" />
+                <Flags index="AffectedByCooldownReduction" value="1" />
+                <Flags index="AffectedByOverdrive" value="1" />
+              </HeroAbilArray>
+              <HeroAbilArray Abil="KelThuzadFrostNova" Button="KelThuzadFrostNova">
+                <Flags index="ShowInHeroSelect" value="1" />
+                <Flags index="AffectedByCooldownReduction" value="1" />
+                <Flags index="AffectedByOverdrive" value="1" />
+              </HeroAbilArray>
+              <HeroAbilArray Abil="KelThuzadChains" Button="KelThuzadChains">
+                <Flags index="ShowInHeroSelect" value="1" />
+                <Flags index="AffectedByCooldownReduction" value="1" />
+                <Flags index="AffectedByOverdrive" value="1" />
+              </HeroAbilArray>
+            </CHero>
+            """);
+
+        StormElementData data = new(xmlObject.Root);
 
         // act
         Action action = () => data.GetElementDataAt("Does Not Exists");
@@ -715,18 +690,19 @@ public class StormElementDataTests
     public void ElementDataIndexes_OnRootElement_ReturnsAllIndexes()
     {
         // arrange
-        XElement element = XElement.Parse(
-"""
-<CBundle id="AllStarsBundle">
-    <ProductId value="22143"/>
-    <Universe value="Heroes"/>
-    <HeroArray value="Raynor"/>
-    <HeroArray value="Azmodan"/>
-    <SkinArray Hero="Raynor" Skin="RaynorPatriot"/>
-    <SkinArray Hero="Azmodan" Skin="AzmodunkBundleProduct"/>
-</CBundle>
-""");
-        StormElementData data = new(element);
+        using XmlObject xmlObject = XmlParser.Parse(
+            """
+            <CBundle id="AllStarsBundle">
+                <ProductId value="22143"/>
+                <Universe value="Heroes"/>
+                <HeroArray value="Raynor"/>
+                <HeroArray value="Azmodan"/>
+                <SkinArray Hero="Raynor" Skin="RaynorPatriot"/>
+                <SkinArray Hero="Azmodan" Skin="AzmodunkBundleProduct"/>
+            </CBundle>
+            """);
+
+        StormElementData data = new(xmlObject.Root);
 
         // act
         List<string> results = data.GetElementDataIndexes().ToList();
@@ -759,18 +735,19 @@ public class StormElementDataTests
     public void ElementDataIndexes_OnArrayElement_ReturnsIndexes()
     {
         // arrange
-        XElement element = XElement.Parse(
-"""
-<CBundle id="AllStarsBundle">
-    <ProductId value="22143"/>
-    <Universe value="Heroes"/>
-    <HeroArray value="Raynor"/>
-    <HeroArray value="Azmodan"/>
-    <SkinArray Hero="Raynor" Skin="RaynorPatriot"/>
-    <SkinArray Hero="Azmodan" Skin="AzmodunkBundleProduct"/>
-</CBundle>
-""");
-        StormElementData data = new(element);
+        using XmlObject xmlObject = XmlParser.Parse(
+            """
+            <CBundle id="AllStarsBundle">
+                <ProductId value="22143"/>
+                <Universe value="Heroes"/>
+                <HeroArray value="Raynor"/>
+                <HeroArray value="Azmodan"/>
+                <SkinArray Hero="Raynor" Skin="RaynorPatriot"/>
+                <SkinArray Hero="Azmodan" Skin="AzmodunkBundleProduct"/>
+            </CBundle>
+            """);
+
+        StormElementData data = new(xmlObject.Root);
 
         // act
         List<string> results = data.GetElementDataAt("heroarray").GetElementDataIndexes().ToList();
@@ -791,18 +768,19 @@ public class StormElementDataTests
     public void ElementData_OnRootArray_ReturnsKeyValueCollection()
     {
         // arrange
-        XElement element = XElement.Parse(
-"""
-<CBundle id="AllStarsBundle">
-    <ProductId value="22143"/>
-    <Universe value="Heroes"/>
-    <HeroArray value="Raynor"/>
-    <HeroArray value="Azmodan"/>
-    <SkinArray Hero="Raynor" Skin="RaynorPatriot"/>
-    <SkinArray Hero="Azmodan" Skin="AzmodunkBundleProduct"/>
-</CBundle>
-""");
-        StormElementData data = new(element);
+        using XmlObject xmlObject = XmlParser.Parse(
+            """
+            <CBundle id="AllStarsBundle">
+                <ProductId value="22143"/>
+                <Universe value="Heroes"/>
+                <HeroArray value="Raynor"/>
+                <HeroArray value="Azmodan"/>
+                <SkinArray Hero="Raynor" Skin="RaynorPatriot"/>
+                <SkinArray Hero="Azmodan" Skin="AzmodunkBundleProduct"/>
+            </CBundle>
+            """);
+
+        StormElementData data = new(xmlObject.Root);
 
         // act
         List<KeyValuePair<string, StormElementData>> result = data.GetElementData().ToList();

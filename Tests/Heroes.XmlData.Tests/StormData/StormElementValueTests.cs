@@ -1,4 +1,6 @@
-﻿namespace Heroes.XmlData.StormData.Tests;
+﻿using U8Xml;
+
+namespace Heroes.XmlData.StormData.Tests;
 
 [TestClass]
 public class StormElementValueTests
@@ -7,13 +9,14 @@ public class StormElementValueTests
     public void GetString_GetValueWithReplacements_ReturnsValue()
     {
         // arrange
-        XElement element = XElement.Parse(
-"""
-<CHero id="KelThuzad" unitName="KT">
-  <Name value="Abil/Name/##id##/other##unitName##yes"/>
-</CHero>
-""");
-        StormElementData stormElementData = new(element);
+        using XmlObject xmlObject = XmlParser.Parse(
+            """
+            <CHero id="KelThuzad" unitName="KT">
+              <Name value="Abil/Name/##id##/other##unitName##yes"/>
+            </CHero>
+            """);
+
+        StormElementData stormElementData = new(xmlObject.Root);
 
         // act
         string value = stormElementData.GetElementDataAt("Name").Value.GetString();
@@ -26,13 +29,14 @@ public class StormElementValueTests
     public void GetString_GetValueWithReplacementThatDoesNotExists_ReturnsValue()
     {
         // arrange
-        XElement element = XElement.Parse(
-"""
-<CHero id="KelThuzad">
-  <Name value="Abil/Name/##id##/other##unitName##yes"/>
-</CHero>
-""");
-        StormElementData stormElementData = new(element);
+        using XmlObject xmlObject = XmlParser.Parse(
+            """
+            <CHero id="KelThuzad">
+              <Name value="Abil/Name/##id##/other##unitName##yes"/>
+            </CHero>
+            """);
+
+        StormElementData stormElementData = new(xmlObject.Root);
 
         // act
         string value = stormElementData.GetElementDataAt("Name").Value.GetString();
@@ -45,13 +49,14 @@ public class StormElementValueTests
     public void GetString_GetValueWithNoReplacements_ReturnsValue()
     {
         // arrange
-        XElement element = XElement.Parse(
-"""
-<CHero id="KelThuzad">
-  <Name value="Abil/Name"/>
-</CHero>
-""");
-        StormElementData stormElementData = new(element);
+        using XmlObject xmlObject = XmlParser.Parse(
+            """
+            <CHero id="KelThuzad">
+              <Name value="Abil/Name"/>
+            </CHero>
+            """);
+
+        StormElementData stormElementData = new(xmlObject.Root);
 
         // act
         string value = stormElementData.GetElementDataAt("Name").Value.GetString();
@@ -64,13 +69,14 @@ public class StormElementValueTests
     public void GetAsInt_ValueIsAnInt_ReturnsInt()
     {
         // arrange
-        XElement element = XElement.Parse(
-"""
-<CHero id="KelThuzad">
-  <Value value="5" />
-</CHero>
-""");
-        StormElementData stormElementData = new(element);
+        using XmlObject xmlObject = XmlParser.Parse(
+            """"
+            <CHero id="KelThuzad">
+              <Value value="5" />
+            </CHero>
+            """");
+
+        StormElementData stormElementData = new(xmlObject.Root);
 
         // act
         int value = stormElementData.GetElementDataAt("Value").Value.GetAsInt();
@@ -83,13 +89,14 @@ public class StormElementValueTests
     public void GetAsInt_ValueIsNotAnInt_ThrowsException()
     {
         // arrange
-        XElement element = XElement.Parse(
-"""
-<CHero id="KelThuzad">
-  <Value value="5a" />
-</CHero>
-""");
-        StormElementData stormElementData = new(element);
+        using XmlObject xmlObject = XmlParser.Parse(
+            """
+            <CHero id="KelThuzad">
+              <Value value="5a" />
+            </CHero>
+            """);
+
+        StormElementData stormElementData = new(xmlObject.Root);
 
         // act
         Action act = () => stormElementData.GetElementDataAt("Value").Value.GetAsInt();
@@ -102,13 +109,14 @@ public class StormElementValueTests
     public void TryGetAsInt32_ValueIsAnInt_ReturnsTrue()
     {
         // arrange
-        XElement element = XElement.Parse(
-"""
-<CHero id="KelThuzad">
-  <Value value="5" />
-</CHero>
-""");
-        StormElementData stormElementData = new(element);
+        using XmlObject xmlObject = XmlParser.Parse(
+            """
+            <CHero id="KelThuzad">
+              <Value value="5" />
+            </CHero>
+            """);
+
+        StormElementData stormElementData = new(xmlObject.Root);
 
         // act
         bool result = stormElementData.GetElementDataAt("Value").Value.TryGetAsInt32(out int value);
@@ -122,13 +130,14 @@ public class StormElementValueTests
     public void TryGetAsInt32_ValueIsNotAnInt_ReturnsFalse()
     {
         // arrange
-        XElement element = XElement.Parse(
-"""
-<CHero id="KelThuzad">
-  <Value value="5a" />
-</CHero>
-""");
-        StormElementData stormElementData = new(element);
+        using XmlObject xmlObject = XmlParser.Parse(
+            """
+            <CHero id="KelThuzad">
+              <Value value="5a" />
+            </CHero>
+            """);
+
+        StormElementData stormElementData = new(xmlObject.Root);
 
         // act
         bool result = stormElementData.GetElementDataAt("Value").Value.TryGetAsInt32(out int value);
@@ -142,13 +151,14 @@ public class StormElementValueTests
     public void GetAsDouble_ValueIsADouble_ReturnsDouble()
     {
         // arrange
-        XElement element = XElement.Parse(
-"""
-<CHero id="KelThuzad">
-  <Value value="5.1" />
-</CHero>
-""");
-        StormElementData stormElementData = new(element);
+        using XmlObject xmlObject = XmlParser.Parse(
+            """
+            <CHero id="KelThuzad">
+              <Value value="5.1" />
+            </CHero>
+            """);
+
+        StormElementData stormElementData = new(xmlObject.Root);
 
         // act
         double value = stormElementData.GetElementDataAt("Value").Value.GetAsDouble();
@@ -161,13 +171,14 @@ public class StormElementValueTests
     public void GetAsDouble_ValueIsNotADouble_ThrowsException()
     {
         // arrange
-        XElement element = XElement.Parse(
-"""
-<CHero id="KelThuzad">
-  <Value value="5.1a" />
-</CHero>
-""");
-        StormElementData stormElementData = new(element);
+        using XmlObject xmlObject = XmlParser.Parse(
+            """
+            <CHero id="KelThuzad">
+              <Value value="5.1a" />
+            </CHero>
+            """);
+
+        StormElementData stormElementData = new(xmlObject.Root);
 
         // act
         Action act = () => stormElementData.GetElementDataAt("Value").Value.GetAsDouble();
@@ -180,13 +191,14 @@ public class StormElementValueTests
     public void TryGetAsDouble_ValueIsADouble_ReturnsTrue()
     {
         // arrange
-        XElement element = XElement.Parse(
-"""
-<CHero id="KelThuzad">
-  <Value value="5.1" />
-</CHero>
-""");
-        StormElementData stormElementData = new(element);
+        using XmlObject xmlObject = XmlParser.Parse(
+            """
+            <CHero id="KelThuzad">
+              <Value value="5.1" />
+            </CHero>
+            """);
+
+        StormElementData stormElementData = new(xmlObject.Root);
 
         // act
         bool result = stormElementData.GetElementDataAt("Value").Value.TryGetAsDouble(out double value);
@@ -200,13 +212,14 @@ public class StormElementValueTests
     public void TryGetAsDouble_ValueIsADouble_ReturnsFalse()
     {
         // arrange
-        XElement element = XElement.Parse(
-"""
-<CHero id="KelThuzad">
-  <Value value="5.1a" />
-</CHero>
-""");
-        StormElementData stormElementData = new(element);
+        using XmlObject xmlObject = XmlParser.Parse(
+            """
+            <CHero id="KelThuzad">
+              <Value value="5.1a" />
+            </CHero>
+            """);
+
+        StormElementData stormElementData = new(xmlObject.Root);
 
         // act
         bool result = stormElementData.GetElementDataAt("Value").Value.TryGetAsDouble(out double value);

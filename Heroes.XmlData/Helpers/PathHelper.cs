@@ -1,4 +1,6 @@
-﻿namespace Heroes.XmlData.Helpers;
+﻿using System.Text;
+
+namespace Heroes.XmlData.Helpers;
 
 internal class PathHelper
 {
@@ -43,6 +45,24 @@ internal class PathHelper
     }
 
     /// <summary>
+    /// Returns a modified path to use the current platform's directory separator character and lowercase all characters.
+    /// </summary>
+    /// <param name="filePath">A file path.</param>
+    /// <returns>The modified file path.</returns>
+    public static string NormalizePath(ReadOnlySpan<byte> filePath)
+    {
+        if (filePath.IsEmpty)
+            return string.Empty;
+
+        Span<char> buffer = stackalloc char[filePath.Length];
+        Encoding.UTF8.TryGetChars(filePath, buffer, out int charsWritten);
+
+        NormalizePath(buffer);
+
+        return buffer.ToString();
+    }
+
+    /// <summary>
     /// Returns a modified path to use the current platform's directory separator character and lowercase all characters. Will remove the 'mods' part (start of filepath) as well.
     /// </summary>
     /// <param name="filePath">A file path.</param>
@@ -59,6 +79,36 @@ internal class PathHelper
         NormalizePath(buffer);
 
         int indexOfMods = filePath.IndexOf(modsDirectory, StringComparison.OrdinalIgnoreCase);
+
+        if (indexOfMods < 0)
+            return buffer.ToString();
+
+        // removing the "mods" part of the path
+        return buffer[(indexOfMods + modsDirectory.Length)..].ToString();
+    }
+
+    /// <summary>
+    /// Returns a modified path to use the current platform's directory separator character and lowercase all characters. Will remove the 'mods' part (start of filepath) as well.
+    /// </summary>
+    /// <param name="filePath">A file path.</param>
+    /// <param name="modsDirectory">The name of the mods directory.</param>
+    /// <returns>The modified file path.</returns>
+    public static string NormalizePath(ReadOnlySpan<byte> filePath, string modsDirectory)
+    {
+        if (filePath.IsEmpty)
+            return string.Empty;
+
+        Span<char> buffer = stackalloc char[filePath.Length];
+        Encoding.UTF8.TryGetChars(filePath, buffer, out int charsWritten);
+
+        ReadOnlySpan<char> bufferAsReadOnly = buffer;
+
+        if (bufferAsReadOnly.IsWhiteSpace())
+            return string.Empty;
+
+        NormalizePath(buffer);
+
+        int indexOfMods = bufferAsReadOnly.IndexOf(modsDirectory, StringComparison.OrdinalIgnoreCase);
 
         if (indexOfMods < 0)
             return buffer.ToString();

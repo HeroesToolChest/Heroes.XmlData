@@ -1,4 +1,6 @@
-﻿namespace Heroes.XmlData.StormData;
+﻿using U8Xml;
+
+namespace Heroes.XmlData.StormData;
 
 /// <summary>
 /// Storage for an individual storm mod.
@@ -126,35 +128,26 @@ internal class StormModStorage : IStormModStorage
         }
     }
 
-    public void AddXmlDataFile(XDocument document, StormPath stormPath)
+    public void AddXmlDataFile(XmlObject xmlObject, StormPath stormPath)
     {
-        if (document.Root is null)
-            return;
-
         if (!_addedXmlDataFilePathsList.Add(stormPath))
             return;
 
-        foreach (XElement element in document.Root.Elements())
+        foreach (XmlNode xmlNode in xmlObject.Root.Children)
         {
-            if (_stormStorage.AddConstantXElement(StormModType, element, stormPath))
+            if (_stormStorage.AddConstantElement(StormModType, xmlNode, stormPath))
                 continue;
 
-            UpdateAttributes(element.DescendantsAndSelf());
-
-            _stormStorage.AddLevelScalingArrayElement(StormModType, element, stormPath);
-            _stormStorage.AddElement(StormModType, element, stormPath);
+            ProcessXmlNode(xmlNode, stormPath);
         }
     }
 
-    public void AddXmlFontStyleFile(XDocument document, StormPath stormPath)
+    public void AddXmlFontStyleFile(XmlObject xmlObject, StormPath stormPath)
     {
-        if (document.Root is null)
-            return;
-
         if (!_addedXmlFontStyleFilePathsList.Add(stormPath))
             return;
 
-        _stormStorage.SetStormStyleCache(StormModType, document, stormPath);
+        _stormStorage.SetStormStyleCache(StormModType, xmlObject, stormPath);
     }
 
     public void AddBuildIdFile(Stream stream)
@@ -198,8 +191,8 @@ internal class StormModStorage : IStormModStorage
                 if (attributeSpan.IsEmpty)
                     continue;
 
-                SetConstantAttribute(element, attribute, attributeSpan);
-                SetAssetAttribute(element, attribute, attributeSpan);
+                SetConstantAttribute(element, attribute);
+                SetAssetAttribute(element, attribute);
             }
         }
     }
@@ -209,8 +202,50 @@ internal class StormModStorage : IStormModStorage
         return Name;
     }
 
-    private void SetConstantAttribute(XElement element, XAttribute attribute, ReadOnlySpan<char> attributeSpan)
+    private static bool HasSpecialCharacterInAttribute(XmlAttribute xmlAttribute)
     {
+        RawString attributeValue = xmlAttribute.Value;
+        return attributeValue.Contains('$') || attributeValue.StartsWith("@");
+    }
+
+    private void ProcessXmlNode(XmlNode xmlNode, StormPath stormPath)
+    {
+        foreach (XmlNode xmlNodeDescendant in xmlNode.Descendants)
+        {
+            foreach (XmlAttribute xmlAttribute in xmlNodeDescendant.Attributes)
+            {
+                if (xmlAttribute.Value.IsEmpty)
+                    continue;
+
+                if (HasSpecialCharacterInAttribute(xmlAttribute))
+                {
+                    ProcessSpecialAttributes(xmlNode, stormPath);
+                    return;
+                }
+            }
+        }
+
+        // no special characters so just add the xml node.
+        _stormStorage.AddLevelScalingArrayElement(StormModType, xmlNode, stormPath);
+        _stormStorage.AddElement(StormModType, xmlNode, stormPath);
+    }
+
+    private void ProcessSpecialAttributes(XmlNode xmlNode, StormPath stormPath)
+    {
+        string xmlOfNode = xmlNode.AsRawString().ToString();
+        XElement xElement = XElement.Parse(xmlOfNode);
+
+        UpdateAttributes(xElement.DescendantsAndSelf());
+
+        using XmlObject xmlObject = XmlParser.Parse(xElement.ToString());
+        _stormStorage.AddLevelScalingArrayElement(StormModType, xmlObject.Root, stormPath);
+        _stormStorage.AddElement(StormModType, xmlObject.Root, stormPath);
+    }
+
+    private void SetConstantAttribute(XElement element, XAttribute attribute)
+    {
+        ReadOnlySpan<char> attributeSpan = attribute.Value;
+
         int indexOfConst = attributeSpan.IndexOf('$');
 
         if (indexOfConst < 0)
@@ -227,8 +262,10 @@ internal class StormModStorage : IStormModStorage
         element.SetAttributeValue($"{SelfNameConst}{attribute.Name}", attribute.Value.Replace(attributeSpan[indexOfConst..endIndexOfConst].ToString(), _stormStorage.GetValueFromConstTextAsText(attributeSpan[indexOfConst..endIndexOfConst])));
     }
 
-    private void SetAssetAttribute(XElement element, XAttribute attribute, ReadOnlySpan<char> attributeSpan)
+    private void SetAssetAttribute(XElement element, XAttribute attribute)
     {
+        ReadOnlySpan<char> attributeSpan = attribute.Value;
+
         if (attributeSpan[0] != '@')
             return;
 

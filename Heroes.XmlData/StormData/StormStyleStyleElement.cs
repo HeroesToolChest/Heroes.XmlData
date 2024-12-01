@@ -12,8 +12,8 @@ public class StormStyleStyleElement : StormElement
     /// <summary>
     /// Initializes a new instance of the <see cref="StormStyleStyleElement"/> class.
     /// </summary>
-    /// <param name="baseValue">A <see cref="StormXElementValuePath"/>.</param>
-    public StormStyleStyleElement(StormXElementValuePath baseValue)
+    /// <param name="baseValue">A <see cref="StormXmlValuePath"/>.</param>
+    public StormStyleStyleElement(StormXmlValuePath baseValue)
         : base(baseValue)
     {
     }

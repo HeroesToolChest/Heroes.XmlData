@@ -1,4 +1,5 @@
 ﻿using Heroes.XmlData.Tests;
+using U8Xml;
 
 namespace Heroes.XmlData.StormData.Tests;
 
@@ -9,10 +10,12 @@ public class StormStyleStyleElementTests
     public void Name_HasNameAttribute_ReturnsName()
     {
         // arrange
-        XElement element = XElement.Parse(@"
-  <Style name=""TimerTextBottom"" template=""TimerText"" vjustify=""Bottom"" hjustify=""Center"" />
-");
-        StormStyleStyleElement stormStyleStyleElement = new(new StormXElementValuePath(element, TestHelpers.GetStormPath("some\\path")));
+        using XmlObject xmlObject = XmlParser.Parse(
+            """
+            <Style name="TimerTextBottom" template="TimerText" vjustify="Bottom" hjustify="Center" />
+            """);
+
+        StormStyleStyleElement stormStyleStyleElement = new(new StormXmlValuePath(xmlObject, TestHelpers.GetStormPath("some\\path")));
 
         // act
         string? resultValue = stormStyleStyleElement.Name;
@@ -27,10 +30,12 @@ public class StormStyleStyleElementTests
     public void Name_HasNoNameAttribute_ReturnsNull()
     {
         // arrange
-        XElement element = XElement.Parse(@"
-  <Style template=""TimerText"" vjustify=""Bottom"" hjustify=""Center"" />
-");
-        StormStyleStyleElement stormStyleStyleElement = new(new StormXElementValuePath(element, TestHelpers.GetStormPath("some\\path")));
+        using XmlObject xmlObject = XmlParser.Parse(
+            """
+            <Style template="TimerText" vjustify="Bottom" hjustify="Center" />
+            """);
+
+        StormStyleStyleElement stormStyleStyleElement = new(new StormXmlValuePath(xmlObject, TestHelpers.GetStormPath("some\\path")));
 
         // act
         string? resultValue = stormStyleStyleElement.Name;
@@ -45,10 +50,12 @@ public class StormStyleStyleElementTests
     public void Name_HasTemplateAttribute_ReturnsTemplate()
     {
         // arrange
-        XElement element = XElement.Parse(@"
-  <Style name=""TimerTextBottom"" template=""TimerText"" vjustify=""Bottom"" hjustify=""Center"" />
-");
-        StormStyleStyleElement stormStyleStyleElement = new(new StormXElementValuePath(element, TestHelpers.GetStormPath("some\\path")));
+        using XmlObject xmlObject = XmlParser.Parse(
+            """
+            <Style name="TimerTextBottom" template="TimerText" vjustify="Bottom" hjustify="Center" />
+            """);
+
+        StormStyleStyleElement stormStyleStyleElement = new(new StormXmlValuePath(xmlObject, TestHelpers.GetStormPath("some\\path")));
 
         // act
         string? resultValue = stormStyleStyleElement.Template;
@@ -63,10 +70,12 @@ public class StormStyleStyleElementTests
     public void Name_HasNoTemplateAttribute_ReturnsNull()
     {
         // arrange
-        XElement element = XElement.Parse(@"
-  <Style name=""TimerTextBottom"" vjustify=""Bottom"" hjustify=""Center"" />
-");
-        StormStyleStyleElement stormStyleStyleElement = new(new StormXElementValuePath(element, TestHelpers.GetStormPath("some\\path")));
+        using XmlObject xmlObject = XmlParser.Parse(
+            """
+            <Style name="TimerTextBottom" vjustify="Bottom" hjustify="Center" />
+            """);
+
+        StormStyleStyleElement stormStyleStyleElement = new(new StormXmlValuePath(xmlObject, TestHelpers.GetStormPath("some\\path")));
 
         // act
         string? resultValue = stormStyleStyleElement.Template;

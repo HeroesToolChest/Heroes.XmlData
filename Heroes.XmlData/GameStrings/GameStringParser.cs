@@ -56,9 +56,10 @@ internal class GameStringParser
 
             Encoding.UTF8.TryGetChars(constAttribute.Value.AsSpan(), buffer, out int charsWritten);
 
-            if (_stormStorage.TryGetFirstConstantXElementById(buffer, out StormXElementValuePath? stormXElementValue))
+            if (_stormStorage.TryGetFirstConstantElementById(buffer, out StormXmlValuePath? stormXmlValuePath))
             {
-                resultValue = _stormStorage.GetValueFromConstElementAsNumber(stormXElementValue.Value);
+                using XmlObject xmlObject = XmlParser.Parse(stormXmlValuePath.Value);
+                resultValue = _stormStorage.GetValueFromConstElementAsNumber(xmlObject.Root);
             }
         }
         else if (xmlAttributes.TryFind("ref", out XmlAttribute refAttribute))

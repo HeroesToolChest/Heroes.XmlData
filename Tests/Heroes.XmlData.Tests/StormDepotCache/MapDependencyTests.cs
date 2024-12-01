@@ -1,4 +1,6 @@
-﻿namespace Heroes.XmlData.Tests.StormDepotCache;
+﻿using U8Xml;
+
+namespace Heroes.XmlData.Tests.StormDepotCache;
 
 [TestClass]
 public class MapDependencyTests
@@ -7,14 +9,19 @@ public class MapDependencyTests
     public void GetMapDependencies_HasElements_ReturnsMapDependencies()
     {
         // arrange
-        List<XElement> mapDependencies =
-        [
-            XElement.Parse(@"<Value>bnet:Volskaya Sound/0.0/1146,file:Mods\heroesmapmods/battlegroundmapmods/volskayasound.stormmod</Value>"),
-            XElement.Parse(@"<Value>bnet:VolskayaSound/1.2/111,file:Mods\heroesmapmods/battlegroundmapmods/volskayasound.stormmod</Value>"),
-        ];
+        using XmlObject xmlObject = XmlParser.Parse(
+            """
+            <?xml version="1.0" encoding="utf-8"?>
+            <DocInfo>
+                <Dependencies>
+                    <Value>bnet:Volskaya Sound/0.0/1146,file:Mods\heroesmapmods/battlegroundmapmods/volskayasound.stormmod</Value>
+                    <Value>bnet:VolskayaSound/1.2/111,file:Mods\heroesmapmods/battlegroundmapmods/volskayasound.stormmod</Value>
+                </Dependencies>
+            </DocInfo>
+            """);
 
         // act
-        var results = MapDependency.GetMapDependencies(mapDependencies, "mods").ToList();
+        var results = MapDependency.GetMapDependencies(xmlObject.Root.Children.Find("Dependencies").Children, "mods").ToList();
 
         // assert
         results.Should().SatisfyRespectively(
@@ -40,12 +47,17 @@ public class MapDependencyTests
     public void GetMapDependencies_HasNoElements_ReturnsEmpty()
     {
         // arrange
-        List<XElement> mapDependencies =
-        [
-        ];
+        using XmlObject xmlObject = XmlParser.Parse(
+            """
+            <?xml version="1.0" encoding="utf-8"?>
+            <DocInfo>
+                <Dependencies>
+                </Dependencies>
+            </DocInfo>
+            """);
 
         // act
-        var results = MapDependency.GetMapDependencies(mapDependencies, "mods").ToList();
+        var results = MapDependency.GetMapDependencies(xmlObject.Root.Children.Find("Dependencies").Children, "mods").ToList();
 
         // assert
         results.Should().BeEmpty();

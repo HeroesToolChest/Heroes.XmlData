@@ -168,17 +168,17 @@ public class FileStormModTests
                 {
                     third.Name.Should().Be("volskayadata");
                 },
-                four =>
+                fourth =>
                 {
-                    four.Name.Should().Be("volskayamechanics");
+                    fourth.Name.Should().Be("volskayamechanics");
                 },
-                five =>
+                fifth =>
                 {
-                    five.Name.Should().Be("volskayasound");
+                    fifth.Name.Should().Be("volskayasound");
                 },
-                six =>
+                sixth =>
                 {
-                    six.Name.Should().Be("volskayafoundry");
+                    sixth.Name.Should().Be("volskayafoundry");
                 });
     }
 
@@ -206,26 +206,62 @@ public class FileStormModTests
                 {
                     third.Name.Should().Be("heroesdata");
                 },
-                four =>
+                fourth =>
                 {
-                    four.Name.Should().Be("heroesdata");
+                    fourth.Name.Should().Be("heroesdata");
                 },
-                five =>
+                fifth =>
                 {
-                    five.Name.Should().Be("conveyorbelts");
+                    fifth.Name.Should().Be("conveyorbelts");
                 },
-                six =>
+                sixth =>
                 {
-                    six.Name.Should().Be("volskayadata");
+                    sixth.Name.Should().Be("volskayadata");
                 },
-                seven =>
+                seventh =>
                 {
-                    seven.Name.Should().Be("volskayamechanics");
+                    seventh.Name.Should().Be("volskayamechanics");
                 },
-                eight =>
+                eighth =>
                 {
-                    eight.Name.Should().Be("volskayasound");
+                    eighth.Name.Should().Be("volskayasound");
                 });
+    }
+
+    [TestMethod]
+    public void LoadDocumentInfoFile_HasNoDependenciesNode_ReturnsCorrectOrderOfMods()
+    {
+        // arrange
+        MockFileSystem mockFileSystem = new(new Dictionary<string, MockFileData>
+        {
+            {
+                Path.Join("mods", "heroesmapmods", "battlegroundmapmods", "volskayafoundry.stormmod", "documentinfo"), new MockFileData(
+@"<?xml version=""1.0"" encoding=""utf-8""?>
+<DocInfo>
+    <Icon>
+        <Value>Assets\Textures\storm_ui_homescreenbackground_volskaya.dds</Value>
+    </Icon>
+    <MatchMakerTag>
+        <Value>Hero</Value>
+    </MatchMakerTag>
+    <ModifiableDependencies>
+        <Value>Mods/HeroesData.StormMod</Value>
+        <Value>Mods\heroesmapmods/battlegroundmapmods/overwatchdata.stormmod</Value>
+        <Value>Mods\heroesmapmods/battlegroundmapmods/volskayamechanics.stormmod</Value>
+    </ModifiableDependencies>
+</DocInfo>
+")
+            },
+        });
+
+        FileHeroesSource fileHeroesSource = new(mockFileSystem, new StormStorage(false), _stormModFactory, _depotCacheFactory, "mods", _backgroundWorkerEx);
+        FileStormMod fileStormMod = new(mockFileSystem, fileHeroesSource, Path.Join($"{Path.DirectorySeparatorChar}", "heroesmapmods", "battlegroundmapmods", "volskayafoundry.stormmod"), StormModType.Map);
+
+        // act
+        List<IStormMod> stormMods = fileStormMod.LoadDocumentInfoFile();
+
+        // assert
+        stormMods.Should().BeEmpty();
     }
 
     [TestMethod]
@@ -360,15 +396,18 @@ public class FileStormModTests
   <Catalog path=""GameData/Heroes/Common/HitTestData.xml"" />
   <Catalog path=""GameData/Heroes/Common/GenericCursorData.xml"" />
   <Catalog path=""Heroes/Common/GenericEffectData.xml"" />
+  <Catalog path=""Mods/GameData/Heroes/Common/GenericEffectData2.xml"" />
   <Catalog path="""" />
   <Catalog path="" "" />
   <Catalog />
+  <Other path=""GameData/Heroes/Common/HitTestData.xml"" />
 </Includes>
 ")
             },
             { Path.Join("mods", "heroesdata.stormmod", "base.stormdata", "gamedata", "heroes", "common", "hittestdata.xml"), new MockFileData("<?xml version=\"1.0\" encoding=\"us-ascii\"?><Catalog></Catalog>") },
             { Path.Join("mods", "heroesdata.stormmod", "base.stormdata", "gamedata", "heroes", "common", "genericcursordata.xml"), new MockFileData("<?xml version=\"1.0\" encoding=\"us-ascii\"?><Catalog></Catalog>") },
             { Path.Join("mods", "heroesdata.stormmod", "base.stormdata", "heroes", "common", "genericeffectdata.xml"), new MockFileData("<?xml version=\"1.0\" encoding=\"us-ascii\"?><Catalog></Catalog>") },
+            { Path.Join("mods", "heroesdata.stormmod", "base.stormdata", "gamedata", "heroes", "common", "genericeffectdata2.xml"), new MockFileData("<?xml version=\"1.0\" encoding=\"us-ascii\"?><Catalog></Catalog>") },
         });
 
         FileHeroesSource fileHeroesSource = new(new StormStorage(false), _stormModFactory, _depotCacheFactory, "mods", _backgroundWorkerEx);
@@ -378,7 +417,7 @@ public class FileStormModTests
         fileStormMod.LoadGameDataXmlFile();
 
         // assert
-        fileStormMod.StormModStorage.AddedXmlDataFilePaths.Should().HaveCount(2);
+        fileStormMod.StormModStorage.AddedXmlDataFilePaths.Should().HaveCount(3);
         fileStormMod.StormModStorage.NotFoundFiles.Should().BeEmpty();
     }
 

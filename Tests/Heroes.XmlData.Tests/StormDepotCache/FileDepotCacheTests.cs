@@ -1,5 +1,4 @@
 ﻿using CASCLib;
-using System.Collections.Generic;
 
 namespace Heroes.XmlData.Tests.StormDepotCache;
 

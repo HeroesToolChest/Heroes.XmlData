@@ -1,4 +1,6 @@
-﻿namespace Heroes.XmlData.StormData;
+﻿using U8Xml;
+
+namespace Heroes.XmlData.StormData;
 
 internal interface IStormStorage
 {
@@ -30,9 +32,9 @@ internal interface IStormStorage
 
     void AddAssetFilePath(StormModType stormModType, string relativePath, StormPath stormPath);
 
-    bool AddConstantXElement(StormModType stormModType, XElement element, StormPath stormPath);
+    bool AddConstantElement(StormModType stormModType, XmlNode xmlNode, StormPath stormPath);
 
-    double GetValueFromConstElementAsNumber(XElement constElement);
+    double GetValueFromConstElementAsNumber(XmlNode xmlNode);
 
     string GetValueFromConstTextAsText(ReadOnlySpan<char> text);
 
@@ -40,13 +42,13 @@ internal interface IStormStorage
 
     void AddBaseElementTypes(StormModType stormModType, string dataObjectType, string elementName);
 
-    void AddElement(StormModType stormModType, XElement element, StormPath stormPath);
+    void AddElement(StormModType stormModType, XmlNode xmlNode, StormPath stormPath);
 
-    void SetStormStyleCache(StormModType stormModType, XDocument document, StormPath stormPath);
+    void SetStormStyleCache(StormModType stormModType, XmlObject xmlObject, StormPath stormPath);
 
-    void AddLevelScalingArrayElement(StormModType stormModType, XElement element, StormPath stormPath);
+    void AddStormStyleElement(StormModType stormModType, XmlNode xmlNode, StormPath stormPath);
 
-    void AddStormStyleElement(StormModType stormModType, XElement element, StormPath stormPath);
+    void AddLevelScalingArrayElement(StormModType stormModType, XmlNode xmlNode, StormPath stormPath);
 
     void BuildDataForScalingAttributes(StormModType stormModType);
 
@@ -56,7 +58,7 @@ internal interface IStormStorage
 
     int? GetBuildId();
 
-    bool TryGetFirstConstantXElementById(ReadOnlySpan<char> id, [NotNullWhen(true)] out StormXElementValuePath? stormXElementValuePath);
+    bool TryGetFirstConstantElementById(ReadOnlySpan<char> id, [NotNullWhen(true)] out StormXmlValuePath? stormXmlValuePath);
 
     List<string> GetElementTypesByDataObjectType(string dataObjectType);
 

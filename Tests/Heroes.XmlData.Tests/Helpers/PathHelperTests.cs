@@ -1,4 +1,5 @@
 ﻿using System.Runtime.InteropServices;
+using System.Text;
 
 namespace Heroes.XmlData.Helpers.Tests;
 
@@ -96,6 +97,53 @@ public class PathHelperTests
     }
 
     [TestMethod]
+    public void NormalizePathReadOnlySpanByte_EmptyInput_EmptyOutput()
+    {
+        // arrange
+        ReadOnlySpan<byte> path = [];
+
+        // act
+        string result = PathHelper.NormalizePath(path);
+
+        // assert
+        result.Should().Be(string.Empty);
+    }
+
+    [TestMethod]
+    public void NormalizePathReadOnlySpanByte_BackslashPath_AllLowercaseWithOSDirectorySeparatorChar()
+    {
+        // arrange
+        byte[] buffer = new byte[12];
+        Encoding.UTF8.GetBytes("This\\IS\\path", buffer);
+
+        // act
+        string result = PathHelper.NormalizePath(buffer);
+
+        // assert
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            result.Should().Be("this\\is\\path");
+        else
+            result.Should().Be("this/is/path");
+    }
+
+    [TestMethod]
+    public void NormalizePathReadOnlySpanByte_ForwardslashPath_AllLowercaseWithOSDirectorySeparatorChar()
+    {
+        // arrange
+        byte[] buffer = new byte[12];
+        Encoding.UTF8.GetBytes("This/IS/path", buffer);
+
+        // act
+        string result = PathHelper.NormalizePath(buffer);
+
+        // assert
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            result.Should().Be("this\\is\\path");
+        else
+            result.Should().Be("this/is/path");
+    }
+
+    [TestMethod]
     public void NormalizePathReadOnlySpanModsDirectory_EmptyInput_EmptyOutput()
     {
         // arrange
@@ -151,6 +199,76 @@ public class PathHelperTests
 
         // act
         string result = PathHelper.NormalizePath(path, modsPath);
+
+        // assert
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            result.Should().Be("this\\is\\path");
+        else
+            result.Should().Be("this/is/path");
+    }
+
+    [TestMethod]
+    public void NormalizePathReadOnlySpanByteModsDirectory_EmptyInput_EmptyOutput()
+    {
+        // arrange
+        ReadOnlySpan<byte> path = [];
+
+        // act
+        string result = PathHelper.NormalizePath(path, string.Empty);
+
+        // assert
+        result.Should().Be(string.Empty);
+    }
+
+    [TestMethod]
+    public void NormalizePathReadOnlySpanByteModsDirectory_WithModsPathInBeginning_ResultWithoutModsDictory()
+    {
+        // arrange
+        byte[] buffer = new byte[22];
+        Encoding.UTF8.GetBytes("mods\\path\\This\\IS\\path", buffer);
+
+        string modsPath = "mods\\path\\";
+
+        // act
+        string result = PathHelper.NormalizePath(buffer, modsPath);
+
+        // assert
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            result.Should().Be("this\\is\\path");
+        else
+            result.Should().Be("this/is/path");
+    }
+
+    [TestMethod]
+    public void NormalizePathReadOnlySpanByteModsDirectory_WithModsPathNotInBeginning_ResultIsEmpty()
+    {
+        // arrange
+        byte[] buffer = new byte[22];
+        Encoding.UTF8.GetBytes("This\\IS\\path\\mods\\path", buffer);
+
+        string modsPath = "mods\\path";
+
+        // act
+        string result = PathHelper.NormalizePath(buffer, modsPath);
+
+        // assert
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            result.Should().Be(string.Empty);
+        else
+            result.Should().Be(string.Empty);
+    }
+
+    [TestMethod]
+    public void NormalizePathReadOnlySpanByteModsDirectory_NoModsPathInPath_ResultIsNormalize()
+    {
+        // arrange
+        byte[] buffer = new byte[12];
+        Encoding.UTF8.GetBytes("This\\IS\\path", buffer);
+
+        string modsPath = "mods\\path";
+
+        // act
+        string result = PathHelper.NormalizePath(buffer, modsPath);
 
         // assert
         if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))

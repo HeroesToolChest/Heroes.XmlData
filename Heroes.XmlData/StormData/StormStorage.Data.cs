@@ -11,37 +11,37 @@ namespace Heroes.XmlData.StormData;
 /// </remarks>
 internal partial class StormStorage
 {
-    public bool TryGetFirstConstantXElementById(ReadOnlySpan<char> id, [NotNullWhen(true)] out StormXElementValuePath? stormXElementValuePath)
+    public bool TryGetFirstConstantElementById(ReadOnlySpan<char> id, [NotNullWhen(true)] out StormXmlValuePath? stormXmlValuePath)
     {
 #if NET9_0_OR_GREATER
         // custom cache always first
-        if (StormCustomCache.ConstantXElementByIdAltLookup.TryGetValue(id, out stormXElementValuePath))
+        if (StormCustomCache.ConstantXElementByIdAltLookup.TryGetValue(id, out stormXmlValuePath))
             return true;
 
-        if (StormMapCache.ConstantXElementByIdAltLookup.TryGetValue(id, out stormXElementValuePath))
+        if (StormMapCache.ConstantXElementByIdAltLookup.TryGetValue(id, out stormXmlValuePath))
             return true;
 
-        if (StormCache.ConstantXElementByIdAltLookup.TryGetValue(id, out stormXElementValuePath))
+        if (StormCache.ConstantXElementByIdAltLookup.TryGetValue(id, out stormXmlValuePath))
             return true;
 
         return false;
     }
 #else
-        return TryGetFirstConstantXElementById(id.ToString(), out stormXElementValuePath);
+        return TryGetFirstConstantElementById(id.ToString(), out stormXmlValuePath);
     }
 
-    public bool TryGetFirstConstantXElementById(string id, [NotNullWhen(true)] out StormXElementValuePath? stormXElementValuePath)
+    public bool TryGetFirstConstantElementById(string id, [NotNullWhen(true)] out StormXmlValuePath? stormXmlValuePath)
     {
         ArgumentNullException.ThrowIfNull(id);
 
         // custom cache always first
-        if (StormCustomCache.ConstantXElementById.TryGetValue(id, out stormXElementValuePath))
+        if (StormCustomCache.ConstantElementById.TryGetValue(id, out stormXmlValuePath))
             return true;
 
-        if (StormMapCache.ConstantXElementById.TryGetValue(id, out stormXElementValuePath))
+        if (StormMapCache.ConstantElementById.TryGetValue(id, out stormXmlValuePath))
             return true;
 
-        if (StormCache.ConstantXElementById.TryGetValue(id, out stormXElementValuePath))
+        if (StormCache.ConstantElementById.TryGetValue(id, out stormXmlValuePath))
             return true;
 
         return false;

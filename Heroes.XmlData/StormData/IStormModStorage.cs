@@ -1,4 +1,6 @@
-﻿namespace Heroes.XmlData.StormData;
+﻿using U8Xml;
+
+namespace Heroes.XmlData.StormData;
 
 internal interface IStormModStorage
 {
@@ -38,13 +40,13 @@ internal interface IStormModStorage
 
     void AddGameStringFile(Stream stream, StormPath stormPath);
 
-    void AddXmlDataFile(XDocument document, StormPath stormPath);
+    void AddXmlDataFile(XmlObject xmlObject, StormPath stormPath);
 
     void AddStormLayoutFilePath(string relativePath, StormPath stormPath);
 
     void AddAssetFilePath(string relativePath, StormPath stormPath);
 
-    void AddXmlFontStyleFile(XDocument document, StormPath stormPath);
+    void AddXmlFontStyleFile(XmlObject xmlObject, StormPath stormPath);
 
     void ClearGameStrings();
 

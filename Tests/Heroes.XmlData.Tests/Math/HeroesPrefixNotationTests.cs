@@ -1,6 +1,7 @@
 using Heroes.XmlData.Tests;
 using System.Collections.Concurrent;
 using System.Data;
+using U8Xml;
 
 namespace Heroes.XmlData.StormMath.Tests;
 
@@ -81,13 +82,12 @@ public class HeroesPrefixNotationTests
 
         StormStorage stormStorage = new();
 
-        stormStorage.AddConstantXElement(
-            StormModType.Custom,
-            new XElement(
-                "const",
-                new XAttribute("id", "$GazloweDethLazorLeechAmount"),
-                new XAttribute("value", "0.25")),
-            TestHelpers.GetStormPath("custom"));
+        using XmlObject xmlObject = XmlParser.Parse(
+            """
+            <const id="$GazloweDethLazorLeechAmount" value="0.25" />
+            """);
+
+        stormStorage.AddConstantElement(StormModType.Custom, xmlObject.Root, TestHelpers.GetStormPath("custom"));
 
         // act
         double result = HeroesPrefixNotation.Compute(stormStorage, expression);
@@ -104,13 +104,12 @@ public class HeroesPrefixNotationTests
 
         StormStorage stormStorage = new();
 
-        stormStorage.AddConstantXElement(
-            StormModType.Custom,
-            new XElement(
-                "const",
-                new XAttribute("id", "$GazloweDethLazorLeechAmount"),
-                new XAttribute("value", "0.25")),
-            TestHelpers.GetStormPath("custom"));
+        using XmlObject xmlObject = XmlParser.Parse(
+            """
+            <const id="$GazloweDethLazorLeechAmount" value="0.25" />
+            """);
+
+        stormStorage.AddConstantElement(StormModType.Custom, xmlObject.Root, TestHelpers.GetStormPath("custom"));
 
         // act
         double result = HeroesPrefixNotation.Compute(stormStorage, expression);

@@ -1,4 +1,6 @@
-﻿namespace Heroes.XmlData.Tests.StormMods;
+﻿using U8Xml;
+
+namespace Heroes.XmlData.Tests.StormMods;
 
 [TestClass]
 public class CustomStormModTests
@@ -43,10 +45,10 @@ public class CustomStormModTests
         customStormMod.LoadStormData();
 
         // assert
-        _heroesSource.Received().StormStorage.AddConstantXElement(StormModType.Custom, Arg.Any<XElement>(), Arg.Any<StormPath>());
+        _heroesSource.Received().StormStorage.AddConstantElement(StormModType.Custom, Arg.Any<XmlNode>(), Arg.Any<StormPath>());
         _heroesSource.Received().StormStorage.AddBaseElementTypes(StormModType.Custom, Arg.Any<string>(), Arg.Any<string>());
-        _heroesSource.Received().StormStorage.AddElement(StormModType.Custom, Arg.Any<XElement>(), Arg.Any<StormPath>());
-        _heroesSource.Received().StormStorage.AddLevelScalingArrayElement(StormModType.Custom, Arg.Any<XElement>(), Arg.Any<StormPath>());
-        _heroesSource.Received().StormStorage.AddStormStyleElement(StormModType.Custom, Arg.Any<XElement>(), Arg.Any<StormPath>());
+        _heroesSource.Received().StormStorage.AddElement(StormModType.Custom, Arg.Any<XmlNode>(), Arg.Any<StormPath>());
+        _heroesSource.Received().StormStorage.AddLevelScalingArrayElement(StormModType.Custom, Arg.Any<XmlNode>(), Arg.Any<StormPath>());
+        _heroesSource.Received().StormStorage.AddStormStyleElement(StormModType.Custom, Arg.Any<XmlNode>(), Arg.Any<StormPath>());
     }
 }
