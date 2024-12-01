@@ -259,8 +259,8 @@ public class MpqFolderTests
 
         // assert
         retrievedFolder.Should().NotBeNull();
-        retrievedFolder!.Files.Count.Should().Be(1);
-        retrievedFolder.Folders.Count.Should().Be(1);
+        retrievedFolder!.Files.Should().ContainSingle();
+        retrievedFolder.Folders.Should().ContainSingle();
         retrievedFolder.Name.Should().Be("folderName");
     }
 

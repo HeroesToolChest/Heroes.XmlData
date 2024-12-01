@@ -310,14 +310,7 @@ internal abstract class StormMod<T> : IStormMod
             return false;
         }
 
-        try
-        {
-            xmlObject = XmlParser.Parse(stream, Encoding.UTF8);
-        }
-        catch (Exception ex)
-        {
-            throw;
-        }
+        xmlObject = XmlParser.Parse(stream);
 
         return true;
     }
