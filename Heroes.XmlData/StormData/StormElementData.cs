@@ -358,7 +358,7 @@ public class StormElementData
     /// Looks up the inner xml data from the given <paramref name="index"/>, returning a value that indicates whether such value exists.
     /// </summary>
     /// <param name="index">A character span that contains the index value which is an element name or attribute name or value. Is case-insensitive.</param>
-    /// <param name="stormElementData">The returming <see cref="StormElementData"/> if <paramref name="index"/> is found.</param>
+    /// <param name="stormElementData">The returning <see cref="StormElementData"/> if <paramref name="index"/> is found.</param>
     /// <returns><see langword="true"/> if the index is found, otherwise <see langword="false"/>.</returns>
     public bool TryGetElementDataAt(ReadOnlySpan<char> index, [NotNullWhen(true)] out StormElementData? stormElementData)
     {
@@ -373,7 +373,7 @@ public class StormElementData
     /// Looks up the inner xml data from the given <paramref name="index"/>, returning a value that indicates whether such value exists.
     /// </summary>
     /// <param name="index">The index value which is an element name or attribute name or value. Is case-insensitive.</param>
-    /// <param name="stormElementData">The returming <see cref="StormElementData"/> if <paramref name="index"/> is found.</param>
+    /// <param name="stormElementData">The returning <see cref="StormElementData"/> if <paramref name="index"/> is found.</param>
     /// <returns><see langword="true"/> if the index is found, otherwise <see langword="false"/>.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="index"/> is <see langword="null"/>.</exception>
     public bool TryGetElementDataAt(string index, [NotNullWhen(true)] out StormElementData? stormElementData)
