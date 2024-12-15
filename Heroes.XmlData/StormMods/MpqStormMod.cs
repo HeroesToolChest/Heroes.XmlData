@@ -110,7 +110,7 @@ internal abstract class MpqStormMod<T> : StormMod<T>
 
     protected override string GetGameStringFilePath(StormLocale stormLocale)
     {
-        return Path.Join(StormLocaleData.GetStormDataFileName(stormLocale), HeroesSource.LocalizedDataDirectory, HeroesSource.GameStringFile);
+        return Path.Join(HeroesSource.GetLocaleStormDataDirectory(stormLocale), HeroesSource.LocalizedDataDirectory, HeroesSource.GameStringFile);
     }
 
     protected override bool TryGetFile(string filePath, [NotNullWhen(true)] out Stream? stream)
