@@ -434,6 +434,13 @@ public class StormElementData
                     HasNumericalIndex = true,
                 };
             }
+            else if (attribute.Name.LocalName.Equals("parent", StringComparison.OrdinalIgnoreCase) &&
+                ElementDataPairs.TryGetValue("id", out StormElementData? existingIdData) && !string.IsNullOrEmpty(existingIdData.RawValue) &&
+                existingIdData.RawValue.Equals(attribute.Value))
+            {
+                // skip the parent attribute if it's the same as the existing id attribute.
+                continue;
+            }
             else
             {
                 ElementDataPairs[attribute.Name.LocalName] = new StormElementData(this, attribute.Name.LocalName, attribute.Value);

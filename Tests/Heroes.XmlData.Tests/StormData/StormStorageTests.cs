@@ -1109,6 +1109,76 @@ public class StormStorageTests
     }
 
     [TestMethod]
+    public void GetCompleteStormElement_BaseElementHasAParentIdThatIsSameAsId_ShouldReturnAllProperties()
+    {
+        // arrange
+        StormStorage stormStorage = new(false);
+
+        stormStorage.StormCustomCache.DataObjectTypeByElementType.Add("CLootChest", "LootChest");
+
+        StormElement baseStormElement = new(new StormXElementValuePath(
+            XElement.Parse(
+                """
+                <CLootChest default="1" id="LootChestChristmas2018Common" parent="LootChestChristmas2018Parent">
+                  <Other value="10" />
+                  <MaxRerolls value="2" />
+                </CLootChest>
+                """),
+            TestHelpers.GetStormPath("custom")));
+
+        baseStormElement.AddValue(new StormElement(new StormXElementValuePath(
+            XElement.Parse(
+                """
+                <CLootChest id="LootChestChristmas2018Common" parent="LootChestChristmas2018Common">
+                  <MaxRerolls value="3" />
+                </CLootChest>
+                """),
+            TestHelpers.GetStormPath("custom"))));
+
+        stormStorage.StormCustomCache.StormElementsByDataObjectType.Add("LootChest", new Dictionary<string, StormElement>()
+        {
+            {
+                "BaseLootChest", new StormElement(new StormXElementValuePath(
+                    XElement.Parse(
+                        """
+                        <CLootChest default="1" id="BaseLootChest">
+                          <Name value="LootChest/Name/##id##" />
+                          <HyperlinkId value="##id##" />
+                          <MaxRerolls value="5" />
+                          <TypeDescription value="LootChestCommon" />
+                        </CLootChest>
+                        """),
+                    TestHelpers.GetStormPath("custom")))
+            },
+            {
+                "LootChestChristmas2018Parent", new StormElement(new StormXElementValuePath(
+                    XElement.Parse(
+                        """
+                        <CLootChest default="1" id="LootChestChristmas2018Parent" parent="BaseLootChest">
+                          <TypeDescription value="LootChestChristmas2018Common" />
+                          <EventName value="Toys18" />
+                        </CLootChest>
+                        """),
+                    TestHelpers.GetStormPath("custom")))
+            },
+            {
+                "LootChestChristmas2018Common", baseStormElement
+            },
+        });
+
+        // act
+        StormElement? stormElement = stormStorage.GetCompleteStormElement("LootChestChristmas2018Common", "LootChest");
+
+        // assert
+        stormElement.Should().NotBeNull();
+        stormElement!.OriginalXElements.Should().HaveCount(4);
+        stormElement.DataValues.GetElementDataAt("id").Value.GetString().Should().Be("LootChestChristmas2018Common");
+        stormElement.DataValues.GetElementDataAt("parent").Value.GetString().Should().Be("LootChestChristmas2018Parent");
+        stormElement.DataValues.GetElementDataAt("MaxRerolls").Value.GetAsInt().Should().Be(3);
+        stormElement.DataValues.GetElementDataAt("EventName").Value.GetString().Should().Be("Toys18");
+    }
+
+    [TestMethod]
     public void GetBaseStormElement_FoundStormElementFromDataObjectType_ReturnsStormElement()
     {
         // arrange
