@@ -2194,6 +2194,22 @@ public class StormStorageTests
     }
 
     [TestMethod]
+    [DataRow("")]
+    [DataRow(" ")]
+    [DataRow(null)]
+    public void StormLayoutFileExists_FilePathEmpty_ReturnsFalse(string emptyPath)
+    {
+        // arrange
+        StormStorage stormStorage = new(false);
+
+        // act
+        bool exists = stormStorage.StormLayoutFileExists(emptyPath);
+
+        // assert
+        exists.Should().BeFalse();
+    }
+
+    [TestMethod]
     public void GetStormLayoutFile_AllThreeCaches_MergesFromAll()
     {
         // arrange
@@ -2291,6 +2307,22 @@ public class StormStorageTests
     }
 
     [TestMethod]
+    [DataRow("")]
+    [DataRow(" ")]
+    [DataRow(null)]
+    public void GetStormLayoutFile_FilePathEmpty_ReturnsNull(string emptyPath)
+    {
+        // arrange
+        StormStorage stormStorage = new(false);
+
+        // act
+        StormFile? stormAssetFile = stormStorage.GetStormLayoutFile(emptyPath);
+
+        // assert
+        stormAssetFile.Should().BeNull();
+    }
+
+    [TestMethod]
     public void StormAssetFileExists_AllThreeCaches_ReturnsFromCustom()
     {
         // arrange
@@ -2362,6 +2394,22 @@ public class StormStorageTests
 
         // act
         bool exists = stormStorage.StormAssetFileExists(Path.Join("assets", "item2.dds"));
+
+        // assert
+        exists.Should().BeFalse();
+    }
+
+    [TestMethod]
+    [DataRow("")]
+    [DataRow(" ")]
+    [DataRow(null)]
+    public void StormAssetFileExists_FilePathEmpty_ReturnFalse(string emptyPath)
+    {
+        // arrange
+        StormStorage stormStorage = new(false);
+
+        // act
+        bool exists = stormStorage.StormAssetFileExists(emptyPath);
 
         // assert
         exists.Should().BeFalse();
@@ -2462,6 +2510,22 @@ public class StormStorageTests
         stormAssetFile.ToString().Should().Be(stormAssetFile.StormPath.Path);
         stormAssetFile.StormPaths.Should().HaveCount(2);
         stormAssetFile.StormPaths[^1].Path.Should().Be("map");
+    }
+
+    [TestMethod]
+    [DataRow("")]
+    [DataRow(" ")]
+    [DataRow(null)]
+    public void GetStormAssetFile_FilePathEmpty_ReturnNull(string emptyPath)
+    {
+        // arrange
+        StormStorage stormStorage = new(false);
+
+        // act
+        StormFile? stormAssetFile = stormStorage.GetStormAssetFile(emptyPath);
+
+        // assert
+        stormAssetFile.Should().BeNull();
     }
 
     [TestMethod]

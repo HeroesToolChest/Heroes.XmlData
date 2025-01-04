@@ -17,8 +17,11 @@ internal class FileHeroesSource : HeroesSource, IFileHeroesSource
         _fileSystem = fileSystem;
     }
 
-    public override bool FileExists(string path, string? mpqPath = null)
+    public override bool FileExists(string? path, string? mpqPath = null)
     {
+        if (string.IsNullOrEmpty(path))
+            return false;
+
         if (mpqPath is null)
             return _fileSystem.File.Exists(GetValidatedPath(path));
         else

@@ -268,7 +268,7 @@ public class HeroesXmlLoader
     /// <param name="path">The relative path of the file to check.</param>
     /// <param name="mpqPath">The relative path of the mpq file.</param>
     /// <returns><see langword="true"/> if the file exists, otherwise <see langword="false"/>. Will return <see langword="false"/> if <paramref name="mpqPath"/> was not found.</returns>
-    public bool FileExists(string path, string? mpqPath = null) => _heroesSource.FileExists(path, mpqPath);
+    public bool FileExists(string? path, string? mpqPath = null) => _heroesSource.FileExists(path, mpqPath);
 
     /// <summary>
     /// Determines if a file exists.

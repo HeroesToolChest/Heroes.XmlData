@@ -431,9 +431,10 @@ internal partial class StormStorage
         return false;
     }
 
-    public bool StormLayoutFileExists(string relativePath)
+    public bool StormLayoutFileExists(string? relativePath)
     {
-        ArgumentNullException.ThrowIfNull(relativePath);
+        if (string.IsNullOrEmpty(relativePath))
+            return false;
 
         relativePath = PathHelper.NormalizePath(relativePath);
 
@@ -450,9 +451,10 @@ internal partial class StormStorage
         return false;
     }
 
-    public StormFile? GetStormLayoutFile(string relativePath)
+    public StormFile? GetStormLayoutFile(string? relativePath)
     {
-        ArgumentNullException.ThrowIfNull(relativePath);
+        if (string.IsNullOrEmpty(relativePath))
+            return null;
 
         relativePath = PathHelper.NormalizePath(relativePath);
 
@@ -471,9 +473,10 @@ internal partial class StormStorage
         return stormLayoutFile;
     }
 
-    public bool StormAssetFileExists(string relativePath)
+    public bool StormAssetFileExists(string? relativePath)
     {
-        ArgumentNullException.ThrowIfNull(relativePath);
+        if (string.IsNullOrEmpty(relativePath))
+            return false;
 
         relativePath = PathHelper.NormalizePath(relativePath);
 
@@ -490,9 +493,10 @@ internal partial class StormStorage
         return false;
     }
 
-    public StormFile? GetStormAssetFile(string relativePath)
+    public StormFile? GetStormAssetFile(string? relativePath)
     {
-        ArgumentNullException.ThrowIfNull(relativePath);
+        if (string.IsNullOrEmpty(relativePath))
+            return null;
 
         relativePath = PathHelper.NormalizePath(relativePath);
 

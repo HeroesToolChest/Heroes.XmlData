@@ -232,7 +232,7 @@ internal abstract class HeroesSource : IHeroesSource
             return null;
     }
 
-    public abstract bool FileExists(string path, string? mpqPath = null);
+    public abstract bool FileExists(string? path, string? mpqPath = null);
 
     public abstract bool FileExists(StormFile stormFile);
 

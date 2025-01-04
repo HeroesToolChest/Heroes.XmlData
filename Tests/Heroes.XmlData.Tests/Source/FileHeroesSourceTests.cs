@@ -198,6 +198,28 @@ public class FileHeroesSourceTests
     }
 
     [TestMethod]
+    [DataRow("")]
+    [DataRow(" ")]
+    [DataRow(null)]
+    public void FileExists_PathIsEmtpy_ReturnsFalse(string emptyPath)
+    {
+        // arrange
+        const string rootDirectory = "mods";
+
+        MockFileSystem mockFileSystem = new(new Dictionary<string, MockFileData>
+        {
+        });
+        StormStorage stormStorage = new(false);
+        FileHeroesSource fileHeroesSource = new(mockFileSystem, stormStorage, _stormModFactory, _depotCacheFactory, rootDirectory, _backgroundWorkerEx);
+
+        // act
+        bool result = fileHeroesSource.FileExists(emptyPath);
+
+        // assert
+        result.Should().BeFalse();
+    }
+
+    [TestMethod]
     public void GetFile_FileExists_GetsFile()
     {
         // arrange

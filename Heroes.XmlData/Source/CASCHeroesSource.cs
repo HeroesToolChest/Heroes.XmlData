@@ -14,8 +14,11 @@ internal class CASCHeroesSource : HeroesSource, ICASCHeroesSource
 
     public ICASCHeroesStorage CASCHeroesStorage => _cascHeroesStorage;
 
-    public override bool FileExists(string path, string? mpqPath = null)
+    public override bool FileExists(string? path, string? mpqPath = null)
     {
+        if (string.IsNullOrEmpty(path))
+            return false;
+
         if (mpqPath is null)
             return CASCHeroesStorage.CASCHandlerWrapper.FileExists(GetValidatedPath(path));
         else

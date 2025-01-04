@@ -192,7 +192,7 @@ public class HeroesData
     /// </summary>
     /// <param name="path">The path of the asset, which should start with the asset directory.</param>
     /// <returns><see langword="true"/> if the file exists, otherwise <see langword="false"/>.</returns>
-    public bool StormAssetFileExists(string path)
+    public bool StormAssetFileExists(string? path)
     {
         return _stormStorage.StormAssetFileExists(path);
     }
@@ -202,7 +202,7 @@ public class HeroesData
     /// </summary>
     /// <param name="path">The path of the asset, which should start with the asset directory.</param>
     /// <returns>A <see cref="StormFile"/> or <see langword="null"/> if not found.</returns>
-    public StormFile? GetStormAssetFile(string path)
+    public StormFile? GetStormAssetFile(string? path)
     {
         return _stormStorage.GetStormAssetFile(path);
     }
@@ -212,7 +212,7 @@ public class HeroesData
     /// </summary>
     /// <param name="path">The path of the asset, which should start with the ui directory.</param>
     /// <returns><see langword="true"/> if the file exists, otherwise <see langword="false"/>.</returns>
-    public bool StormLayoutFileExists(string path)
+    public bool StormLayoutFileExists(string? path)
     {
         return _stormStorage.StormAssetFileExists(path);
     }
@@ -222,7 +222,7 @@ public class HeroesData
     /// </summary>
     /// <param name="path">The path of the layout file, which should start with the ui directory.</param>
     /// <returns>A <see cref="StormFile"/> or <see langword="null"/> if not found.</returns>
-    public StormFile? GetStormLayoutFile(string path)
+    public StormFile? GetStormLayoutFile(string? path)
     {
         return _stormStorage.GetStormLayoutFile(path);
     }

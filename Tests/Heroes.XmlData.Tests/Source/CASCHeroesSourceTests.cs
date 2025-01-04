@@ -217,6 +217,23 @@ public class CASCHeroesSourceTests
     }
 
     [TestMethod]
+    [DataRow("")]
+    [DataRow(" ")]
+    [DataRow(null)]
+    public void FileExists_PathIsEmtpy_ReturnsFalse(string emptyPath)
+    {
+        // arrange
+        StormStorage stormStorage = new(false);
+        CASCHeroesSource cascHeroesSource = new(stormStorage, _stormModFactory, _depotCacheFactory, _cascHeroesStorage, _backgroundWorkerEx);
+
+        // act
+        bool result = cascHeroesSource.FileExists(emptyPath);
+
+        // assert
+        result.Should().BeFalse();
+    }
+
+    [TestMethod]
     public void GetFile_FileExists_GetsFile()
     {
         // arrange
