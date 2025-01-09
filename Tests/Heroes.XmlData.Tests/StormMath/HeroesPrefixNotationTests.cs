@@ -118,4 +118,58 @@ public class HeroesPrefixNotationTests
         // assert
         result.Should().Be(-0.25);
     }
+
+    [TestMethod]
+    public void Compute_WithANegateConstantExpression_ReturnsValue()
+    {
+        // arrange
+        string expression = "negate($AlexstraszaFlameBuffetSlowAmountPos)";
+
+        StormStorage stormStorage = new();
+
+        stormStorage.AddConstantXElement(
+            StormModType.Custom,
+            new XElement(
+                "const",
+                new XAttribute("id", "$AlexstraszaFlameBuffetSlowAmountPos"),
+                new XAttribute("value", "0.4")),
+            TestHelpers.GetStormPath("custom"));
+
+        // act
+        double result = HeroesPrefixNotation.Compute(stormStorage, expression);
+
+        // assert
+        result.Should().Be(-0.4);
+    }
+
+    [TestMethod]
+    public void Compute_WithAConstantInANegateExpression_ReturnsValue()
+    {
+        // arrange
+        string expression = "negate(+($AlexstraszaFlameBuffetSlowAmountPos $AlexstraszaFlameBuffetHeatExhaustionBonusSlowAmount))";
+
+        StormStorage stormStorage = new();
+
+        stormStorage.AddConstantXElement(
+            StormModType.Custom,
+            new XElement(
+                "const",
+                new XAttribute("id", "$AlexstraszaFlameBuffetSlowAmountPos"),
+                new XAttribute("value", "0.4")),
+            TestHelpers.GetStormPath("custom"));
+
+        stormStorage.AddConstantXElement(
+            StormModType.Custom,
+            new XElement(
+                "const",
+                new XAttribute("id", "$AlexstraszaFlameBuffetHeatExhaustionBonusSlowAmount"),
+                new XAttribute("value", "0.1")),
+            TestHelpers.GetStormPath("custom"));
+
+        // act
+        double result = HeroesPrefixNotation.Compute(stormStorage, expression);
+
+        // assert
+        result.Should().Be(-0.5);
+    }
 }

@@ -1521,4 +1521,78 @@ public class GameStringParserTests
         // assert
         parsed.Should().Be("Probius gains permanent Shields equal to <c val=\"#TooltipNumbers\">10% </c>of his max Health. Shields regenerate quickly as long as he hasn't taken damage recently.");
     }
+
+    [TestMethod]
+    public void ParseTooltipDescription_ConstValuesWithNegateConstExpressions_ParsedGameString()
+    {
+        // arrange
+        string description = "Launch a fireball, Burning enemies hit for <c val=\"#TooltipNumbers\"><d ref=\"Effect,AlexstraszaFlameBuffetDoTDamage,Amount*(1+Behavior,AlexstraszaFlameBuffetDoT,PeriodCount)\"/></c> damage over <c val=\"#TooltipNumbers\"><d ref=\"Behavior,AlexstraszaFlameBuffetDoT,Duration\" player=\"0\" precision=\"1\"/></c> seconds.<n/><n/>Hitting enemies that are already Burning deals <c val=\"#TooltipNumbers\"><d ref=\"Effect,AlexstraszaFlameBuffetImpactBonusDamage,Amount\"/></c> bonus damage upon impact, Slows them by <c val=\"#TooltipNumbers\"><d ref=\"-Behavior,AlexstraszaFlameBuffetSlow,Modification.UnifiedMoveSpeedFactor*100\" player=\"0\"/>%</c> decaying over <c val=\"#TooltipNumbers\"><d ref=\"Behavior,AlexstraszaFlameBuffetSlow,Duration\" player=\"0\" precision=\"2\"/></c> seconds, and refunds the Mana cost.<n/><n/><c val=\"#ColorViolet\">Dragonqueen: Wing Buffet</c><n/>Damage and Knockback enemies in an arc.";
+
+        HeroesXmlLoader loader = HeroesXmlLoader.LoadWithEmpty()
+            .LoadCustomMod(new ManualModLoader("custom")
+                .AddBaseElementTypes(new List<(string, string)>()
+                {
+                    ("Behavior", "CBehaviorBuff"),
+                    ("Effect", "CEffectDamage"),
+                })
+                .AddElements(new List<XElement>()
+                {
+                    XElement.Parse(
+                        """
+                        <CEffectDamage id="AlexstraszaFlameBuffetDoTDamage" parent="StormSpellDot">
+                          <Amount value="15" />
+                          <SourceButtonFace value="AlexstraszaFlameBuffet" />
+                        </CEffectDamage>
+                        """),
+                    XElement.Parse(
+                        """
+                        <CBehaviorBuff id="AlexstraszaFlameBuffetDoT" parent="StormDot">
+                          <Duration value="5.5" />
+                          <Period value="1" />
+                          <PeriodCount value="4" />
+                        </CBehaviorBuff>
+                        """),
+                    XElement.Parse(
+                        """
+                        <CEffectDamage id="AlexstraszaFlameBuffetImpactBonusDamage" parent="StormSpell">
+                          <Flags index="Crit" value="1" />
+                          <Amount value="125" />
+                        </CEffectDamage>
+                        """),
+                    XElement.Parse(
+                        """
+                        <CBehaviorBuff id="AlexstraszaFlameBuffetSlow" parent="StormSlowParent">
+                          <Duration value="$AlexstraszaFlameBuffetSlowDuration" />
+                          <Modification>
+                            <UnifiedMoveSpeedFactor value="$AlexstraszaFlameBuffetSlowAmount">
+                              <AccumulatorArray value="AlexstraszaFlameBuffetDecayAccumulator" />
+                            </UnifiedMoveSpeedFactor>
+                          </Modification>
+                        </CBehaviorBuff>
+                        """),
+                })
+                .AddConstantXElements(new List<XElement>()
+                {
+                    XElement.Parse(
+                        """
+                        <const id="$AlexstraszaFlameBuffetSlowDuration" value="2" />
+                        """),
+                    XElement.Parse(
+                        """
+                        <const id="$AlexstraszaFlameBuffetSlowAmountPos" value="0.4" />
+                        """),
+                    XElement.Parse(
+                        """
+                        <const id="$AlexstraszaFlameBuffetSlowAmount" value="negate($AlexstraszaFlameBuffetSlowAmountPos)" evaluateAsExpression="1" />
+                        """),
+                }));
+
+        HeroesData heroesData = loader.HeroesData;
+
+        // act
+        string parsed = GameStringParser.ParseTooltipDescription(heroesData.StormStorage, description);
+
+        // assert
+        parsed.Should().Be("Launch a fireball, Burning enemies hit for <c val=\"#TooltipNumbers\">75</c> damage over <c val=\"#TooltipNumbers\">5.5</c> seconds.<n/><n/>Hitting enemies that are already Burning deals <c val=\"#TooltipNumbers\">125</c> bonus damage upon impact, Slows them by <c val=\"#TooltipNumbers\">40%</c> decaying over <c val=\"#TooltipNumbers\">2</c> seconds, and refunds the Mana cost.<n/><n/><c val=\"#ColorViolet\">Dragonqueen: Wing Buffet</c><n/>Damage and Knockback enemies in an arc.");
+    }
 }

@@ -89,10 +89,10 @@ internal class HeroesPrefixNotation
 
             int indexSplit = GetSplitIndex(currentExpression);
 
-            ReadOnlySpan<char> firstValueSpan = currentExpression[0..indexSplit];
+            ReadOnlySpan<char> firstValueSpan = currentExpression[..indexSplit];
             double firstValue = Evaluate(firstValueSpan);
 
-            ReadOnlySpan<char> secondValueSpan = currentExpression.Slice(indexSplit + 1, currentExpression.Length - indexSplit - 1);
+            ReadOnlySpan<char> secondValueSpan = currentExpression[(indexSplit + 1)..];
             double secondValue = Evaluate(secondValueSpan);
 
             return HeroesCalculator.ApplyOperator(op, secondValue, firstValue);
@@ -107,10 +107,9 @@ internal class HeroesPrefixNotation
         }
         else if (expression.StartsWith("negate"))
         {
-            ReadOnlySpan<char> valueToBeNegatedSpan = expression[6..].Trim("()");
+            ReadOnlySpan<char> valueToBeNegatedSpan = expression[7..^1];  // removed negate( and )
 
-            if (double.TryParse(valueToBeNegatedSpan, out value))
-                return value * -1;
+            return Evaluate(valueToBeNegatedSpan) * -1;
         }
 
         return 0;
