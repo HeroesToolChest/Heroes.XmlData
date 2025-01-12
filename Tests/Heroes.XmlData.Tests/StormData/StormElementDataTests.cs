@@ -312,19 +312,17 @@ public class StormElementDataTests
             new XAttribute("default", "1"),
             new XElement(
                 "Name",
-                new XAttribute("value", "$Name"),
-                new XAttribute($"{StormModStorage.SelfNameConst}value", "SomeValue")));
+                new XAttribute("value", "SomeValue")));
 
         // act
         StormElementData stormElementData = new(xElement);
 
         // assert
-        stormElementData.GetElementDataAt("Name").IsConstValue.Should().BeTrue();
         stormElementData.GetElementDataAt("Name").Value.GetString().Should().Be("SomeValue");
     }
 
     [TestMethod]
-    public void StormElementData_ElementHasIntConstAttribute_ReturnsInt()
+    public void StormElementData_ElementWithIntAttribute_ReturnsInt()
     {
         // arrange
         XElement xElement = new(
@@ -332,93 +330,13 @@ public class StormElementDataTests
             new XAttribute("default", "1"),
             new XElement(
                 "Name",
-                new XAttribute("value", "$Name"),
-                new XAttribute($"{StormModStorage.SelfNameConst}value", "5")));
+                new XAttribute("value", "5")));
 
         // act
         StormElementData stormElementData = new(xElement);
 
         // assert
-        stormElementData.GetElementDataAt("Name").IsConstValue.Should().BeTrue();
         stormElementData.GetElementDataAt("Name").Value.GetAsInt().Should().Be(5);
-    }
-
-    [TestMethod]
-    public void StormElementData_ElementHasConstAttributeThatIsEmtpy_ReturnsHasConstValue()
-    {
-        // arrange
-        XElement xElement = new(
-            "CAbil",
-            new XAttribute("default", "1"),
-            new XElement(
-                "Name",
-                new XAttribute("value", "$Name"),
-                new XAttribute($"{StormModStorage.SelfNameConst}value", string.Empty)));
-
-        // act
-        StormElementData stormElementData = new(xElement);
-
-        // assert
-        stormElementData.GetElementDataAt("Name").IsConstValue.Should().BeTrue();
-    }
-
-    [TestMethod]
-    public void StormElementData_ElementHasAssetAttribute_ReturnsAssetValue()
-    {
-        // arrange
-        XElement xElement = new(
-            "CAbil",
-            new XAttribute("default", "1"),
-            new XElement(
-                "Name",
-                new XAttribute("value", "@Name"),
-                new XAttribute($"{StormModStorage.SelfNameAsset}value", "SomeValue")));
-
-        // act
-        StormElementData stormElementData = new(xElement);
-
-        // assert
-        stormElementData.GetElementDataAt("Name").IsAssetValue.Should().BeTrue();
-        stormElementData.GetElementDataAt("Name").Value.GetString().Should().Be("SomeValue");
-    }
-
-    [TestMethod]
-    public void StormElementData_ElementHasIntAssetAttribute_ReturnsInt()
-    {
-        // arrange
-        XElement xElement = new(
-            "CAbil",
-            new XAttribute("default", "1"),
-            new XElement(
-                "Name",
-                new XAttribute("value", "@Name"),
-                new XAttribute($"{StormModStorage.SelfNameAsset}value", "5")));
-
-        // act
-        StormElementData stormElementData = new(xElement);
-
-        // assert
-        stormElementData.GetElementDataAt("Name").IsAssetValue.Should().BeTrue();
-        stormElementData.GetElementDataAt("Name").Value.GetAsInt().Should().Be(5);
-    }
-
-    [TestMethod]
-    public void StormElementData_ElementHasAssetAttributeThatIsEmtpy_ReturnsHasAssetValue()
-    {
-        // arrange
-        XElement xElement = new(
-            "CAbil",
-            new XAttribute("default", "1"),
-            new XElement(
-                "Name",
-                new XAttribute("value", "@Name"),
-                new XAttribute($"{StormModStorage.SelfNameAsset}value", string.Empty)));
-
-        // act
-        StormElementData stormElementData = new(xElement);
-
-        // assert
-        stormElementData.GetElementDataAt("Name").IsAssetValue.Should().BeTrue();
     }
 
     [TestMethod]
@@ -585,25 +503,6 @@ public class StormElementDataTests
         data.GetElementDataAt("HeroAbilArray").GetElementDataAt("2").GetElementDataAt("Flags").GetElementDataAt("0").Field.Should().Be("HeroAbilArray[2].Flags[0]");
         data.GetElementDataAt("HeroAbilArray").GetElementDataAt("2").GetElementDataAt("Flags").GetElementDataAt("1").Field.Should().Be("HeroAbilArray[2].Flags[1]");
         data.GetElementDataAt("HeroAbilArray").GetElementDataAt("2").GetElementDataAt("Flags").GetElementDataAt("2").Field.Should().Be("HeroAbilArray[2].Flags[2]");
-    }
-
-    [TestMethod]
-    public void Field_ElementHasConstAttribute_ReturnsCorrectField()
-    {
-        // arrange
-        XElement xElement = new(
-            "CAbil",
-            new XAttribute("default", "1"),
-            new XElement(
-                "Name",
-                new XAttribute("value", "$Name"),
-                new XAttribute($"{StormModStorage.SelfNameConst}value", "SomeValue")));
-
-        // act
-        StormElementData stormElementData = new(xElement);
-
-        // assert
-        stormElementData.GetElementDataAt("Name").Field.Should().Be("Name");
     }
 
     [TestMethod]

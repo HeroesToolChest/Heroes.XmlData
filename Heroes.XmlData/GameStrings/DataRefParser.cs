@@ -253,11 +253,7 @@ internal class DataRefParser
 
         currentElementData = GetStormElementDataFromLastFieldPart(currentElementData, fullPartSpan, fieldParts);
 
-        if (currentElementData.IsConstValue)
-        {
-            return GetValueScale(currentElementData.Value.GetString(), fullPartSpan, xmlParts);
-        }
-        else if (currentElementData.HasValue)
+        if (currentElementData.HasValue)
         {
             if (currentElementData.HasTextIndex)
                 return GetValueScale(currentElementData.RawValue, fullPartSpan, xmlParts, currentElementData.ElementDataPairs.First().Key);

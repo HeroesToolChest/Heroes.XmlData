@@ -5,9 +5,6 @@
 /// </summary>
 internal class StormModStorage : IStormModStorage
 {
-    public const string SelfNameConst = $"{HxdConstants.Name}const-";
-    public const string SelfNameAsset = $"{HxdConstants.Name}asset-";
-
     private readonly IStormMod _stormMod;
     private readonly IStormStorage _stormStorage;
 
@@ -224,7 +221,7 @@ internal class StormModStorage : IStormModStorage
         else
             endIndexOfConst += indexOfConst;
 
-        element.SetAttributeValue($"{SelfNameConst}{attribute.Name}", attribute.Value.Replace(attributeSpan[indexOfConst..endIndexOfConst].ToString(), _stormStorage.GetValueFromConstTextAsText(attributeSpan[indexOfConst..endIndexOfConst])));
+        element.SetAttributeValue(attribute.Name, attribute.Value.Replace(attributeSpan[indexOfConst..endIndexOfConst].ToString(), _stormStorage.GetValueFromConstTextAsText(attributeSpan[indexOfConst..endIndexOfConst])));
     }
 
     private void SetAssetAttribute(XElement element, XAttribute attribute, ReadOnlySpan<char> attributeSpan)
@@ -237,9 +234,9 @@ internal class StormModStorage : IStormModStorage
         if (_stormStorage.TryGetStormAssetStringValue(attributeSpan[1..], out string? value))
             assetValue = value;
 
-        element.SetAttributeValue($"{SelfNameAsset}{attribute.Name}", assetValue);
+        element.SetAttributeValue(attribute.Name, assetValue);
 #else
-        element.SetAttributeValue($"{SelfNameAsset}{attribute.Name}", _stormStorage.GetStormAssetString(attributeSpan[1..].ToString())?.Value ?? string.Empty);
+        element.SetAttributeValue(attribute.Name, _stormStorage.GetStormAssetString(attributeSpan[1..].ToString())?.Value ?? string.Empty);
 #endif
     }
 }

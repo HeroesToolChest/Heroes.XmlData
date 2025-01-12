@@ -329,7 +329,6 @@ public class StormModStorageTests
 
         // assert
         stormModStorage.AddedXmlDataFilePaths.Should().BeEquivalentTo(new[] { stormPath });
-        stormStorage.StormCache.StormElementByElementType["CBehaviorBuff"].DataValues.GetElementDataAt("InfoFlags").GetElementDataAt("Hidden").RawValue.Should().Be("$ChromieBasicAttackRange");
         stormStorage.StormCache.StormElementByElementType["CBehaviorBuff"].DataValues.GetElementDataAt("InfoFlags").GetElementDataAt("Hidden").Value.GetString().Should().Be("7");
     }
 
@@ -531,13 +530,13 @@ public class StormModStorageTests
         {
             XElement.Parse(@"
 <CBehaviorBuff default=""1"">
-  <InfoFlags index=""Hidden"" value=""$ChromieBasicAttackRange"" Hxdconst-value=""7"" />
+  <InfoFlags index=""Hidden"" value=""7"" />
   <InfoFlags index=""Hidden"" value=""5"" />
-  <InfoFlags index=""Hidden"" value=""xyz $ChromieBasicAttackRange"" Hxdconst-value=""xyz 7"" />
-  <InfoFlags index=""Hidden"" value=""xyz $ChromieBasicAttackRange,xyz"" Hxdconst-value=""xyz 7,xyz"" />
-  <InfoFlags index=""Hidden"" value=""xyz $ChromieBasicAttackRange.xyz"" Hxdconst-value=""xyz 7.xyz"" />
-  <InfoFlags index=""Hidden"" value=""xyz $ChromieBasicAttackRange;xyz"" Hxdconst-value=""xyz 7;xyz"" />
-  <InfoFlags index=""Hidden"" value=""xyz $ChromieBasicAttackRange xyz"" Hxdconst-value=""xyz 7 xyz"" />
+  <InfoFlags index=""Hidden"" value=""xyz 7"" />
+  <InfoFlags index=""Hidden"" value=""xyz 7,xyz"" />
+  <InfoFlags index=""Hidden"" value=""xyz 7.xyz"" />
+  <InfoFlags index=""Hidden"" value=""xyz 7;xyz"" />
+  <InfoFlags index=""Hidden"" value=""xyz 7 xyz"" />
 </CBehaviorBuff>
     "),
         });
@@ -574,8 +573,8 @@ public class StormModStorageTests
 """
 <CBehaviorBuff default="1">
   <InfoFlags index="Hidden" value="5" />
-  <InfoFlags index="Hidden" value="@UI/LoadingScreen_SnowBrawl_Background" Hxdasset-value="Assets\Textures\storm_ui_homescreenbackground_snowbrawl.dds" />
-  <InfoFlags index="Hidden" value="@other_not_found" Hxdasset-value="" />
+  <InfoFlags index="Hidden" value="Assets\Textures\storm_ui_homescreenbackground_snowbrawl.dds" />
+  <InfoFlags index="Hidden" value="" />
 </CBehaviorBuff>
 """),
         });

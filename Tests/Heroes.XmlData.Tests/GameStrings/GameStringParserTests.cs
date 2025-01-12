@@ -1595,4 +1595,45 @@ public class GameStringParserTests
         // assert
         parsed.Should().Be("Launch a fireball, Burning enemies hit for <c val=\"#TooltipNumbers\">75</c> damage over <c val=\"#TooltipNumbers\">5.5</c> seconds.<n/><n/>Hitting enemies that are already Burning deals <c val=\"#TooltipNumbers\">125</c> bonus damage upon impact, Slows them by <c val=\"#TooltipNumbers\">40%</c> decaying over <c val=\"#TooltipNumbers\">2</c> seconds, and refunds the Mana cost.<n/><n/><c val=\"#ColorViolet\">Dragonqueen: Wing Buffet</c><n/>Damage and Knockback enemies in an arc.");
     }
+
+    [TestMethod]
+    public void ParseTooltipDescription_InnerElementsWithConstValueAttributes_ParsedGameString()
+    {
+        // arrange
+        string description = "Basic Attacks with Repeater Cannon reduce Ability cooldowns by <c val=\"#TooltipNumbers\"><d ref=\"-1*Effect,FenixArsenalOverchargeModifyCooldowns,Cost[0].CooldownTimeUse\" precision=\"2\"/></c> seconds. Basic Attacks with Phase Bomb active reduce Ability cooldowns by <c val=\"#TooltipNumbers\"><d ref=\"-1*Effect,FenixArsenalOverchargeModifyCooldowns,Cost[0].CooldownTimeUse\" precision=\"2\"/></c></c> seconds per Hero hit.";
+
+        HeroesXmlLoader loader = HeroesXmlLoader.LoadWithEmpty()
+            .LoadCustomMod(new ManualModLoader("custom")
+                .AddBaseElementTypes(new List<(string, string)>()
+                {
+                    ("Effect", "CEffectModifyUnit"),
+                })
+                .AddElements(new List<XElement>()
+                {
+                    XElement.Parse(
+                        """
+                        <CEffectModifyUnit id="FenixArsenalOverchargeModifyCooldowns">
+                          <Cost Abil="FenixPlasmaCutter,Execute" CooldownOperation="Add" CooldownTimeUse="$FenixArsenalOverchargeCDRAmount" />
+                          <Cost Abil="FenixWarp,Execute" CooldownOperation="Add" CooldownTimeUse="$FenixArsenalOverchargeCDRAmount" />
+                          <Cost Abil="FenixPurificationSalvo,Execute" CooldownOperation="Add" CooldownTimeUse="$FenixArsenalOverchargeCDRAmount" />
+                          <Cost Abil="FenixPlanetCracker,Execute" CooldownOperation="Add" CooldownTimeUse="$FenixArsenalOverchargeCDRAmount" />
+                        </CEffectModifyUnit>
+                        """),
+                })
+                .AddConstantXElements(new List<XElement>()
+                {
+                    XElement.Parse(
+                        """
+                        <const id="$FenixArsenalOverchargeCDRAmount" value="-0.5" />
+                        """),
+                }));
+
+        HeroesData heroesData = loader.HeroesData;
+
+        // act
+        string parsed = GameStringParser.ParseTooltipDescription(heroesData.StormStorage, description);
+
+        // assert
+        parsed.Should().Be("Basic Attacks with Repeater Cannon reduce Ability cooldowns by <c val=\"#TooltipNumbers\">0.5</c> seconds. Basic Attacks with Phase Bomb active reduce Ability cooldowns by <c val=\"#TooltipNumbers\">0.5</c></c> seconds per Hero hit.");
+    }
 }
