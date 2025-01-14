@@ -78,7 +78,7 @@ public class HeroesXmlLoader
     /// <param name="pathToHeroesDirectory">The Heroes of the storm directory.</param>
     /// <param name="backgroundWorkerEx">A background worker used to report loading progress.</param>
     /// <returns>A <see cref="HeroesXmlLoader"/> instance.</returns>
-    public static HeroesXmlLoader LoadWithCASC(string pathToHeroesDirectory, BackgroundWorkerEx? backgroundWorkerEx = null)
+    public static HeroesXmlLoader LoadWithCASC(string pathToHeroesDirectory, IBackgroundWorkerEx? backgroundWorkerEx = null)
     {
         return LoadAsCASCInternal(CASCConfig.LoadLocalStorageConfig(pathToHeroesDirectory, "hero"), backgroundWorkerEx);
     }
@@ -88,7 +88,7 @@ public class HeroesXmlLoader
     /// </summary>
     /// <param name="backgroundWorkerEx">A background worker used to report loading progress.</param>
     /// <returns>A <see cref="HeroesXmlLoader"/> instance.</returns>
-    public static HeroesXmlLoader LoadWithOnlineCASC(BackgroundWorkerEx backgroundWorkerEx)
+    public static HeroesXmlLoader LoadWithOnlineCASC(IBackgroundWorkerEx? backgroundWorkerEx = null)
     {
         return LoadAsCASCInternal(CASCConfig.LoadOnlineStorageConfig("hero", "us"), backgroundWorkerEx);
     }
@@ -300,13 +300,13 @@ public class HeroesXmlLoader
     /// <exception cref="FileNotFoundException">File was not found.</exception>
     public Stream GetFile(StormFile stormFile) => _heroesSource.GetFile(stormFile);
 
-    private static HeroesXmlLoader LoadAsCASCInternal(CASCConfig cascConfig, BackgroundWorkerEx? backgroundWorkerEx)
+    private static HeroesXmlLoader LoadAsCASCInternal(CASCConfig cascConfig, IBackgroundWorkerEx? backgroundWorkerEx)
     {
         CASCConfig.ThrowOnFileNotFound = true;
         CASCConfig.ThrowOnMissingDecryptionKey = true;
 
-        CASCHandler cascHandler = CASCHandler.OpenStorage(cascConfig, backgroundWorkerEx);
-        cascHandler.Root.LoadListFile(string.Empty, backgroundWorkerEx);
+        CASCHandler cascHandler = CASCHandler.OpenStorage(cascConfig, (BackgroundWorkerEx?)backgroundWorkerEx);
+        cascHandler.Root.LoadListFile(string.Empty, (BackgroundWorkerEx?)backgroundWorkerEx);
 
         CASCFolder cascFolderRoot = cascHandler.Root.SetFlags(LocaleFlags.All);
 
