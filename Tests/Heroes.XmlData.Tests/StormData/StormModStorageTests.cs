@@ -29,6 +29,7 @@ public class StormModStorageTests
 
         // assert
         stormModStorage.NotFoundDirectories.Should().HaveCount(2);
+        stormModStorage.NumberOfNotFoundDirectories.Should().Be(2);
         stormModStorage.NotFoundDirectories.Should().BeEquivalentTo(new[] { stormPath1, stormPath2 });
         _stormStorage.Received().AddDirectoryNotFound(Arg.Any<StormModType>(), stormPath1);
         _stormStorage.Received().AddDirectoryNotFound(Arg.Any<StormModType>(), stormPath2);
@@ -48,6 +49,7 @@ public class StormModStorageTests
 
         // assert
         stormModStorage.NotFoundFiles.Should().HaveCount(2);
+        stormModStorage.NUmberOfNotFoundFiles.Should().Be(2);
         stormModStorage.NotFoundFiles.Should().BeEquivalentTo(new[] { stormPath1, stormPath2 });
 
         _stormStorage.Received().AddFileNotFound(Arg.Any<StormModType>(), stormPath1);
@@ -270,6 +272,7 @@ public class StormModStorageTests
 
         // assert
         stormModStorage.AddedXmlDataFilePaths.Should().BeEquivalentTo(new[] { stormPath });
+        stormModStorage.NumberOfXmlDataFiles.Should().Be(1);
         _stormStorage.Received(2).AddConstantXElement(Arg.Any<StormModType>(), Arg.Any<XElement>(), stormPath);
         _stormStorage.Received(2).AddLevelScalingArrayElement(Arg.Any<StormModType>(), Arg.Any<XElement>(), stormPath);
         _stormStorage.Received(2).AddElement(Arg.Any<StormModType>(), Arg.Any<XElement>(), stormPath);
@@ -297,6 +300,7 @@ public class StormModStorageTests
 
         // assert
         stormModStorage.AddedXmlDataFilePaths.Should().BeEquivalentTo(new[] { stormPath });
+        stormModStorage.NumberOfXmlDataFiles.Should().Be(1);
         _stormStorage.DidNotReceive().AddConstantXElement(Arg.Any<StormModType>(), Arg.Any<XElement>(), stormPath);
         _stormStorage.DidNotReceive().AddLevelScalingArrayElement(Arg.Any<StormModType>(), Arg.Any<XElement>(), stormPath);
         _stormStorage.DidNotReceive().AddElement(Arg.Any<StormModType>(), Arg.Any<XElement>(), stormPath);
@@ -329,6 +333,7 @@ public class StormModStorageTests
 
         // assert
         stormModStorage.AddedXmlDataFilePaths.Should().BeEquivalentTo(new[] { stormPath });
+        stormModStorage.NumberOfXmlDataFiles.Should().Be(1);
         stormStorage.StormCache.StormElementByElementType["CBehaviorBuff"].DataValues.GetElementDataAt("InfoFlags").GetElementDataAt("Hidden").Value.GetString().Should().Be("7");
     }
 
@@ -358,6 +363,7 @@ public class StormModStorageTests
 
         // assert
         stormModStorage.AddedXmlDataFilePaths.Should().BeEquivalentTo(new[] { stormPath1 });
+        stormModStorage.NumberOfXmlDataFiles.Should().Be(1);
         _stormStorage.Received(1).AddConstantXElement(Arg.Any<StormModType>(), Arg.Any<XElement>(), stormPath1);
         _stormStorage.Received(1).AddElement(Arg.Any<StormModType>(), Arg.Any<XElement>(), stormPath1);
         _stormStorage.DidNotReceive().AddBaseElementTypes(Arg.Any<StormModType>(), "behavior", "CBehaviorBuff");
@@ -382,6 +388,7 @@ public class StormModStorageTests
 
         // assert
         stormModStorage.AddedXmlFontStyleFilePaths.Should().BeEquivalentTo(new[] { stormPath1 });
+        stormModStorage.NumberOfXmlFontStyleFiles.Should().Be(1);
         _stormStorage.Received(1).SetStormStyleCache(Arg.Any<StormModType>(), xmlDoc, stormPath1);
     }
 
@@ -406,6 +413,7 @@ public class StormModStorageTests
 
         // assert
         stormModStorage.AddedXmlFontStyleFilePaths.Should().BeEquivalentTo(new[] { stormPath1 });
+        stormModStorage.NumberOfXmlFontStyleFiles.Should().Be(1);
         _stormStorage.Received(1).SetStormStyleCache(Arg.Any<StormModType>(), xmlDoc, stormPath1);
     }
 

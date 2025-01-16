@@ -14,6 +14,22 @@ internal interface IStormModStorage
 
     IEnumerable<StormPath> FoundAssetFilePaths { get; }
 
+    int NumberOfNotFoundDirectories { get; }
+
+    int NUmberOfNotFoundFiles { get; }
+
+    int NumberOfXmlDataFiles { get; }
+
+    int NumberOfXmlFontStyleFiles { get; }
+
+    int NumberOfGameStringFiles { get; }
+
+    int NumberOfAssetsTextFiles { get; }
+
+    int NumberOfLayoutFiles { get; }
+
+    int NumberOfAssetFiles { get; }
+
     int? BuildId { get; }
 
     Dictionary<string, GameStringText> GameStringsById { get; }

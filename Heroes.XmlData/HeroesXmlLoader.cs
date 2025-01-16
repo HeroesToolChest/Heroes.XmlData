@@ -300,6 +300,113 @@ public class HeroesXmlLoader
     /// <exception cref="FileNotFoundException">File was not found.</exception>
     public Stream GetFile(StormFile stormFile) => _heroesSource.GetFile(stormFile);
 
+    /// <summary>
+    /// Gets the total number of currently loaded gamestrings.
+    /// </summary>
+    /// <returns>The total number of gamestrings.</returns>
+    public int GetTotalLoadedGamestrings()
+    {
+        return _heroesSource.StormStorage.StormCache.GameStringsById.Count +
+            _heroesSource.StormStorage.StormMapCache.GameStringsById.Count +
+            _heroesSource.StormStorage.StormCustomCache.GameStringsById.Count;
+    }
+
+    /// <summary>
+    /// Gets the total number of directories that were not found during the loading process.
+    /// </summary>
+    /// <returns>The total number of not found directories.</returns>
+    public int GetNumberOfNotFoundDirectories()
+    {
+        return _heroesSource.StormStorage.StormModStorages.Sum(x => x.NumberOfNotFoundDirectories);
+    }
+
+    /// <summary>
+    /// Gets the total number of files that were not found during the loading process.
+    /// </summary>
+    /// <returns>The total number of not found files.</returns>
+    public int GetNumberOfNotFoundFiles()
+    {
+        return _heroesSource.StormStorage.StormModStorages.Sum(x => x.NUmberOfNotFoundFiles);
+    }
+
+    /// <summary>
+    /// Gets the total number of currently loaded xml data files.
+    /// </summary>
+    /// <remarks>The .xml files.</remarks>
+    /// <returns>The total number of xml files.</returns>
+    public int GetTotalLoadedXmlDataFiles()
+    {
+        return _heroesSource.StormStorage.StormModStorages.Sum(x => x.NumberOfXmlDataFiles);
+    }
+
+    /// <summary>
+    /// Gets the total number of currently loaded font style files.
+    /// </summary>
+    /// <remarks>The .stormstyle files.</remarks>
+    /// <returns>The total number of font style files.</returns>
+    public int GetTotalLoadedFontStyleFiles()
+    {
+        return _heroesSource.StormStorage.StormModStorages.Sum(x => x.NumberOfXmlFontStyleFiles);
+    }
+
+    /// <summary>
+    /// Gets the total number of currently loaded gamestring files.
+    /// </summary>
+    /// <remarks>The gamestrings.txt files.</remarks>
+    /// <returns>The total number of gamestring files.</returns>
+    public int GetTotalLoadedGameStringsFiles()
+    {
+        return _heroesSource.StormStorage.StormModStorages.Sum(x => x.NumberOfGameStringFiles);
+    }
+
+    /// <summary>
+    /// Gets the total number of currently loaded assets text files.
+    /// </summary>
+    /// <remarks>The assets.txt files.</remarks>
+    /// <returns>The total number of assets text files.</returns>
+    public int GetTotalLoadedAssetsTextFiles()
+    {
+        return _heroesSource.StormStorage.StormModStorages.Sum(x => x.NumberOfAssetsTextFiles);
+    }
+
+    /// <summary>
+    /// Gets the total number of currently loaded layout files.
+    /// </summary>
+    /// <remarks>The .stormlayout files.</remarks>
+    /// <returns>The total number of layout files.</returns>
+    public int GetTotalLoadedLayoutFiles()
+    {
+        return _heroesSource.StormStorage.StormModStorages.Sum(x => x.NumberOfLayoutFiles);
+    }
+
+    /// <summary>
+    /// Gets the total number of currently loaded asset (image) files.
+    /// </summary>
+    /// <remarks>Primarly .dds files.</remarks>
+    /// <returns>The total number of asset files.</returns>
+    public int GetTotalLoadedAssetFiles()
+    {
+        return _heroesSource.StormStorage.StormModStorages.Sum(x => x.NumberOfAssetFiles);
+    }
+
+    /// <summary>
+    /// Gets a collection of the directories that were not found during the loading process.
+    /// </summary>
+    /// <returns>An enumerable of <see cref="StormPath"/>s.</returns>
+    public IEnumerable<StormPath> GetNotFoundDirectories()
+    {
+        return _heroesSource.StormStorage.StormModStorages.SelectMany(x => x.NotFoundDirectories);
+    }
+
+    /// <summary>
+    /// Gets a collection of the files that were not found during the loading process.
+    /// </summary>
+    /// <returns>An enumerable of <see cref="StormPath"/>s.</returns>
+    public IEnumerable<StormPath> GetNotFoundFiles()
+    {
+        return _heroesSource.StormStorage.StormModStorages.SelectMany(x => x.NotFoundFiles);
+    }
+
     private static HeroesXmlLoader LoadAsCASCInternal(CASCConfig cascConfig, IBackgroundWorkerEx? backgroundWorkerEx)
     {
         CASCConfig.ThrowOnFileNotFound = true;

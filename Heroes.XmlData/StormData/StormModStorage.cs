@@ -1,4 +1,6 @@
-﻿namespace Heroes.XmlData.StormData;
+﻿using System.Diagnostics.Contracts;
+
+namespace Heroes.XmlData.StormData;
 
 /// <summary>
 /// Storage for an individual storm mod.
@@ -50,6 +52,22 @@ internal class StormModStorage : IStormModStorage
     public Dictionary<string, GameStringText> GameStringsById { get; } = [];
 
     public Dictionary<string, AssetText> AssetTextsById { get; } = [];
+
+    public int NumberOfNotFoundDirectories => _notFoundDirectoriesList.Count;
+
+    public int NUmberOfNotFoundFiles => _notFoundFilesList.Count;
+
+    public int NumberOfXmlDataFiles => _addedXmlDataFilePathsList.Count;
+
+    public int NumberOfXmlFontStyleFiles => _addedXmlFontStyleFilePathsList.Count;
+
+    public int NumberOfGameStringFiles => _addedGameStringFilePathsList.Count;
+
+    public int NumberOfAssetsTextFiles => _addedAssetsTextFilePathsList.Count;
+
+    public int NumberOfLayoutFiles => _foundLayoutFilePathsList.Count;
+
+    public int NumberOfAssetFiles => _foundAssetFilePathsList.Count;
 
     public void AddDirectoryNotFound(StormPath requiredStormDirectory)
     {

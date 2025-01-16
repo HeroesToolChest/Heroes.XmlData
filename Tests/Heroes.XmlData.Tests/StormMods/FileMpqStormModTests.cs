@@ -31,6 +31,7 @@ public class FileMpqStormModTests
         fileMpqStormMod.StormModStorage.AddedXmlDataFilePaths.Should().ContainSingle();
         fileMpqStormMod.StormModStorage.FoundLayoutFilePaths.Should().HaveCount(2);
         fileMpqStormMod.StormModStorage.AddedAssetsTextFilePaths.Should().ContainSingle();
+        fileMpqStormMod.StormModStorage.NumberOfAssetsTextFiles.Should().Be(1);
         fileMpqStormMod.StormModStorage.FoundAssetFilePaths.Should().HaveCount(2);
     }
 
@@ -48,6 +49,7 @@ public class FileMpqStormModTests
         fileMpqStormMod.StormModStorage.AddedXmlDataFilePaths.Should().ContainSingle();
         fileMpqStormMod.StormModStorage.FoundLayoutFilePaths.Should().HaveCount(2);
         fileMpqStormMod.StormModStorage.AddedAssetsTextFilePaths.Should().ContainSingle();
+        fileMpqStormMod.StormModStorage.NumberOfAssetsTextFiles.Should().Be(1);
     }
 
     [TestMethod]
@@ -86,7 +88,7 @@ public class FileMpqStormModTests
         fileMpqStormMod.LoadStormGameStrings(StormLocale.ENUS);
 
         // assert
-        fileMpqStormMod.StormModStorage.AddedGameStringFilePaths.Should().ContainSingle();
+        fileMpqStormMod.StormModStorage.NumberOfGameStringFiles.Should().Be(1);
     }
 
     [TestMethod]
@@ -108,7 +110,7 @@ public class FileMpqStormModTests
         fileMpqStormMod.LoadStormGameStrings(StormLocale.ENUS);
 
         // assert
-        fileMpqStormMod.StormModStorage.AddedGameStringFilePaths.Should().ContainSingle();
+        fileMpqStormMod.StormModStorage.NumberOfGameStringFiles.Should().Be(1);
     }
 
     [TestMethod]

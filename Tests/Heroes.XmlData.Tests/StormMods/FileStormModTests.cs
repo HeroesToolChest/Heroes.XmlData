@@ -63,8 +63,11 @@ public class FileStormModTests
         fileStormMod.StormModStorage.BuildId.Should().Be(1);
         fileStormMod.StormModStorage.AddedXmlDataFilePaths.Should().HaveCount(2);
         fileStormMod.StormModStorage.AddedXmlFontStyleFilePaths.Should().ContainSingle();
+        fileStormMod.StormModStorage.NumberOfXmlFontStyleFiles.Should().Be(1);
         fileStormMod.StormModStorage.FoundLayoutFilePaths.Should().HaveCount(2);
+        fileStormMod.StormModStorage.NumberOfLayoutFiles.Should().Be(2);
         fileStormMod.StormModStorage.AddedAssetsTextFilePaths.Should().ContainSingle();
+        fileStormMod.StormModStorage.NumberOfAssetsTextFiles.Should().Be(1);
         fileHeroesSource.StormStorage.StormModStorages.Should().ContainSingle();
     }
 
@@ -649,6 +652,7 @@ public class FileStormModTests
 
         // assert
         fileStormMod.StormModStorage.FoundLayoutFilePaths.Should().HaveCount(5);
+        fileStormMod.StormModStorage.NumberOfLayoutFiles.Should().Be(5);
         stormStorage.StormCache.UiStormPathsByRelativeUiPath.Should().HaveCount(5).And
             .SatisfyRespectively(
                 first =>
@@ -714,6 +718,7 @@ public class FileStormModTests
 
         // assert
         fileStormMod.StormModStorage.FoundAssetFilePaths.Should().HaveCount(4);
+        fileStormMod.StormModStorage.NumberOfAssetFiles.Should().Be(4);
         stormStorage.StormCache.AssetFilesByRelativeAssetsPath.Should().HaveCount(4).And
             .SatisfyRespectively(
                 first =>
@@ -750,6 +755,7 @@ public class FileStormModTests
         // assert
         fileSystem.Received().Directory.Exists(Arg.Any<string>());
         fileStormMod.StormModStorage.FoundAssetFilePaths.Should().BeEmpty();
+        fileStormMod.StormModStorage.NumberOfAssetFiles.Should().Be(0);
         stormStorage.StormCache.AssetFilesByRelativeAssetsPath.Should().BeEmpty();
     }
 
