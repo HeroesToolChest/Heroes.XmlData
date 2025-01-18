@@ -27,7 +27,7 @@ public class HeroesData
     public StormLocale? HeroesLocalization => _heroesLocalization;
 
     /// <summary>
-    /// Gets the build number.
+    /// Gets the loaded heroes build number.
     /// </summary>
     public int? Build => _stormStorage.GetBuildId();
 
@@ -225,50 +225,6 @@ public class HeroesData
     public StormFile? GetStormLayoutFile(string? path)
     {
         return _stormStorage.GetStormLayoutFile(path);
-    }
-
-    /// <summary>
-    /// Gets a collection of not found files.
-    /// </summary>
-    /// <returns>A collection of not found <see cref="StormPath"/>s that represents not found files.</returns>
-    public IEnumerable<StormPath> GetNotFoundFiles()
-    {
-        foreach (StormPath item in StormStorage.StormCache.NotFoundFilesList)
-        {
-            yield return item;
-        }
-
-        foreach (StormPath item in StormStorage.StormMapCache.NotFoundFilesList)
-        {
-            yield return item;
-        }
-
-        foreach (StormPath item in StormStorage.StormCustomCache.NotFoundFilesList)
-        {
-            yield return item;
-        }
-    }
-
-    /// <summary>
-    /// Gets a collection of not found directories.
-    /// </summary>
-    /// <returns>A collection of not found <see cref="StormPath"/>s that represents not found directories.</returns>
-    public IEnumerable<StormPath> GetNotFoundDirectories()
-    {
-        foreach (StormPath item in StormStorage.StormCache.NotFoundDirectoriesList)
-        {
-            yield return item;
-        }
-
-        foreach (StormPath item in StormStorage.StormMapCache.NotFoundDirectoriesList)
-        {
-            yield return item;
-        }
-
-        foreach (StormPath item in StormStorage.StormCustomCache.NotFoundDirectoriesList)
-        {
-            yield return item;
-        }
     }
 
     internal void SetHeroesLocalization(StormLocale stormLocale)

@@ -49,7 +49,7 @@ public class StormModStorageTests
 
         // assert
         stormModStorage.NotFoundFiles.Should().HaveCount(2);
-        stormModStorage.NUmberOfNotFoundFiles.Should().Be(2);
+        stormModStorage.NumberOfNotFoundFiles.Should().Be(2);
         stormModStorage.NotFoundFiles.Should().BeEquivalentTo(new[] { stormPath1, stormPath2 });
 
         _stormStorage.Received().AddFileNotFound(Arg.Any<StormModType>(), stormPath1);

@@ -108,7 +108,7 @@ internal abstract class HeroesSource : IHeroesSource
 
     public List<S2MAProperties> S2MAProperties { get; } = [];
 
-    public Dictionary<string, S2MAProperties> S2MAPropertiesByTitle { get; } = [];
+    public Dictionary<string, S2MAProperties> S2MAPropertiesByTitle { get; } = new(StringComparer.OrdinalIgnoreCase);
 
     public List<string> S2MAPaths { get; } = [];
 
@@ -196,17 +196,15 @@ internal abstract class HeroesSource : IHeroesSource
 
         stormMod.LoadStormData();
 
+        StormStorage.AddModStorage(stormMod.StormModStorage);
         StormStorage.BuildDataForScalingAttributes(StormModType.Custom);
     }
 
     public void LoadCustomMod(string directoryPath)
     {
         IStormMod stormMod = GetStormMod(directoryPath, StormModType.Custom);
-        _stormCustomMods.Add(stormMod);
 
-        stormMod.LoadStormData();
-
-        StormStorage.BuildDataForScalingAttributes(StormModType.Custom);
+        LoadCustomMod(stormMod);
     }
 
     public void UnloadCustomMods()
@@ -219,7 +217,7 @@ internal abstract class HeroesSource : IHeroesSource
         return _stormMapMods.Select(x => new StormMapDependency() { Name = x.Name, DirectoryPath = x.DirectoryPath });
     }
 
-    public bool IsMapMapLoaded()
+    public bool IsMapModLoaded()
     {
         return _stormMapMods.Count > 0;
     }

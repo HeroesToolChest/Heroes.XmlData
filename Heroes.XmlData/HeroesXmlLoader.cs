@@ -8,9 +8,22 @@ public class HeroesXmlLoader
     private readonly IHeroesSource _heroesSource;
 
     private bool _baseStormModsLoaded = false;
+    private string _loadedMapTitle = string.Empty;
+
+    // for testing
+    private HeroesXmlLoader(IHeroesSource heroesSource)
+    {
+        StormStorage stormStorage = new();
+        _heroesSource = heroesSource;
+
+        HeroesData = new HeroesData(stormStorage);
+
+        LoadedType = HeroesXmlLoaderType.File;
+        RootDirectory = _heroesSource.ModsBaseDirectoryPath;
+    }
 
     private HeroesXmlLoader()
-        : this(string.Empty, null)
+        : this(string.Empty, backgroundWorkerEx: null)
     {
     }
 
@@ -37,7 +50,12 @@ public class HeroesXmlLoader
     }
 
     /// <summary>
-    /// Gets the the type of the loaded source data.
+    /// Gets the loaded heroes build number.
+    /// </summary>
+    public int? Build => _heroesSource.StormStorage.GetBuildId();
+
+    /// <summary>
+    /// Gets the type of the loaded source data.
     /// </summary>
     public HeroesXmlLoaderType LoadedType { get; }
 
@@ -52,6 +70,16 @@ public class HeroesXmlLoader
     public HeroesData HeroesData { get; }
 
     /// <summary>
+    /// Gets the current loaded map title.
+    /// </summary>
+    public string GetLoadedMapTitle => _loadedMapTitle;
+
+    /// <summary>
+    /// Gets the current set storm locale.
+    /// </summary>
+    public StormLocale? GetCurrentStormLocale => HeroesData.HeroesLocalization;
+
+    /// <summary>
     /// Gets an instance of the <see cref="HeroesXmlLoader"/> class. The source of data will be emtpy.
     /// </summary>
     /// <returns>A <see cref="HeroesXmlLoader"/>.</returns>
@@ -63,7 +91,7 @@ public class HeroesXmlLoader
     /// <summary>
     /// Gets an instance of the <see cref="HeroesXmlLoader"/> class. Sets the source of the data to be loaded from an extracted file source.
     /// </summary>
-    /// <param name="rootDirectory">The root directory, usually the mods directory.</param>
+    /// <param name="rootDirectory">The root directory path, usually the mods directory.</param>
     /// <param name="backgroundWorkerEx">A background worker used to report loading progress.</param>
     /// <returns>A <see cref="HeroesXmlLoader"/> instance.</returns>
     /// <remarks>On linux and macos, all directories and files should be in lowercase characters, otherwise some files and directories may not be found.</remarks>
@@ -112,17 +140,22 @@ public class HeroesXmlLoader
 
     /// <summary>
     /// Loads a map mod. Only one can be loaded at a time. Will automatically load the base stormmods if not already loaded.
+    /// All Gamestrings will be reloaded if <see cref="LoadGameStrings(StormLocale)"/> was already called.
     /// </summary>
-    /// <param name="mapTitle">A map's title. Can be found from <see cref="GetMapTitles"/>.</param>
+    /// <param name="mapTitle">A map's title. Can be found from <see cref="GetMapTitles"/>. Is not case-sensitive.</param>
     /// <returns>The current <see cref="HeroesXmlLoader"/> instance.</returns>
     public HeroesXmlLoader LoadMapMod(string mapTitle)
     {
         LoadBaseStormMods();
 
-        _heroesSource.LoadStormMapData(mapTitle);
+        if (GetLoadedMapTitle.Equals(mapTitle, StringComparison.OrdinalIgnoreCase) is false)
+        {
+            _loadedMapTitle = mapTitle;
+            _heroesSource.LoadStormMapData(mapTitle);
 
-        if (HeroesData.HeroesLocalization is not null)
-            LoadGameStrings(HeroesData.HeroesLocalization.Value);
+            if (HeroesData.HeroesLocalization is not null)
+                LoadGameStrings(HeroesData.HeroesLocalization.Value);
+        }
 
         return this;
     }
@@ -148,7 +181,6 @@ public class HeroesXmlLoader
         LoadBaseStormMods();
 
         HeroesData.SetHeroesLocalization(localization);
-
         _heroesSource.LoadGamestrings(localization);
 
         return this;
@@ -244,7 +276,7 @@ public class HeroesXmlLoader
     /// <returns><see langword="true"/> if a map mod is loaded, otherwise <see langword="false"/>.</returns>
     public bool IsMapModLoaded()
     {
-        return _heroesSource.IsMapMapLoaded();
+        return _heroesSource.IsMapModLoaded();
     }
 
     /// <summary>
@@ -304,11 +336,9 @@ public class HeroesXmlLoader
     /// Gets the total number of currently loaded gamestrings.
     /// </summary>
     /// <returns>The total number of gamestrings.</returns>
-    public int GetTotalLoadedGamestrings()
+    public int GetNumberOfLoadedGameStrings()
     {
-        return _heroesSource.StormStorage.StormCache.GameStringsById.Count +
-            _heroesSource.StormStorage.StormMapCache.GameStringsById.Count +
-            _heroesSource.StormStorage.StormCustomCache.GameStringsById.Count;
+        return _heroesSource.StormStorage.StormModStorages.Sum(x => x.GameStringsById.Count);
     }
 
     /// <summary>
@@ -326,7 +356,7 @@ public class HeroesXmlLoader
     /// <returns>The total number of not found files.</returns>
     public int GetNumberOfNotFoundFiles()
     {
-        return _heroesSource.StormStorage.StormModStorages.Sum(x => x.NUmberOfNotFoundFiles);
+        return _heroesSource.StormStorage.StormModStorages.Sum(x => x.NumberOfNotFoundFiles);
     }
 
     /// <summary>
@@ -334,7 +364,7 @@ public class HeroesXmlLoader
     /// </summary>
     /// <remarks>The .xml files.</remarks>
     /// <returns>The total number of xml files.</returns>
-    public int GetTotalLoadedXmlDataFiles()
+    public int GetNumberOfXmlDataFiles()
     {
         return _heroesSource.StormStorage.StormModStorages.Sum(x => x.NumberOfXmlDataFiles);
     }
@@ -344,7 +374,7 @@ public class HeroesXmlLoader
     /// </summary>
     /// <remarks>The .stormstyle files.</remarks>
     /// <returns>The total number of font style files.</returns>
-    public int GetTotalLoadedFontStyleFiles()
+    public int GetNumberOfFontStyleFiles()
     {
         return _heroesSource.StormStorage.StormModStorages.Sum(x => x.NumberOfXmlFontStyleFiles);
     }
@@ -354,7 +384,7 @@ public class HeroesXmlLoader
     /// </summary>
     /// <remarks>The gamestrings.txt files.</remarks>
     /// <returns>The total number of gamestring files.</returns>
-    public int GetTotalLoadedGameStringsFiles()
+    public int GetNumberOfGameStringsFiles()
     {
         return _heroesSource.StormStorage.StormModStorages.Sum(x => x.NumberOfGameStringFiles);
     }
@@ -364,7 +394,7 @@ public class HeroesXmlLoader
     /// </summary>
     /// <remarks>The assets.txt files.</remarks>
     /// <returns>The total number of assets text files.</returns>
-    public int GetTotalLoadedAssetsTextFiles()
+    public int GetNumberOfAssetsTextFiles()
     {
         return _heroesSource.StormStorage.StormModStorages.Sum(x => x.NumberOfAssetsTextFiles);
     }
@@ -374,7 +404,7 @@ public class HeroesXmlLoader
     /// </summary>
     /// <remarks>The .stormlayout files.</remarks>
     /// <returns>The total number of layout files.</returns>
-    public int GetTotalLoadedLayoutFiles()
+    public int GetNumberOfLayoutFiles()
     {
         return _heroesSource.StormStorage.StormModStorages.Sum(x => x.NumberOfLayoutFiles);
     }
@@ -384,7 +414,7 @@ public class HeroesXmlLoader
     /// </summary>
     /// <remarks>Primarly .dds files.</remarks>
     /// <returns>The total number of asset files.</returns>
-    public int GetTotalLoadedAssetFiles()
+    public int GetNumberOfAssetFiles()
     {
         return _heroesSource.StormStorage.StormModStorages.Sum(x => x.NumberOfAssetFiles);
     }
@@ -405,6 +435,36 @@ public class HeroesXmlLoader
     public IEnumerable<StormPath> GetNotFoundFiles()
     {
         return _heroesSource.StormStorage.StormModStorages.SelectMany(x => x.NotFoundFiles);
+    }
+
+    /// <summary>
+    /// Gets a collection of the loaded data file paths.
+    /// </summary>
+    /// <remarks>
+    /// Contains the .xml, .stormstyle, .stormlayout, gamestrings.txt, and assets.txt files.
+    /// </remarks>
+    /// <returns>An enumerable of <see cref="StormPath"/>s.</returns>
+    public IEnumerable<StormPath> GetDataFilePaths()
+    {
+        return _heroesSource.StormStorage.StormModStorages.SelectMany(x => x.AddedXmlDataFilePaths
+            .Concat(x.AddedXmlFontStyleFilePaths)
+            .Concat(x.FoundLayoutFilePaths)
+            .Concat(x.AddedGameStringFilePaths)
+            .Concat(x.AddedAssetsTextFilePaths));
+    }
+
+    /// <summary>
+    /// Gets a collection of all the available asset (the images) file paths.
+    /// </summary>
+    /// <returns>An enumerable of <see cref="StormPath"/>s.</returns>
+    public IEnumerable<StormPath> GetAssetFilePaths()
+    {
+        return _heroesSource.StormStorage.StormModStorages.SelectMany(x => x.FoundAssetFilePaths);
+    }
+
+    internal static HeroesXmlLoader LoadWithInternal(IHeroesSource heroesSource)
+    {
+        return new HeroesXmlLoader(heroesSource);
     }
 
     private static HeroesXmlLoader LoadAsCASCInternal(CASCConfig cascConfig, IBackgroundWorkerEx? backgroundWorkerEx)

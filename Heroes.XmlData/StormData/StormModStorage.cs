@@ -55,7 +55,7 @@ internal class StormModStorage : IStormModStorage
 
     public int NumberOfNotFoundDirectories => _notFoundDirectoriesList.Count;
 
-    public int NUmberOfNotFoundFiles => _notFoundFilesList.Count;
+    public int NumberOfNotFoundFiles => _notFoundFilesList.Count;
 
     public int NumberOfXmlDataFiles => _addedXmlDataFilePathsList.Count;
 

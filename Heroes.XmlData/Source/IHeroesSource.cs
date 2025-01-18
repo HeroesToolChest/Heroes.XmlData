@@ -90,7 +90,7 @@ internal interface IHeroesSource
 
     IEnumerable<StormMapDependency> GetMapDependencies();
 
-    bool IsMapMapLoaded();
+    bool IsMapModLoaded();
 
     string? LoadedStormMapTitle();
 

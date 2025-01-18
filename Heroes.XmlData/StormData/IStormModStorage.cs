@@ -16,7 +16,7 @@ internal interface IStormModStorage
 
     int NumberOfNotFoundDirectories { get; }
 
-    int NUmberOfNotFoundFiles { get; }
+    int NumberOfNotFoundFiles { get; }
 
     int NumberOfXmlDataFiles { get; }
 
