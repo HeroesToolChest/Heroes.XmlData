@@ -104,21 +104,23 @@ public class HeroesXmlLoader
     /// Gets an instance of the <see cref="HeroesXmlLoader"/> class. Sets the source of the data to be loaded from the Heroes of the Storm directory.
     /// </summary>
     /// <param name="pathToHeroesDirectory">The Heroes of the storm directory.</param>
+    /// <param name="loggerOptions">Logging options for the casclib.</param>
     /// <param name="backgroundWorkerEx">A background worker used to report loading progress.</param>
     /// <returns>A <see cref="HeroesXmlLoader"/> instance.</returns>
-    public static HeroesXmlLoader LoadWithCASC(string pathToHeroesDirectory, IBackgroundWorkerEx? backgroundWorkerEx = null)
+    public static HeroesXmlLoader LoadWithCASC(string pathToHeroesDirectory, ILoggerOptions? loggerOptions = null, IBackgroundWorkerEx? backgroundWorkerEx = null)
     {
-        return LoadAsCASCInternal(CASCConfig.LoadLocalStorageConfig(pathToHeroesDirectory, "hero"), backgroundWorkerEx);
+        return LoadAsCASCInternal(CASCConfig.LoadLocalStorageConfig(pathToHeroesDirectory, "hero", loggerOptions ?? new HeroesLoggerOptions()), backgroundWorkerEx);
     }
 
     /// <summary>
     /// Gets an instance of the <see cref="HeroesXmlLoader"/> class. Sets the source of the data to be downloaded from Blizzard's online servers.
     /// </summary>
+    /// <param name="loggerOptions">Logging options for the casclib.</param>
     /// <param name="backgroundWorkerEx">A background worker used to report loading progress.</param>
     /// <returns>A <see cref="HeroesXmlLoader"/> instance.</returns>
-    public static HeroesXmlLoader LoadWithOnlineCASC(IBackgroundWorkerEx? backgroundWorkerEx = null)
+    public static HeroesXmlLoader LoadWithOnlineCASC(ILoggerOptions? loggerOptions = null, IBackgroundWorkerEx? backgroundWorkerEx = null)
     {
-        return LoadAsCASCInternal(CASCConfig.LoadOnlineStorageConfig("hero", "us"), backgroundWorkerEx);
+        return LoadAsCASCInternal(CASCConfig.LoadOnlineStorageConfig("hero", "us", false, loggerOptions ?? new HeroesLoggerOptions()), backgroundWorkerEx);
     }
 
     /// <summary>
