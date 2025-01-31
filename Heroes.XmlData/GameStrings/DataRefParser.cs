@@ -282,7 +282,7 @@ internal class DataRefParser
             stormElementData = innerIndexData;
         }
 
-        if (stormElementData.HasHxdScale && stormElementData.HxdScaleValue.TryGetAsDouble(out double scalingValue))
+        if (stormElementData.HasHxdScale && stormElementData.HxdScaleValue.TryGetDouble(out double scalingValue))
             return new ValueScale(dataValue, scalingValue);
         else
             return new ValueScale(dataValue);

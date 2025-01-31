@@ -336,7 +336,7 @@ public class StormElementDataTests
         StormElementData stormElementData = new(xElement);
 
         // assert
-        stormElementData.GetElementDataAt("Name").Value.GetAsInt().Should().Be(5);
+        stormElementData.GetElementDataAt("Name").Value.GetInt().Should().Be(5);
     }
 
     [TestMethod]
@@ -358,7 +358,7 @@ public class StormElementDataTests
         // assert
         stormElementData.GetElementDataAt("Damage").HasHxdScale.Should().BeTrue();
         stormElementData.GetElementDataAt("Damage").HxdScaleValue.GetString().Should().Be("0.1");
-        stormElementData.GetElementDataAt("Damage").HxdScaleValue.GetAsDouble().Should().Be(0.1);
+        stormElementData.GetElementDataAt("Damage").HxdScaleValue.GetDouble().Should().Be(0.1);
     }
 
     [TestMethod]

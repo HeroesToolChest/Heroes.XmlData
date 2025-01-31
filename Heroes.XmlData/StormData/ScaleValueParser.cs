@@ -1,5 +1,4 @@
 ﻿using Heroes.XmlData.GameStrings;
-using System;
 
 namespace Heroes.XmlData.StormData;
 

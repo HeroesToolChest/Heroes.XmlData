@@ -128,7 +128,8 @@ public class StormElementData
     {
         get
         {
-            string? returnValue = null;
+            ReadOnlySpan<char> returnValue = null;
+            bool isNull = false;
 
             if (_value is not null)
             {
@@ -137,15 +138,22 @@ public class StormElementData
             else if (ElementDataPairs.Keys.Count == 1)
             {
                 if (HasNumericalIndex && ElementDataPairs.TryGetValue("0", out StormElementData? data) && data.HasValue)
-                    returnValue = data.Value.GetString();
+                {
+                    isNull = data.Value.IsNull;
+                    returnValue = data.Value.Value;
+                }
                 else if (HasTextIndex)
-                    returnValue = ElementDataPairs.First().Value.Value.GetString();
+                {
+                    StormElementData firstElementData = ElementDataPairs.First().Value;
+                    isNull = firstElementData.Value.IsNull;
+                    returnValue = firstElementData.Value.Value;
+                }
             }
 
             return new StormElementValue(this)
             {
                 Value = returnValue,
-                IsNull = returnValue is null,
+                IsNull = isNull,
             };
         }
     }

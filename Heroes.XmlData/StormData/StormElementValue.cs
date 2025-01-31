@@ -38,7 +38,7 @@ public readonly ref struct StormElementValue
     /// </summary>
     /// <returns>The value as a <see cref="int"/>.</returns>
     /// <exception cref="HeroesXmlDataException">The value is not convertable to a <see cref="int"/>.</exception>
-    public readonly int GetAsInt()
+    public readonly int GetInt()
     {
         try
         {
@@ -55,7 +55,7 @@ public readonly ref struct StormElementValue
     /// </summary>
     /// <param name="value">When this method returns, contains the value as an <see cref="int"/>.</param>
     /// <returns><see langword="true"/> if the value can be converted to an <see cref="int"/>, otherwise <see langword="false"/>.</returns>
-    public readonly bool TryGetAsInt32(out int value)
+    public readonly bool TryGetInt32(out int value)
     {
         return int.TryParse(Value, out value);
     }
@@ -65,7 +65,7 @@ public readonly ref struct StormElementValue
     /// </summary>
     /// <returns>The value as a <see cref="double"/>.</returns>
     /// <exception cref="HeroesXmlDataException">The value is not convertable to a <see cref="double"/>.</exception>
-    public readonly double GetAsDouble()
+    public readonly double GetDouble()
     {
         try
         {
@@ -82,7 +82,7 @@ public readonly ref struct StormElementValue
     /// </summary>
     /// <param name="value">When this method returns, contains the value as an <see cref="double"/>.</param>
     /// <returns><see langword="true"/> if the value can be converted to an <see cref="double"/>, otherwise <see langword="false"/>.</returns>
-    public readonly bool TryGetAsDouble(out double value)
+    public readonly bool TryGetDouble(out double value)
     {
         return double.TryParse(Value, out value);
     }

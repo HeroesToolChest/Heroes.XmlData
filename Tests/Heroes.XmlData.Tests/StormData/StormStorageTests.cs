@@ -1174,7 +1174,7 @@ public class StormStorageTests
         stormElement!.OriginalXElements.Should().HaveCount(4);
         stormElement.DataValues.GetElementDataAt("id").Value.GetString().Should().Be("LootChestChristmas2018Common");
         stormElement.DataValues.GetElementDataAt("parent").Value.GetString().Should().Be("LootChestChristmas2018Parent");
-        stormElement.DataValues.GetElementDataAt("MaxRerolls").Value.GetAsInt().Should().Be(3);
+        stormElement.DataValues.GetElementDataAt("MaxRerolls").Value.GetInt().Should().Be(3);
         stormElement.DataValues.GetElementDataAt("EventName").Value.GetString().Should().Be("Toys18");
     }
 

@@ -3,6 +3,7 @@
 [TestClass]
 public class StormElementValueTests
 {
+
     [TestMethod]
     public void GetString_GetValueWithReplacements_ReturnsValue()
     {
@@ -73,7 +74,7 @@ public class StormElementValueTests
         StormElementData stormElementData = new(element);
 
         // act
-        int value = stormElementData.GetElementDataAt("Value").Value.GetAsInt();
+        int value = stormElementData.GetElementDataAt("Value").Value.GetInt();
 
         // assert
         value.Should().Be(5);
@@ -92,7 +93,7 @@ public class StormElementValueTests
         StormElementData stormElementData = new(element);
 
         // act
-        Action act = () => stormElementData.GetElementDataAt("Value").Value.GetAsInt();
+        Action act = () => stormElementData.GetElementDataAt("Value").Value.GetInt();
 
         // assert
         act.Should().Throw<HeroesXmlDataException>();
@@ -111,7 +112,7 @@ public class StormElementValueTests
         StormElementData stormElementData = new(element);
 
         // act
-        bool result = stormElementData.GetElementDataAt("Value").Value.TryGetAsInt32(out int value);
+        bool result = stormElementData.GetElementDataAt("Value").Value.TryGetInt32(out int value);
 
         // assert
         result.Should().BeTrue();
@@ -131,7 +132,7 @@ public class StormElementValueTests
         StormElementData stormElementData = new(element);
 
         // act
-        bool result = stormElementData.GetElementDataAt("Value").Value.TryGetAsInt32(out int value);
+        bool result = stormElementData.GetElementDataAt("Value").Value.TryGetInt32(out int value);
 
         // assert
         result.Should().BeFalse();
@@ -151,7 +152,7 @@ public class StormElementValueTests
         StormElementData stormElementData = new(element);
 
         // act
-        double value = stormElementData.GetElementDataAt("Value").Value.GetAsDouble();
+        double value = stormElementData.GetElementDataAt("Value").Value.GetDouble();
 
         // assert
         value.Should().Be(5.1);
@@ -170,7 +171,7 @@ public class StormElementValueTests
         StormElementData stormElementData = new(element);
 
         // act
-        Action act = () => stormElementData.GetElementDataAt("Value").Value.GetAsDouble();
+        Action act = () => stormElementData.GetElementDataAt("Value").Value.GetDouble();
 
         // assert
         act.Should().Throw<HeroesXmlDataException>();
@@ -189,7 +190,7 @@ public class StormElementValueTests
         StormElementData stormElementData = new(element);
 
         // act
-        bool result = stormElementData.GetElementDataAt("Value").Value.TryGetAsDouble(out double value);
+        bool result = stormElementData.GetElementDataAt("Value").Value.TryGetDouble(out double value);
 
         // assert
         result.Should().BeTrue();
@@ -209,7 +210,7 @@ public class StormElementValueTests
         StormElementData stormElementData = new(element);
 
         // act
-        bool result = stormElementData.GetElementDataAt("Value").Value.TryGetAsDouble(out double value);
+        bool result = stormElementData.GetElementDataAt("Value").Value.TryGetDouble(out double value);
 
         // assert
         result.Should().BeFalse();

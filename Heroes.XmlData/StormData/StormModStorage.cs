@@ -1,6 +1,4 @@
-﻿using System.Diagnostics.Contracts;
-
-namespace Heroes.XmlData.StormData;
+﻿namespace Heroes.XmlData.StormData;
 
 /// <summary>
 /// Storage for an individual storm mod.
