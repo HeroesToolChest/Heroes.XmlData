@@ -68,6 +68,10 @@ internal interface IStormStorage
 
     StormElement? GetStormElementById(string id, string dataObjectType);
 
+    bool TryGetFirstStormElementIdByUnitName(string unitName, string dataObjectType, [NotNullWhen(true)] out string? id);
+
+    string? GetStormElementIdByUnitName(string unitName, string dataObjectType);
+
     StormElement? GetScaleValueStormElementById(string id, string dataObjectType);
 
     StormElement? GetCompleteStormElement(string id, string dataObjectType);

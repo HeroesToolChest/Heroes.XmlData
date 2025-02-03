@@ -76,6 +76,17 @@ public class HeroesData
     }
 
     /// <summary>
+    /// Gets a storm element attribute id by the unit name attribute.
+    /// </summary>
+    /// <param name="unitName">The unit name of an element.</param>
+    /// <param name="dataObjectType">The type of the element name (e.g. Effect).</param>
+    /// <returns>The id of the element or <see langword="null"/> if not found.</returns>
+    public string? GetStormElementIdByUnitName(string unitName, string dataObjectType)
+    {
+        return _stormStorage.GetStormElementIdByUnitName(unitName, dataObjectType);
+    }
+
+    /// <summary>
     /// Gets a <see cref="StormElement"/> that is created from a level scaling array element that contains the scaling attribute value.
     /// </summary>
     /// <param name="id">The id of element.</param>

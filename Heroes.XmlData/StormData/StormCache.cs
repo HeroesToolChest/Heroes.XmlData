@@ -64,6 +64,11 @@ internal class StormCache
     public Dictionary<string, Dictionary<string, StormElement>> StormElementsByDataObjectType { get; } = new(StringComparer.OrdinalIgnoreCase);
 
     /// <summary>
+    /// Gets a dictionary of another dictionary of id attributes by their unit names (unitName attribute) by their data object type (e.g. Effect).
+    /// </summary>
+    public Dictionary<string, Dictionary<string, string>> UnitNamesByDataObjectType { get; } = new(StringComparer.OrdinalIgnoreCase);
+
+    /// <summary>
     /// Gets a dictionary of <see cref="StormElement"/>s by their id attribute by their data object type (e.g. Effect).
     /// These storm elements are specially created from a LevelScalingArray element which contains the scaling value.
     /// </summary>
@@ -112,6 +117,7 @@ internal class StormCache
         ConstantXElementById.Clear();
         StormElementByElementType.Clear();
         StormElementsByDataObjectType.Clear();
+        UnitNamesByDataObjectType.Clear();
         ScaleValueStormElementsByDataObjectType.Clear();
         StormStyleStyleElementsByName.Clear();
         StormStyleConstantElementsByName.Clear();

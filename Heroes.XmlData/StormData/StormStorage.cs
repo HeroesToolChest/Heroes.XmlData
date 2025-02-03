@@ -226,6 +226,7 @@ internal partial class StormStorage : IStormStorage
             return;
 
         string? idAtt = element.Attribute("id")?.Value;
+        string? unitNameAtt = element.Attribute("unitName")?.Value;
         string? dataObjectType = GetDataObjectTypeFromFileName(stormPath.Path);
 
         StormCache currentStormCache = GetCurrentStormCache(stormModType);
@@ -265,6 +266,22 @@ internal partial class StormStorage : IStormStorage
                 {
                     { idAtt, new StormElement(stormXElementValuePath) },
                 };
+            }
+
+            // unit name
+            if (!string.IsNullOrEmpty(unitNameAtt))
+            {
+                if (currentStormCache.UnitNamesByDataObjectType.TryGetValue(existingDataObjectType, out var idsByUnitName))
+                {
+                    idsByUnitName[unitNameAtt] = idAtt;
+                }
+                else
+                {
+                    currentStormCache.UnitNamesByDataObjectType[existingDataObjectType] = new()
+                    {
+                        { unitNameAtt, idAtt },
+                    };
+                }
             }
         }
     }

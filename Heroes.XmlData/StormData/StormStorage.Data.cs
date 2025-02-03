@@ -170,6 +170,37 @@ internal partial class StormStorage
         return stormElement;
     }
 
+    public bool TryGetFirstStormElementIdByUnitName(string unitName, string dataObjectType, [NotNullWhen(true)] out string? id)
+    {
+        ArgumentNullException.ThrowIfNull(dataObjectType);
+        ArgumentNullException.ThrowIfNull(unitName);
+
+        id = null;
+
+        // custom cache first
+        if (StormCustomCache.UnitNamesByDataObjectType.TryGetValue(dataObjectType, out var idsByUnitName) &&
+            idsByUnitName.TryGetValue(unitName, out id))
+            return true;
+
+        if (StormMapCache.UnitNamesByDataObjectType.TryGetValue(dataObjectType, out idsByUnitName) &&
+            idsByUnitName.TryGetValue(unitName, out id))
+            return true;
+
+        if (StormCache.UnitNamesByDataObjectType.TryGetValue(dataObjectType, out idsByUnitName) &&
+            idsByUnitName.TryGetValue(unitName, out id))
+            return true;
+
+        return false;
+    }
+
+    public string? GetStormElementIdByUnitName(string unitName, string dataObjectType)
+    {
+        if (TryGetFirstStormElementIdByUnitName(unitName, dataObjectType, out string? id))
+            return id;
+
+        return null;
+    }
+
     public StormElement? GetScaleValueStormElementById(string id, string dataObjectType)
     {
         ArgumentNullException.ThrowIfNull(dataObjectType);
