@@ -65,7 +65,7 @@ public class StormStorageTests
     [DataRow("CEffectLaunchMissile", "Effect")]
     [DataRow("CActorModel", "Actor")]
     [DataRow("CUnit", "Unit")]
-    public void TryGetExistingDataObjectTypeByElementType_ElementTypes_ReturnsDataObjectType(string elementType, string dataObjectType)
+    public void TryGetFirstDataObjectTypeByElementType_ElementTypes_ReturnsDataObjectType(string elementType, string dataObjectType)
     {
         // arrange
         StormStorage stormStorage = new(false);
@@ -86,7 +86,7 @@ public class StormStorageTests
     }
 
     [TestMethod]
-    public void TryGetExistingDataObjectTypeByElementType_NoneFound_ReturnsNull()
+    public void TryGetFirstDataObjectTypeByElementType_NoneFound_ReturnsNull()
     {
         // arrange
         StormStorage stormStorage = new();
@@ -100,7 +100,7 @@ public class StormStorageTests
     }
 
     [TestMethod]
-    public void TryGetExistingDataObjectTypeByElementType_NullParam_ThrowsException()
+    public void TryGetFirstDataObjectTypeByElementType_NullParam_ThrowsException()
     {
         // arrange
         StormStorage stormStorage = new();
@@ -687,6 +687,165 @@ public class StormStorageTests
         stormStorage.StormCache.StormElementsByDataObjectType["Unit"]["Hero1"].DataValues.ElementDataCount.Should().Be(3);
         stormStorage.StormMapCache.StormElementsByDataObjectType["Unit"]["Hero1"].DataValues.ElementDataCount.Should().Be(4);
         stormStorage.StormCustomCache.StormElementsByDataObjectType["Unit"]["Hero1"].DataValues.ElementDataCount.Should().Be(5);
+    }
+
+    [TestMethod]
+    [DataRow("HeroDVaMech", "Actor", "HeroDVaMech")]
+    [DataRow("HeroChenEarth", "Actor", "ChenEarthUnit")]
+    public void TryGetFirstStormElementIdByUnitName_UnitNamesAndDataObjectType_ReturnsId(string unitName, string dataObjectType, string id)
+    {
+        // arrange
+        StormStorage stormStorage = new(false);
+
+        stormStorage.StormCache.UnitNamesByDataObjectType.Add(dataObjectType, new Dictionary<string, string>()
+        {
+            { unitName, id },
+        });
+
+        // act
+        bool result = stormStorage.TryGetFirstStormElementIdByUnitName(unitName, dataObjectType, out string? resultId);
+
+        // assert
+        result.Should().BeTrue();
+        resultId.Should().Be(id);
+    }
+
+    [TestMethod]
+    [DataRow("HeroDVaMech", "Actor", "HeroDVaMech")]
+    [DataRow("HeroChenEarth", "Actor", "ChenEarthUnit")]
+    public void TryGetFirstStormElementIdByUnitName_MapCacheOnly_ReturnsId(string unitName, string dataObjectType, string id)
+    {
+        // arrange
+        StormStorage stormStorage = new(false);
+
+        stormStorage.StormMapCache.UnitNamesByDataObjectType.Add(dataObjectType, new Dictionary<string, string>()
+        {
+            { unitName, id },
+        });
+
+        // act
+        bool result = stormStorage.TryGetFirstStormElementIdByUnitName(unitName, dataObjectType, out string? resultId);
+
+        // assert
+        result.Should().BeTrue();
+        resultId.Should().Be(id);
+    }
+
+    [TestMethod]
+    [DataRow("HeroDVaMech", "Actor", "HeroDVaMech")]
+    [DataRow("HeroChenEarth", "Actor", "ChenEarthUnit")]
+    public void TryGetFirstStormElementIdByUnitName_CustomCacheOnly_ReturnsId(string unitName, string dataObjectType, string id)
+    {
+        // arrange
+        StormStorage stormStorage = new(false);
+
+        stormStorage.StormCustomCache.UnitNamesByDataObjectType.Add(dataObjectType, new Dictionary<string, string>()
+        {
+            { unitName, id },
+        });
+
+        // act
+        bool result = stormStorage.TryGetFirstStormElementIdByUnitName(unitName, dataObjectType, out string? resultId);
+
+        // assert
+        result.Should().BeTrue();
+        resultId.Should().Be(id);
+    }
+
+    [TestMethod]
+    public void TryGetFirstStormElementIdByUnitName_NoneFound_ReturnsNull()
+    {
+        // arrange
+        StormStorage stormStorage = new();
+
+        // act
+        bool result = stormStorage.TryGetFirstStormElementIdByUnitName("unitName", "dataObjectType", out string? resultId);
+
+        // assert
+        result.Should().BeFalse();
+        resultId.Should().BeNull();
+    }
+
+    [TestMethod]
+    public void TryGetFirstStormElementIdByUnitName_NullParam_ThrowsException()
+    {
+        // arrange
+        StormStorage stormStorage = new();
+
+        // act
+        Action result = () => stormStorage.TryGetFirstStormElementIdByUnitName(null!, null!, out string? resultId);
+
+        // assert
+        result.Should().Throw<ArgumentNullException>();
+    }
+
+    [TestMethod]
+    public void GetStormElementIdByUnitName_HasDataObjectTypeAndId_ReturnsResult()
+    {
+        // arrange
+        StormStorage stormStorage = new(false);
+
+        stormStorage.StormCustomCache.UnitNamesByDataObjectType.Add("Actor", new Dictionary<string, string>()
+        {
+            { "unitName", "id" },
+        });
+
+        // act
+        string? result = stormStorage.GetStormElementIdByUnitName("unitName", "Actor");
+
+        // assert
+        result.Should().Be("id");
+    }
+
+    [TestMethod]
+    public void GetStormElementIdByUnitName_HasNoDataObjectType_ReturnsNull()
+    {
+        // arrange
+        StormStorage stormStorage = new(false);
+
+        // act
+        string? result = stormStorage.GetStormElementIdByUnitName("unitName", "Actor");
+
+        // assert
+        result.Should().BeNull();
+    }
+
+    [TestMethod]
+    public void GetStormElementIdByUnitName_HasDataObjectTypeByNotUnitName_ReturnsNull()
+    {
+        // arrange
+        StormStorage stormStorage = new(false);
+        stormStorage.StormCustomCache.UnitNamesByDataObjectType.Add("Actor", new Dictionary<string, string>()
+        {
+            // none
+        });
+
+        // act
+        string? result = stormStorage.GetStormElementIdByUnitName("unitName", "Actor");
+
+        // assert
+        result.Should().BeNull();
+    }
+
+    [TestMethod]
+    public void GetStormElementIdByUnitName_ModifiedReturnValue_ShouldNotModifiedInternalData()
+    {
+        // arrange
+        string newValue = "modified";
+
+        StormStorage stormStorage = new(false);
+
+        stormStorage.StormCustomCache.UnitNamesByDataObjectType.Add("Actor", new Dictionary<string, string>()
+        {
+            { "unitName", "id" },
+        });
+
+        // act
+        string? result = stormStorage.GetStormElementIdByUnitName("unitName", "Actor");
+        result = newValue;
+
+        // assert
+        stormStorage.StormCustomCache.UnitNamesByDataObjectType["Actor"]["unitName"].Should().NotBe(newValue);
     }
 
     [TestMethod]
