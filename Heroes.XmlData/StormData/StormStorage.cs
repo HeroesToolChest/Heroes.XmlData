@@ -376,14 +376,20 @@ internal partial class StormStorage : IStormStorage
                 continue;
             }
 
-            if (!currentStormCache.ScaleValueStormElementsByDataObjectType.ContainsKey(levelScalingEntry.Catalog))
-                currentStormCache.ScaleValueStormElementsByDataObjectType.Add(levelScalingEntry.Catalog, []);
-
-            if (currentStormCache.ScaleValueStormElementsByDataObjectType.TryGetValue(levelScalingEntry.Catalog, out var stormElementById) &&
-                stormElementById.TryGetValue(levelScalingEntry.Entry, out StormElement? existingStormElement))
-                existingStormElement.AddValue(stormElement);
+            if (currentStormCache.ScaleValueStormElementsByDataObjectType.TryGetValue(levelScalingEntry.Catalog, out var stormElementById))
+            {
+                if (stormElementById.TryGetValue(levelScalingEntry.Entry, out StormElement? existingStormElement))
+                    existingStormElement.AddValue(stormElement);
+                else
+                    stormElementById[levelScalingEntry.Entry] = stormElement;
+            }
             else
-                currentStormCache.ScaleValueStormElementsByDataObjectType[levelScalingEntry.Catalog].Add(levelScalingEntry.Entry, stormElement);
+            {
+                currentStormCache.ScaleValueStormElementsByDataObjectType[levelScalingEntry.Catalog] = new()
+                {
+                    { levelScalingEntry.Entry, stormElement },
+                };
+            }
         }
     }
 
