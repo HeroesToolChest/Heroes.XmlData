@@ -89,7 +89,30 @@ public class StormElementData
     /// Gets a value indicating whether <see cref="HxdScaleValue"/> is not <see langword="null"/>.
     /// </summary>
     [MemberNotNullWhen(true, nameof(HxdScaleValue))]
-    public bool HasHxdScale => ElementDataPairs.Count == 1 && ElementDataPairs.ContainsKey(ScaleValueParser.ScaleAttributeName);
+    internal bool HasHxdScale => ElementDataPairs.Count == 1 && ElementDataPairs.ContainsKey(ScaleValueParser.ScaleAttributeName);
+
+    /// <summary>
+    /// Gets the scaling value.
+    /// </summary>
+    internal StormElementValue HxdScaleValue
+    {
+        get
+        {
+            if (HasHxdScale)
+            {
+                return new StormElementValue(this)
+                {
+                    Value = ElementDataPairs[ScaleValueParser.ScaleAttributeName].RawValue,
+                    IsNull = false,
+                };
+            }
+
+            return new StormElementValue(this)
+            {
+                IsNull = true,
+            };
+        }
+    }
 
     /// <summary>
     /// Gets the original value which represents a value of an <see cref="XAttribute"/>.
@@ -154,29 +177,6 @@ public class StormElementData
             {
                 Value = returnValue,
                 IsNull = isNull,
-            };
-        }
-    }
-
-    /// <summary>
-    /// Gets the scaling value.
-    /// </summary>
-    public StormElementValue HxdScaleValue
-    {
-        get
-        {
-            if (HasHxdScale)
-            {
-                return new StormElementValue(this)
-                {
-                    Value = ElementDataPairs[ScaleValueParser.ScaleAttributeName].RawValue,
-                    IsNull = false,
-                };
-            }
-
-            return new StormElementValue(this)
-            {
-                IsNull = true,
             };
         }
     }

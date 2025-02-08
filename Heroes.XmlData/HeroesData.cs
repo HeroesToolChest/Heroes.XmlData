@@ -87,31 +87,18 @@ public class HeroesData
     }
 
     /// <summary>
-    /// Gets a <see cref="StormElement"/> that is created from a level scaling array element that contains the scaling attribute value.<br/>
-    /// <br/>
-    /// The scaling value will be in the <see cref="StormElementData.HxdScaleValue"/>.
+    /// Gets the scaling value for an element value.
     /// </summary>
     /// <param name="dataObjectType">The type of the element name (e.g. Effect).</param>
     /// <param name="id">The id of the element.</param>
-    /// <returns>A <see cref="StormElement"/> that contains a scaling value or <see langword="null"/> if not found.</returns>
-    public StormElement? GetScaleValueStormElement(string dataObjectType, string id)
-    {
-        return _stormStorage.GetScaleValueStormElementById(id, dataObjectType);
-    }
-
-    /// <summary>
-    /// Gets the scaling value from a scaling array element.
-    /// </summary>
-    /// <param name="dataObjectType">The type of the element name (e.g. Effect).</param>
-    /// <param name="id">The id of the element.</param>
-    /// <param name="property">A property in a scaling array element (e.g. LifeMax).</param>
+    /// <param name="elementName">An element name (e.g. LifeMax).</param>
     /// <returns>The scaling value or <see langword="null"/> if not found.</returns>
-    public double? GetScalingValue(string dataObjectType, string id, string property)
+    public double? GetScalingValue(string dataObjectType, string id, string elementName)
     {
         StormElement? stormElement = GetScaleValueStormElement(dataObjectType, id);
         if (stormElement is not null)
         {
-            if (stormElement.DataValues.TryGetElementDataAt(property, out StormElementData? data))
+            if (stormElement.DataValues.TryGetElementDataAt(elementName, out StormElementData? data))
                 return data.HxdScaleValue.GetDouble();
         }
 
@@ -257,6 +244,19 @@ public class HeroesData
     public StormFile? GetStormLayoutFile(string? path)
     {
         return _stormStorage.GetStormLayoutFile(path);
+    }
+
+    /// <summary>
+    /// Gets a <see cref="StormElement"/> that is created from a level scaling array element that contains the scaling attribute value.<br/>
+    /// <br/>
+    /// The scaling value will be in the <see cref="StormElementData.HxdScaleValue"/>.
+    /// </summary>
+    /// <param name="dataObjectType">The type of the element name (e.g. Effect).</param>
+    /// <param name="id">The id of the element.</param>
+    /// <returns>A <see cref="StormElement"/> that contains a scaling value or <see langword="null"/> if not found.</returns>
+    internal StormElement? GetScaleValueStormElement(string dataObjectType, string id)
+    {
+        return _stormStorage.GetScaleValueStormElementById(id, dataObjectType);
     }
 
     internal void SetHeroesLocalization(StormLocale stormLocale)
