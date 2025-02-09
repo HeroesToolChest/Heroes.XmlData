@@ -86,35 +86,6 @@ public class StormElementData
     public bool HasValue => !Value.IsNull;
 
     /// <summary>
-    /// Gets a value indicating whether <see cref="HxdScaleValue"/> is not <see langword="null"/>.
-    /// </summary>
-    [MemberNotNullWhen(true, nameof(HxdScaleValue))]
-    internal bool HasHxdScale => ElementDataPairs.Count == 1 && ElementDataPairs.ContainsKey(ScaleValueParser.ScaleAttributeName);
-
-    /// <summary>
-    /// Gets the scaling value.
-    /// </summary>
-    internal StormElementValue HxdScaleValue
-    {
-        get
-        {
-            if (HasHxdScale)
-            {
-                return new StormElementValue(this)
-                {
-                    Value = ElementDataPairs[ScaleValueParser.ScaleAttributeName].RawValue,
-                    IsNull = false,
-                };
-            }
-
-            return new StormElementValue(this)
-            {
-                IsNull = true,
-            };
-        }
-    }
-
-    /// <summary>
     /// Gets the original value which represents a value of an <see cref="XAttribute"/>.
     /// </summary>
     public string? RawValue
@@ -195,6 +166,35 @@ public class StormElementData
     /// Gets the amount of elements.
     /// </summary>
     public int ElementDataCount => ElementDataPairs.Count;
+
+    /// <summary>
+    /// Gets a value indicating whether <see cref="HxdScaleValue"/> is not <see langword="null"/>.
+    /// </summary>
+    [MemberNotNullWhen(true, nameof(HxdScaleValue))]
+    internal bool HasHxdScale => ElementDataPairs.Count == 1 && ElementDataPairs.ContainsKey(ScaleValueParser.ScaleAttributeName);
+
+    /// <summary>
+    /// Gets the scaling value.
+    /// </summary>
+    internal StormElementValue HxdScaleValue
+    {
+        get
+        {
+            if (HasHxdScale)
+            {
+                return new StormElementValue(this)
+                {
+                    Value = ElementDataPairs[ScaleValueParser.ScaleAttributeName].RawValue,
+                    IsNull = false,
+                };
+            }
+
+            return new StormElementValue(this)
+            {
+                IsNull = true,
+            };
+        }
+    }
 
     /// <summary>
     /// Gets the inner data.
