@@ -704,9 +704,40 @@ public class StormElementDataTests
         StormElementData data = new(element);
 
         // act
-        List<KeyValuePair<string, StormElementData>> result = data.GetElementData().ToList();
+        List<KeyValuePair<string, StormElementData>> result = [.. data.GetElementData()];
 
         // assert
         result.Should().HaveCount(5);
+    }
+
+    [TestMethod]
+    public void ElementData_ArrayDataIndexDoesNotStartAtZero_ReturnsCorrectDataElements()
+    {
+        // arrange
+        XElement element = XElement.Parse(
+            """
+            <CUnit id="HeroAbathur">
+                <CardLayouts index="0">
+                  <LayoutButtons index="1" Face="Attack" Type="AbilCmd" AbilCmd="attack,Execute" Slot="Attack" />
+                  <LayoutButtons index="2" Face="AcquireMove" Type="AbilCmd" AbilCmd="move,AcquireMove" Slot="Attack" />
+                  <LayoutButtons Face="AbathurSymbiote" Type="AbilCmd" AbilCmd="AbathurSymbiote,Execute" Slot="Ability1" />
+                  <LayoutButtons Face="AbathurToxicNest" Type="AbilCmd" AbilCmd="AbathurToxicNest,Execute" Slot="Ability2" />
+                  <LayoutButtons Face="AbathurDeepTunnel" Type="AbilCmd" AbilCmd="AbathurDeepTunnel,Execute" Slot="Mount" />
+                </CardLayouts>
+            </CUnit>
+            """);
+
+        StormElementData data = new(element);
+
+        // act
+        List<KeyValuePair<string, StormElementData>> result = [.. data.GetElementDataAt("CardLayouts").GetElementDataAt("0").GetElementDataAt("LayoutButtons").GetElementData()];
+
+        // assert
+        result.Should().HaveCount(5);
+        result[0].Value.GetElementDataAt("Face").Value.GetString().Should().Be("Attack");
+        result[1].Value.GetElementDataAt("Face").Value.GetString().Should().Be("AcquireMove");
+        result[2].Value.GetElementDataAt("Face").Value.GetString().Should().Be("AbathurSymbiote");
+        result[3].Value.GetElementDataAt("Face").Value.GetString().Should().Be("AbathurToxicNest");
+        result[4].Value.GetElementDataAt("Face").Value.GetString().Should().Be("AbathurDeepTunnel");
     }
 }

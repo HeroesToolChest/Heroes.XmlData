@@ -6,7 +6,15 @@
 [DebuggerDisplay("{DebuggerDisplay,nq}")]
 public class StormElementData
 {
-    private static readonly HashSet<string> _otherElementArrays = ["On", "Cost", "CatalogModifications", "ConditionalEvents", "CardLayouts"];
+    private static readonly HashSet<string> _otherElementArrays = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "CatalogModifications",
+        "CardLayouts",
+        "ConditionalEvents",
+        "Cost",
+        "LayoutButtons",
+        "On",
+    };
 
     private string? _value;
 
@@ -405,7 +413,12 @@ public class StormElementData
             {
                 if (ElementDataPairs.TryGetValue(elementName, out StormElementData? existingData))
                 {
-                    string nextIndex = existingData.ElementDataPairs.Keys.Count.ToString();
+                    string nextIndex;
+
+                    if (existingData.HasNumericalIndex)
+                        nextIndex = (existingData.ElementDataPairs.Keys.Max(int.Parse) + 1).ToString();
+                    else
+                        nextIndex = existingData.ElementDataPairs.Keys.Count.ToString();
 
                     existingData.ElementDataPairs[nextIndex] = new StormElementData(existingData, nextIndex, element, true, true);
                 }
