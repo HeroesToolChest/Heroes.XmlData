@@ -49,4 +49,28 @@ public class CustomStormModTests
         _heroesSource.Received().StormStorage.AddLevelScalingArrayElement(StormModType.Custom, Arg.Any<XElement>(), Arg.Any<StormPath>());
         _heroesSource.Received().StormStorage.AddStormStyleElement(StormModType.Custom, Arg.Any<XElement>(), Arg.Any<StormPath>());
     }
+
+    [TestMethod]
+    public void LoadStormGameStrings_HasGameStringsToBeAdded_AddsGameStrings()
+    {
+        // arrange
+        ManualModLoader manualModLoader = new ManualModLoader("test")
+            .AddGameStrings(
+            [
+                "Gamestring1=value1",
+                "Gamestring2=value2",
+                "Gamestring3=value3",
+            ],
+            StormLocale.ENUS);
+
+        CustomStormMod customStormMod = new(_heroesSource, manualModLoader);
+
+        // act
+        customStormMod.LoadStormGameStrings(StormLocale.ENUS);
+
+        // assert
+        _heroesSource.Received().StormStorage.AddGameString(StormModType.Custom, "Gamestring1", Arg.Any<GameStringText>());
+        _heroesSource.Received().StormStorage.AddGameString(StormModType.Custom, "Gamestring2", Arg.Any<GameStringText>());
+        _heroesSource.Received().StormStorage.AddGameString(StormModType.Custom, "Gamestring3", Arg.Any<GameStringText>());
+    }
 }

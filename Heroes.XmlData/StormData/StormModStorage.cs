@@ -102,12 +102,12 @@ internal class StormModStorage : IStormModStorage
 
         while (!reader.EndOfStream)
         {
-            ReadOnlySpan<char> lineSpan = reader.ReadLine().AsSpan();
+            string? line = reader.ReadLine();
 
-            if (lineSpan.IsEmpty || lineSpan.IsWhiteSpace())
+            if (string.IsNullOrWhiteSpace(line))
                 continue;
 
-            (string Id, GameStringText StormStringValue)? stormStringValue = _stormStorage.GetGameStringWithId(lineSpan, stormPath);
+            (string Id, GameStringText StormStringValue)? stormStringValue = _stormStorage.GetGameStringWithId(line, stormPath);
 
             if (stormStringValue is not null)
             {
@@ -125,12 +125,12 @@ internal class StormModStorage : IStormModStorage
 
         while (!reader.EndOfStream)
         {
-            ReadOnlySpan<char> lineSpan = reader.ReadLine().AsSpan();
+            string? line = reader.ReadLine();
 
-            if (lineSpan.IsEmpty || lineSpan.IsWhiteSpace())
+            if (string.IsNullOrWhiteSpace(line))
                 continue;
 
-            (string Id, AssetText StormStringValue)? stormStringValue = _stormStorage.GetAssetWithId(lineSpan, stormPath);
+            (string Id, AssetText StormStringValue)? stormStringValue = _stormStorage.GetAssetWithId(line, stormPath);
 
             if (stormStringValue is not null)
             {

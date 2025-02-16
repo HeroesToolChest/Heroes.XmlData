@@ -42,7 +42,7 @@ public class ManualModLoader
         if (GameStringsByLocale.TryGetValue(stormLocale, out List<string>? gamestrings))
             gamestrings.AddRange(gameStrings);
         else
-            GameStringsByLocale[stormLocale] = gameStrings.ToList();
+            GameStringsByLocale[stormLocale] = [.. gameStrings];
 
         return this;
     }

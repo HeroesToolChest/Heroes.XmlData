@@ -66,18 +66,19 @@ internal partial class StormStorage : IStormStorage
         currentStormCache.GameStringsById[id] = gameStringText;
     }
 
-    public (string Id, GameStringText GameStringText)? GetGameStringWithId(ReadOnlySpan<char> gamestring, StormPath stormPath)
+    public (string Id, GameStringText GameStringText)? GetGameStringWithId(string gamestring, StormPath stormPath)
     {
+        ReadOnlySpan<char> gamestringSpan = gamestring.AsSpan();
         Span<Range> ranges = stackalloc Range[2];
 
-        gamestring.Split(ranges, '=', StringSplitOptions.None);
+        gamestringSpan.Split(ranges, '=', StringSplitOptions.None);
 
-        if (gamestring[ranges[0]].IsEmpty || gamestring[ranges[0]].IsWhiteSpace())
+        if (gamestringSpan[ranges[0]].IsEmpty || gamestringSpan[ranges[0]].IsWhiteSpace())
             return null;
 
-        GameStringText gameStringText = new(gamestring[ranges[1]].ToString(), stormPath);
+        GameStringText gameStringText = new(gamestringSpan[ranges[1]].ToString(), stormPath);
 
-        string id = gamestring[ranges[0]].ToString();
+        string id = gamestringSpan[ranges[0]].ToString();
 
         return (id, gameStringText);
     }
@@ -89,18 +90,19 @@ internal partial class StormStorage : IStormStorage
         currentStormCache.AssetTextsById[id] = assetText;
     }
 
-    public (string Id, AssetText AssetText)? GetAssetWithId(ReadOnlySpan<char> asset, StormPath stormPath)
+    public (string Id, AssetText AssetText)? GetAssetWithId(string asset, StormPath stormPath)
     {
+        ReadOnlySpan<char> assetSpan = asset.AsSpan();
         Span<Range> ranges = stackalloc Range[2];
 
-        asset.Split(ranges, '=', StringSplitOptions.None);
+        assetSpan.Split(ranges, '=', StringSplitOptions.None);
 
-        if (asset[ranges[0]].IsEmpty || asset[ranges[0]].IsWhiteSpace())
+        if (assetSpan[ranges[0]].IsEmpty || assetSpan[ranges[0]].IsWhiteSpace())
             return null;
 
-        AssetText assetText = new(asset[ranges[1]].ToString(), stormPath);
+        AssetText assetText = new(assetSpan[ranges[1]].ToString(), stormPath);
 
-        string id = asset[ranges[0]].ToString();
+        string id = assetSpan[ranges[0]].ToString();
 
         return (id, assetText);
     }

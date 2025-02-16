@@ -22,9 +22,9 @@ internal interface IStormStorage
 
     void AddAssetText(StormModType stormModType, string id, AssetText assetText);
 
-    (string Id, GameStringText GameStringText)? GetGameStringWithId(ReadOnlySpan<char> gamestring, StormPath stormPath);
+    (string Id, GameStringText GameStringText)? GetGameStringWithId(string gamestring, StormPath stormPath);
 
-    (string Id, AssetText AssetText)? GetAssetWithId(ReadOnlySpan<char> asset, StormPath stormPath);
+    (string Id, AssetText AssetText)? GetAssetWithId(string asset, StormPath stormPath);
 
     void AddStormLayoutFilePath(StormModType stormModType, string relativePath, StormPath stormPath);
 
