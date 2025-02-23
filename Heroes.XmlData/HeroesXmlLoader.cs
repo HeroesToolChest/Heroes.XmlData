@@ -338,7 +338,7 @@ public class HeroesXmlLoader
     /// Gets the total number of currently loaded gamestrings.
     /// </summary>
     /// <returns>The total number of gamestrings.</returns>
-    public int GetNumberOfLoadedGameStrings()
+    public int GetCountOfLoadedGameStrings()
     {
         return _heroesSource.StormStorage.StormModStorages.Sum(x => x.GameStringsById.Count);
     }
@@ -347,7 +347,7 @@ public class HeroesXmlLoader
     /// Gets the total number of directories that were not found during the loading process.
     /// </summary>
     /// <returns>The total number of not found directories.</returns>
-    public int GetNumberOfNotFoundDirectories()
+    public int GetCountOfNotFoundDirectories()
     {
         return _heroesSource.StormStorage.StormModStorages.Sum(x => x.NumberOfNotFoundDirectories);
     }
@@ -356,7 +356,7 @@ public class HeroesXmlLoader
     /// Gets the total number of files that were not found during the loading process.
     /// </summary>
     /// <returns>The total number of not found files.</returns>
-    public int GetNumberOfNotFoundFiles()
+    public int GetCountOfNotFoundFiles()
     {
         return _heroesSource.StormStorage.StormModStorages.Sum(x => x.NumberOfNotFoundFiles);
     }
@@ -366,7 +366,7 @@ public class HeroesXmlLoader
     /// </summary>
     /// <remarks>The .xml files.</remarks>
     /// <returns>The total number of xml files.</returns>
-    public int GetNumberOfXmlDataFiles()
+    public int GetCountOfXmlDataFiles()
     {
         return _heroesSource.StormStorage.StormModStorages.Sum(x => x.NumberOfXmlDataFiles);
     }
@@ -376,7 +376,7 @@ public class HeroesXmlLoader
     /// </summary>
     /// <remarks>The .stormstyle files.</remarks>
     /// <returns>The total number of font style files.</returns>
-    public int GetNumberOfFontStyleFiles()
+    public int GetCountOfFontStyleFiles()
     {
         return _heroesSource.StormStorage.StormModStorages.Sum(x => x.NumberOfXmlFontStyleFiles);
     }
@@ -386,7 +386,7 @@ public class HeroesXmlLoader
     /// </summary>
     /// <remarks>The gamestrings.txt files.</remarks>
     /// <returns>The total number of gamestring files.</returns>
-    public int GetNumberOfGameStringsFiles()
+    public int GetCountOfGameStringsFiles()
     {
         return _heroesSource.StormStorage.StormModStorages.Sum(x => x.NumberOfGameStringFiles);
     }
@@ -396,7 +396,7 @@ public class HeroesXmlLoader
     /// </summary>
     /// <remarks>The assets.txt files.</remarks>
     /// <returns>The total number of assets text files.</returns>
-    public int GetNumberOfAssetsTextFiles()
+    public int GetCountOfAssetsTextFiles()
     {
         return _heroesSource.StormStorage.StormModStorages.Sum(x => x.NumberOfAssetsTextFiles);
     }
@@ -406,7 +406,7 @@ public class HeroesXmlLoader
     /// </summary>
     /// <remarks>The .stormlayout files.</remarks>
     /// <returns>The total number of layout files.</returns>
-    public int GetNumberOfLayoutFiles()
+    public int GetCountOfLayoutFiles()
     {
         return _heroesSource.StormStorage.StormModStorages.Sum(x => x.NumberOfLayoutFiles);
     }
@@ -416,7 +416,7 @@ public class HeroesXmlLoader
     /// </summary>
     /// <remarks>Primarly .dds files.</remarks>
     /// <returns>The total number of asset files.</returns>
-    public int GetNumberOfAssetFiles()
+    public int GetCountOfAssetFiles()
     {
         return _heroesSource.StormStorage.StormModStorages.Sum(x => x.NumberOfAssetFiles);
     }
