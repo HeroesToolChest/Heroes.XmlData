@@ -1,4 +1,5 @@
 ﻿using Heroes.XmlData.Tests;
+using System.Xml.Linq;
 
 namespace Heroes.XmlData.StormData.Tests;
 
@@ -397,5 +398,45 @@ public class StormElementTests
         resultAsSpan.Should().BeFalse();
         stormElementData.Should().BeNull();
         stormElementDataAsSpan.Should().BeNull();
+    }
+
+    [TestMethod]
+    public void ContainsIndex_HasIndex_ReturnsTrue()
+    {
+        // arrange
+        XElement element = XElement.Parse(@"
+<CEffectDamage id=""StormBoltDamage"">
+  <Amount value=""110"" />
+</CEffectDamage>
+");
+        StormElement stormElement = new(new StormXElementValuePath(element, TestHelpers.GetStormPath("some\\path")));
+
+        // act
+        bool result = stormElement.DataValues.ContainsIndex("amount");
+        bool resultAsSpan = stormElement.DataValues.ContainsIndex("amount".AsSpan());
+
+        // assert
+        result.Should().BeTrue();
+        resultAsSpan.Should().BeTrue();
+    }
+
+    [TestMethod]
+    public void ContainsIndex_DoesNotHaveIndex_ReturnsFalse()
+    {
+        // arrange
+        XElement element = XElement.Parse(@"
+<CEffectDamage id=""StormBoltDamage"">
+  <Damage value=""110"" />
+</CEffectDamage>
+");
+        StormElement stormElement = new(new StormXElementValuePath(element, TestHelpers.GetStormPath("some\\path")));
+
+        // act
+        bool result = stormElement.DataValues.ContainsIndex("amount");
+        bool resultAsSpan = stormElement.DataValues.ContainsIndex("amount".AsSpan());
+
+        // assert
+        result.Should().BeFalse();
+        resultAsSpan.Should().BeFalse();
     }
 }

@@ -320,6 +320,33 @@ public class StormElementData
         return ElementDataPairs.TryGetValue(index, out stormElementData);
     }
 
+    /// <summary>
+    /// Determines whether the inner data contains the given <paramref name="index"/>.
+    /// </summary>
+    /// <param name="index">A character span that contains the index value which is an element name or attribute name or value. Is case-insensitive.</param>
+    /// <returns><see langword="true"/> if the index is found, otherwise <see langword="false"/>.</returns>
+    public bool ContainsIndex(ReadOnlySpan<char> index)
+    {
+#if NET9_0_OR_GREATER
+        return ElementDataPairsAltLookup.ContainsKey(index);
+#else
+        return ContainsIndex(index.ToString());
+#endif
+    }
+
+    /// <summary>
+    /// Determines whether the inner data contains the given <paramref name="index"/>.
+    /// </summary>
+    /// <param name="index">The index value which is an element name or attribute name or value. Is case-insensitive.</param>
+    /// <returns><see langword="true"/> if the index is found, otherwise <see langword="false"/>.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="index"/> is <see langword="null"/>.</exception>
+    public bool ContainsIndex(string index)
+    {
+        ArgumentNullException.ThrowIfNull(index);
+
+        return ElementDataPairs.ContainsKey(index);
+    }
+
     internal IEnumerable<StormElementData> GetElements()
     {
         foreach (StormElementData data in ElementDataPairs.Values)
