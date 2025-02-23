@@ -75,6 +75,17 @@ internal class CustomStormMod : IStormMod
         {
             _heroesSource.StormStorage.AddStormStyleElement(StormModType, element, _stormPath);
         }
+
+        foreach (string filePath in _manualModLoader.AssetFilePaths)
+        {
+            _heroesSource.StormStorage.AddAssetFilePath(StormModType, filePath, new StormPath()
+            {
+                Path = filePath,
+                PathType = StormPathType.File,
+                StormModName = $"custom-{Name}",
+                StormModPath = DirectoryPath,
+            });
+        }
     }
 
     public void LoadStormGameStrings(StormLocale stormLocale)

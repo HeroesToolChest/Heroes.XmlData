@@ -31,6 +31,9 @@ public class ManualModLoader
 
     internal List<XElement> StormStyleElements { get; } = [];
 
+    // image files
+    internal HashSet<string> AssetFilePaths { get; } = [];
+
     /// <summary>
     /// Adds an unparsed gamestring collection to the custom cache storage. If an id already exists, it will be overridden.
     /// </summary>
@@ -110,6 +113,20 @@ public class ManualModLoader
     public ManualModLoader AddStormStyleElements(IEnumerable<XElement> elements)
     {
         StormStyleElements.AddRange(elements);
+
+        return this;
+    }
+
+    /// <summary>
+    /// Adds a collection of asset file paths (images) to the custom cache storage.
+    /// </summary>
+    /// <param name="filePaths">
+    /// A collection of file paths (images). Normally asset file paths should begin with the "asset" directory, but in this
+    /// case since they are being added manually, the file path should be a real path that exists on disk.</param>
+    /// <returns>The current <see cref="ManualModLoader"/> instance.</returns>
+    public ManualModLoader AddAssetFilePaths(IEnumerable<string> filePaths)
+    {
+        AssetFilePaths.UnionWith(filePaths);
 
         return this;
     }

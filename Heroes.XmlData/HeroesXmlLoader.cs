@@ -284,7 +284,7 @@ public class HeroesXmlLoader
     /// <summary>
     /// Gets the title of the map mods that is currently loaded (in enUS).
     /// </summary>
-    /// <returns>The map mods title, othewise <see langword="null"/>.</returns>
+    /// <returns>The map mods title, otherwise <see langword="null"/>.</returns>
     public string? GetLoadedMapModTitle()
     {
         return _heroesSource.LoadedStormMapTitle();

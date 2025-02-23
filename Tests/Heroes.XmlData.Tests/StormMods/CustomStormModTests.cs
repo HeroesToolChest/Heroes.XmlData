@@ -1,4 +1,6 @@
-﻿namespace Heroes.XmlData.Tests.StormMods;
+﻿using NSubstitute;
+
+namespace Heroes.XmlData.Tests.StormMods;
 
 [TestClass]
 public class CustomStormModTests
@@ -33,7 +35,8 @@ public class CustomStormModTests
   </Modifications>
 </LevelScalingArray>
 ")])
-            .AddStormStyleElements([XElement.Parse(@"<Constant name=""ColorChatCustomMessageHyperlink"" val=""c60000"" />")]);
+            .AddStormStyleElements([XElement.Parse(@"<Constant name=""ColorChatCustomMessageHyperlink"" val=""c60000"" />")])
+            .AddAssetFilePaths([Path.Join("this", "is", "file", "path")]);
 
         _heroesSource.StormStorage.CreateModStorage(default!).ReturnsForAnyArgs(new StormModStorage(default!, default!));
 
@@ -43,11 +46,12 @@ public class CustomStormModTests
         customStormMod.LoadStormData();
 
         // assert
-        _heroesSource.Received().StormStorage.AddConstantXElement(StormModType.Custom, Arg.Any<XElement>(), Arg.Any<StormPath>());
-        _heroesSource.Received().StormStorage.AddBaseElementTypes(StormModType.Custom, Arg.Any<string>(), Arg.Any<string>());
-        _heroesSource.Received().StormStorage.AddElement(StormModType.Custom, Arg.Any<XElement>(), Arg.Any<StormPath>());
-        _heroesSource.Received().StormStorage.AddLevelScalingArrayElement(StormModType.Custom, Arg.Any<XElement>(), Arg.Any<StormPath>());
-        _heroesSource.Received().StormStorage.AddStormStyleElement(StormModType.Custom, Arg.Any<XElement>(), Arg.Any<StormPath>());
+        _heroesSource.StormStorage.Received().AddConstantXElement(StormModType.Custom, Arg.Any<XElement>(), Arg.Any<StormPath>());
+        _heroesSource.StormStorage.Received().AddBaseElementTypes(StormModType.Custom, Arg.Any<string>(), Arg.Any<string>());
+        _heroesSource.StormStorage.Received().AddElement(StormModType.Custom, Arg.Any<XElement>(), Arg.Any<StormPath>());
+        _heroesSource.StormStorage.Received().AddLevelScalingArrayElement(StormModType.Custom, Arg.Any<XElement>(), Arg.Any<StormPath>());
+        _heroesSource.StormStorage.Received().AddStormStyleElement(StormModType.Custom, Arg.Any<XElement>(), Arg.Any<StormPath>());
+        _heroesSource.StormStorage.Received().AddAssetFilePath(StormModType.Custom, Arg.Any<string>(), Arg.Any<StormPath>());
     }
 
     [TestMethod]
@@ -65,12 +69,16 @@ public class CustomStormModTests
 
         CustomStormMod customStormMod = new(_heroesSource, manualModLoader);
 
+        _heroesSource.StormStorage.GetGameStringWithId("Gamestring1=value1", Arg.Any<StormPath>()).Returns(("Gamestring1", new GameStringText("value1", TestHelpers.GetStormPath("custom"))));
+        _heroesSource.StormStorage.GetGameStringWithId("Gamestring2=value2", Arg.Any<StormPath>()).Returns(("Gamestring2", new GameStringText("value2", TestHelpers.GetStormPath("custom"))));
+        _heroesSource.StormStorage.GetGameStringWithId("Gamestring3=value3", Arg.Any<StormPath>()).Returns(("Gamestring3", new GameStringText("value3", TestHelpers.GetStormPath("custom"))));
+
         // act
         customStormMod.LoadStormGameStrings(StormLocale.ENUS);
 
         // assert
-        _heroesSource.Received().StormStorage.AddGameString(StormModType.Custom, "Gamestring1", Arg.Any<GameStringText>());
-        _heroesSource.Received().StormStorage.AddGameString(StormModType.Custom, "Gamestring2", Arg.Any<GameStringText>());
-        _heroesSource.Received().StormStorage.AddGameString(StormModType.Custom, "Gamestring3", Arg.Any<GameStringText>());
+        customStormMod.StormModStorage.Received().AddGameString("Gamestring1", Arg.Any<GameStringText>());
+        customStormMod.StormModStorage.Received().AddGameString("Gamestring2", Arg.Any<GameStringText>());
+        customStormMod.StormModStorage.Received().AddGameString("Gamestring3", Arg.Any<GameStringText>());
     }
 }

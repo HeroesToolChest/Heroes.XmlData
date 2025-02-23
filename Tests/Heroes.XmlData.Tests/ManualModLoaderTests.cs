@@ -344,4 +344,36 @@ public class ManualModLoaderTests
         // assert
         result.Should().Be("custom");
     }
+
+    [TestMethod]
+    public void AddAssetFilePaths_AddingTwoCollections_ShouldReturnTotal()
+    {
+        // arrange
+        ManualModLoader manualModLoader = new("custom");
+
+        // act
+        manualModLoader.AddAssetFilePaths([
+            "path/to/file1",
+            "path/to/file2"
+            ]);
+
+        manualModLoader.AddAssetFilePaths([
+            "path/to/file4"
+            ]);
+
+        // assert
+        manualModLoader.AssetFilePaths.Should().SatisfyRespectively(
+            first =>
+            {
+                first.Should().Be("path/to/file1");
+            },
+            second =>
+            {
+                second.Should().Be("path/to/file2");
+            },
+            third =>
+            {
+                third.Should().Be("path/to/file4");
+            });
+    }
 }
