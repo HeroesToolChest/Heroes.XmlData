@@ -1636,4 +1636,40 @@ public class GameStringParserTests
         // assert
         parsed.Should().Be("Basic Attacks with Repeater Cannon reduce Ability cooldowns by <c val=\"#TooltipNumbers\">0.5</c> seconds. Basic Attacks with Phase Bomb active reduce Ability cooldowns by <c val=\"#TooltipNumbers\">0.5</c></c> seconds per Hero hit.");
     }
+
+    [TestMethod]
+    public void ParseTooltipDescription_ArrayElementHasNoDefaultIndexer_ParsedGameString()
+    {
+        // arrange
+        string description = "<s val=\"StandardTooltipDetails\"><d ref=\"Abil,GuldanLifeTap,Cost.Vital[Life]\"/></s>";
+
+        HeroesXmlLoader loader = HeroesXmlLoader.LoadWithEmpty()
+            .LoadCustomMod(new ManualModLoader("custom")
+                .AddBaseElementTypes(new List<(string, string)>()
+                {
+                    ("Abil", "CAbilEffectInstant"),
+                })
+                .AddElements(new List<XElement>()
+                {
+                    XElement.Parse(
+                        """
+                        <CAbilEffectInstant id="GuldanLifeTap">
+                          <Effect value="GuldanLifeTapCastSet" />
+                          <Cost>
+                            <Vital index="Life" value="222" />
+                            <Cooldown TimeUse="0.5" />
+                          </Cost>
+                          <CmdButtonArray index="Execute" DefaultButtonFace="GuldanLifeTap" Requirements="GuldanLifeTapManaControllerNotActive" />
+                        </CAbilEffectInstant>
+                        """),
+                }));
+
+        HeroesData heroesData = loader.HeroesData;
+
+        // act
+        string parsed = GameStringParser.ParseTooltipDescription(heroesData.StormStorage, description);
+
+        // assert
+        parsed.Should().Be("<s val=\"StandardTooltipDetails\">222</s>");
+    }
 }

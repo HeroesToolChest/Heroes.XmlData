@@ -37,7 +37,8 @@ internal class DataRefParser
                 // the part with out the indexer, e.g. PeriodicPeriodArray
                 ReadOnlySpan<char> fieldPartSpanWithoutIndexer = fieldPartSpan[..indexOfStartBracket];
 
-                if (currentElementData.TryGetElementDataAt(fieldPartSpanWithoutIndexer.ToString(), out StormElementData? withoutIndexerStormElementData))
+                if (currentElementData.TryGetElementDataAt(fieldPartSpanWithoutIndexer, out StormElementData? withoutIndexerStormElementData) ||
+                    (currentElementData.HasNumericalIndex && currentElementData.ElementDataPairs.First().Value.TryGetElementDataAt(fieldPartSpanWithoutIndexer, out withoutIndexerStormElementData)))
                 {
                     if (((numericalIndex is true && withoutIndexerStormElementData.HasNumericalIndex is true) ||
                         (numericalIndex is false && withoutIndexerStormElementData.HasTextIndex is true)) && withoutIndexerStormElementData.TryGetElementDataAt(fieldPartIndexValue, out StormElementData? indexStormElementData))
@@ -70,7 +71,7 @@ internal class DataRefParser
                     }
                 }
             }
-            else if (currentElementData.TryGetElementDataAt(fieldPartSpan.ToString(), out StormElementData? stormElementData) ||
+            else if (currentElementData.TryGetElementDataAt(fieldPartSpan, out StormElementData? stormElementData) ||
                 ((currentElementData.HasNumericalIndex || currentElementData.HasTextIndex) && currentElementData.ElementDataPairs.First().Value.TryGetElementDataAt(fieldPartSpan, out stormElementData)))
             {
                 currentElementData = stormElementData;
@@ -277,7 +278,7 @@ internal class DataRefParser
         StormElementData stormElementData = GetStormElementDataFromLastFieldPart(scalingStormElement.DataValues, fullSpan, xmlParts[2..]);
 
         // AmountArray[Quest]
-        if (!fieldIndexer.IsEmpty && stormElementData.TryGetElementDataAt(fieldIndexer.ToString(), out StormElementData? innerIndexData))
+        if (!fieldIndexer.IsEmpty && stormElementData.TryGetElementDataAt(fieldIndexer, out StormElementData? innerIndexData))
         {
             stormElementData = innerIndexData;
         }
