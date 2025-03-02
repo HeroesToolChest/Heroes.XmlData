@@ -51,7 +51,7 @@ public readonly ref struct StormElementValue
     }
 
     /// <summary>
-    /// Trys to get the current value as an <see cref="int"/>.
+    /// Get the current value as an <see cref="int"/>. A return value indicates whether the conversion succeeded.
     /// </summary>
     /// <param name="value">When this method returns, contains the value as an <see cref="int"/>.</param>
     /// <returns><see langword="true"/> if the value can be converted to an <see cref="int"/>, otherwise <see langword="false"/>.</returns>
@@ -78,7 +78,7 @@ public readonly ref struct StormElementValue
     }
 
     /// <summary>
-    /// Trys to get the current value as an <see cref="double"/>.
+    /// Get the current value as an <see cref="double"/>. A return value indicates whether the conversion succeeded.
     /// </summary>
     /// <param name="value">When this method returns, contains the value as an <see cref="double"/>.</param>
     /// <returns><see langword="true"/> if the value can be converted to an <see cref="double"/>, otherwise <see langword="false"/>.</returns>
