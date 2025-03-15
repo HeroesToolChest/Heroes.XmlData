@@ -76,6 +76,17 @@ public class HeroesData
     }
 
     /// <summary>
+    /// Determines if a storm element with an id attribute exists.
+    /// </summary>
+    /// <param name="dataObjectType">The type of the element name (e.g. Effect).</param>
+    /// <param name="id">The id of element.</param>
+    /// <returns><see langword="true"/> if found, otherwise <see langword="false"/>.</returns>
+    public bool StormElementExists(string dataObjectType, string id)
+    {
+        return _stormStorage.StormElementExists(id, dataObjectType);
+    }
+
+    /// <summary>
     /// Gets a storm element attribute id by the unit name attribute.
     /// </summary>
     /// <param name="unitName">The unit name of an element.</param>
@@ -106,11 +117,11 @@ public class HeroesData
     }
 
     /// <summary>
-    /// Gets a <see cref="StormElement"/> that has been merged from the base element to the given <paramref name="id"/>.
+    /// Gets a <see cref="StormElement"/> that has been merged from the base element to the given <paramref name="id"/>'s element.
     /// </summary>
     /// <param name="dataObjectType">The type of the element name (e.g. Effect).</param>
     /// <param name="id">The value of an id attribute.</param>
-    /// <returns>A merged from base element <see cref="StormElement"/> or <see langword="null"/> if not found.</returns>
+    /// <returns>A <see cref="StormElement"/> or <see langword="null"/> if not found.</returns>
     public StormElement? GetCompleteStormElement(string dataObjectType, string id)
     {
         return _stormStorage.GetCompleteStormElement(id, dataObjectType);

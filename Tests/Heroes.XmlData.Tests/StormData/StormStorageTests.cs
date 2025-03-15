@@ -690,6 +690,185 @@ public class StormStorageTests
     }
 
     [TestMethod]
+    public void StormElementExists_ExistsInAllCaches_ReturnsTrue()
+    {
+        // arrange
+        StormStorage stormStorage = new(false);
+
+        stormStorage.StormCache.StormElementsByDataObjectType.Add("Unit", new Dictionary<string, StormElement>()
+        {
+            {
+                "Hero1", new StormElement(new StormXElementValuePath(
+                    XElement.Parse(@"
+<CUnit id=""Hero1"">
+  <Name value=""Unit/Name/##id##"" />
+  <Element1 value=""value1"" />
+</CUnit>
+"),
+                    TestHelpers.GetStormPath("normal")))
+            },
+        });
+
+        stormStorage.StormMapCache.StormElementsByDataObjectType.Add("Unit", new Dictionary<string, StormElement>()
+        {
+            {
+                "Hero1", new StormElement(new StormXElementValuePath(
+                    XElement.Parse(@"
+<CUnit id=""Hero1"">
+  <Name value=""Unit/Name/##id##"" />
+  <Element2 value=""value2"" />
+</CUnit>
+"),
+                    TestHelpers.GetStormPath("map")))
+            },
+        });
+
+        stormStorage.StormCustomCache.StormElementsByDataObjectType.Add("Unit", new Dictionary<string, StormElement>()
+        {
+            {
+                "Hero1", new StormElement(new StormXElementValuePath(
+                    XElement.Parse(@"
+<CUnit id=""Hero1"">
+  <Name value=""Unit/Name/##id##"" />
+  <Element3 value=""value3"" />
+</CUnit>
+"),
+                    TestHelpers.GetStormPath("custom")))
+            },
+        });
+
+        // act
+        bool result = stormStorage.StormElementExists("Hero1", "Unit");
+
+        // assert
+        result.Should().BeTrue();
+    }
+
+    [TestMethod]
+    public void StormElementExists_ExistsInNormalCache_ReturnsTrue()
+    {
+        // arrange
+        StormStorage stormStorage = new(false);
+
+        stormStorage.StormCache.StormElementsByDataObjectType.Add("Unit", new Dictionary<string, StormElement>()
+        {
+            {
+                "Hero1", new StormElement(new StormXElementValuePath(
+                    XElement.Parse(@"
+<CUnit id=""Hero1"">
+  <Name value=""Unit/Name/##id##"" />
+  <Element1 value=""value1"" />
+</CUnit>
+"),
+                    TestHelpers.GetStormPath("normal")))
+            },
+        });
+
+        // act
+        bool result = stormStorage.StormElementExists("Hero1", "Unit");
+
+        // assert
+        result.Should().BeTrue();
+    }
+
+    [TestMethod]
+    public void StormElementExists_ExistsInMapCache_ReturnsTrue()
+    {
+        // arrange
+        StormStorage stormStorage = new(false);
+
+        stormStorage.StormMapCache.StormElementsByDataObjectType.Add("Unit", new Dictionary<string, StormElement>()
+        {
+            {
+                "Hero1", new StormElement(new StormXElementValuePath(
+                    XElement.Parse(@"
+<CUnit id=""Hero1"">
+  <Name value=""Unit/Name/##id##"" />
+  <Element2 value=""value2"" />
+</CUnit>
+"),
+                    TestHelpers.GetStormPath("map")))
+            },
+        });
+
+        // act
+        bool result = stormStorage.StormElementExists("Hero1", "Unit");
+
+        // assert
+        result.Should().BeTrue();
+    }
+
+    [TestMethod]
+    public void StormElementExists_ExistsInNormalAndMapCache_ReturnsTrue()
+    {
+        // arrange
+        StormStorage stormStorage = new(false);
+
+        stormStorage.StormCache.StormElementsByDataObjectType.Add("Unit", new Dictionary<string, StormElement>()
+        {
+            {
+                "Hero1", new StormElement(new StormXElementValuePath(
+                    XElement.Parse(@"
+<CUnit id=""Hero1"">
+  <Name value=""Unit/Name/##id##"" />
+  <Element1 value=""value1"" />
+</CUnit>
+"),
+                    TestHelpers.GetStormPath("normal")))
+            },
+        });
+
+        stormStorage.StormMapCache.StormElementsByDataObjectType.Add("Unit", new Dictionary<string, StormElement>()
+        {
+            {
+                "Hero1", new StormElement(new StormXElementValuePath(
+                    XElement.Parse(@"
+<CUnit id=""Hero1"">
+  <Name value=""Unit/Name/##id##"" />
+  <Element2 value=""value2"" />
+</CUnit>
+"),
+                    TestHelpers.GetStormPath("map")))
+            },
+        });
+
+        // act
+        bool result = stormStorage.StormElementExists("Hero1", "Unit");
+
+        // assert
+        result.Should().BeTrue();
+    }
+
+    [TestMethod]
+    public void StormElementExists_HasNoElementId_ReturnsFalse()
+    {
+        // arrange
+        StormStorage stormStorage = new(false);
+
+        // act
+        bool result = stormStorage.StormElementExists("Hero1", "Unit");
+
+        // assert
+        result.Should().BeFalse();
+    }
+
+    [TestMethod]
+    [DataRow(null, "")]
+    [DataRow("", null)]
+    [DataRow(null, null)]
+    public void StormElementExists_NullParams_ThrowsException(string id, string dataObjectType)
+    {
+        // arrange
+        StormStorage stormStorage = new();
+
+        // act
+        Action result = () => stormStorage.StormElementExists(id, dataObjectType);
+
+        // assert
+        result.Should().Throw<ArgumentNullException>();
+    }
+
+    [TestMethod]
     [DataRow("HeroDVaMech", "Actor", "HeroDVaMech")]
     [DataRow("HeroChenEarth", "Actor", "ChenEarthUnit")]
     public void TryGetFirstStormElementIdByUnitName_UnitNamesAndDataObjectType_ReturnsId(string unitName, string dataObjectType, string id)

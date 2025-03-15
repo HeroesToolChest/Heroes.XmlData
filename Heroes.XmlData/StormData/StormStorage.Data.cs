@@ -170,6 +170,33 @@ internal partial class StormStorage
         return stormElement;
     }
 
+    public bool StormElementExists(string id, string dataObjectType)
+    {
+        ArgumentNullException.ThrowIfNull(dataObjectType);
+        ArgumentNullException.ThrowIfNull(id);
+
+        // normal cache first
+        if (StormCache.StormElementsByDataObjectType.TryGetValue(dataObjectType, out var foundStormElementById) &&
+            foundStormElementById.ContainsKey(id))
+        {
+            return true;
+        }
+
+        if (StormMapCache.StormElementsByDataObjectType.TryGetValue(dataObjectType, out foundStormElementById) &&
+            foundStormElementById.ContainsKey(id))
+        {
+            return true;
+        }
+
+        if (StormCustomCache.StormElementsByDataObjectType.TryGetValue(dataObjectType, out foundStormElementById) &&
+            foundStormElementById.ContainsKey(id))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
     public bool TryGetFirstStormElementIdByUnitName(string unitName, string dataObjectType, [NotNullWhen(true)] out string? id)
     {
         ArgumentNullException.ThrowIfNull(dataObjectType);
