@@ -672,7 +672,7 @@ public class StormElementDataTests
         StormElementData data = new(element);
 
         // act
-        List<string> results = data.GetElementDataAt("heroarray").GetElementDataIndexes().ToList();
+        List<string> results = [.. data.GetElementDataAt("heroarray").GetElementDataIndexes()];
 
         // assert
         results.Should().SatisfyRespectively(
@@ -739,5 +739,37 @@ public class StormElementDataTests
         result[2].Value.GetElementDataAt("Face").Value.GetString().Should().Be("AbathurSymbiote");
         result[3].Value.GetElementDataAt("Face").Value.GetString().Should().Be("AbathurToxicNest");
         result[4].Value.GetElementDataAt("Face").Value.GetString().Should().Be("AbathurDeepTunnel");
+    }
+
+    [TestMethod]
+    public void ElementData_HasMultipleTooltipAppenders_ReturnsTooltipAppendersAsArrayElements()
+    {
+        // arrange
+        XElement element = XElement.Parse(
+            """
+            <CButton id="SamuroAdvancingStrikes" parent="StormButtonParent">
+              <TooltipAppender Validator="SamuroHasDeflectionTalent" Face="SamuroDeflectionTalent" />
+              <TooltipAppender Validator="SamuroHasPressTheAttack" Face="SamuroPressTheAttack" />
+              <TooltipAppender Validator="SamuroHasBlademastersPursuit" Face="SamuroBlademastersPursuitTalent" />
+              <Icon value="Assets\Textures\storm_ui_icon_samuro_flowingstrikes.dds" />
+              <HotkeyAlias value="SamuroMirrorImage" />
+              <TooltipCooldownOverrideText value="SamuroImageTransmission" />
+            </CButton>
+            """);
+
+        StormElementData data = new(element);
+
+        // act
+        List<KeyValuePair<string, StormElementData>> result = [.. data.GetElementDataAt("TooltipAppender").GetElementData()];
+
+        // assert
+        result.Should().HaveCount(3);
+        result[0].Value.GetElementDataAt("Face").Value.GetString().Should().Be("SamuroDeflectionTalent");
+        result[1].Value.GetElementDataAt("Face").Value.GetString().Should().Be("SamuroPressTheAttack");
+        result[2].Value.GetElementDataAt("Face").Value.GetString().Should().Be("SamuroBlademastersPursuitTalent");
+
+        result[0].Value.GetElementDataAt("Validator").Value.GetString().Should().Be("SamuroHasDeflectionTalent");
+        result[1].Value.GetElementDataAt("Validator").Value.GetString().Should().Be("SamuroHasPressTheAttack");
+        result[2].Value.GetElementDataAt("Validator").Value.GetString().Should().Be("SamuroHasBlademastersPursuit");
     }
 }

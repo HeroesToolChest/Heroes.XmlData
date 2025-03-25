@@ -14,6 +14,7 @@ public class StormElementData
         "Cost",
         "LayoutButtons",
         "On",
+        "TooltipAppender",
     };
 
     private string? _value;
