@@ -25,7 +25,7 @@ public class StormFile
     public StormPath StormPath => StormPaths[^1];
 
     /// <summary>
-    /// Gets a collection of paths where the file resides. .
+    /// Gets a collection of paths where the file resides.
     /// </summary>
     public IReadOnlyList<StormPath> StormPaths => _stormPaths.AsReadOnly();
 
@@ -34,7 +34,7 @@ public class StormFile
     {
         get
         {
-            return $"{{{System.IO.Path.GetFileName(StormPath.Path)}}}";
+            return $"{{{Path.GetFileName(StormPath.Path)}}}";
         }
     }
 
