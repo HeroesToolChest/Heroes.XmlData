@@ -1672,4 +1672,103 @@ public class GameStringParserTests
         // assert
         parsed.Should().Be("<s val=\"StandardTooltipDetails\">222</s>");
     }
+
+    [TestMethod]
+    public void ParseTooltipDescription__ParsedGameString()
+    {
+        // arrange
+        string description = "Wall Ride's Movement Speed bonus gradually increases to <c val=\"#TooltipNumbers\"><d ref=\"(Accumulator,LucioWallRideAccelerandoTokenAccumulator,MaxAccumulation/Unit,HeroLucio,Speed)+(Behavior,LucioWallRideSpeed,Modification.MoveSpeedBonus/Unit,HeroLucio,Speed)*100\" player=\"0\"/>%</c> over <c val=\"#TooltipNumbers\"><d ref=\"Behavior,LucioWallRideAccelerandoToken,Max*Behavior,LucioWallRideSpeed,Period\"/></c> seconds while Lúcio maintains its effect.";
+
+        HeroesXmlLoader loader = HeroesXmlLoader.LoadWithEmpty()
+            .LoadCustomMod(new ManualModLoader("custom")
+                .AddBaseElementTypes(new List<(string, string)>()
+                {
+                    ("Accumulator", "CAccumulatorToken"),
+                    ("Behavior", "CBehaviorBuff"),
+                    ("Unit", "CUnit"),
+                })
+                .AddElements(new List<XElement>()
+                {
+                    XElement.Parse(
+                        """
+                        <CAccumulatorToken id="LucioWallRideAccelerandoTokenAccumulator" parent="BaseAccumulator">
+                          <MaxAccumulation value="$LucioWallrideAccelerandoAccumulatorMaximum" />
+                          <ApplicationRule value="Add" />
+                          <TokenId value="LucioWallRideAccelerandoToken" />
+                          <Scale value="$LucioWallrideAccelerandoAccumulatorScale" />
+                        </CAccumulatorToken>
+                        """),
+                    XElement.Parse(
+                        """
+                        <CUnit id="HeroLucio" parent="StormHeroMountedCustom">
+                          <Speed value="4.8398" />
+                        </CUnit>
+                        """),
+                    XElement.Parse(
+                        """
+                        <CBehaviorBuff id="LucioWallRideSpeed" parent="StormSprint">
+                          <Duration value="2" />
+                          <Modification>
+                            <StateFlags index="SuppressCollision" value="1" />
+                            <MoveSpeedBonus value="$LucioWallrideBonusMovespeed">
+                              <AccumulatorArray value="LucioWallRideAccelerandoTokenAccumulator" />
+                            </MoveSpeedBonus>
+                          </Modification>
+                          <Period value="$LucioWallrideUpdatePeriod" />
+                        </CBehaviorBuff>
+                        """),
+                    XElement.Parse(
+                        """
+                        <CBehaviorTokenCounter id="LucioWallRideAccelerandoToken" parent="StormGenericToken">
+                          <Alignment value="Positive" />
+                          <Max value="$LucioWallrideAccelerandoMaximumStacks" />
+                          <SortIndex value="10" />
+                        </CBehaviorTokenCounter>
+                        """),
+                })
+                .AddConstantXElements(new List<XElement>()
+                {
+                    XElement.Parse(
+                        """
+                        <const id="$HeroBaseMovementSpeed" value="4.8398" />
+                        """),
+                    XElement.Parse(
+                        """
+                        <const id="$LucioWallrideAcceleranceBonusMovespeedModifier" value="0.2" />
+                        """),
+                    XElement.Parse(
+                        """
+                        <const id="$LucioWallrideAccelerandoAccumulatorMaximum" value="*($HeroBaseMovementSpeed $LucioWallrideAcceleranceBonusMovespeedModifier)" evaluateAsExpression="1" />
+                        """),
+                    XElement.Parse(
+                        """
+                        <const id="$LucioWallrideBonusMovespeedModifier" value="0.2" />
+                        """),
+                    XElement.Parse(
+                        """
+                        <const id="$LucioWallrideBonusMovespeed" value="*($HeroBaseMovementSpeed $LucioWallrideBonusMovespeedModifier)" evaluateAsExpression="1" />
+                        """),
+                    XElement.Parse(
+                        """
+                        <const id="$LucioWallrideAccelerandoTimeToMaximum" value="6" />
+                        """),
+                    XElement.Parse(
+                        """
+                        <const id="$LucioWallrideUpdatePeriod" value="0.125" />
+                        """),
+                    XElement.Parse(
+                        """
+                        <const id="$LucioWallrideAccelerandoMaximumStacks" value="/($LucioWallrideAccelerandoTimeToMaximum $LucioWallrideUpdatePeriod)" evaluateAsExpression="1" />
+                        """),
+
+                }));
+
+        HeroesData heroesData = loader.HeroesData;
+
+        // act
+        string parsed = GameStringParser.ParseTooltipDescription(heroesData.StormStorage, description);
+
+        // assert
+        parsed.Should().Be("Wall Ride's Movement Speed bonus gradually increases to <c val=\"#TooltipNumbers\">40%</c> over <c val=\"#TooltipNumbers\">6</c> seconds while Lúcio maintains its effect.");
+    }
 }

@@ -7,6 +7,16 @@ namespace Heroes.XmlData.StormMath;
 /// </summary>
 public class HeroesCalculator
 {
+    /// <summary>
+    /// Gets the maximum number of fractional digits.
+    /// </summary>
+    internal const int MaxFractionalDigits = 6;
+
+    /// <summary>
+    /// Gets the fractional midpoint rounding mode.
+    /// </summary>
+    internal const MidpointRounding MaxFractionalMidpointRoundingMode = MidpointRounding.ToEven;
+
     private readonly Stack<double> _values = new();
     private readonly Stack<char> _operators = new();
 
@@ -33,7 +43,7 @@ public class HeroesCalculator
 
         try
         {
-            return heroesMath.Calculate(expression);
+            return Math.Round(heroesMath.Calculate(expression), MaxFractionalDigits, MaxFractionalMidpointRoundingMode);
         }
         catch (Exception ex)
         {

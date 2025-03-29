@@ -17,7 +17,7 @@ internal class HeroesPrefixNotation
 
         try
         {
-            return heroesPrefixNotation.Evaluate(expression);
+            return Math.Round(heroesPrefixNotation.Evaluate(expression), HeroesCalculator.MaxFractionalDigits, HeroesCalculator.MaxFractionalMidpointRoundingMode);
         }
         catch (Exception ex)
         {

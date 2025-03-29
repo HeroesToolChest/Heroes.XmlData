@@ -26,7 +26,7 @@ public class HeroesPrefixNotationTests
     [DataRow(-0.125, "/(*(0.1 negate(5)) 4)")]
     [DataRow(-0.0125, "/(*(0.1 negate(0.5)) 4)")]
     [DataRow(200, "+(1000 negate(800))")]
-    [DataRow(0.0062499999999999995, "/(0.3 *(3 16))")]
+    [DataRow(0.00625, "/(0.3 *(3 16))")]
     [DataRow(82.5, "+(-(100 60) *(5 8.5))")]
     public void Compute_ValidNumberExpressions_ReturnsValue(double expected, string expression)
     {
