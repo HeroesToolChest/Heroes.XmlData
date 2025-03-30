@@ -6,8 +6,6 @@ namespace Heroes.XmlData.GameStrings;
 
 internal class GameStringParser
 {
-    public const int MaxNumberLength = 9;
-    public const int MaxScalingLength = 6;
     public const double MaxValueSize = 999_999_999;
 
     private readonly IStormStorage _stormStorage;
@@ -73,7 +71,7 @@ internal class GameStringParser
         }
 
         if (scaling.HasValue)
-            return new ValueScale(Math.Round(resultValue, precision), Math.Round(scaling.Value, MaxScalingLength));
+            return new ValueScale(Math.Round(resultValue, precision), Math.Round(scaling.Value, HeroesCalculator.MaxFractionalDigits));
         else
             return new ValueScale(Math.Round(resultValue, precision));
     }
@@ -256,10 +254,8 @@ internal class GameStringParser
             {
                 TextSectionValueScale textSectionValueScale = (TextSectionValueScale)current;
 
-                sum += MaxNumberLength;
-
-                if (textSectionValueScale.ValueScale.Scaling.HasValue)
-                    sum += MaxScalingLength;
+                sum += textSectionValueScale.ValueScale.TotalValueDigits();
+                sum += textSectionValueScale.ValueScale.TotalScalingDigits() + 4; // +4 for ~~ ~~
             }
             else if (current.Type == TextSectionType.Text)
             {

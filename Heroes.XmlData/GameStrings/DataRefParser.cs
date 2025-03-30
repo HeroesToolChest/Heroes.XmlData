@@ -1,5 +1,4 @@
-﻿using Heroes.XmlData.StormMath;
-using System.Buffers;
+﻿using System.Buffers;
 
 namespace Heroes.XmlData.GameStrings;
 
@@ -124,7 +123,7 @@ internal class DataRefParser
     private static (int Size, int SizeScaling) GetSizeOfBuffer(ReadOnlySpan<char> dRefSpan, List<ITextSection> dataRefParts)
     {
         int size = 0;
-        int sizeWithScaling = 0;
+        int scalingSize = 0;
 
         foreach (ITextSection dataSection in dataRefParts)
         {
@@ -134,13 +133,17 @@ internal class DataRefParser
             }
             else if (dataSection.Type == TextSectionType.Value)
             {
-                size += GameStringParser.MaxNumberLength + 2; // +2 for ()
-                if (((TextSectionValueScale)dataSection).ValueScale.Scaling.HasValue)
-                    sizeWithScaling += GameStringParser.MaxScalingLength;
+                TextSectionValueScale textSectionValueScale = (TextSectionValueScale)dataSection;
+
+                size += textSectionValueScale.ValueScale.TotalValueDigits() + 2; // +2 for ()
+
+                int scalingDigits = textSectionValueScale.ValueScale.TotalScalingDigits();
+                if (scalingDigits > 0)
+                    scalingSize += scalingDigits + 1; // +1 for '*';
             }
         }
 
-        return (size, size + sizeWithScaling);
+        return (size, size + scalingSize);
     }
 
     private static ReadOnlySpan<char> GetNextPart(ReadOnlySpan<char> text)

@@ -1,6 +1,4 @@
-﻿using Heroes.XmlData.StormMath;
-
-namespace Heroes.XmlData.StormData;
+﻿namespace Heroes.XmlData.StormData;
 
 /// <summary>
 /// Storage for all storm mods.

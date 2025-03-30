@@ -7,6 +7,7 @@ global using Heroes.XmlData.MpqEntry;
 global using Heroes.XmlData.Source;
 global using Heroes.XmlData.StormData;
 global using Heroes.XmlData.StormDepotCache;
+global using Heroes.XmlData.StormMath;
 global using Heroes.XmlData.StormMods;
 global using System.Diagnostics;
 global using System.Diagnostics.CodeAnalysis;

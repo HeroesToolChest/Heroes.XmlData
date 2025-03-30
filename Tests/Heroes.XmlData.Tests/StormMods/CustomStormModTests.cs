@@ -1,6 +1,4 @@
-﻿using NSubstitute;
-
-namespace Heroes.XmlData.Tests.StormMods;
+﻿namespace Heroes.XmlData.Tests.StormMods;
 
 [TestClass]
 public class CustomStormModTests

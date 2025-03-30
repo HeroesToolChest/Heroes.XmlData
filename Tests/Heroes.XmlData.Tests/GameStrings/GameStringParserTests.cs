@@ -1674,7 +1674,7 @@ public class GameStringParserTests
     }
 
     [TestMethod]
-    public void ParseTooltipDescription__ParsedGameString()
+    public void ParseTooltipDescription_FractionalMath_ParsedGameString()
     {
         // arrange
         string description = "Wall Ride's Movement Speed bonus gradually increases to <c val=\"#TooltipNumbers\"><d ref=\"(Accumulator,LucioWallRideAccelerandoTokenAccumulator,MaxAccumulation/Unit,HeroLucio,Speed)+(Behavior,LucioWallRideSpeed,Modification.MoveSpeedBonus/Unit,HeroLucio,Speed)*100\" player=\"0\"/>%</c> over <c val=\"#TooltipNumbers\"><d ref=\"Behavior,LucioWallRideAccelerandoToken,Max*Behavior,LucioWallRideSpeed,Period\"/></c> seconds while Lúcio maintains its effect.";
