@@ -3,7 +3,6 @@
 [TestClass]
 public class StormElementValueTests
 {
-
     [TestMethod]
     public void GetString_GetValueWithReplacements_ReturnsValue()
     {

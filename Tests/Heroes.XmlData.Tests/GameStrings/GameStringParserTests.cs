@@ -1760,7 +1760,6 @@ public class GameStringParserTests
                         """
                         <const id="$LucioWallrideAccelerandoMaximumStacks" value="/($LucioWallrideAccelerandoTimeToMaximum $LucioWallrideUpdatePeriod)" evaluateAsExpression="1" />
                         """),
-
                 }));
 
         HeroesData heroesData = loader.HeroesData;
