@@ -240,6 +240,34 @@ public class StormElementData
     }
 
     /// <summary>
+    /// Gets the inner xml data from the given <paramref name="index"/>.
+    /// </summary>
+    /// <param name="index">The index value which is an element name or attribute name or value. Is case-insensitive.</param>
+    /// <returns>The inner xml data as <see cref="StormElementData"/>.</returns>
+    /// <exception cref="KeyNotFoundException"><paramref name="index"/> was not found.</exception>
+    public StormElementData this[string index]
+    {
+        get
+        {
+            return GetElementDataAt(index);
+        }
+    }
+
+    /// <summary>
+    /// Gets the inner xml data from the given <paramref name="index"/>.
+    /// </summary>
+    /// <param name="index">A character span that contains the index value which is an element name or attribute name or value. Is case-insensitive.</param>
+    /// <returns>The inner xml data as <see cref="StormElementData"/>.</returns>
+    /// <exception cref="KeyNotFoundException"><paramref name="index"/> was not found.</exception>
+    public StormElementData this[ReadOnlySpan<char> index]
+    {
+        get
+        {
+            return GetElementDataAt(index);
+        }
+    }
+
+    /// <summary>
     /// Gets a collection of the inner data indexes.
     /// </summary>
     /// <returns>A collection of the inner data indexes.</returns>

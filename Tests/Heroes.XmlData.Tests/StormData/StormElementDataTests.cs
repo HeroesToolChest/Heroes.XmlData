@@ -4,6 +4,25 @@
 public class StormElementDataTests
 {
     [TestMethod]
+    public void StormElementData_Indexers_GetsStormElementData()
+    {
+        // arrange
+        XElement element = new(
+            "CAbil",
+            new XElement(
+                "OrderArray",
+                new XAttribute("index", "0"),
+                new XAttribute("LineTexture", "Assets\\Textures\\Storm_WayPointLine.dds")));
+
+        // act
+        StormElementData stormElementData = new(element);
+
+        // assert
+        stormElementData["OrderArray"]["0"]["LineTexture"]["0".AsSpan()].RawValue.Should().Be("Assets\\Textures\\Storm_WayPointLine.dds");
+        stormElementData["OrderArray".AsSpan()]["0".AsSpan()]["LineTexture".AsSpan()]["0"].RawValue.Should().Be("Assets\\Textures\\Storm_WayPointLine.dds");
+    }
+
+    [TestMethod]
     public void StormElementData_AttributesAndElements_ShouldBeSavedAsSameLevelXmlData()
     {
         // arrange
