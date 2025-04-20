@@ -220,7 +220,7 @@ public class HeroesData
     /// <summary>
     /// Determines if an asset file (images) exists.
     /// </summary>
-    /// <param name="path">The path of the asset, which should start with the "asset" directory.</param>
+    /// <param name="path">The path of the asset, which should start with the "asset" directory. Is not case-sensitive.</param>
     /// <returns><see langword="true"/> if the file exists, otherwise <see langword="false"/>.</returns>
     public bool StormAssetFileExists(string? path)
     {
@@ -230,7 +230,7 @@ public class HeroesData
     /// <summary>
     /// Gets a storm asset file (images) that is from the assets directory.
     /// </summary>
-    /// <param name="path">The path of the asset, which should start with the "asset" directory.</param>
+    /// <param name="path">The path of the asset, which should start with the "asset" directory. Is not case-sensitive.</param>
     /// <returns>A <see cref="StormFile"/> or <see langword="null"/> if not found.</returns>
     public StormFile? GetStormAssetFile(string? path)
     {
@@ -240,17 +240,17 @@ public class HeroesData
     /// <summary>
     /// Determines if a layout file exists.
     /// </summary>
-    /// <param name="path">The path of the asset, which should start with the "ui" directory.</param>
+    /// <param name="path">The path of the asset, which should start with the "ui" directory. Is not case-sensitive.</param>
     /// <returns><see langword="true"/> if the file exists, otherwise <see langword="false"/>.</returns>
     public bool StormLayoutFileExists(string? path)
     {
-        return _stormStorage.StormAssetFileExists(path);
+        return _stormStorage.StormLayoutFileExists(path);
     }
 
     /// <summary>
     /// Gets a storm layout file that is from the ui directory.
     /// </summary>
-    /// <param name="path">The path of the layout file, which should start with the "ui" directory.</param>
+    /// <param name="path">The path of the layout file, which should start with the "ui" directory. Is not case-sensitive.</param>
     /// <returns>A <see cref="StormFile"/> or <see langword="null"/> if not found.</returns>
     public StormFile? GetStormLayoutFile(string? path)
     {

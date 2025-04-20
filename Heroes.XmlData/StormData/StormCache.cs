@@ -92,7 +92,7 @@ internal class StormCache
     /// <summary>
     /// Gets the Storm Layout files by their relative UI path (relative path will start with UI).
     /// </summary>
-    public Dictionary<string, StormPath> UiStormPathsByRelativeUiPath { get; } = [];
+    public Dictionary<string, StormPath> UiStormPathsByRelativeUiPath { get; } = new(StringComparer.OrdinalIgnoreCase);
 
     /// <summary>
     /// Gets the assets files by their relative Assets path (relative path will start with Assets).

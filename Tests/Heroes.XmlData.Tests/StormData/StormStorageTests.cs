@@ -2611,7 +2611,7 @@ public class StormStorageTests
     {
         // arrange
         StormStorage stormStorage = new(false);
-        stormStorage.StormCustomCache.UiStormPathsByRelativeUiPath.Add(Path.Join("ui", "layout", "item1.stormlayout"), TestHelpers.GetStormPath("custom"));
+        stormStorage.StormCustomCache.UiStormPathsByRelativeUiPath.Add(Path.Join("ui", "layout", "ITEM1.stormlayout"), TestHelpers.GetStormPath("custom"));
 
         // act
         StormFile? stormAssetFile = stormStorage.GetStormLayoutFile(Path.Join("ui", "layout", "item1.stormlayout"));
@@ -2712,7 +2712,7 @@ public class StormStorageTests
     {
         // arrange
         StormStorage stormStorage = new(false);
-        stormStorage.StormCustomCache.AssetFilesByRelativeAssetsPath.Add(Path.Join("assets", "item1.dds"), TestHelpers.GetStormPath("custom"));
+        stormStorage.StormCustomCache.AssetFilesByRelativeAssetsPath.Add(Path.Join("assets", "ITEM1.dds"), TestHelpers.GetStormPath("custom"));
 
         // act
         bool exists = stormStorage.StormAssetFileExists(Path.Join("assets", "item1.dds"));
