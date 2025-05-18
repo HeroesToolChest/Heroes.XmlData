@@ -647,7 +647,7 @@ public class StormElementDataTests
         StormElementData data = new(element);
 
         // act
-        List<string> results = data.GetElementDataIndexes().ToList();
+        List<string> results = [.. data.GetElementDataIndexes()];
 
         // assert
         results.Should().SatisfyRespectively(

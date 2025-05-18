@@ -337,7 +337,7 @@ public class StormElementTests
         StormElement stormElement = new(new StormXElementValuePath(element, TestHelpers.GetStormPath("some\\path")));
 
         // act
-        List<StormElementData> stormElementData = stormElement.GetElements().ToList();
+        List<StormElementData> stormElementData = [.. stormElement.GetElements()];
 
         // assert
         stormElementData.Should().HaveCount(3)

@@ -458,7 +458,7 @@ public class StormElementData
                 {
                     bool numericalIndex = int.TryParse(indexAtt, out _);
 
-                    ElementDataPairs[elementName] = new StormElementData(this, element.Name.LocalName, element, indexAtt, true)
+                    ElementDataPairs[elementName] = new StormElementData(this, elementName, element, indexAtt, true)
                     {
                         HasNumericalIndex = numericalIndex,
                         HasTextIndex = !numericalIndex,
@@ -480,7 +480,7 @@ public class StormElementData
                 }
                 else
                 {
-                    ElementDataPairs[elementName] = new StormElementData(this, element.Name.LocalName, element, "0", true)
+                    ElementDataPairs[elementName] = new StormElementData(this, elementName, element, "0", true)
                     {
                         HasNumericalIndex = true,
                     };
@@ -492,7 +492,7 @@ public class StormElementData
             }
             else if (string.IsNullOrEmpty(valueAtt))
             {
-                ElementDataPairs[elementName] = new StormElementData(this, element.Name.LocalName, element);
+                ElementDataPairs[elementName] = new StormElementData(this, elementName, element);
             }
             else
             {
