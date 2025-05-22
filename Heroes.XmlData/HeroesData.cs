@@ -128,7 +128,7 @@ public class HeroesData
     }
 
     /// <summary>
-    /// Gets <see cref="StormElement"/> that represents a StormStyle Constant element.
+    /// Gets a <see cref="StormElement"/> that represents a StormStyle Constant element.
     /// </summary>
     /// <param name="name">The name of the Constant element.</param>
     /// <returns>A StormStyle Constant <see cref="StormElement"/> or <see langword="null"/> if not found.</returns>
@@ -138,7 +138,7 @@ public class HeroesData
     }
 
     /// <summary>
-    /// Gets <see cref="StormElement"/> that represents a StormStyle Style element.
+    /// Gets a <see cref="StormElement"/> that represents a StormStyle Style element.
     /// </summary>
     /// <param name="name">The name of the Style element.</param>
     /// <returns>A StormStyle Style <see cref="StormElement"/> or <see langword="null"/> if not found.</returns>
