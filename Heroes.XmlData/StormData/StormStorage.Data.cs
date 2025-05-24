@@ -57,13 +57,13 @@ internal partial class StormStorage
         // custom cache always first
         if (StormCustomCache.ElementTypesByDataObjectType.TryGetValue(dataObjectType, out HashSet<string>? foundElementTypes))
         {
-            elementTypes ??= new(foundElementTypes);
+            elementTypes ??= [.. foundElementTypes];
         }
 
         if (StormMapCache.ElementTypesByDataObjectType.TryGetValue(dataObjectType, out foundElementTypes))
         {
             if (elementTypes is null)
-                elementTypes = new(foundElementTypes);
+                elementTypes = [.. foundElementTypes];
             else
                 elementTypes.UnionWith(foundElementTypes);
         }
@@ -71,7 +71,7 @@ internal partial class StormStorage
         if (StormCache.ElementTypesByDataObjectType.TryGetValue(dataObjectType, out foundElementTypes))
         {
             if (elementTypes is null)
-                elementTypes = new(foundElementTypes);
+                elementTypes = [.. foundElementTypes];
             else
                 elementTypes.UnionWith(foundElementTypes);
         }
@@ -390,7 +390,7 @@ internal partial class StormStorage
             AddStormGameString(stormGameStrings, item);
         }
 
-        return stormGameStrings.Select(x => x.Value).ToList();
+        return [.. stormGameStrings.Select(x => x.Value)];
     }
 
     public List<string> GetStormElementIds(string dataObjectType, StormCacheType stormCacheType = StormCacheType.All)
