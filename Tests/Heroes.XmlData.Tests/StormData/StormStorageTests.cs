@@ -994,10 +994,7 @@ public class StormStorageTests
     {
         // arrange
         StormStorage stormStorage = new(false);
-        stormStorage.StormCustomCache.UnitNamesByDataObjectType.Add("Actor", new Dictionary<string, string>()
-        {
-            // none
-        });
+        stormStorage.StormCustomCache.UnitNamesByDataObjectType.Add("Actor", []);
 
         // act
         string? result = stormStorage.GetStormElementIdByUnitName("unitName", "Actor");
@@ -1594,10 +1591,13 @@ public class StormStorageTests
 
         // act
         StormStyleConstantElement? stormStyleConstantElement = stormStorage.GetStormStyleConstantElementsByName("TooltipNumbers");
+        StormStyleConstantElement? stormStyleConstantElementAsSpan = stormStorage.GetStormStyleConstantElementsByName("TooltipNumbers".AsSpan());
 
         // assert
         stormStyleConstantElement.Should().NotBeNull();
         stormStyleConstantElement!.DataValues.ElementDataCount.Should().Be(4);
+        stormStyleConstantElementAsSpan.Should().NotBeNull();
+        stormStyleConstantElementAsSpan!.DataValues.ElementDataCount.Should().Be(4);
     }
 
     [TestMethod]
@@ -1614,10 +1614,13 @@ public class StormStorageTests
 
         // act
         StormStyleConstantElement? stormStyleConstantElement = stormStorage.GetStormStyleConstantElementsByName("TooltipNumbers");
+        StormStyleConstantElement? stormStyleConstantElementAsSpan = stormStorage.GetStormStyleConstantElementsByName("TooltipNumbers".AsSpan());
 
         // assert
         stormStyleConstantElement.Should().NotBeNull();
         stormStyleConstantElement!.DataValues.ElementDataCount.Should().Be(2);
+        stormStyleConstantElementAsSpan.Should().NotBeNull();
+        stormStyleConstantElementAsSpan!.DataValues.ElementDataCount.Should().Be(2);
     }
 
     [TestMethod]
@@ -1634,10 +1637,13 @@ public class StormStorageTests
 
         // act
         StormStyleConstantElement? stormStyleConstantElement = stormStorage.GetStormStyleConstantElementsByName("TooltipNumbers");
+        StormStyleConstantElement? stormStyleConstantElementAsSpan = stormStorage.GetStormStyleConstantElementsByName("TooltipNumbers".AsSpan());
 
         // assert
         stormStyleConstantElement.Should().NotBeNull();
         stormStyleConstantElement!.DataValues.ElementDataCount.Should().Be(2);
+        stormStyleConstantElementAsSpan.Should().NotBeNull();
+        stormStyleConstantElementAsSpan!.DataValues.ElementDataCount.Should().Be(2);
     }
 
     [TestMethod]
@@ -1654,10 +1660,13 @@ public class StormStorageTests
 
         // act
         StormStyleConstantElement? stormStyleConstantElement = stormStorage.GetStormStyleConstantElementsByName("TooltipNumbers");
+        StormStyleConstantElement? stormStyleConstantElementAsSpan = stormStorage.GetStormStyleConstantElementsByName("TooltipNumbers".AsSpan());
 
         // assert
         stormStyleConstantElement.Should().NotBeNull();
         stormStyleConstantElement!.DataValues.ElementDataCount.Should().Be(2);
+        stormStyleConstantElementAsSpan.Should().NotBeNull();
+        stormStyleConstantElementAsSpan!.DataValues.ElementDataCount.Should().Be(2);
     }
 
     [TestMethod]
@@ -1680,10 +1689,13 @@ public class StormStorageTests
 
         // act
         StormStyleConstantElement? stormStyleConstantElement = stormStorage.GetStormStyleConstantElementsByName("TooltipNumbers");
+        StormStyleConstantElement? stormStyleConstantElementAsSpan = stormStorage.GetStormStyleConstantElementsByName("TooltipNumbers".AsSpan());
 
         // assert
         stormStyleConstantElement.Should().NotBeNull();
         stormStyleConstantElement!.DataValues.ElementDataCount.Should().Be(3);
+        stormStyleConstantElementAsSpan.Should().NotBeNull();
+        stormStyleConstantElementAsSpan!.DataValues.ElementDataCount.Should().Be(3);
     }
 
     [TestMethod]
@@ -1694,8 +1706,10 @@ public class StormStorageTests
 
         // act
         StormElement? result = stormStorage.GetStormStyleConstantElementsByName("TooltipNumbers");
+        StormElement? resultAsSpan = stormStorage.GetStormStyleConstantElementsByName("TooltipNumbers".AsSpan());
 
         // assert
+        result.Should().BeEquivalentTo(resultAsSpan);
         result.Should().BeNull();
     }
 
@@ -1777,10 +1791,13 @@ public class StormStorageTests
 
         // act
         StormStyleStyleElement? stormStyleStyleElement = stormStorage.GetStormStyleStyleElementsByName("ReticleEnemy");
+        StormStyleStyleElement? stormStyleStyleElementAsSpan = stormStorage.GetStormStyleStyleElementsByName("ReticleEnemy".AsSpan());
 
         // assert
         stormStyleStyleElement.Should().NotBeNull();
         stormStyleStyleElement!.DataValues.ElementDataCount.Should().Be(5);
+        stormStyleStyleElementAsSpan.Should().NotBeNull();
+        stormStyleStyleElementAsSpan!.DataValues.ElementDataCount.Should().Be(5);
     }
 
     [TestMethod]
@@ -1797,10 +1814,13 @@ public class StormStorageTests
 
         // act
         StormStyleStyleElement? stormStyleStyleElement = stormStorage.GetStormStyleStyleElementsByName("ReticleEnemy");
+        StormStyleStyleElement? stormStyleStyleElementAsSpan = stormStorage.GetStormStyleStyleElementsByName("ReticleEnemy".AsSpan());
 
         // assert
         stormStyleStyleElement.Should().NotBeNull();
         stormStyleStyleElement!.DataValues.ElementDataCount.Should().Be(3);
+        stormStyleStyleElementAsSpan.Should().NotBeNull();
+        stormStyleStyleElementAsSpan!.DataValues.ElementDataCount.Should().Be(3);
     }
 
     [TestMethod]
@@ -1817,10 +1837,13 @@ public class StormStorageTests
 
         // act
         StormStyleStyleElement? stormStyleStyleElement = stormStorage.GetStormStyleStyleElementsByName("ReticleEnemy");
+        StormStyleStyleElement? stormStyleStyleElementAsSpan = stormStorage.GetStormStyleStyleElementsByName("ReticleEnemy".AsSpan());
 
         // assert
         stormStyleStyleElement.Should().NotBeNull();
         stormStyleStyleElement!.DataValues.ElementDataCount.Should().Be(4);
+        stormStyleStyleElementAsSpan.Should().NotBeNull();
+        stormStyleStyleElementAsSpan!.DataValues.ElementDataCount.Should().Be(4);
     }
 
     [TestMethod]
@@ -1837,10 +1860,13 @@ public class StormStorageTests
 
         // act
         StormStyleStyleElement? stormStyleStyleElement = stormStorage.GetStormStyleStyleElementsByName("ReticleEnemy");
+        StormStyleStyleElement? stormStyleStyleElementAsSpan = stormStorage.GetStormStyleStyleElementsByName("ReticleEnemy".AsSpan());
 
         // assert
         stormStyleStyleElement.Should().NotBeNull();
         stormStyleStyleElement!.DataValues.ElementDataCount.Should().Be(4);
+        stormStyleStyleElementAsSpan.Should().NotBeNull();
+        stormStyleStyleElementAsSpan!.DataValues.ElementDataCount.Should().Be(4);
     }
 
     [TestMethod]
@@ -1863,10 +1889,13 @@ public class StormStorageTests
 
         // act
         StormStyleStyleElement? stormStyleStyleElement = stormStorage.GetStormStyleStyleElementsByName("ReticleEnemy");
+        StormStyleStyleElement? stormStyleStyleElementAsSpan = stormStorage.GetStormStyleStyleElementsByName("ReticleEnemy".AsSpan());
 
         // assert
         stormStyleStyleElement.Should().NotBeNull();
         stormStyleStyleElement!.DataValues.ElementDataCount.Should().Be(4);
+        stormStyleStyleElementAsSpan.Should().NotBeNull();
+        stormStyleStyleElementAsSpan!.DataValues.ElementDataCount.Should().Be(4);
     }
 
     [TestMethod]
@@ -1877,7 +1906,7 @@ public class StormStorageTests
 
         // act
         StormElement? result = stormStorage.GetStormStyleStyleElementsByName("ReticleEnemy");
-        StormElement? resultSpan = stormStorage.GetStormStyleStyleElementsByName("ReticleEnemy");
+        StormElement? resultSpan = stormStorage.GetStormStyleStyleElementsByName("ReticleEnemy".AsSpan());
 
         // assert
         result.Should().BeEquivalentTo(resultSpan);

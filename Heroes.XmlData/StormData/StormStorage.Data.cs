@@ -281,6 +281,39 @@ internal partial class StormStorage
         return null;
     }
 
+    public StormStyleConstantElement? GetStormStyleConstantElementsByName(ReadOnlySpan<char> name)
+    {
+#if NET9_0_OR_GREATER
+        StormStyleConstantElement? stormElement = null;
+
+        // normal cache first
+        if (StormCache.StormStyleConstantElementsByNameAltLookup.TryGetValue(name, out StormStyleConstantElement? foundStormElement))
+        {
+            stormElement ??= new StormStyleConstantElement(foundStormElement);
+        }
+
+        if (StormMapCache.StormStyleConstantElementsByNameAltLookup.TryGetValue(name, out foundStormElement))
+        {
+            if (stormElement is null)
+                stormElement = new StormStyleConstantElement(foundStormElement);
+            else
+                stormElement.AddValue(foundStormElement);
+        }
+
+        if (StormCustomCache.StormStyleConstantElementsByNameAltLookup.TryGetValue(name, out foundStormElement))
+        {
+            if (stormElement is null)
+                stormElement = new StormStyleConstantElement(foundStormElement);
+            else
+                stormElement.AddValue(foundStormElement);
+        }
+
+        return stormElement;
+#else
+        return GetStormStyleConstantElementsByName(name.ToString());
+#endif
+    }
+
     public StormStyleConstantElement? GetStormStyleConstantElementsByName(string name)
     {
         ArgumentNullException.ThrowIfNull(name);
@@ -310,6 +343,39 @@ internal partial class StormStorage
         }
 
         return stormElement;
+    }
+
+    public StormStyleStyleElement? GetStormStyleStyleElementsByName(ReadOnlySpan<char> name)
+    {
+#if NET9_0_OR_GREATER
+        StormStyleStyleElement? stormElement = null;
+
+        // normal cache first
+        if (StormCache.StormStyleStyleElementsByNameAltLookup.TryGetValue(name, out StormStyleStyleElement? foundStormElement))
+        {
+            stormElement ??= new StormStyleStyleElement(foundStormElement);
+        }
+
+        if (StormMapCache.StormStyleStyleElementsByNameAltLookup.TryGetValue(name, out foundStormElement))
+        {
+            if (stormElement is null)
+                stormElement = new StormStyleStyleElement(foundStormElement);
+            else
+                stormElement.AddValue(foundStormElement);
+        }
+
+        if (StormCustomCache.StormStyleStyleElementsByNameAltLookup.TryGetValue(name, out foundStormElement))
+        {
+            if (stormElement is null)
+                stormElement = new StormStyleStyleElement(foundStormElement);
+            else
+                stormElement.AddValue(foundStormElement);
+        }
+
+        return stormElement;
+#else
+        return GetStormStyleStyleElementsByName(name.ToString());
+#endif
     }
 
     public StormStyleStyleElement? GetStormStyleStyleElementsByName(string name)

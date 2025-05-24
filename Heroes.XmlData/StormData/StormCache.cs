@@ -10,6 +10,8 @@ internal class StormCache
 #if NET9_0_OR_GREATER
         ConstantXElementByIdAltLookup = ConstantXElementById.GetAlternateLookup<ReadOnlySpan<char>>();
         AssetTextsByIdAltLookup = AssetTextsById.GetAlternateLookup<ReadOnlySpan<char>>();
+        StormStyleStyleElementsByNameAltLookup = StormStyleStyleElementsByName.GetAlternateLookup<ReadOnlySpan<char>>();
+        StormStyleConstantElementsByNameAltLookup = StormStyleConstantElementsByName.GetAlternateLookup<ReadOnlySpan<char>>();
 #endif
     }
 
@@ -103,6 +105,10 @@ internal class StormCache
     public Dictionary<string, StormXElementValuePath>.AlternateLookup<ReadOnlySpan<char>> ConstantXElementByIdAltLookup { get; }
 
     public Dictionary<string, AssetText>.AlternateLookup<ReadOnlySpan<char>> AssetTextsByIdAltLookup { get; }
+
+    public Dictionary<string, StormStyleStyleElement>.AlternateLookup<ReadOnlySpan<char>> StormStyleStyleElementsByNameAltLookup { get; }
+
+    public Dictionary<string, StormStyleConstantElement>.AlternateLookup<ReadOnlySpan<char>> StormStyleConstantElementsByNameAltLookup { get; }
 
 #endif
     public void Clear()

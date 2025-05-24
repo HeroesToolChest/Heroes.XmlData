@@ -80,6 +80,12 @@ internal interface IStormStorage
 
     StormElement? GetBaseStormElement(string elementType);
 
+#if NET9_0_OR_GREATER
+    StormStyleConstantElement? GetStormStyleConstantElementsByName(ReadOnlySpan<char> name);
+
+    StormStyleStyleElement? GetStormStyleStyleElementsByName(ReadOnlySpan<char> name);
+#endif
+
     StormStyleConstantElement? GetStormStyleConstantElementsByName(string name);
 
     StormStyleStyleElement? GetStormStyleStyleElementsByName(string name);
