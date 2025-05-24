@@ -4,7 +4,7 @@
     <TargetFrameworks>net8.0;net9.0</TargetFrameworks>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <Version>1.0.0-alpha.2.41</Version>
+    <Version>1.0.0-alpha.2.43</Version>
     <GenerateDocumentationFile>True</GenerateDocumentationFile>
     <Authors>Kevin Oliva</Authors>
     <Copyright>Copyright © 2024 - 2025 Kevin Oliva</Copyright>
@@ -35,7 +35,7 @@
   </ItemGroup>
   
   <ItemGroup>
-    <PackageReference Include="Heroes.LocaleText" Version="1.0.0-beta.3" />
+    <PackageReference Include="Heroes.LocaleText" Version="1.0.0-beta.4" />
     <PackageReference Include="Heroes.MpqTool" Version="1.3.0" />
     <PackageReference Include="MimeKitLite" Version="4.8.0" />
     <PackageReference Include="StyleCop.Analyzers" Version="1.2.0-beta.556">
