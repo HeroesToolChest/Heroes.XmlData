@@ -1521,7 +1521,7 @@ public class StormStorageTests
 
         stormStorage.StormCustomCache.DataObjectTypeByElementType.Add("CEffectApplyBehavior", "Effect");
 
-        stormStorage.StormCustomCache.StormElementByElementType.Add("CEffect", new StormElement(new StormXElementValuePath(
+        stormStorage.StormCustomCache.StormElementByElementType.Add("Ceffect", new StormElement(new StormXElementValuePath(
             XElement.Parse(@"
 <CEffect default=""1"">
   <Chance value=""1"" />

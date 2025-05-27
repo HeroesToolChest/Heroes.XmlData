@@ -58,7 +58,7 @@ internal class StormCache
     /// <summary>
     /// Gets a dictionary of <see cref="StormElement"/>s that have no id attribute by their element type (e.g. CEffectDamage).
     /// </summary>
-    public Dictionary<string, StormElement> StormElementByElementType { get; } = [];
+    public Dictionary<string, StormElement> StormElementByElementType { get; } = new(StringComparer.OrdinalIgnoreCase);
 
     /// <summary>
     /// Gets a dictionary of <see cref="StormElement"/>s by their id attribute by their data object type (e.g. Effect).
