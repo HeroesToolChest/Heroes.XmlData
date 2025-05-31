@@ -1,4 +1,4 @@
-global using FluentAssertions;
+global using AwesomeAssertions;
 global using Heroes.LocaleText;
 global using Heroes.XmlData.Source;
 global using Heroes.XmlData.StormData;
