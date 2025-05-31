@@ -42,7 +42,7 @@ public class StormElementTests
         stormElement.AddValue(new StormXElementValuePath(mergingElement, TestHelpers.GetStormPath("some\\other\\path")));
 
         // assert
-        stormElement.ElementType.Should().Be("CAbil");
+        stormElement.ElementType.Should().Be("CAbilEffectInstant");
         stormElement.DataValues.GetElementDataAt("default").RawValue.Should().Be("1");
         stormElement.DataValues.GetElementDataAt("name").RawValue.Should().Be("Abil/Name/##id##");
         stormElement.DataValues.GetElementDataAt("OrderArray").GetElementDataAt("0".AsSpan()).GetElementDataAt("color").GetElementDataAt("0").RawValue.Should().Be("255,0,255,0");
@@ -96,7 +96,7 @@ public class StormElementTests
         stormElement.AddValue(otherStormElement);
 
         // assert
-        stormElement.ElementType.Should().Be("CAbil");
+        stormElement.ElementType.Should().Be("CAbilEffectInstant");
         stormElement.DataValues.GetElementDataAt("default").RawValue.Should().Be("1");
         stormElement.DataValues.GetElementDataAt("name").RawValue.Should().Be("Abil/Name/##id##");
         stormElement.DataValues.GetElementDataAt("OrderArray").GetElementDataAt("0").GetElementDataAt("color").GetElementDataAt("0").RawValue.Should().Be("255,0,255,0");

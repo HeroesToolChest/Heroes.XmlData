@@ -1327,6 +1327,7 @@ public class StormStorageTests
 
         // assert
         stormElement.Should().NotBeNull();
+        stormElement.ElementType.Should().Be("CEffectApplyBehavior");
         stormElement!.OriginalXElements.Should().HaveCount(3);
     }
 

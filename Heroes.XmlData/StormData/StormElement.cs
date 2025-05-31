@@ -52,7 +52,7 @@ public class StormElement
     /// <summary>
     /// Gets the element type.
     /// </summary>
-    public string ElementType { get; }
+    public string ElementType { get; private set; }
 
     /// <summary>
     /// Gets the value of the id attribute.
@@ -151,5 +151,6 @@ public class StormElement
     private void AddToDataValues(XElement xElement)
     {
         DataValues.AddXElement(xElement);
+        ElementType = xElement.Name.LocalName;
     }
 }
