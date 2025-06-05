@@ -335,15 +335,6 @@ public class HeroesXmlLoader
     public Stream GetFile(StormFile stormFile) => _heroesSource.GetFile(stormFile);
 
     /// <summary>
-    /// Gets the total number of currently loaded gamestrings.
-    /// </summary>
-    /// <returns>The total number of gamestrings.</returns>
-    public int GetCountOfLoadedGameStrings()
-    {
-        return _heroesSource.StormStorage.StormModStorages.Sum(x => x.GameStringsById.Count);
-    }
-
-    /// <summary>
     /// Gets the total number of directories that were not found during the loading process.
     /// </summary>
     /// <returns>The total number of not found directories.</returns>

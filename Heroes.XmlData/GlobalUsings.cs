@@ -2,6 +2,7 @@
 global using Heroes.LocaleText;
 global using Heroes.MpqTool;
 global using Heroes.XmlData.Extensions;
+global using Heroes.XmlData.GameStrings;
 global using Heroes.XmlData.Helpers;
 global using Heroes.XmlData.MpqEntry;
 global using Heroes.XmlData.Source;

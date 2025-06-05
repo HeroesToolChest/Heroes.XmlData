@@ -1,6 +1,4 @@
-﻿using Heroes.XmlData.GameStrings;
-
-namespace Heroes.XmlData;
+﻿namespace Heroes.XmlData;
 
 /// <summary>
 /// Contains the loaded heroes data, usually from the xml data files.

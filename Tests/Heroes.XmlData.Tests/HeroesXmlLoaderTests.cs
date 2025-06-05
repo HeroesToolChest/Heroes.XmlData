@@ -413,27 +413,6 @@ public class HeroesXmlLoaderTests
     }
 
     [TestMethod]
-    public void GetCountOfNotFoundDirectories_AddedGameStrings_ReturnsCount()
-    {
-        // arrange
-        HeroesXmlLoader heroesXmlLoader = HeroesXmlLoader.LoadWithEmpty()
-            .LoadCustomMod(new ManualModLoader("test")
-            .AddGameStrings(
-            [
-                "test1=1",
-                "test2=2",
-                "test3=3",
-            ],
-            StormLocale.ENUS)).LoadGameStrings(StormLocale.ENUS);
-
-        // act
-        int count = heroesXmlLoader.GetCountOfLoadedGameStrings();
-
-        // assert
-        count.Should().Be(3);
-    }
-
-    [TestMethod]
     public void GetCountOfNotFoundDirectories_StormModStoragesHaveNotFoundDirectories_ReturnsCount()
     {
         // arrange
@@ -489,10 +468,10 @@ public class HeroesXmlLoaderTests
             .LoadStormMods();
 
         // act
-        int numOfNotFoundDirectories = heroesXmlLoader.GetCountOfNotFoundFiles();
+        int count = heroesXmlLoader.GetCountOfNotFoundFiles();
 
         // assert
-        numOfNotFoundDirectories.Should().Be(6);
+        count.Should().Be(6);
     }
 
     [TestMethod]
@@ -520,10 +499,10 @@ public class HeroesXmlLoaderTests
             .LoadStormMods();
 
         // act
-        int numOfNotFoundDirectories = heroesXmlLoader.GetCountOfXmlDataFiles();
+        int count = heroesXmlLoader.GetCountOfXmlDataFiles();
 
         // assert
-        numOfNotFoundDirectories.Should().Be(6);
+        count.Should().Be(6);
     }
 
     [TestMethod]
@@ -551,10 +530,10 @@ public class HeroesXmlLoaderTests
             .LoadStormMods();
 
         // act
-        int numOfNotFoundDirectories = heroesXmlLoader.GetCountOfFontStyleFiles();
+        int count = heroesXmlLoader.GetCountOfFontStyleFiles();
 
         // assert
-        numOfNotFoundDirectories.Should().Be(6);
+        count.Should().Be(6);
     }
 
     [TestMethod]
@@ -582,10 +561,10 @@ public class HeroesXmlLoaderTests
             .LoadStormMods();
 
         // act
-        int numOfNotFoundDirectories = heroesXmlLoader.GetCountOfGameStringsFiles();
+        int count = heroesXmlLoader.GetCountOfGameStringsFiles();
 
         // assert
-        numOfNotFoundDirectories.Should().Be(6);
+        count.Should().Be(6);
     }
 
     [TestMethod]
@@ -613,10 +592,10 @@ public class HeroesXmlLoaderTests
             .LoadStormMods();
 
         // act
-        int numOfNotFoundDirectories = heroesXmlLoader.GetCountOfAssetsTextFiles();
+        int count = heroesXmlLoader.GetCountOfAssetsTextFiles();
 
         // assert
-        numOfNotFoundDirectories.Should().Be(6);
+        count.Should().Be(6);
     }
 
     [TestMethod]
@@ -644,10 +623,10 @@ public class HeroesXmlLoaderTests
             .LoadStormMods();
 
         // act
-        int numOfNotFoundDirectories = heroesXmlLoader.GetCountOfLayoutFiles();
+        int count = heroesXmlLoader.GetCountOfLayoutFiles();
 
         // assert
-        numOfNotFoundDirectories.Should().Be(6);
+        count.Should().Be(6);
     }
 
     [TestMethod]
@@ -675,10 +654,10 @@ public class HeroesXmlLoaderTests
             .LoadStormMods();
 
         // act
-        int numOfNotFoundDirectories = heroesXmlLoader.GetCountOfAssetFiles();
+        int count = heroesXmlLoader.GetCountOfAssetFiles();
 
         // assert
-        numOfNotFoundDirectories.Should().Be(6);
+        count.Should().Be(6);
     }
 
     [TestMethod]
@@ -718,10 +697,10 @@ public class HeroesXmlLoaderTests
             .LoadStormMods();
 
         // act
-        List<StormPath> notFoundDirectories = heroesXmlLoader.GetNotFoundDirectories().ToList();
+        List<StormPath> count = heroesXmlLoader.GetNotFoundDirectories().ToList();
 
         // assert
-        notFoundDirectories.Should().HaveCount(6);
+        count.Should().HaveCount(6);
     }
 
     [TestMethod]

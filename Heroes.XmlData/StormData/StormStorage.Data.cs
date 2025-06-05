@@ -1,6 +1,4 @@
-﻿using Heroes.XmlData.GameStrings;
-
-namespace Heroes.XmlData.StormData;
+﻿namespace Heroes.XmlData.StormData;
 
 /// <content>
 /// Contains the methods for obtaining data from the caches.

@@ -1,6 +1,4 @@
-﻿using Heroes.XmlData.GameStrings;
-
-namespace Heroes.XmlData.StormData;
+﻿namespace Heroes.XmlData.StormData;
 
 internal static class ScaleValueParser
 {

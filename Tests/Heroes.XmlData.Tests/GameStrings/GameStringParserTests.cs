@@ -1770,4 +1770,41 @@ public class GameStringParserTests
         // assert
         parsed.Should().Be("Wall Ride's Movement Speed bonus gradually increases to <c val=\"#TooltipNumbers\">40%</c> over <c val=\"#TooltipNumbers\">6</c> seconds while Lúcio maintains its effect.");
     }
+
+    [TestMethod]
+    public void ParseTooltipDescription_WithGermanQuoteInDRef_ParsedGameString()
+    {
+        // arrange
+        string description = "Scharfschütze fügt Gegnern in der Nähe des Einschlagorts zusätzlich <c val=\"#TooltipNumbers\"><d ref=\"100*(1+Effect,SnipeExplosiveDamage,MultiplicativeModifierArray[ExplosiveSnipe].Modifier)“/>%</c> des Schadens zu.";
+
+        HeroesXmlLoader loader = HeroesXmlLoader.LoadWithEmpty()
+            .LoadCustomMod(new ManualModLoader("custom")
+                .AddBaseElementTypes(new List<(string, string)>()
+                {
+                    ("Effect", "CEffectDamage"),
+                })
+                .AddElements(new List<XElement>()
+                {
+                    XElement.Parse(
+                        """
+                        <CEffectDamage id="SnipeExplosiveDamage" parent="StormSpell">
+                          <Amount value="230" />
+                          <ValidatorArray value="noMarkers" />
+                          <SourceButtonFace value="NovaSnipeExplosiveRoundTalent" />
+                          <MultiplicativeModifierArray index="PrecisionSniperBase" Accumulator="NovaPrecisionSniperAccumulator" />
+                          <MultiplicativeModifierArray index="PrecisionSniperMax" Validator="NovaHas5StacksOfPrecisionSniper" Modifier="0.25" />
+                          <MultiplicativeModifierArray index="ExplosiveSnipe" Modifier="-0.1" />
+                          <DamageModifierSource Value="Creator" />
+                        </CEffectDamage>
+                        """),
+                }));
+
+        HeroesData heroesData = loader.HeroesData;
+
+        // act
+        string parsed = GameStringParser.ParseTooltipDescription(heroesData.StormStorage, description);
+
+        // assert
+        parsed.Should().Be("Scharfschütze fügt Gegnern in der Nähe des Einschlagorts zusätzlich <c val=\"#TooltipNumbers\">0%</c> des Schadens zu.");
+    }
 }
