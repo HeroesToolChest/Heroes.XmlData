@@ -1807,4 +1807,67 @@ public class GameStringParserTests
         // assert
         parsed.Should().Be("Scharfschütze fügt Gegnern in der Nähe des Einschlagorts zusätzlich <c val=\"#TooltipNumbers\">0%</c> des Schadens zu.");
     }
+
+    [TestMethod]
+    public void ParseTooltipDescription_ArthasFrostmourneHungersDamageScaling_ParsedGameString()
+    {
+        // arrange
+        string description = "Activate to make Arthas's next Basic Attack strike immediately and deal <c val=\"#TooltipNumbers\"><d ref=\"Effect,ArthasFrostmourneHungersDamage,FlatModifierArray[0].Modifier \"/></c> increased damage. Dealing damage restores <c val=\"#TooltipNumbers\"><d ref=\"Effect,ArthasFrostmourneHungersCreateManaHealer,RechargeVitalRate\" player=\"0\"/></c> Mana.";
+
+        HeroesXmlLoader loader = HeroesXmlLoader.LoadWithEmpty()
+            .LoadCustomMod(new ManualModLoader("custom")
+                .AddBaseElementTypes(new List<(string, string)>()
+                {
+                    ("Effect", "CEffectDamage"),
+                })
+                .AddElements(new List<XElement>()
+                {
+                    XElement.Parse(
+                        """
+                        <CEffectDamage id="ArthasFrostmourneHungersDamage" parent="StormWeapon">
+                          <Flags index="Crit" value="1" />
+                          <Amount value="95">
+                            <AccumulatorArray value="ArthasFrostmourneHungersEternalHungerDamageAccumulator" />
+                          </Amount>
+                          <FlatModifierArray index="0" Modifier="99" />
+                        </CEffectDamage>
+                        """),
+                    XElement.Parse(
+                        """
+                        <CEffectCreateHealer id="ArthasFrostmourneHungersCreateManaHealer" parent="StormManaRestore">
+                          <ValidatorArray value="CasterNotBlindedAndTargetNotEvading" />
+                          <FlatModifierArray index="ArthasFrostmourneHungersEternalHunger" Accumulator="ArthasFrostmourneHungersEternalHungerManaAccumulator" />
+                          <ImpactUnit Value="Caster" />
+                          <RechargeVitalRate value="30" />
+                        </CEffectCreateHealer>
+                        """),
+                })
+                .AddLevelScalingArrayElements(new List<XElement>()
+                {
+                    new(
+                        "LevelScalingArray",
+                        new XElement(
+                            "Modifications",
+                            new XElement(
+                                "Catalog",
+                                new XAttribute("value", "Effect")),
+                            new XElement(
+                                "Entry",
+                                new XAttribute("value", "ArthasFrostmourneHungersDamage")),
+                            new XElement(
+                                "Field",
+                                new XAttribute("value", "FlatModifierArray[0].Modifier")),
+                            new XElement(
+                                "Value",
+                                new XAttribute("value", "0.040000")))),
+                }));
+
+        HeroesData heroesData = loader.HeroesData;
+
+        // act
+        string parsed = GameStringParser.ParseTooltipDescription(heroesData.StormStorage, description);
+
+        // assert
+        parsed.Should().Be("Activate to make Arthas's next Basic Attack strike immediately and deal <c val=\"#TooltipNumbers\">99~~0.04~~</c> increased damage. Dealing damage restores <c val=\"#TooltipNumbers\">30</c> Mana.");
+    }
 }

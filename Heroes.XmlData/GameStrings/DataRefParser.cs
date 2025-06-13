@@ -280,8 +280,9 @@ internal class DataRefParser
 
         StormElementData stormElementData = GetStormElementDataFromLastFieldPart(scalingStormElement.DataValues, fullSpan, xmlParts[2..]);
 
-        // AmountArray[Quest]
-        if (!fieldIndexer.IsEmpty && stormElementData.TryGetElementDataAt(fieldIndexer, out StormElementData? innerIndexData))
+        // AmountArray[Quest] or FlatModifierArray[0].Modifier where Modifier is in [0]
+        if ((!fieldIndexer.IsEmpty && stormElementData.TryGetElementDataAt(fieldIndexer, out StormElementData? innerIndexData)) ||
+            (fieldIndexer.IsEmpty && stormElementData.HasNumericalIndex && stormElementData.ElementDataPairs.Count == 1 && stormElementData.TryGetElementDataAt("0", out innerIndexData)))
         {
             stormElementData = innerIndexData;
         }
