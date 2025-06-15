@@ -234,7 +234,7 @@ public class StormElementTests
 
         // assert
         stormElement.ElementType.Should().Be("CWeaponLegacy");
-        stormElement.DataValues.GetElementDataAt("Cost")["Vital"]["Energy"].RawValue.Should().Be("2");
+        stormElement.DataValues["Cost"]["0"]["Vital"]["Energy"].RawValue.Should().Be("2");
     }
 
     [TestMethod]

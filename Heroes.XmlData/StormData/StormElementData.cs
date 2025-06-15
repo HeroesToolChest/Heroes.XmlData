@@ -17,7 +17,7 @@ public class StormElementData
         "TooltipAppender",
     };
 
-    private static readonly HashSet<string> _singleMergeArrays = new(StringComparer.OrdinalIgnoreCase)
+    private static readonly HashSet<string> _singleIndexArrays = new(StringComparer.OrdinalIgnoreCase)
     {
         "Cost",
     };
@@ -439,38 +439,28 @@ public class StormElementData
 
             if (!string.IsNullOrEmpty(indexAtt))
             {
-                if (ElementDataPairs.TryGetValue(elementName, out StormElementData? existingElementData))
-                {
-                    if (existingElementData.ElementDataPairs.TryGetValue(indexAtt, out StormElementData? existingIndexedData))
-                    {
-                        existingIndexedData.AddXElement(element, true);
-                    }
-                    else
-                    {
-                        existingElementData.ElementDataPairs[indexAtt] = new StormElementData(existingElementData, indexAtt, element, true, true);
-                    }
-                }
-                else
-                {
-                    bool numericalIndex = int.TryParse(indexAtt, out _);
-
-                    ElementDataPairs[elementName] = new StormElementData(this, elementName, element, indexAtt, true)
-                    {
-                        HasNumericalIndex = numericalIndex,
-                        HasTextIndex = !numericalIndex,
-                    };
-                }
+                ParseElementWithIndex(element, elementName, indexAtt);
             }
-            else if (isInnerArray || elementName.AsSpan().EndsWith("array", StringComparison.OrdinalIgnoreCase) || (_otherElementArrays.Contains(elementName) && !_singleMergeArrays.Contains(elementName)))
+            else if (isInnerArray || elementName.AsSpan().EndsWith("array", StringComparison.OrdinalIgnoreCase) || _otherElementArrays.Contains(elementName))
             {
                 if (ElementDataPairs.TryGetValue(elementName, out StormElementData? existingData))
                 {
                     string nextIndex;
 
                     if (existingData.HasNumericalIndex)
+                    {
+                        if (_singleIndexArrays.Contains(elementName))
+                        {
+                            ParseElementWithIndex(element, elementName, "0");
+                            continue;
+                        }
+
                         nextIndex = (existingData.ElementDataPairs.Keys.Max(int.Parse) + 1).ToString();
+                    }
                     else
+                    {
                         nextIndex = existingData.ElementDataPairs.Keys.Count.ToString();
+                    }
 
                     existingData.ElementDataPairs[nextIndex] = new StormElementData(existingData, nextIndex, element, true, true);
                 }
@@ -494,6 +484,31 @@ public class StormElementData
             {
                 ElementDataPairs[elementName] = new StormElementData(this, elementName, valueAtt);
             }
+        }
+    }
+
+    private void ParseElementWithIndex(XElement element, string elementName, string indexAtt)
+    {
+        if (ElementDataPairs.TryGetValue(elementName, out StormElementData? existingElementData))
+        {
+            if (existingElementData.ElementDataPairs.TryGetValue(indexAtt, out StormElementData? existingIndexedData))
+            {
+                existingIndexedData.AddXElement(element, true);
+            }
+            else
+            {
+                existingElementData.ElementDataPairs[indexAtt] = new StormElementData(existingElementData, indexAtt, element, true, true);
+            }
+        }
+        else
+        {
+            bool numericalIndex = int.TryParse(indexAtt, out _);
+
+            ElementDataPairs[elementName] = new StormElementData(this, elementName, element, indexAtt, true)
+            {
+                HasNumericalIndex = numericalIndex,
+                HasTextIndex = !numericalIndex,
+            };
         }
     }
 }
