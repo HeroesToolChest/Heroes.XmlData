@@ -198,6 +198,46 @@ public class StormElementTests
     }
 
     [TestMethod]
+    public void AddValue_MergeCostElement_MergedAsNonIndexed()
+    {
+        XElement element1 = XElement.Parse(@"
+<CWeapon default=""1"">
+  <Cost>
+    <Cooldown Link=""Weapon/##id##""/>
+  </Cost>
+</CWeapon>
+");
+
+        XElement element2 = XElement.Parse(@"
+<CWeaponLegacy default=""1"" id=""StormHeroWeapon"">
+</CWeaponLegacy>
+");
+
+        XElement element3 = XElement.Parse(@"
+<CWeaponLegacy default=""1"" id=""StormHeroFastWeapon"" parent=""StormHeroWeapon"">
+</CWeaponLegacy>
+");
+
+        XElement element4 = XElement.Parse(@"
+<CWeaponLegacy id=""TracerHeroWeapon"" parent=""StormHeroFastWeapon"">
+  <Cost>
+    <Vital index=""Energy"" value=""2"" />
+  </Cost>
+</CWeaponLegacy>
+");
+        StormElement stormElement = new(new StormXElementValuePath(element1, TestHelpers.GetStormPath("some\\path")));
+        stormElement.AddValue(new StormXElementValuePath(element2, TestHelpers.GetStormPath("some\\other\\path")));
+        stormElement.AddValue(new StormXElementValuePath(element3, TestHelpers.GetStormPath("some\\other\\path")));
+        stormElement.AddValue(new StormXElementValuePath(element4, TestHelpers.GetStormPath("some\\other\\path")));
+
+        // act
+
+        // assert
+        stormElement.ElementType.Should().Be("CWeaponLegacy");
+        stormElement.DataValues.GetElementDataAt("Cost")["Vital"]["Energy"].RawValue.Should().Be("2");
+    }
+
+    [TestMethod]
     public void AddValue_AddingElement_ReturnOriginalElements()
     {
         XElement element = XElement.Parse(@"

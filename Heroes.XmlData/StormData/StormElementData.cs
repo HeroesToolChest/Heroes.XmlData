@@ -17,6 +17,11 @@ public class StormElementData
         "TooltipAppender",
     };
 
+    private static readonly HashSet<string> _singleMergeArrays = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "Cost",
+    };
+
     private string? _value;
 
     internal StormElementData(XElement rootElement)
@@ -221,21 +226,12 @@ public class StormElementData
     {
         get
         {
-            string display = $"Count = {ElementDataPairs.Count}";
-
-            if (HasValue)
-            {
-                return $"Value = \"{Value.GetString()}\", {display}";
-            }
+            if (string.IsNullOrWhiteSpace(Field))
+                return $"{{ROOT, Elements = {ElementDataCount}}}";
+            else if (!string.IsNullOrWhiteSpace(Value.GetString()))
+                return $"{{\"{Field}\", Value = \"{Value.GetString()}\", Elements = {ElementDataCount}}}";
             else
-            {
-                if (HasNumericalIndex)
-                    return $"{display}, IsNumericalIndex";
-                else if (HasTextIndex)
-                    return $"{display}, IsTextIndex";
-                else
-                    return display;
-            }
+                return $"{{\"{Field}\", Elements = {ElementDataCount}}}";
         }
     }
 
@@ -465,7 +461,7 @@ public class StormElementData
                     };
                 }
             }
-            else if (isInnerArray || elementName.AsSpan().EndsWith("array", StringComparison.OrdinalIgnoreCase) || _otherElementArrays.Contains(elementName))
+            else if (isInnerArray || elementName.AsSpan().EndsWith("array", StringComparison.OrdinalIgnoreCase) || (_otherElementArrays.Contains(elementName) && !_singleMergeArrays.Contains(elementName)))
             {
                 if (ElementDataPairs.TryGetValue(elementName, out StormElementData? existingData))
                 {
