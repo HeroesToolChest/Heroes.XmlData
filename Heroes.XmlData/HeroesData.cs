@@ -114,6 +114,19 @@ public class HeroesData
         return null;
     }
 
+#if NET9_0_OR_GREATER
+    /// <summary>
+    /// Gets a <see cref="StormElement"/> that has been merged from the base element to the given <paramref name="id"/>'s element.
+    /// </summary>
+    /// <param name="dataObjectType">The type of the element name (e.g. Effect).</param>
+    /// <param name="id">The value of an id attribute.</param>
+    /// <returns>A <see cref="StormElement"/> or <see langword="null"/> if not found.</returns>
+    public StormElement? GetCompleteStormElement(ReadOnlySpan<char> dataObjectType, ReadOnlySpan<char> id)
+    {
+        return _stormStorage.GetCompleteStormElement(id, dataObjectType);
+    }
+#endif
+
     /// <summary>
     /// Gets a <see cref="StormElement"/> that has been merged from the base element to the given <paramref name="id"/>'s element.
     /// </summary>

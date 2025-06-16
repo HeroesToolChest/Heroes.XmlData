@@ -99,6 +99,7 @@ public class StormStorageTests
         resultDataObjectType.Should().BeNull();
     }
 
+#if !NET9_0_OR_GREATER
     [TestMethod]
     public void TryGetFirstDataObjectTypeByElementType_NullParam_ThrowsException()
     {
@@ -111,6 +112,7 @@ public class StormStorageTests
         // assert
         result.Should().Throw<ArgumentNullException>();
     }
+#endif
 
     [TestMethod]
     public void GetDataObjectTypeByElementType_HasElementType_ReturnsResult()

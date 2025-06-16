@@ -12,6 +12,10 @@ internal class StormCache
         AssetTextsByIdAltLookup = AssetTextsById.GetAlternateLookup<ReadOnlySpan<char>>();
         StormStyleStyleElementsByNameAltLookup = StormStyleStyleElementsByName.GetAlternateLookup<ReadOnlySpan<char>>();
         StormStyleConstantElementsByNameAltLookup = StormStyleConstantElementsByName.GetAlternateLookup<ReadOnlySpan<char>>();
+        StormElementsByDataObjectTypeAltLookup = StormElementsByDataObjectType.GetAlternateLookup<ReadOnlySpan<char>>();
+        StormElementByElementTypeAltLookup = StormElementByElementType.GetAlternateLookup<ReadOnlySpan<char>>();
+        DataObjectTypeByElementTypeAltLookup = DataObjectTypeByElementType.GetAlternateLookup<ReadOnlySpan<char>>();
+        ScaleValueStormElementsByDataObjectTypeAltLookup = ScaleValueStormElementsByDataObjectType.GetAlternateLookup<ReadOnlySpan<char>>();
 #endif
     }
 
@@ -109,6 +113,14 @@ internal class StormCache
     public Dictionary<string, StormStyleStyleElement>.AlternateLookup<ReadOnlySpan<char>> StormStyleStyleElementsByNameAltLookup { get; }
 
     public Dictionary<string, StormStyleConstantElement>.AlternateLookup<ReadOnlySpan<char>> StormStyleConstantElementsByNameAltLookup { get; }
+
+    public Dictionary<string, Dictionary<string, StormElement>>.AlternateLookup<ReadOnlySpan<char>> StormElementsByDataObjectTypeAltLookup { get; }
+
+    public Dictionary<string, StormElement>.AlternateLookup<ReadOnlySpan<char>> StormElementByElementTypeAltLookup { get; }
+
+    public Dictionary<string, string>.AlternateLookup<ReadOnlySpan<char>> DataObjectTypeByElementTypeAltLookup { get; }
+
+    public Dictionary<string, Dictionary<string, StormElement>>.AlternateLookup<ReadOnlySpan<char>> ScaleValueStormElementsByDataObjectTypeAltLookup { get; }
 
 #endif
     public void Clear()

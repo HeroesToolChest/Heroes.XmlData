@@ -60,6 +60,15 @@ internal interface IStormStorage
 
     List<string> GetElementTypesByDataObjectType(string dataObjectType);
 
+#if NET9_0_OR_GREATER
+    bool TryGetFirstDataObjectTypeByElementType(ReadOnlySpan<char> elementType, [NotNullWhen(true)] out string? dataObjectType);
+
+    string? GetDataObjectTypeByElementType(ReadOnlySpan<char> elementType);
+
+    StormElement? GetStormElementByElementType(ReadOnlySpan<char> elementType);
+
+    StormElement? GetStormElementById(ReadOnlySpan<char> id, ReadOnlySpan<char> dataObjectType);
+#else
     bool TryGetFirstDataObjectTypeByElementType(string elementType, [NotNullWhen(true)] out string? dataObjectType);
 
     string? GetDataObjectTypeByElementType(string elementType);
@@ -67,6 +76,7 @@ internal interface IStormStorage
     StormElement? GetStormElementByElementType(string elementType);
 
     StormElement? GetStormElementById(string id, string dataObjectType);
+#endif
 
     bool StormElementExists(string id, string dataObjectType);
 
@@ -74,11 +84,21 @@ internal interface IStormStorage
 
     string? GetStormElementIdByUnitName(string unitName, string dataObjectType);
 
+#if NET9_0_OR_GREATER
+    StormElement? GetScaleValueStormElementById(ReadOnlySpan<char> id, ReadOnlySpan<char> dataObjectType);
+#else
     StormElement? GetScaleValueStormElementById(string id, string dataObjectType);
+#endif
 
+#if NET9_0_OR_GREATER
+    StormElement? GetCompleteStormElement(ReadOnlySpan<char> id, ReadOnlySpan<char> dataObjectType);
+
+    StormElement? GetBaseStormElement(ReadOnlySpan<char> elementType);
+#else
     StormElement? GetCompleteStormElement(string id, string dataObjectType);
 
     StormElement? GetBaseStormElement(string elementType);
+#endif
 
 #if NET9_0_OR_GREATER
     StormStyleConstantElement? GetStormStyleConstantElementsByName(ReadOnlySpan<char> name);
