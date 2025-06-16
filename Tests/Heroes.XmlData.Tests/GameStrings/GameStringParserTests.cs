@@ -1870,4 +1870,67 @@ public class GameStringParserTests
         // assert
         parsed.Should().Be("Activate to make Arthas's next Basic Attack strike immediately and deal <c val=\"#TooltipNumbers\">99~~0.04~~</c> increased damage. Dealing damage restores <c val=\"#TooltipNumbers\">30</c> Mana.");
     }
+
+    [TestMethod]
+    public void ParseTooltipDescription_CrusaderDivineFortressNoIndex_ParsedGameString()
+    {
+        // arrange
+        string description = "Basic Attacks grant <c val=\"#TooltipNumbers\"><d ref=\"Behavior,CrusaderDivineFortressArmorBuff,ArmorModification.ArmorSet.ArmorMitigationTable[Basic]\"/></c> Physical Armor for <c val=\"#TooltipNumbers\"><d ref=\"Behavior,CrusaderDivineFortressArmorBuff,Duration\"Precision=\"2\"/></c> seconds, stacking up to <c val=\"#TooltipNumbers\"><d ref=\"Behavior,CrusaderDivineFortressArmorBuff,ArmorModification.ArmorSet.ArmorMitigationTable[Basic]*Behavior,CrusaderDivineFortressArmorBuff,MaxStackCount\"/></c>.<n/><n/><img path=\"@UI/StormTalentInTextQuestIcon\" alignment=\"uppermiddle\" color=\"B48E4C\" width=\"20\" height=\"22\"/><c val=\"#TooltipQuest\">Gambit:</c> Gain <c val=\"#TooltipNumbers\"><d ref=\"100*Accumulator,CrusaderDivineFortressInstantHealthAccumulator,MaxAccumulation\"/>%</c> bonus maximum Health. Every death reduces this bonus by <c val=\"#TooltipNumbers\"><d ref=\"100*Accumulator,CrusaderDivineFortressInstantHealthAccumulator,Scale\"/>%</c>.";
+
+        HeroesXmlLoader loader = HeroesXmlLoader.LoadWithEmpty()
+            .LoadCustomMod(new ManualModLoader("custom")
+                .AddBaseElementTypes(new List<(string, string)>()
+                {
+                    ("Behavior", "CBehaviorBuff"),
+                    ("Accumulator", "CAccumulatorToken"),
+
+                })
+                .AddElements(new List<XElement>()
+                {
+                    XElement.Parse(
+                        """
+                        <CBehaviorBuff id="CrusaderDivineFortressArmorBuff" parent="StormArmorPermanent">
+                          <MaxStackCount value="4" />
+                          <Duration value="4" />
+                          <ArmorModification StackCount="4">
+                            <ArmorSet index="Hero">
+                              <ArmorMitigationTable index="Basic" value="10" />
+                            </ArmorSet>
+                            <ArmorSet index="Merc">
+                              <ArmorMitigationTable index="Basic" value="10" />
+                            </ArmorSet>
+                            <ArmorSet index="Monster">
+                              <ArmorMitigationTable index="Basic" value="10" />
+                            </ArmorSet>
+                            <ArmorSet index="Summon">
+                              <ArmorMitigationTable index="Basic" value="10" />
+                            </ArmorSet>
+                            <ArmorSet index="Structure">
+                              <ArmorMitigationTable index="Basic" value="10" />
+                            </ArmorSet>
+                            <ArmorSet index="Minion">
+                              <ArmorMitigationTable index="Basic" value="10" />
+                            </ArmorSet>
+                          </ArmorModification>
+                        </CBehaviorBuff>
+                        """),
+                    XElement.Parse(
+                        """
+                        <CAccumulatorToken id="CrusaderDivineFortressInstantHealthAccumulator" parent="BaseAccumulator">
+                          <MaxAccumulation value="0.25" />
+                          <ApplicationRule value="Add" />
+                          <TokenId value="CrusaderDivineFortressInstantTokenCounter" />
+                          <Scale value="0.05" />
+                        </CAccumulatorToken>
+                        """),
+                }));
+
+        HeroesData heroesData = loader.HeroesData;
+
+        // act
+        string parsed = GameStringParser.ParseTooltipDescription(heroesData.StormStorage, description);
+
+        // assert
+        parsed.Should().Be("Basic Attacks grant <c val=\"#TooltipNumbers\">10</c> Physical Armor for <c val=\"#TooltipNumbers\">4</c> seconds, stacking up to <c val=\"#TooltipNumbers\">40</c>.<n/><n/><img path=\"@UI/StormTalentInTextQuestIcon\" alignment=\"uppermiddle\" color=\"B48E4C\" width=\"20\" height=\"22\"/><c val=\"#TooltipQuest\">Gambit:</c> Gain <c val=\"#TooltipNumbers\">25%</c> bonus maximum Health. Every death reduces this bonus by <c val=\"#TooltipNumbers\">5%</c>.");
+    }
 }

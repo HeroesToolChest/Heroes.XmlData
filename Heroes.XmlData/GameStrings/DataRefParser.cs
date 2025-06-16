@@ -73,7 +73,11 @@ internal class DataRefParser
             else if (currentElementData.TryGetElementDataAt(fieldPartSpan, out StormElementData? stormElementData) ||
                 ((currentElementData.HasNumericalIndex || currentElementData.HasTextIndex) && currentElementData.ElementDataPairs.First().Value.TryGetElementDataAt(fieldPartSpan, out stormElementData)))
             {
-                currentElementData = stormElementData;
+                // accessed an element that is indexed without an indexer, grab the first
+                if (stormElementData.HasTextIndex || stormElementData.HasNumericalIndex)
+                    currentElementData = stormElementData.ElementDataPairs.First().Value;
+                else
+                    currentElementData = stormElementData;
             }
             else
             {
