@@ -1933,4 +1933,55 @@ public class GameStringParserTests
         // assert
         parsed.Should().Be("Basic Attacks grant <c val=\"#TooltipNumbers\">10</c> Physical Armor for <c val=\"#TooltipNumbers\">4</c> seconds, stacking up to <c val=\"#TooltipNumbers\">40</c>.<n/><n/><img path=\"@UI/StormTalentInTextQuestIcon\" alignment=\"uppermiddle\" color=\"B48E4C\" width=\"20\" height=\"22\"/><c val=\"#TooltipQuest\">Gambit:</c> Gain <c val=\"#TooltipNumbers\">25%</c> bonus maximum Health. Every death reduces this bonus by <c val=\"#TooltipNumbers\">5%</c>.");
     }
+
+    [TestMethod]
+    public void ParseTooltipDescription__ParsedGameString()
+    {
+        // arrange
+        string description = "Deal <c val=\"#TooltipNumbers\"><d ref=\"Effect,GallShadowflameDamage,Amount\"/></c> damage to enemies in the area.";
+
+        HeroesXmlLoader loader = HeroesXmlLoader.LoadWithEmpty()
+            .LoadCustomMod(new ManualModLoader("custom")
+                .AddBaseElementTypes(new List<(string, string)>()
+                {
+                    ("Effect", "CEffectDamage"),
+                })
+                .AddElements(new List<XElement>()
+                {
+                    XElement.Parse(
+                        """
+                        <CEffectDamage id="GallShadowflameDamage" parent="StormSpell">
+                          <Amount value="135" />
+                          <MultiplicativeModifierArray index="0" Validator="GallTargetHasEdgeofMadnessTokenCounter" Accumulator="GallShadowflameEdgeofMadnessTalentDamageAccumulator" Crit="1" />
+                          <MultiplicativeModifierArray index="PsychoticBreak" Validator="GallPsychoticBreakHeroDamageCombine" Modifier="0.1" />
+                          <MultiplicativeModifierArray index="OgreRage" Validator="GallCasterHasOgreRageSpellDamageBuff" Accumulator="GallTheWillofGallDamageAccumulator" Modifier="$GallOgreRageBonus" />
+                          <MultiplicativeModifierArray index="OgreRampage" Validator="GallOgreRampageCombine" Accumulator="GallOgreRampageSpellPowerAccumulator" Modifier="$GallOgreRampageBonus" />
+                          <LeechRecipientArray index="0" Value="Creator" />
+                          <DamageModifierSource Value="Creator" />
+                        </CEffectDamage>
+                        """),
+                })
+                .AddLevelScalingArrayElements(new List<XElement>()
+                {
+                    XElement.Parse(
+                        """
+                        <LevelScalingArray>
+                          <Modifications>
+                            <Catalog value="Effect" />
+                            <Entry value="GallShadowflameDamage" />
+                            <Field value="Amount" />
+                            <Value value="0.050000" />
+                          </Modifications>
+                        </LevelScalingArray>
+                        """),
+                }));
+
+        HeroesData heroesData = loader.HeroesData;
+
+        // act
+        string parsed = GameStringParser.ParseTooltipDescription(heroesData.StormStorage, description);
+
+        // assert
+        parsed.Should().Be("Deal <c val=\"#TooltipNumbers\">135~~0.05~~</c> damage to enemies in the area.");
+    }
 }

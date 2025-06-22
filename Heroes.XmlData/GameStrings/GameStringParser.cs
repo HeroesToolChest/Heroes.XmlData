@@ -136,8 +136,14 @@ internal class GameStringParser
 
                 if (value.Scaling.HasValue)
                 {
-                    value.Scaling.Value.TryFormat(buffer[currentOffset..], out charsWritten, format: $"~~{value.Scaling.Value}~~", CultureInfo.InvariantCulture);
+                    "~~".CopyTo(buffer[currentOffset..]);
+                    currentOffset += 2;
+
+                    value.Scaling.Value.TryFormat(buffer[currentOffset..], out charsWritten, format: "G", CultureInfo.InvariantCulture);
                     currentOffset += charsWritten;
+
+                    "~~".CopyTo(buffer[currentOffset..]);
+                    currentOffset += 2;
                 }
             }
         }
