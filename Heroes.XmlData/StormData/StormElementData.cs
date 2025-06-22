@@ -14,7 +14,9 @@ public class StormElementData
         "Cost",
         "LayoutButtons",
         "On",
+        "Remove",
         "TooltipAppender",
+        "DurationOverride",
     };
 
     private static readonly HashSet<string> _singleIndexArrays = new(StringComparer.OrdinalIgnoreCase)
