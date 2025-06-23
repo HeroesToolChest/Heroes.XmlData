@@ -407,6 +407,9 @@ public class StormElementData
             if (attribute.Name.LocalName.Equals("index", StringComparison.OrdinalIgnoreCase))
                 continue;
 
+            if (attribute.Name.LocalName.Equals("removed", StringComparison.OrdinalIgnoreCase))
+                continue;
+
             if (attribute.Name.LocalName.Equals("value", StringComparison.OrdinalIgnoreCase))
             {
                 _value = attribute.Value;
@@ -438,10 +441,13 @@ public class StormElementData
             string elementName = element.Name.LocalName;
             string? indexAtt = element.Attribute("index")?.Value ?? element.Attribute("Index")?.Value;
             string? valueAtt = element.Attribute("value")?.Value ?? element.Attribute("Value")?.Value;
+            string? removedAtt = element.Attribute("removed")?.Value ?? element.Attribute("Removed")?.Value;
+
+            bool isRemovedElement = !string.IsNullOrEmpty(removedAtt) && removedAtt.Equals("1");
 
             if (!string.IsNullOrEmpty(indexAtt))
             {
-                ParseElementWithIndex(element, elementName, indexAtt);
+                ParseElementWithIndex(element, elementName, indexAtt, isRemovedElement);
             }
             else if (isInnerArray || elementName.AsSpan().EndsWith("array", StringComparison.OrdinalIgnoreCase) || _otherElementArrays.Contains(elementName))
             {
@@ -453,7 +459,7 @@ public class StormElementData
                     {
                         if (_singleIndexArrays.Contains(elementName))
                         {
-                            ParseElementWithIndex(element, elementName, "0");
+                            ParseElementWithIndex(element, elementName, "0", isRemovedElement);
                             continue;
                         }
 
@@ -489,12 +495,18 @@ public class StormElementData
         }
     }
 
-    private void ParseElementWithIndex(XElement element, string elementName, string indexAtt)
+    private void ParseElementWithIndex(XElement element, string elementName, string indexAtt, bool isRemoved)
     {
         if (ElementDataPairs.TryGetValue(elementName, out StormElementData? existingElementData))
         {
             if (existingElementData.ElementDataPairs.TryGetValue(indexAtt, out StormElementData? existingIndexedData))
             {
+                if (isRemoved)
+                {
+                    existingElementData.ElementDataPairs.Remove(indexAtt);
+                    return;
+                }
+
                 existingIndexedData.AddXElement(element, true);
             }
             else

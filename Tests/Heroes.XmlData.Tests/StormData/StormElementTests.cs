@@ -478,4 +478,76 @@ public class StormElementTests
         result.Should().BeFalse();
         resultAsSpan.Should().BeFalse();
     }
+
+    [TestMethod]
+    public void AddValue_RemoveAttributeInArray_ArrayElementAreRemoved()
+    {
+        XElement element = XElement.Parse(@"
+  <CUnit default=""1"" id=""StormHeroMountedCustom"" parent=""StormHero"">
+    <CardLayouts>
+      <!--total index 22-->
+      <LayoutButtons Face=""LockedHeroicAbility"" Type=""Passive"" Requirements=""UltimateNotUnlocked"" Slot=""Heroic"" />
+      <LayoutButtons Face=""Hearthstone"" Type=""AbilCmd"" AbilCmd=""Hearthstone,Execute"" Slot=""Hearth"" />
+      <LayoutButtons Face=""Attack"" Type=""AbilCmd"" AbilCmd=""attack,Execute"" Slot=""Attack"" />
+      <LayoutButtons Face=""AcquireMove"" Type=""AbilCmd"" AbilCmd=""move,AcquireMove"" Slot=""Attack"" />
+      <LayoutButtons Face=""Stop"" Type=""AbilCmd"" AbilCmd=""HoldFire,Stop"" Slot=""Stop"" />
+      <LayoutButtons Face=""MoveHoldPosition"" Type=""AbilCmd"" AbilCmd=""HoldFire,HoldFire"" Slot=""Hold"" />
+      <LayoutButtons Face=""Cancel"" Type=""CancelTargetMode"" Slot=""Cancel"" />
+      <LayoutButtons Face=""MoonwellDrink"" Type=""AbilCmd"" AbilCmd=""FountainDrink,Execute"" Slot=""Interact"" />
+      <LayoutButtons Face=""MoonwellDrink"" Type=""AbilCmd"" AbilCmd=""FountainDrinkOnCooldown,Execute"" Slot=""Interact"" />
+      <LayoutButtons Face=""CaptureMacGuffin"" Type=""AbilCmd"" AbilCmd=""CaptureMacGuffin,Execute"" Slot=""Interact"" />
+      <LayoutButtons Face=""SmartCommandUnitInteraction"" Type=""AbilCmd"" AbilCmd=""SmartCommandUnitInteraction,Execute"" Slot=""Interact"" />
+      <LayoutButtons Face=""MountCabooseSmartCommandUnitInteraction"" Type=""AbilCmd"" AbilCmd=""MountCabooseSmartCommandUnitInteraction,Execute"" Slot=""Interact"" />
+      <LayoutButtons Face=""Move"" Type=""AbilCmd"" AbilCmd=""move,Move"" Slot=""Cancel"" />
+      <LayoutButtons Face=""Tease"" Type=""AbilCmd"" AbilCmd=""stop,Tease"" Slot=""Taunt"" />
+      <LayoutButtons Face=""Dance"" Type=""AbilCmd"" AbilCmd=""stop,Dance"" Slot=""Dance"" />
+      <LayoutButtons Face=""MapMechanicAbilityInstant"" Type=""AbilCmd"" AbilCmd=""MapMechanicAbilityInstant,Execute"" Slot=""MapMechanic"" />
+      <LayoutButtons Face=""MapMechanicAbility"" Type=""AbilCmd"" AbilCmd=""MapMechanicAbilityTarget,Execute"" Slot=""MapMechanic"" />
+      <LayoutButtons Face=""MapMechanicAbility2"" Type=""AbilCmd"" AbilCmd=""MapMechanicAbilityTarget2,Execute"" Slot=""MapMechanic"" />
+      <LayoutButtons Face=""LockedMapMechanicAbility"" Type=""Passive"" Slot=""MapMechanic"" />
+      <LayoutButtons Face=""MapMechanicAbilityParent"" Type=""AbilCmd"" AbilCmd=""MapMechanicAbilityParent,Execute"" Slot=""MapMechanic"" />
+      <LayoutButtons Face=""LootSpray"" Type=""AbilCmd"" AbilCmd=""LootSpray,Execute"" Slot=""Spray"" />
+      <LayoutButtons Face=""LootYellVoiceLine"" Type=""AbilCmd"" AbilCmd=""LootYellVoiceLine,Execute"" Slot=""Voice"" />
+      <LayoutButtons Face=""Move"" Type=""AbilCmd"" AbilCmd=""move,Move"" Slot=""ForceMove"" />
+    </CardLayouts>
+  </CUnit>
+");
+
+        XElement mergingElement = XElement.Parse(@"
+  <CUnit id=""HeroGall"" parent=""StormHeroMountedCustom"">
+    <CardLayouts index=""0"">
+      <LayoutButtons index=""1"" Face=""Dance"" Type=""AbilCmd"" AbilCmd=""stop,Dance"" Slot=""Dance"" />
+      <LayoutButtons index=""2"" Face=""LootSpray"" Type=""AbilCmd"" AbilCmd=""LootSpray,Execute"" Slot=""Spray"" />
+      <LayoutButtons index=""3"" Face=""LootYellVoiceLine"" Type=""AbilCmd"" AbilCmd=""LootYellVoiceLine,Execute"" Slot=""Voice"" />
+      <LayoutButtons index=""4"" Face=""GallTwistingNetherActivated"" Type=""AbilCmd"" AbilCmd=""GallTwistingNetherActivated,Execute"" Slot=""Heroic"" />
+      <LayoutButtons index=""5"" Face=""GallTwistingNether"" Type=""AbilCmd"" AbilCmd=""GallShiftingNether,Execute"" Slot=""Heroic"" />
+      <LayoutButtons index=""6"" Face=""GallTwistingNether"" Type=""AbilCmd"" AbilCmd=""GallTwistingNether,Execute"" Slot=""Heroic"" />
+      <LayoutButtons index=""7"" Face=""GallShadowboltVolley"" Type=""AbilCmd"" AbilCmd=""GallShadowBoltVolleyMoltenBlockDummy,Execute"" Slot=""Heroic"" />
+      <LayoutButtons index=""8"" Face=""GallShadowflame"" Type=""AbilCmd"" AbilCmd=""GallShadowflame,Execute"" Slot=""Ability1"" />
+      <LayoutButtons index=""9"" Face=""GallDoubleBackAbility"" Type=""AbilCmd"" AbilCmd=""GallDoubleBack,Execute"" Slot=""Ability2"" />
+      <LayoutButtons index=""10"" Face=""GallDreadOrb"" Type=""AbilCmd"" AbilCmd=""GallDreadOrb,Execute"" Slot=""Ability2"" />
+      <LayoutButtons index=""11"" Face=""GallRunicBlast"" Type=""AbilCmd"" AbilCmd=""GallRunicBlast,Execute"" Slot=""Ability3"" />
+      <LayoutButtons index=""12"" Face=""GallShoveHotbar"" Type=""AbilCmd"" AbilCmd=""GallShove,Execute"" Slot=""Mount"" />
+      <LayoutButtons index=""13"" Face=""GallOgreRageActivated"" Type=""AbilCmd"" AbilCmd=""GallOgreRage,Execute"" Slot=""Trait"" />
+      <LayoutButtons index=""14"" Face=""GallOgreRagePassive"" Type=""Passive"" AbilCmd="""" Slot=""Trait"" />
+      <LayoutButtons index=""15"" Face=""GallShadowboltVolley"" Type=""AbilCmd"" AbilCmd=""GallShadowboltVolley,Execute"" Slot=""Heroic"" />
+      <LayoutButtons index=""16"" removed=""1"" />
+      <LayoutButtons index=""17"" removed=""1"" />
+      <LayoutButtons index=""18"" removed=""1"" />
+      <LayoutButtons index=""19"" removed=""1"" />
+      <LayoutButtons index=""20"" removed=""1"" />
+      <LayoutButtons index=""21"" removed=""1"" />
+      <LayoutButtons index=""22"" removed=""1"" />
+    </CardLayouts>
+  </CUnit>
+");
+
+        StormElement stormElement = new(new StormXElementValuePath(element, TestHelpers.GetStormPath("some\\path")));
+
+        // act
+        stormElement.AddValue(new StormXElementValuePath(mergingElement, TestHelpers.GetStormPath("some\\other\\path")));
+
+        // assert
+        stormElement.DataValues["CardLayouts"]["0"]["LayoutButtons"].ElementDataCount.Should().Be(16);
+    }
 }
