@@ -11,17 +11,11 @@ public class StormElementData
         "CatalogModifications",
         "CardLayouts",
         "ConditionalEvents",
-        "Cost",
         "LayoutButtons",
         "On",
         "Remove",
         "TooltipAppender",
         "DurationOverride",
-    };
-
-    private static readonly HashSet<string> _singleIndexArrays = new(StringComparer.OrdinalIgnoreCase)
-    {
-        "Cost",
     };
 
     private string? _value;
@@ -456,19 +450,9 @@ public class StormElementData
                     string nextIndex;
 
                     if (existingData.HasNumericalIndex)
-                    {
-                        if (_singleIndexArrays.Contains(elementName))
-                        {
-                            ParseElementWithIndex(element, elementName, "0", isRemovedElement);
-                            continue;
-                        }
-
                         nextIndex = (existingData.ElementDataPairs.Keys.Max(int.Parse) + 1).ToString();
-                    }
                     else
-                    {
                         nextIndex = existingData.ElementDataPairs.Keys.Count.ToString();
-                    }
 
                     existingData.ElementDataPairs[nextIndex] = new StormElementData(existingData, nextIndex, element, true, true);
                 }

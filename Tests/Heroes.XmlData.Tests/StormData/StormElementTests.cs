@@ -226,15 +226,44 @@ public class StormElementTests
 </CWeaponLegacy>
 ");
         StormElement stormElement = new(new StormXElementValuePath(element1, TestHelpers.GetStormPath("some\\path")));
+
+        // act
         stormElement.AddValue(new StormXElementValuePath(element2, TestHelpers.GetStormPath("some\\other\\path")));
         stormElement.AddValue(new StormXElementValuePath(element3, TestHelpers.GetStormPath("some\\other\\path")));
         stormElement.AddValue(new StormXElementValuePath(element4, TestHelpers.GetStormPath("some\\other\\path")));
 
-        // act
-
         // assert
         stormElement.ElementType.Should().Be("CWeaponLegacy");
-        stormElement.DataValues["Cost"]["0"]["Vital"]["Energy"].RawValue.Should().Be("2");
+        stormElement.DataValues["Cost"]["Vital"]["Energy"].RawValue.Should().Be("2");
+    }
+
+    [TestMethod]
+    public void AddValue_MergeCostElement_ReturnsTimeUse()
+    {
+        XElement element1 = XElement.Parse(@"
+  <CAbilBehavior default=""1"">
+    <Cost>
+      <Charge Location=""Unit""/>
+      <Cooldown Location=""Unit""/>
+    </Cost>
+  </CAbilBehavior>
+");
+
+        XElement element2 = XElement.Parse(@"
+  <CAbilBehavior id=""LucioCrossfade"">
+    <Cost>
+      <Cooldown TimeUse=""0.5"" />
+    </Cost>
+  </CAbilBehavior>
+");
+
+        StormElement stormElement = new(new StormXElementValuePath(element1, TestHelpers.GetStormPath("some\\path")));
+
+        // act
+        stormElement.AddValue(new StormXElementValuePath(element2, TestHelpers.GetStormPath("some\\other\\path")));
+
+        // assert
+        stormElement.DataValues["Cost"]["Cooldown"]["TimeUse"].RawValue.Should().Be("0.5");
     }
 
     [TestMethod]
