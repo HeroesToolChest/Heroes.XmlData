@@ -208,13 +208,13 @@ internal partial class StormStorage
 
         // normal cache first
         if (StormCache.StormElementsByDataObjectTypeAltLookup.TryGetValue(dataObjectType, out var foundStormElementById) &&
-            foundStormElementById.GetAlternateLookup<ReadOnlySpan<char>>().TryGetValue(id, out StormElement? foundStormElement))
+            foundStormElementById.TryGetValue(id, out StormElement? foundStormElement))
         {
             stormElement ??= new StormElement(foundStormElement);
         }
 
         if (StormMapCache.StormElementsByDataObjectTypeAltLookup.TryGetValue(dataObjectType, out foundStormElementById) &&
-            foundStormElementById.GetAlternateLookup<ReadOnlySpan<char>>().TryGetValue(id, out foundStormElement))
+            foundStormElementById.TryGetValue(id, out foundStormElement))
         {
             if (stormElement is null)
                 stormElement = new StormElement(foundStormElement);
@@ -223,7 +223,7 @@ internal partial class StormStorage
         }
 
         if (StormCustomCache.StormElementsByDataObjectTypeAltLookup.TryGetValue(dataObjectType, out foundStormElementById) &&
-            foundStormElementById.GetAlternateLookup<ReadOnlySpan<char>>().TryGetValue(id, out foundStormElement))
+            foundStormElementById.TryGetValue(id, out foundStormElement))
         {
             if (stormElement is null)
                 stormElement = new StormElement(foundStormElement);
@@ -628,19 +628,32 @@ internal partial class StormStorage
         HashSet<string> ids = [];
 
         // normal cache first
+
         if (stormCacheType.HasFlag(StormCacheType.Normal) && StormCache.StormElementsByDataObjectType.TryGetValue(dataObjectType, out var foundStormElementById))
         {
+#if NET9_0_OR_GREATER
+            ids.UnionWith(foundStormElementById.Dictionary.Values.Select(x => x.Id)!);
+#else
             ids.UnionWith(foundStormElementById.Values.Select(x => x.Id!));
+#endif
         }
 
         if (stormCacheType.HasFlag(StormCacheType.Map) && StormMapCache.StormElementsByDataObjectType.TryGetValue(dataObjectType, out foundStormElementById))
         {
+#if NET9_0_OR_GREATER
+            ids.UnionWith(foundStormElementById.Dictionary.Values.Select(x => x.Id)!);
+#else
             ids.UnionWith(foundStormElementById.Values.Select(x => x.Id!));
+#endif
         }
 
         if (stormCacheType.HasFlag(StormCacheType.Custom) && StormCustomCache.StormElementsByDataObjectType.TryGetValue(dataObjectType, out foundStormElementById))
         {
+#if NET9_0_OR_GREATER
+            ids.UnionWith(foundStormElementById.Dictionary.Values.Select(x => x.Id)!);
+#else
             ids.UnionWith(foundStormElementById.Values.Select(x => x.Id!));
+#endif
         }
 
         return [.. ids];

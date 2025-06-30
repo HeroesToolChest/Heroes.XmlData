@@ -596,7 +596,11 @@ public class FileStormModTests
         stormStorage.StormCache.ElementTypesByDataObjectType.Should().HaveCount(2);
         stormStorage.StormCache.StormElementByElementType.Should().HaveCount(3);
         stormStorage.StormCache.StormElementsByDataObjectType.Should().ContainSingle();
+#if NET9_0_OR_GREATER
+        stormStorage.StormCache.StormElementsByDataObjectType["requirement"].Dictionary.Should().HaveCount(2);
+#else
         stormStorage.StormCache.StormElementsByDataObjectType["requirement"].Should().HaveCount(2);
+#endif
     }
 
     [TestMethod]

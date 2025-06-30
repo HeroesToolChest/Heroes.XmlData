@@ -20,7 +20,7 @@ public class ScaleValueParserTests
 
         stormStorage.StormCustomCache.DataObjectTypeByElementType.Add("CEffectDamage", "Effect");
 
-        stormStorage.StormCustomCache.StormElementsByDataObjectType.Add("Effect", new Dictionary<string, StormElement>()
+        Dictionary<string, StormElement> newStormElementById = new()
         {
             {
                 "AzmodanDemonicInvasionImpactDamage", new StormElement(new StormXElementValuePath(
@@ -35,7 +35,13 @@ public class ScaleValueParserTests
 """),
                     TestHelpers.GetStormPath("custom")))
             },
-        });
+        };
+
+#if NET9_0_OR_GREATER
+        stormStorage.StormCustomCache.StormElementsByDataObjectType.Add("Effect", newStormElementById.GetAlternateLookup<ReadOnlySpan<char>>());
+#else
+        stormStorage.StormCustomCache.StormElementsByDataObjectType.Add("Effect", newStormElementById);
+#endif
 
         LevelScalingEntry levelScalingEntry = new("Effect", "AzmodanDemonicInvasionImpactDamage", "Amount");
         StormStringValue stormStringValue = new("0.040000", TestHelpers.GetStormPath("custom"));
@@ -74,7 +80,7 @@ public class ScaleValueParserTests
 
         stormStorage.StormCustomCache.DataObjectTypeByElementType.Add("CEffectDamage", "Effect");
 
-        stormStorage.StormCustomCache.StormElementsByDataObjectType.Add("Effect", new Dictionary<string, StormElement>()
+        Dictionary<string, StormElement> newStormElementById = new Dictionary<string, StormElement>()
         {
             {
                 "AzmodanDemonicInvasionImpactDamage", new StormElement(new StormXElementValuePath(
@@ -88,7 +94,13 @@ public class ScaleValueParserTests
 """),
                     TestHelpers.GetStormPath("custom")))
             },
-        });
+        };
+
+#if NET9_0_OR_GREATER
+        stormStorage.StormCustomCache.StormElementsByDataObjectType.Add("Effect", newStormElementById.GetAlternateLookup<ReadOnlySpan<char>>());
+#else
+        stormStorage.StormCustomCache.StormElementsByDataObjectType.Add("Effect", newStormElementById);
+#endif
 
         LevelScalingEntry levelScalingEntry = new("Effect", "AzmodanDemonicInvasionImpactDamage", "Amount");
         StormStringValue stormStringValue = new("0.040000", TestHelpers.GetStormPath("custom"));

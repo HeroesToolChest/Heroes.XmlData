@@ -67,7 +67,11 @@ internal class StormCache
     /// <summary>
     /// Gets a dictionary of <see cref="StormElement"/>s by their id attribute by their data object type (e.g. Effect).
     /// </summary>
+#if NET9_0_OR_GREATER
+    public Dictionary<string, Dictionary<string, StormElement>.AlternateLookup<ReadOnlySpan<char>>> StormElementsByDataObjectType { get; } = new(StringComparer.OrdinalIgnoreCase);
+#else
     public Dictionary<string, Dictionary<string, StormElement>> StormElementsByDataObjectType { get; } = new(StringComparer.OrdinalIgnoreCase);
+#endif
 
     /// <summary>
     /// Gets a dictionary of another dictionary of id attributes by their unit names (unitName attribute) by their data object type (e.g. Effect).
@@ -114,7 +118,7 @@ internal class StormCache
 
     public Dictionary<string, StormStyleConstantElement>.AlternateLookup<ReadOnlySpan<char>> StormStyleConstantElementsByNameAltLookup { get; }
 
-    public Dictionary<string, Dictionary<string, StormElement>>.AlternateLookup<ReadOnlySpan<char>> StormElementsByDataObjectTypeAltLookup { get; }
+    public Dictionary<string, Dictionary<string, StormElement>.AlternateLookup<ReadOnlySpan<char>>>.AlternateLookup<ReadOnlySpan<char>> StormElementsByDataObjectTypeAltLookup { get; }
 
     public Dictionary<string, StormElement>.AlternateLookup<ReadOnlySpan<char>> StormElementByElementTypeAltLookup { get; }
 
