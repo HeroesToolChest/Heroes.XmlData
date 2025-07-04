@@ -10,6 +10,8 @@ public class StormElement
     private const string ParentAttribute = "parent";
     private readonly List<StormXElementValuePath> _originalXElements = [];
 
+    private bool _isCurrentDefault = true;
+
     /// <summary>
     /// Initializes a new instance of the <see cref="StormElement"/> class.
     /// </summary>
@@ -19,7 +21,8 @@ public class StormElement
         _originalXElements.Add(baseValue);
         ElementType = baseValue.Value.Name.LocalName;
 
-        DataValues = new StormElementData(baseValue.Value);
+        DataValues = new StormElementData(this, baseValue.Value);
+        DefaultDataValues = DataValues;
     }
 
     /// <summary>
@@ -29,7 +32,8 @@ public class StormElement
     internal StormElement(StormElement baseValue)
     {
         _originalXElements = [.. baseValue.OriginalXElements];
-        DataValues = new StormElementData(OriginalXElements[0].Value);
+        DataValues = new StormElementData(this, OriginalXElements[0].Value);
+        DefaultDataValues = DataValues;
 
         for (int i = 1; i < OriginalXElements.Count; i++)
         {
@@ -48,6 +52,16 @@ public class StormElement
     /// Gets the data values.
     /// </summary>
     public StormElementData DataValues { get; private set; }
+
+    /// <summary>
+    /// <para>
+    /// Gets the data values associated with the last set element with the "default" attribute set to "1".
+    /// </para>
+    /// <para>
+    /// This can be either the element with the "default" attribute set to "1" if there is no child element or the first child element that inherits it.
+    /// </para>
+    /// </summary>
+    public StormElementData DefaultDataValues { get; private set; }
 
     /// <summary>
     /// Gets the element type.
@@ -150,6 +164,18 @@ public class StormElement
 
     private void AddToDataValues(XElement xElement)
     {
+        string? defaultValue = xElement.Attribute("default")?.Value ?? xElement.Attribute("Default")?.Value;
+        if (!string.IsNullOrWhiteSpace(defaultValue) && defaultValue == "1")
+        {
+            DefaultDataValues = new StormElementData(this, xElement);
+            _isCurrentDefault = true;
+        }
+        else if (_isCurrentDefault)
+        {
+            DefaultDataValues = new StormElementData(this, xElement);
+            _isCurrentDefault = false;
+        }
+
         DataValues.AddXElement(xElement);
         ElementType = xElement.Name.LocalName;
     }

@@ -1,4 +1,8 @@
-﻿namespace Heroes.XmlData.StormData.Tests;
+﻿using Heroes.XmlData.Tests;
+using System.Xml;
+using System.Xml.Linq;
+
+namespace Heroes.XmlData.StormData.Tests;
 
 [TestClass]
 public class StormElementDataTests
@@ -15,7 +19,7 @@ public class StormElementDataTests
                 new XAttribute("LineTexture", "Assets\\Textures\\Storm_WayPointLine.dds")));
 
         // act
-        StormElementData stormElementData = new(element);
+        StormElementData stormElementData = new(null!, element);
 
         // assert
         stormElementData["OrderArray"]["0"]["LineTexture"]["0".AsSpan()].RawValue.Should().Be("Assets\\Textures\\Storm_WayPointLine.dds");
@@ -34,36 +38,12 @@ public class StormElementDataTests
                 new XAttribute("value", "Abil/Name/abil1")));
 
         // act
-        StormElementData stormElementData = new(xElement);
+        StormElement stormElement = new(new StormXElementValuePath(xElement, TestHelpers.GetStormPath("some\\path")));
+        StormElementData stormElementData = new(stormElement, xElement);
 
         // assert
-        stormElementData.GetElementDataAt("default").HasValue.Should().BeTrue();
-        stormElementData.GetElementDataAt("default").RawValue.Should().Be("1");
         stormElementData.GetElementDataAt("name").HasValue.Should().BeTrue();
         stormElementData.GetElementDataAt("name").RawValue.Should().Be("Abil/Name/abil1");
-    }
-
-    [TestMethod]
-    public void StormElementData_EquivalentAttributAndElement_SameXmlData()
-    {
-        // arrange
-        XElement withAttributes = new(
-            "CAbil",
-            new XAttribute("default", "1"));
-
-        XElement withElement = new(
-            "CAbil",
-            new XElement(
-                "default",
-                new XAttribute("value", "1")));
-
-        // act
-        StormElementData asAttributes = new(withAttributes);
-        StormElementData asElement = new(withElement);
-
-        // assert
-        asAttributes.GetElementDataAt("default").RawValue.Should().Be("1");
-        asElement.GetElementDataAt("default").RawValue.Should().Be("1");
     }
 
     [TestMethod]
@@ -86,8 +66,8 @@ public class StormElementDataTests
                     new XAttribute("value", "Assets\\Textures\\Storm_WayPointLine.dds"))));
 
         // act
-        StormElementData stormElementDataAsAttributes = new(withAttributes);
-        StormElementData stormElementDataAsElements = new(withElements);
+        StormElementData stormElementDataAsAttributes = new(null!, withAttributes);
+        StormElementData stormElementDataAsElements = new(null!, withElements);
 
         // assert
         stormElementDataAsAttributes.GetElementDataAt("OrderArray").GetElementDataAt("0").GetElementDataAt("LineTexture").GetElementDataAt("0").RawValue.Should().Be("Assets\\Textures\\Storm_WayPointLine.dds");
@@ -114,7 +94,7 @@ public class StormElementDataTests
                 new XAttribute("value", "1")));
 
         // act
-        StormElementData data = new(element);
+        StormElementData data = new(null!, element);
 
         // assert
         data.GetElementDataAt("SharedFlags").GetElementDataAt("DisableWhileDead").RawValue.Should().Be("1");
@@ -140,7 +120,8 @@ public class StormElementDataTests
                     new XAttribute("Effect", "KelThuzadMasterOfTheColdDarkTier1ModifyPlayer"))));
 
         // act
-        StormElementData data = new(element);
+        StormElement stormElement = new(new StormXElementValuePath(element, TestHelpers.GetStormPath("some\\path")));
+        StormElementData data = new(stormElement, element);
 
         // assert
         data.GetElementDataAt("ConditionalEvents").GetElementDataAt("0").GetElementDataAt("Compare").RawValue.Should().Be("GE");
@@ -183,7 +164,8 @@ public class StormElementDataTests
                         new XAttribute("value", "0.600000")))));
 
         // act
-        StormElementData data = new(element);
+        StormElement stormElement = new(new StormXElementValuePath(element, TestHelpers.GetStormPath("some\\path")));
+        StormElementData data = new(stormElement, element);
 
         // assert
         data.GetElementDataAt("AbilityModificationArray").GetElementDataAt("0").GetElementDataAt("Modifications").GetElementDataAt("0").GetElementDataAt("Field").RawValue.Should().Be("AreaArray[0].Radius");
@@ -214,7 +196,7 @@ public class StormElementDataTests
                 new XAttribute("LineTexture", "Assets\\Textures\\Storm_WayPointLine2.dds")));
 
         // act
-        StormElementData data = new(element);
+        StormElementData data = new(null!, element);
 
         // assert
         data.GetElementDataAt("OrderArray").HasNumericalIndex.Should().BeTrue();
@@ -258,7 +240,7 @@ public class StormElementDataTests
 ");
 
         // act
-        StormElementData data = new(element);
+        StormElementData data = new(null!, element);
 
         // assert
         data.GetElementDataAt("HeroAbilArray").HasNumericalIndex.Should().BeTrue();
@@ -302,7 +284,7 @@ public class StormElementDataTests
 ");
 
         // act
-        StormElementData data = new(element);
+        StormElementData data = new(null!, element);
 
         // assert
         data.GetElementDataAt("HeroAbilArray").HasNumericalIndex.Should().BeTrue();
@@ -334,7 +316,8 @@ public class StormElementDataTests
                 new XAttribute("value", "SomeValue")));
 
         // act
-        StormElementData stormElementData = new(xElement);
+        StormElement stormElement = new(new StormXElementValuePath(xElement, TestHelpers.GetStormPath("some\\path")));
+        StormElementData stormElementData = new(stormElement, xElement);
 
         // assert
         stormElementData.GetElementDataAt("Name").Value.GetString().Should().Be("SomeValue");
@@ -352,7 +335,8 @@ public class StormElementDataTests
                 new XAttribute("value", "5")));
 
         // act
-        StormElementData stormElementData = new(xElement);
+        StormElement stormElement = new(new StormXElementValuePath(xElement, TestHelpers.GetStormPath("some\\path")));
+        StormElementData stormElementData = new(stormElement, xElement);
 
         // assert
         stormElementData.GetElementDataAt("Name").Value.GetInt().Should().Be(5);
@@ -372,7 +356,8 @@ public class StormElementDataTests
                     new XAttribute("Value", "0.1"))));
 
         // act
-        StormElementData stormElementData = new(xElement);
+        StormElement stormElement = new(new StormXElementValuePath(xElement, TestHelpers.GetStormPath("some\\path")));
+        StormElementData stormElementData = new(stormElement, xElement);
 
         // assert
         stormElementData.GetElementDataAt("Damage").HasHxdScale.Should().BeTrue();
@@ -394,7 +379,8 @@ public class StormElementDataTests
                     new XAttribute("Value", "0.1"))));
 
         // act
-        StormElementData stormElementData = new(xElement);
+        StormElement stormElement = new(new StormXElementValuePath(xElement, TestHelpers.GetStormPath("some\\path")));
+        StormElementData stormElementData = new(stormElement, xElement);
 
         // assert
         stormElementData.GetElementDataAt("Damage").HasHxdScale.Should().BeFalse();
@@ -420,7 +406,7 @@ public class StormElementDataTests
                 new XAttribute("LineTexture", "Assets\\Textures\\Storm_WayPointLine2.dds")));
 
         // act
-        StormElementData data = new(element);
+        StormElementData data = new(null!, element);
 
         // assert
         data.GetElementDataAt("OrderArray").Field.Should().Be("OrderArray");
@@ -458,7 +444,7 @@ public class StormElementDataTests
 ");
 
         // act
-        StormElementData data = new(element);
+        StormElementData data = new(null!, element);
 
         // assert
         data.GetElementDataAt("HeroAbilArray").Field.Should().Be("HeroAbilArray");
@@ -504,7 +490,7 @@ public class StormElementDataTests
 ");
 
         // act
-        StormElementData data = new(element);
+        StormElementData data = new(null!, element);
 
         // assert
         data.GetElementDataAt("HeroAbilArray").Field.Should().Be("HeroAbilArray");
@@ -548,7 +534,7 @@ public class StormElementDataTests
 </CHero>
 
 ");
-        StormElementData data = new(element);
+        StormElementData data = new(null!, element);
 
         // act
         bool result = data.TryGetElementDataAt("HeroAbilArray", out StormElementData? _);
@@ -582,7 +568,7 @@ public class StormElementDataTests
   </HeroAbilArray>
 </CHero>
 ");
-        StormElementData data = new(element);
+        StormElementData data = new(null!, element);
 
         // act
         bool result = data.TryGetElementDataAt("Damage", out StormElementData? stormElementData);
@@ -618,7 +604,7 @@ public class StormElementDataTests
   </HeroAbilArray>
 </CHero>
 ");
-        StormElementData data = new(element);
+        StormElementData data = new(null!, element);
 
         // act
         Action action = () => data.GetElementDataAt("Does Not Exists");
@@ -644,7 +630,7 @@ public class StormElementDataTests
     <SkinArray Hero="Azmodan" Skin="AzmodunkBundleProduct"/>
 </CBundle>
 """);
-        StormElementData data = new(element);
+        StormElementData data = new(null!, element);
 
         // act
         List<string> results = [.. data.GetElementDataIndexes()];
@@ -688,7 +674,7 @@ public class StormElementDataTests
     <SkinArray Hero="Azmodan" Skin="AzmodunkBundleProduct"/>
 </CBundle>
 """);
-        StormElementData data = new(element);
+        StormElementData data = new(null!, element);
 
         // act
         List<string> results = [.. data.GetElementDataAt("heroarray").GetElementDataIndexes()];
@@ -720,7 +706,7 @@ public class StormElementDataTests
     <SkinArray Hero="Azmodan" Skin="AzmodunkBundleProduct"/>
 </CBundle>
 """);
-        StormElementData data = new(element);
+        StormElementData data = new(null!, element);
 
         // act
         List<KeyValuePair<string, StormElementData>> result = [.. data.GetElementData()];
@@ -746,7 +732,8 @@ public class StormElementDataTests
             </CUnit>
             """);
 
-        StormElementData data = new(element);
+        StormElement stormElement = new(new StormXElementValuePath(element, TestHelpers.GetStormPath("some\\path")));
+        StormElementData data = new(stormElement, element);
 
         // act
         List<KeyValuePair<string, StormElementData>> result = [.. data.GetElementDataAt("CardLayouts").GetElementDataAt("0").GetElementDataAt("LayoutButtons").GetElementData()];
@@ -776,7 +763,8 @@ public class StormElementDataTests
             </CButton>
             """);
 
-        StormElementData data = new(element);
+        StormElement stormElement = new(new StormXElementValuePath(element, TestHelpers.GetStormPath("some\\path")));
+        StormElementData data = new(stormElement, element);
 
         // act
         List<KeyValuePair<string, StormElementData>> result = [.. data.GetElementDataAt("TooltipAppender").GetElementData()];

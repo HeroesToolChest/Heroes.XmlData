@@ -1,4 +1,6 @@
-﻿namespace Heroes.XmlData.StormData.Tests;
+﻿using Heroes.XmlData.Tests;
+
+namespace Heroes.XmlData.StormData.Tests;
 
 [TestClass]
 public class StormElementValueTests
@@ -13,10 +15,10 @@ public class StormElementValueTests
   <Name value="Abil/Name/##id##/other##unitName##yes"/>
 </CHero>
 """);
-        StormElementData stormElementData = new(element);
+        StormElement stormElement = new(new StormXElementValuePath(element, TestHelpers.GetStormPath("some\\path")));
 
         // act
-        string value = stormElementData.GetElementDataAt("Name").Value.GetString();
+        string value = stormElement.DataValues.GetElementDataAt("Name").Value.GetString();
 
         // assert
         value.Should().Be("Abil/Name/KelThuzad/otherKTyes");
@@ -32,10 +34,10 @@ public class StormElementValueTests
   <Name value="Abil/Name/##id##/other##unitName##yes"/>
 </CHero>
 """);
-        StormElementData stormElementData = new(element);
+        StormElement stormElement = new(new StormXElementValuePath(element, TestHelpers.GetStormPath("some\\path")));
 
         // act
-        string value = stormElementData.GetElementDataAt("Name").Value.GetString();
+        string value = stormElement.DataValues.GetElementDataAt("Name").Value.GetString();
 
         // assert
         value.Should().Be("Abil/Name/KelThuzad/other##unitName##yes");
@@ -51,10 +53,10 @@ public class StormElementValueTests
   <Name value="Abil/Name"/>
 </CHero>
 """);
-        StormElementData stormElementData = new(element);
+        StormElement stormElement = new(new StormXElementValuePath(element, TestHelpers.GetStormPath("some\\path")));
 
         // act
-        string value = stormElementData.GetElementDataAt("Name").Value.GetString();
+        string value = stormElement.DataValues.GetElementDataAt("Name").Value.GetString();
 
         // assert
         value.Should().Be("Abil/Name");
@@ -70,10 +72,10 @@ public class StormElementValueTests
   <Value value="5" />
 </CHero>
 """);
-        StormElementData stormElementData = new(element);
+        StormElement stormElement = new(new StormXElementValuePath(element, TestHelpers.GetStormPath("some\\path")));
 
         // act
-        int value = stormElementData.GetElementDataAt("Value").Value.GetInt();
+        int value = stormElement.DataValues.GetElementDataAt("Value").Value.GetInt();
 
         // assert
         value.Should().Be(5);
@@ -89,10 +91,10 @@ public class StormElementValueTests
   <Value value="5a" />
 </CHero>
 """);
-        StormElementData stormElementData = new(element);
+        StormElement stormElement = new(new StormXElementValuePath(element, TestHelpers.GetStormPath("some\\path")));
 
         // act
-        Action act = () => stormElementData.GetElementDataAt("Value").Value.GetInt();
+        Action act = () => stormElement.DataValues.GetElementDataAt("Value").Value.GetInt();
 
         // assert
         act.Should().Throw<HeroesXmlDataException>();
@@ -108,10 +110,10 @@ public class StormElementValueTests
   <Value value="5" />
 </CHero>
 """);
-        StormElementData stormElementData = new(element);
+        StormElement stormElement = new(new StormXElementValuePath(element, TestHelpers.GetStormPath("some\\path")));
 
         // act
-        bool result = stormElementData.GetElementDataAt("Value").Value.TryGetInt32(out int value);
+        bool result = stormElement.DataValues.GetElementDataAt("Value").Value.TryGetInt32(out int value);
 
         // assert
         result.Should().BeTrue();
@@ -128,10 +130,10 @@ public class StormElementValueTests
   <Value value="5a" />
 </CHero>
 """);
-        StormElementData stormElementData = new(element);
+        StormElement stormElement = new(new StormXElementValuePath(element, TestHelpers.GetStormPath("some\\path")));
 
         // act
-        bool result = stormElementData.GetElementDataAt("Value").Value.TryGetInt32(out int value);
+        bool result = stormElement.DataValues.GetElementDataAt("Value").Value.TryGetInt32(out int value);
 
         // assert
         result.Should().BeFalse();
@@ -148,10 +150,10 @@ public class StormElementValueTests
   <Value value="5.1" />
 </CHero>
 """);
-        StormElementData stormElementData = new(element);
+        StormElement stormElement = new(new StormXElementValuePath(element, TestHelpers.GetStormPath("some\\path")));
 
         // act
-        double value = stormElementData.GetElementDataAt("Value").Value.GetDouble();
+        double value = stormElement.DataValues.GetElementDataAt("Value").Value.GetDouble();
 
         // assert
         value.Should().Be(5.1);
@@ -167,10 +169,10 @@ public class StormElementValueTests
   <Value value="5.1a" />
 </CHero>
 """);
-        StormElementData stormElementData = new(element);
+        StormElement stormElement = new(new StormXElementValuePath(element, TestHelpers.GetStormPath("some\\path")));
 
         // act
-        Action act = () => stormElementData.GetElementDataAt("Value").Value.GetDouble();
+        Action act = () => stormElement.DataValues.GetElementDataAt("Value").Value.GetDouble();
 
         // assert
         act.Should().Throw<HeroesXmlDataException>();
@@ -186,10 +188,10 @@ public class StormElementValueTests
   <Value value="5.1" />
 </CHero>
 """);
-        StormElementData stormElementData = new(element);
+        StormElement stormElement = new(new StormXElementValuePath(element, TestHelpers.GetStormPath("some\\path")));
 
         // act
-        bool result = stormElementData.GetElementDataAt("Value").Value.TryGetDouble(out double value);
+        bool result = stormElement.DataValues.GetElementDataAt("Value").Value.TryGetDouble(out double value);
 
         // assert
         result.Should().BeTrue();
@@ -206,10 +208,10 @@ public class StormElementValueTests
   <Value value="5.1a" />
 </CHero>
 """);
-        StormElementData stormElementData = new(element);
+        StormElement stormElement = new(new StormXElementValuePath(element, TestHelpers.GetStormPath("some\\path")));
 
         // act
-        bool result = stormElementData.GetElementDataAt("Value").Value.TryGetDouble(out double value);
+        bool result = stormElement.DataValues.GetElementDataAt("Value").Value.TryGetDouble(out double value);
 
         // assert
         result.Should().BeFalse();

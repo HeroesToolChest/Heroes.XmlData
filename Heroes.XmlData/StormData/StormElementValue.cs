@@ -6,15 +6,17 @@
 [DebuggerDisplay("{DebuggerDisplay,nq}")]
 public readonly ref struct StormElementValue
 {
-    private readonly StormElementData _stormElementData;
+    private readonly StormElementData _defaultStormElementData;
+    //private readonly StormElementData _stormElementData;
 
     internal StormElementValue(StormElementData stormElementData)
     {
         // move to parent
-        while (stormElementData.Parent is not null)
-            stormElementData = stormElementData.Parent;
+        _defaultStormElementData = stormElementData.StormElement.DefaultDataValues;
+        //while (stormElementData.Parent is not null)
+        //    stormElementData = stormElementData.Parent;
 
-        _stormElementData = stormElementData;
+        //_stormElementData = stormElementData;
     }
 
     internal ReadOnlySpan<char> Value { get; init; }
@@ -137,7 +139,7 @@ public readonly ref struct StormElementValue
 
         foreach ((Range indexOfText, bool replace) in elementNameList)
         {
-            if (replace && _stormElementData.TryGetElementDataAt(Value[indexOfText].Trim('#'), out StormElementData? stormElementData) && stormElementData.RawValue is not null)
+            if (replace && _defaultStormElementData.TryGetElementDataAt(Value[indexOfText].Trim('#'), out StormElementData? stormElementData) && stormElementData.RawValue is not null)
             {
                 stormElementData.RawValue.CopyTo(buffer[indexOfBuffer..]);
                 indexOfBuffer += stormElementData.RawValue.Length;
@@ -157,7 +159,7 @@ public readonly ref struct StormElementValue
         int count = 0;
         foreach ((Range indexOfText, bool replace) in elementNameList)
         {
-            if (replace && _stormElementData.TryGetElementDataAt(Value[indexOfText].Trim('#'), out StormElementData? stormElementData))
+            if (replace && _defaultStormElementData.TryGetElementDataAt(Value[indexOfText].Trim('#'), out StormElementData? stormElementData))
                 count += stormElementData.RawValue?.Length ?? 0;
             else
                 count += indexOfText.End.Value - indexOfText.Start.Value;

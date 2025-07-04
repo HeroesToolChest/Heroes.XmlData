@@ -43,7 +43,6 @@ public class StormElementTests
 
         // assert
         stormElement.ElementType.Should().Be("CAbilEffectInstant");
-        stormElement.DataValues.GetElementDataAt("default").RawValue.Should().Be("1");
         stormElement.DataValues.GetElementDataAt("name").RawValue.Should().Be("Abil/Name/##id##");
         stormElement.DataValues.GetElementDataAt("OrderArray").GetElementDataAt("0".AsSpan()).GetElementDataAt("color").GetElementDataAt("0").RawValue.Should().Be("255,0,255,0");
         stormElement.DataValues.GetElementDataAt("OrderArray").GetElementDataAt("0").GetElementDataAt("Model").GetElementDataAt("0").RawValue.Should().Be("Assets\\UI\\Feedback\\WayPointConfirm\\WayPointConfirm.m3");
@@ -97,7 +96,6 @@ public class StormElementTests
 
         // assert
         stormElement.ElementType.Should().Be("CAbilEffectInstant");
-        stormElement.DataValues.GetElementDataAt("default").RawValue.Should().Be("1");
         stormElement.DataValues.GetElementDataAt("name").RawValue.Should().Be("Abil/Name/##id##");
         stormElement.DataValues.GetElementDataAt("OrderArray").GetElementDataAt("0").GetElementDataAt("color").GetElementDataAt("0").RawValue.Should().Be("255,0,255,0");
         stormElement.DataValues.GetElementDataAt("OrderArray").GetElementDataAt("0").GetElementDataAt("Model").GetElementDataAt("0").RawValue.Should().Be("Assets\\UI\\Feedback\\WayPointConfirm\\WayPointConfirm.m3");
@@ -409,20 +407,16 @@ public class StormElementTests
         List<StormElementData> stormElementData = [.. stormElement.GetElements()];
 
         // assert
-        stormElementData.Should().HaveCount(3)
+        stormElementData.Should().HaveCount(2)
             .And
             .SatisfyRespectively(
                 first =>
                 {
-                    first.Field.Should().Be("default");
+                    first.Field.Should().Be("CmdButtonArray[Execute].AutoQueueId[0]");
                 },
                 second =>
                 {
-                    second.Field.Should().Be("CmdButtonArray[Execute].AutoQueueId[0]");
-                },
-                third =>
-                {
-                    third.Field.Should().Be("CmdButtonArray[Execute].Flags[Continuous]");
+                    second.Field.Should().Be("CmdButtonArray[Execute].Flags[Continuous]");
                 });
     }
 
@@ -578,5 +572,97 @@ public class StormElementTests
 
         // assert
         stormElement.DataValues["CardLayouts"]["0"]["LayoutButtons"].ElementDataCount.Should().Be(16);
+    }
+
+    [TestMethod]
+    public void AddValue_DefaultElementWithTwoAddedNonDefaults_ReturnsCorrectReplacementValue()
+    {
+        XElement element1 = XElement.Parse(
+            """
+            <CButton default="1">
+              <Tooltip value="Button/Tooltip/##id##"/>
+            </CButton>
+            """);
+
+        XElement element2 = XElement.Parse(
+            """
+            <CButton default="1" id="StormButtonParent">
+            </CButton>
+            """);
+
+        XElement element3 = XElement.Parse(
+            """
+            <CButton default="1" id="StormButtonParentTrait" parent="StormButtonParent"/>
+            """);
+
+        XElement element4 = XElement.Parse(
+            """
+            <CButton id="MuradinSecondWind" parent="StormButtonParentTrait">
+            </CButton>
+            """);
+
+        XElement element5 = XElement.Parse(
+            """
+            <CButton id="MuradinSecondWindActivateable" parent="MuradinSecondWind">
+            </CButton>
+            """);
+        StormElement stormElement = new(new StormXElementValuePath(element1, TestHelpers.GetStormPath("some\\path")));
+
+        // act
+        stormElement.AddValue(new StormXElementValuePath(element2, TestHelpers.GetStormPath("some\\other\\path")));
+        stormElement.AddValue(new StormXElementValuePath(element3, TestHelpers.GetStormPath("some\\other\\path")));
+        stormElement.AddValue(new StormXElementValuePath(element4, TestHelpers.GetStormPath("some\\other\\path")));
+        stormElement.AddValue(new StormXElementValuePath(element5, TestHelpers.GetStormPath("some\\other\\path")));
+
+        // assert
+        stormElement.DataValues["Tooltip"].Value.GetString().Should().Be("Button/Tooltip/MuradinSecondWind");
+        stormElement.DataValues.ElementDataCount.Should().Be(3);
+        stormElement.DefaultDataValues.ElementDataCount.Should().Be(2);
+        stormElement.DefaultDataValues["id"].RawValue.Should().Be("MuradinSecondWind");
+        stormElement.DefaultDataValues["parent"].RawValue.Should().Be("StormButtonParentTrait");
+    }
+
+    [TestMethod]
+    public void AddValue_TooltipIdWithDefaultElement_ReturnsCorrectReplacementValue()
+    {
+        XElement element1 = XElement.Parse(
+            """
+            <CButton default="1">
+              <Tooltip value="Button/Tooltip/##id##"/>
+            </CButton>
+            """);
+
+        XElement element2 = XElement.Parse(
+            """
+            <CButton default="1" id="StormButtonParent">
+            </CButton>
+            """);
+
+        XElement element3 = XElement.Parse(
+            """
+            <CButton default="1" id="StormButtonParentTrait" parent="StormButtonParent"/>
+            """);
+
+        XElement element4 = XElement.Parse(
+            """
+            <CButton id="MuradinSecondWind" parent="StormButtonParentTrait">
+            </CButton>
+            """);
+
+        XElement element5 = XElement.Parse(
+            """
+            <CButton default="1" id="MuradinSecondWindActivateable" parent="MuradinSecondWind">
+            </CButton>
+            """);
+        StormElement stormElement = new(new StormXElementValuePath(element1, TestHelpers.GetStormPath("some\\path")));
+
+        // act
+        stormElement.AddValue(new StormXElementValuePath(element2, TestHelpers.GetStormPath("some\\other\\path")));
+        stormElement.AddValue(new StormXElementValuePath(element3, TestHelpers.GetStormPath("some\\other\\path")));
+        stormElement.AddValue(new StormXElementValuePath(element4, TestHelpers.GetStormPath("some\\other\\path")));
+        stormElement.AddValue(new StormXElementValuePath(element5, TestHelpers.GetStormPath("some\\other\\path")));
+
+        // assert
+        stormElement.DataValues["Tooltip"].Value.GetString().Should().Be("Button/Tooltip/MuradinSecondWindActivateable");
     }
 }

@@ -20,8 +20,10 @@ public sealed class StormElementData
 
     private string? _value;
 
-    internal StormElementData(XElement rootElement)
+    internal StormElementData(StormElement stormElement, XElement rootElement)
     {
+        StormElement = stormElement;
+
 #if NET9_0_OR_GREATER
         ElementDataPairsAltLookup = ElementDataPairs.GetAlternateLookup<ReadOnlySpan<char>>();
 #endif
@@ -29,8 +31,10 @@ public sealed class StormElementData
         Parse(rootElement);
     }
 
-    internal StormElementData(StormElementData parent, string field, bool isArray = false)
+    private StormElementData(StormElementData parent, string field, bool isArray = false)
     {
+        StormElement = parent.StormElement;
+
 #if NET9_0_OR_GREATER
         ElementDataPairsAltLookup = ElementDataPairs.GetAlternateLookup<ReadOnlySpan<char>>();
 #endif
@@ -50,35 +54,40 @@ public sealed class StormElementData
         }
     }
 
-    internal StormElementData(StormElementData parent, string field, XElement rootElement)
+    private StormElementData(StormElementData parent, string field, XElement rootElement)
         : this(parent, field)
     {
         Parse(rootElement);
     }
 
-    internal StormElementData(StormElementData parent, string field, string value, bool isIndex = false)
+    private StormElementData(StormElementData parent, string field, string value, bool isIndex = false)
         : this(parent, field, isIndex)
     {
         _value = value;
     }
 
-    internal StormElementData(StormElementData parent, string field, XElement rootElement, bool isInnerArray = false, bool isIndex = false)
+    private StormElementData(StormElementData parent, string field, XElement rootElement, bool isInnerArray = false, bool isIndex = false)
         : this(parent, field, isIndex)
     {
         Parse(rootElement, isInnerArray);
     }
 
-    internal StormElementData(StormElementData parent, string field, XElement element, string index, bool isInnerArray = false)
+    private StormElementData(StormElementData parent, string field, XElement element, string index, bool isInnerArray = false)
         : this(parent, field)
     {
         ElementDataPairs[index] = new StormElementData(this, index, element, isInnerArray, true);
     }
 
-    internal StormElementData(StormElementData parent, string field, XAttribute attribute, string index)
+    private StormElementData(StormElementData parent, string field, XAttribute attribute, string index)
         : this(parent, field)
     {
         ElementDataPairs[index] = new StormElementData(this, index, attribute.Value, true);
     }
+
+    /// <summary>
+    /// Gets the main storm element that this data belongs to.
+    /// </summary>
+    public StormElement StormElement { get; }
 
     /// <summary>
     /// Gets the parent data.
@@ -225,7 +234,7 @@ public sealed class StormElementData
             if (string.IsNullOrWhiteSpace(Field))
                 return $"{{ROOT, Elements = {ElementDataCount}}}";
             else if (!string.IsNullOrWhiteSpace(Value.GetString()))
-                return $"{{\"{Field}\", Value = \"{Value.GetString()}\", Elements = {ElementDataCount}}}";
+                return $"{{\"{Field}\", RawValue = \"{RawValue}\", Elements = {ElementDataCount}}}";
             else
                 return $"{{\"{Field}\", Elements = {ElementDataCount}}}";
         }
@@ -402,6 +411,9 @@ public sealed class StormElementData
                 continue;
 
             if (attribute.Name.LocalName.Equals("removed", StringComparison.OrdinalIgnoreCase))
+                continue;
+
+            if (attribute.Name.LocalName.Equals("default", StringComparison.OrdinalIgnoreCase))
                 continue;
 
             if (attribute.Name.LocalName.Equals("value", StringComparison.OrdinalIgnoreCase))

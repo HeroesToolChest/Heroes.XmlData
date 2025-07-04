@@ -295,7 +295,7 @@ public class StormStorageTests
         result!.DataValues.GetElementDataAt("Name").HasValue.Should().BeTrue();
         result.DataValues.GetElementDataAt("Element2").HasValue.Should().BeTrue();
         result.DataValues.GetElementDataAt("Element3").HasValue.Should().BeTrue();
-        result.DataValues.ElementDataCount.Should().Be(5);
+        result.DataValues.ElementDataCount.Should().Be(4);
     }
 
     [TestMethod]
@@ -327,7 +327,7 @@ public class StormStorageTests
         // assert
         result!.DataValues.GetElementDataAt("Name").HasValue.Should().BeTrue();
         result.DataValues.GetElementDataAt("Element2").HasValue.Should().BeTrue();
-        result.DataValues.ElementDataCount.Should().Be(4);
+        result.DataValues.ElementDataCount.Should().Be(3);
     }
 
     [TestMethod]
@@ -337,21 +337,24 @@ public class StormStorageTests
         StormStorage stormStorage = new(false);
 
         stormStorage.StormCache.StormElementByElementType.Add("CUnit", new StormElement(new StormXElementValuePath(
-            XElement.Parse(@"
-<CUnit default=""1"" parent=""normal"">
-  <Name value=""Unit/Name/##id##"" />
-</CUnit>
-"),
+            XElement.Parse(
+                """
+                <CUnit default="1" parent="normal">
+                  <Name value="Unit/Name/##id##" />
+                </CUnit>
+                """),
             TestHelpers.GetStormPath("normal"))));
 
         // act
-        StormElement? result = stormStorage.GetStormElementByElementType("CUnit");
-        StormElement? resultSpan = stormStorage.GetStormElementByElementType("CUnit");
+        StormElement? result = stormStorage.GetStormElementByElementType("CUnit".ToString());
+        StormElement? resultSpan = stormStorage.GetStormElementByElementType("CUnit".AsSpan());
 
         // assert
-        result.Should().BeEquivalentTo(resultSpan, options => options.Excluding(e => e.Type.IsByRefLike));
         result!.DataValues.GetElementDataAt("Name").HasValue.Should().BeTrue();
-        result.DataValues.ElementDataCount.Should().Be(3);
+        result.DataValues.ElementDataCount.Should().Be(2);
+
+        resultSpan!.DataValues.GetElementDataAt("Name").HasValue.Should().BeTrue();
+        resultSpan.DataValues.ElementDataCount.Should().Be(2);
     }
 
     [TestMethod]
@@ -375,7 +378,7 @@ public class StormStorageTests
         // assert
         result!.DataValues.GetElementDataAt("Name").HasValue.Should().BeTrue();
         result.DataValues.GetElementDataAt("Element2").HasValue.Should().BeTrue();
-        result.DataValues.ElementDataCount.Should().Be(4);
+        result.DataValues.ElementDataCount.Should().Be(3);
     }
 
     [TestMethod]
@@ -440,9 +443,9 @@ public class StormStorageTests
             TestHelpers.GetStormPath("custom"))));
 
         // assert
-        stormStorage.StormCache.StormElementByElementType["CUnit"].DataValues.ElementDataCount.Should().Be(3);
-        stormStorage.StormMapCache.StormElementByElementType["CUnit"].DataValues.ElementDataCount.Should().Be(4);
-        stormStorage.StormCustomCache.StormElementByElementType["CUnit"].DataValues.ElementDataCount.Should().Be(5);
+        stormStorage.StormCache.StormElementByElementType["CUnit"].DataValues.ElementDataCount.Should().Be(2);
+        stormStorage.StormMapCache.StormElementByElementType["CUnit"].DataValues.ElementDataCount.Should().Be(3);
+        stormStorage.StormCustomCache.StormElementByElementType["CUnit"].DataValues.ElementDataCount.Should().Be(4);
     }
 
     [TestMethod]
@@ -1657,7 +1660,7 @@ public class StormStorageTests
 
         // assert
         stormElement.Should().NotBeNull();
-        stormElement!.DataValues.ElementDataCount.Should().Be(2);
+        stormElement!.DataValues.ElementDataCount.Should().Be(1);
     }
 
     [TestMethod]
