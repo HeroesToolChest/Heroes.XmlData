@@ -3,7 +3,7 @@
 /// <summary>
 /// Combined storage for the types of <see cref="StormModType"/>s.
 /// </summary>
-internal class StormCache
+internal sealed class StormCache
 {
     public StormCache()
     {

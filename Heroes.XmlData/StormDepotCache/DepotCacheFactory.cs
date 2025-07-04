@@ -1,6 +1,6 @@
 ﻿namespace Heroes.XmlData.StormDepotCache;
 
-internal class DepotCacheFactory : IDepotCacheFactory
+internal sealed class DepotCacheFactory : IDepotCacheFactory
 {
     public IDepotCache CreateFileDepotCache(IFileHeroesSource heroesSource)
     {

@@ -3,7 +3,7 @@
 /// <summary>
 /// Storage for all storm mods.
 /// </summary>
-internal partial class StormStorage : IStormStorage
+internal sealed partial class StormStorage : IStormStorage
 {
     private readonly StormPath _rootFilePath;
     private int _loadedMapMods;

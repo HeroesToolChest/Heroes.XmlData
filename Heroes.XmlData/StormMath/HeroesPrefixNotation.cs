@@ -2,7 +2,7 @@
 
 namespace Heroes.XmlData.StormMath;
 
-internal class HeroesPrefixNotation
+internal sealed class HeroesPrefixNotation
 {
     private readonly IStormStorage _stormStorage;
 

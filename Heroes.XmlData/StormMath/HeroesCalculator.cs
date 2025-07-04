@@ -5,7 +5,7 @@ namespace Heroes.XmlData.StormMath;
 /// <summary>
 /// The Heroes math calculator.
 /// </summary>
-public class HeroesCalculator
+public sealed class HeroesCalculator
 {
     /// <summary>
     /// Gets the maximum number of fractional digits.

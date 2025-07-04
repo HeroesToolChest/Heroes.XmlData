@@ -1,7 +1,7 @@
 ﻿namespace Heroes.XmlData.StormDepotCache;
 
 // s2mv files are json files
-internal class S2MVProperties : S2mapDependencies
+internal sealed class S2MVProperties : S2mapDependencies
 {
     /// <summary>
     /// Gets or sets a map id found in the s2mv file. This is not unique.

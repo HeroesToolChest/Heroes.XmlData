@@ -1,6 +1,6 @@
 ﻿namespace Heroes.XmlData.StormMods;
 
-internal class CASCStormMod : StormMod<ICASCHeroesSource>, IStormMod
+internal sealed class CASCStormMod : StormMod<ICASCHeroesSource>, IStormMod
 {
     public CASCStormMod(ICASCHeroesSource cascHeroesSource, string directoryPath, StormModType stormModType)
         : base(cascHeroesSource, directoryPath, stormModType, StormPathType.CASC)

@@ -1,6 +1,6 @@
 ﻿namespace Heroes.XmlData.StormMods;
 
-internal class CustomStormMod : IStormMod
+internal sealed class CustomStormMod : IStormMod
 {
     private readonly IHeroesSource _heroesSource;
     private readonly ManualModLoader _manualModLoader;

@@ -1,6 +1,6 @@
 ﻿namespace Heroes.XmlData.MpqEntry;
 
-internal class MpqFolder
+internal sealed class MpqFolder
 {
     public MpqFolder(string name)
     {

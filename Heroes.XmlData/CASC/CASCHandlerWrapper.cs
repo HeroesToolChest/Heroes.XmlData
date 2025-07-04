@@ -1,6 +1,6 @@
 ﻿namespace Heroes.XmlData.CASC;
 
-internal class CASCHandlerWrapper : ICASCHandlerWrapper
+internal sealed class CASCHandlerWrapper : ICASCHandlerWrapper
 {
     private readonly CASCHandler _caschandler;
 

@@ -1,6 +1,6 @@
 ﻿namespace Heroes.XmlData.StormMods;
 
-internal class StormModFactory : IStormModFactory
+internal sealed class StormModFactory : IStormModFactory
 {
     public IStormMod CreateFileStormModInstance(IFileHeroesSource heroesSource, string directoryPath, StormModType stormModType)
     {

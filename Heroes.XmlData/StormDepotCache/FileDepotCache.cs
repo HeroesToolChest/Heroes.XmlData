@@ -2,7 +2,7 @@
 
 namespace Heroes.XmlData.StormDepotCache;
 
-internal class FileDepotCache : DepotCache<IFileHeroesSource>
+internal sealed class FileDepotCache : DepotCache<IFileHeroesSource>
 {
     public FileDepotCache(IFileHeroesSource heroesSource)
         : base(heroesSource)

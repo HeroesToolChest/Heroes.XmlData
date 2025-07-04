@@ -1,6 +1,6 @@
 ﻿namespace Heroes.XmlData.StormDepotCache;
 
-internal record MapDependency
+internal sealed record MapDependency
 {
     public required string BnetName { get; init; } = string.Empty;
 

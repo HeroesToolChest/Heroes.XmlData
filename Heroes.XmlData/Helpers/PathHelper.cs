@@ -1,6 +1,6 @@
 ﻿namespace Heroes.XmlData.Helpers;
 
-internal class PathHelper
+internal sealed class PathHelper
 {
     /// <summary>
     /// Modifies the path to use the current platform's directory separator character and lowercase all characters.

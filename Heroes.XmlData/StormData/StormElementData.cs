@@ -4,7 +4,7 @@
 /// Contains the data that represents an <see cref="XElement"/>.
 /// </summary>
 [DebuggerDisplay("{DebuggerDisplay,nq}")]
-public class StormElementData
+public sealed class StormElementData
 {
     private static readonly HashSet<string> _otherElementArrays = new(StringComparer.OrdinalIgnoreCase)
     {

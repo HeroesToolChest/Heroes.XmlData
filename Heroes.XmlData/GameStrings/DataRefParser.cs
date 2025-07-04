@@ -2,7 +2,7 @@
 
 namespace Heroes.XmlData.GameStrings;
 
-internal class DataRefParser
+internal sealed class DataRefParser
 {
     private static readonly SearchValues<char> _gameStringOps = SearchValues.Create("+-*/()");
 

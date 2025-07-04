@@ -2,7 +2,7 @@
 
 namespace Heroes.XmlData.Source;
 
-internal class FileHeroesSource : HeroesSource, IFileHeroesSource
+internal sealed class FileHeroesSource : HeroesSource, IFileHeroesSource
 {
     private readonly IFileSystem _fileSystem;
 

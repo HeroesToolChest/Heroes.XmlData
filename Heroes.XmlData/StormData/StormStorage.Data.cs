@@ -7,7 +7,7 @@
 /// <para>The TryGetFirst methods get a reference to the first cache.</para>
 /// <para>The Get methods merges the data from all caches (if it can).</para>
 /// </remarks>
-internal partial class StormStorage
+internal sealed partial class StormStorage
 {
     public bool TryGetFirstConstantXElementById(ReadOnlySpan<char> id, [NotNullWhen(true)] out StormXElementValuePath? stormXElementValuePath)
     {
@@ -628,7 +628,6 @@ internal partial class StormStorage
         HashSet<string> ids = [];
 
         // normal cache first
-
         if (stormCacheType.HasFlag(StormCacheType.Normal) && StormCache.StormElementsByDataObjectType.TryGetValue(dataObjectType, out var foundStormElementById))
         {
 #if NET9_0_OR_GREATER
@@ -841,6 +840,7 @@ internal partial class StormStorage
         return stormFile;
     }
 
+    // recursivley travels through the storm element's parents and then add the elements up the chain
 #if NET9_0_OR_GREATER
     private StormElement? MergeUpStormElement(ReadOnlySpan<char> dataObjectType, ReadOnlySpan<char> id, ElementType currentElementType)
 #else

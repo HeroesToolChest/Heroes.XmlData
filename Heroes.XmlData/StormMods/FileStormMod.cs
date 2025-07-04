@@ -2,7 +2,7 @@
 
 namespace Heroes.XmlData.StormMods;
 
-internal class FileStormMod : StormMod<IFileHeroesSource>
+internal sealed class FileStormMod : StormMod<IFileHeroesSource>
 {
     private readonly IFileSystem _fileSystem;
 

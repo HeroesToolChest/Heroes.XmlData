@@ -2,7 +2,7 @@
 
 namespace Heroes.XmlData.StormMods;
 
-internal class FileMpqStormMod : MpqStormMod<IFileHeroesSource>
+internal sealed class FileMpqStormMod : MpqStormMod<IFileHeroesSource>
 {
     private readonly IFileSystem _fileSystem;
 

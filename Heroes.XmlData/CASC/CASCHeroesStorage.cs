@@ -2,7 +2,7 @@
 
 namespace Heroes.XmlData;
 
-internal class CASCHeroesStorage : ICASCHeroesStorage
+internal sealed class CASCHeroesStorage : ICASCHeroesStorage
 {
     public CASCHeroesStorage(CASCHandler cascHandler, CASCFolder cascFolderRoot)
     {

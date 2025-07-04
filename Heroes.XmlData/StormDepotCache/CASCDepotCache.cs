@@ -2,7 +2,7 @@
 
 namespace Heroes.XmlData.StormDepotCache;
 
-internal class CASCDepotCache : DepotCache<ICASCHeroesSource>
+internal sealed class CASCDepotCache : DepotCache<ICASCHeroesSource>
 {
     public CASCDepotCache(ICASCHeroesSource heroesSource)
         : base(heroesSource)

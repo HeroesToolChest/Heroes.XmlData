@@ -2,7 +2,7 @@
 
 namespace Heroes.XmlData.Source;
 
-internal class CASCHeroesSource : HeroesSource, ICASCHeroesSource
+internal sealed class CASCHeroesSource : HeroesSource, ICASCHeroesSource
 {
     private readonly ICASCHeroesStorage _cascHeroesStorage;
 

@@ -9,4 +9,4 @@
 //   <AffectedByOverdrive value="1" />
 // </Modifications>
 [DebuggerDisplay("{Catalog,nq},{Entry,nq},{Field,nq}")]
-internal record LevelScalingEntry(string Catalog, string Entry, string Field);
+internal sealed record LevelScalingEntry(string Catalog, string Entry, string Field);

@@ -3,7 +3,7 @@
 /// <summary>
 /// Storage for an individual storm mod.
 /// </summary>
-internal class StormModStorage : IStormModStorage
+internal sealed class StormModStorage : IStormModStorage
 {
     private readonly IStormMod _stormMod;
     private readonly IStormStorage _stormStorage;

@@ -4,7 +4,7 @@
 /// Contains the data for a storm style constant <see cref="XElement"/>.
 /// </summary>
 [DebuggerDisplay("{DebuggerDisplay,nq}")]
-public class StormStyleConstantElement : StormElement
+public sealed class StormStyleConstantElement : StormElement
 {
     private const string NameAttribute = "name";
     private const string ValAttribute = "val";

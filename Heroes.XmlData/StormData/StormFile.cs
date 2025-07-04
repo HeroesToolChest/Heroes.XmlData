@@ -4,7 +4,7 @@
 /// Represents a storm file. Contains all the paths of where the file resides.
 /// </summary>
 [DebuggerDisplay("{DebuggerDisplay,nq}")]
-public class StormFile
+public sealed class StormFile
 {
     private readonly List<StormPath> _stormPaths = [];
 

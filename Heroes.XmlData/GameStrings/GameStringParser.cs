@@ -4,7 +4,7 @@ using U8Xml;
 
 namespace Heroes.XmlData.GameStrings;
 
-internal class GameStringParser
+internal sealed class GameStringParser
 {
     public const double MaxValueSize = 999_999_999;
 
