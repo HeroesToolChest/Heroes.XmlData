@@ -184,7 +184,9 @@ public class StormElementTests
 
         // assert
         stormElement.DataValues.GetElementDataAt("ResponseFlags").GetElementDataAt("Acquire").RawValue.Should().Be("1");
+        stormElement.DataValues.GetElementDataAt("ResponseFlags").GetElementDataAt("Acquire").IsIndexed.Should().BeTrue();
         stormElement.DataValues.GetElementDataAt("LeechScoreArray").GetElementDataAt("0").RawValue.Should().Be("SelfHealing");
+        stormElement.DataValues.GetElementDataAt("LeechScoreArray").GetElementDataAt("0").IsIndexed.Should().BeTrue();
         stormElement.DataValues.GetElementDataAt("ImpactLocation").RawValue.Should().Be("TargetUnitOrPoint");
         stormElement.DataValues.GetElementDataAt("ImpactLocation").GetElementDataAt("History").RawValue.Should().Be("Damage");
         stormElement.DataValues.GetElementDataAt("DamageModifierSource").RawValue.Should().Be("Caster");
@@ -192,7 +194,11 @@ public class StormElementTests
         stormElement.DataValues.GetElementDataAt("AmountScoreArray").GetElementDataAt("3").RawValue.Should().Be("MinionDamage");
         stormElement.DataValues.GetElementDataAt("AmountScoreArray").GetElementDataAt("3").HasValue.Should().BeTrue();
         stormElement.DataValues.GetElementDataAt("AmountScoreArray").GetElementDataAt("3").GetElementDataAt("Validator").GetElementDataAt("0").RawValue.Should().Be("TargetMinion");
+        stormElement.DataValues.GetElementDataAt("AmountScoreArray").GetElementDataAt("3").IsIndexed.Should().BeTrue();
         stormElement.DataValues.GetElementDataAt("MultiplicativeModifierArray").GetElementDataAt("MuradinStormboltSledgehammer").GetElementDataAt("Modifier").GetElementDataAt("0").RawValue.Should().Be("2.5");
+
+        stormElement.DataValues.GetElementDataAt("SplashHistory").IsIndexed.Should().BeFalse();
+        stormElement.DataValues.GetElementDataAt("ResponseFlags").IsIndexed.Should().BeFalse();
     }
 
     [TestMethod]
@@ -664,5 +670,47 @@ public class StormElementTests
 
         // assert
         stormElement.DataValues["Tooltip"].Value.GetString().Should().Be("Button/Tooltip/MuradinSecondWindActivateable");
+    }
+
+    [TestMethod]
+    public void StormElement_Buttons_ShouldBeInArray()
+    {
+        XElement element = XElement.Parse(
+            """
+            <CBehaviorAbility id="NecromancerBoneArmor">
+              <Buttons Face="NecromancerBoneArmor" Type="AbilCmd" AbilCmd="NecromancerBoneArmor,Execute" ShowValidator="DoesNotHaveNecromancerBoneArmorTalentsOrHasBoneArmorShadeTalent" />
+              <Buttons Face="NecromancerBoneArmorAbilBacklash" Type="AbilCmd" AbilCmd="NecromancerBoneArmor,Execute" ShowValidator="HasNecromancerTalentBacklash" />
+              <Buttons Face="NecromancerBoneArmorAbilShackler" Type="AbilCmd" AbilCmd="NecromancerBoneArmor,Execute" ShowValidator="HasNecromancerTalentShackler" />
+            </CBehaviorAbility>
+            """);
+
+        // act
+        StormElement stormElement = new(new StormXElementValuePath(element, TestHelpers.GetStormPath("some\\path")));
+
+        // assert
+        stormElement.DataValues["Buttons"].ElementDataCount.Should().Be(3);
+        stormElement.DataValues["Buttons"]["0"]["Face"]["0"].RawValue.Should().Be("NecromancerBoneArmor");
+        stormElement.DataValues["Buttons"]["1"]["Face"]["0"].RawValue.Should().Be("NecromancerBoneArmorAbilBacklash");
+        stormElement.DataValues["Buttons"]["2"]["Face"]["0"].RawValue.Should().Be("NecromancerBoneArmorAbilShackler");
+    }
+
+    [TestMethod]
+    public void StormElement_Cost_ShouldBeInArray()
+    {
+        XElement element = XElement.Parse(
+            """
+            <CEffectModifyUnit id="AzmodanHeroWeaponBattlebornTalentModifyCooldown">
+              <Cost Abil="AzmodanSummonDemonWarrior,Execute" CooldownOperation="Add" CooldownTimeUse="-0.75" />
+              <Cost Abil="AzmodanDemonLieutenant,Execute" CooldownOperation="Add" CooldownTimeUse="-1.5" />
+            </CEffectModifyUnit>
+            """);
+
+        // act
+        StormElement stormElement = new(new StormXElementValuePath(element, TestHelpers.GetStormPath("some\\path")));
+
+        // assert
+        stormElement.DataValues["Cost"].ElementDataCount.Should().Be(2);
+        stormElement.DataValues["Cost"]["0"]["CooldownTimeUse"].RawValue.Should().Be("-0.75");
+        stormElement.DataValues["Cost"]["1"]["CooldownTimeUse"].RawValue.Should().Be("-1.5");
     }
 }

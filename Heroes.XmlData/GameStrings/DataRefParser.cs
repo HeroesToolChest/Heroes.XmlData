@@ -37,28 +37,21 @@ internal sealed class DataRefParser
                 ReadOnlySpan<char> fieldPartSpanWithoutIndexer = fieldPartSpan[..indexOfStartBracket];
 
                 if (currentElementData.TryGetElementDataAt(fieldPartSpanWithoutIndexer, out StormElementData? withoutIndexerStormElementData) ||
-                    (currentElementData.HasNumericalIndex && currentElementData.ElementDataPairs.First().Value.TryGetElementDataAt(fieldPartSpanWithoutIndexer, out withoutIndexerStormElementData)))
+                    currentElementData.ElementDataPairs.First().Value.TryGetElementDataAt(fieldPartSpanWithoutIndexer, out withoutIndexerStormElementData))
                 {
-                    if (((numericalIndex is true && withoutIndexerStormElementData.HasNumericalIndex is true) ||
-                        (numericalIndex is false && withoutIndexerStormElementData.HasTextIndex is true)) && withoutIndexerStormElementData.TryGetElementDataAt(fieldPartIndexValue, out StormElementData? indexStormElementData))
+                    if (withoutIndexerStormElementData.TryGetElementDataAt(fieldPartIndexValue, out StormElementData? indexStormElementData))
                     {
                         currentElementData = indexStormElementData;
                     }
-                    else if (numericalIndex is true && withoutIndexerStormElementData.HasTextIndex is true &&
-                        withoutIndexerStormElementData.ElementDataCount > 0 && indexAsNumber < withoutIndexerStormElementData.ElementDataCount)
+                    else if (numericalIndex is true && withoutIndexerStormElementData.ElementDataCount > 0 && indexAsNumber < withoutIndexerStormElementData.ElementDataCount)
                     {
-                        currentElementData = withoutIndexerStormElementData.ElementDataPairs.ElementAt(indexAsNumber).Value;
-                    }
-                    else if (numericalIndex is true)
-                    {
-                        if (indexAsNumber == 0)
-                        {
-                            currentElementData = withoutIndexerStormElementData;
-                        }
+                        var indexValueElement = withoutIndexerStormElementData.ElementDataPairs.ElementAt(indexAsNumber);
+
+                        // is this an indexed element?
+                        if (indexValueElement.Value.IsIndexed)
+                            currentElementData = indexValueElement.Value;
                         else
-                        {
-                            return currentElementData;
-                        }
+                            currentElementData = withoutIndexerStormElementData;
                     }
                     else if (withoutIndexerStormElementData.HasValue)
                     {
@@ -70,14 +63,22 @@ internal sealed class DataRefParser
                     }
                 }
             }
-            else if (currentElementData.TryGetElementDataAt(fieldPartSpan, out StormElementData? stormElementData) ||
-                ((currentElementData.HasNumericalIndex || currentElementData.HasTextIndex) && currentElementData.ElementDataPairs.First().Value.TryGetElementDataAt(fieldPartSpan, out stormElementData)))
+            else if (currentElementData.TryGetElementDataAt(fieldPartSpan, out StormElementData? stormElementData))
             {
-                // accessed an element that is indexed without an indexer, grab the first
-                if (stormElementData.HasTextIndex || stormElementData.HasNumericalIndex)
-                    currentElementData = stormElementData.ElementDataPairs.First().Value;
+                if (stormElementData.ElementDataCount > 0)
+                {
+                    KeyValuePair<string, StormElementData> firstKeyValueElement = stormElementData.ElementDataPairs.First();
+
+                    // accessed an element that is indexed without an indexer, grab the first
+                    if (firstKeyValueElement.Value.IsIndexed)
+                        currentElementData = firstKeyValueElement.Value;
+                    else
+                        currentElementData = stormElementData;
+                }
                 else
+                {
                     currentElementData = stormElementData;
+                }
             }
             else
             {
@@ -267,10 +268,7 @@ internal sealed class DataRefParser
 
         if (currentElementData.HasValue)
         {
-            if (currentElementData.HasTextIndex)
-                return GetValueScale(currentElementData.RawValue, fullPartSpan, xmlParts, currentElementData.ElementDataPairs.First().Key);
-            else
-                return GetValueScale(currentElementData.RawValue, fullPartSpan, xmlParts);
+            return GetValueScale(currentElementData.RawValue, fullPartSpan, xmlParts);
         }
 
         return new ValueScale(0);
@@ -293,7 +291,7 @@ internal sealed class DataRefParser
 
         // AmountArray[Quest] or FlatModifierArray[0].Modifier where Modifier is in [0]
         if ((!fieldIndexer.IsEmpty && stormElementData.TryGetElementDataAt(fieldIndexer, out StormElementData? innerIndexData)) ||
-            (fieldIndexer.IsEmpty && stormElementData.HasNumericalIndex && stormElementData.ElementDataPairs.Count == 1 && stormElementData.TryGetElementDataAt("0", out innerIndexData)))
+            (fieldIndexer.IsEmpty && stormElementData.ElementDataPairs.Count == 1 && stormElementData.TryGetElementDataAt("0", out innerIndexData)))
         {
             stormElementData = innerIndexData;
         }

@@ -16,9 +16,17 @@ public sealed class StormElementData
         "Remove",
         "TooltipAppender",
         "DurationOverride",
+        "Buttons",
+    };
+
+    // elements arrays that should only be arrays for the given element type
+    private static readonly Dictionary<string, string> _elementTypeByElementArray = new(StringComparer.OrdinalIgnoreCase)
+    {
+        { "Cost", "CEffectModifyUnit" },
     };
 
     private string? _value;
+    private int _currentIndex = 0;
 
     internal StormElementData(StormElement stormElement, XElement rootElement)
     {
@@ -52,6 +60,8 @@ public sealed class StormElementData
         {
             Field = field;
         }
+
+        IsIndexed = isArray;
     }
 
     private StormElementData(StormElementData parent, string field, XElement rootElement)
@@ -95,6 +105,11 @@ public sealed class StormElementData
     public StormElementData? Parent { get; }
 
     /// <summary>
+    /// Gets a value indicating whether this data is indexed (is in an array).
+    /// </summary>
+    public bool IsIndexed { get; }
+
+    /// <summary>
     /// Gets the representation of the current data reference field.
     /// </summary>
     public string? Field { get; }
@@ -117,11 +132,11 @@ public sealed class StormElementData
             }
             else if (ElementDataPairs.Keys.Count == 1)
             {
-                if (HasNumericalIndex && ElementDataPairs.TryGetValue("0", out StormElementData? data) && data.HasValue)
+                if (ElementDataPairs.TryGetValue("0", out StormElementData? data) && data.HasValue)
                 {
                     return data.RawValue;
                 }
-                else if (HasTextIndex)
+                else
                 {
                     StormElementData firstElementData = ElementDataPairs.First().Value;
                     if (firstElementData.HasValue)
@@ -150,12 +165,12 @@ public sealed class StormElementData
             }
             else if (ElementDataPairs.Keys.Count == 1)
             {
-                if (HasNumericalIndex && ElementDataPairs.TryGetValue("0", out StormElementData? data) && data.HasValue)
+                if (ElementDataPairs.TryGetValue("0", out StormElementData? data) && data.HasValue)
                 {
                     isNull = data.Value.IsNull;
                     returnValue = data.Value.Value;
                 }
-                else if (HasTextIndex)
+                else
                 {
                     StormElementData firstElementData = ElementDataPairs.First().Value;
                     isNull = firstElementData.Value.IsNull;
@@ -170,16 +185,6 @@ public sealed class StormElementData
             };
         }
     }
-
-    /// <summary>
-    /// Gets a value indicating whether the inner data, <see cref="ElementDataPairs"/> consists of numerical keys.
-    /// </summary>
-    public bool HasNumericalIndex { get; init; }
-
-    /// <summary>
-    /// Gets a value indicating whether the inner data, <see cref="ElementDataPairs"/> consists of text keys.
-    /// </summary>
-    public bool HasTextIndex { get; init; }
 
     /// <summary>
     /// Gets the amount of elements.
@@ -424,10 +429,7 @@ public sealed class StormElementData
 
             if (isInnerArray)
             {
-                ElementDataPairs[attribute.Name.LocalName] = new StormElementData(this, attribute.Name.LocalName, attribute, "0")
-                {
-                    HasNumericalIndex = true,
-                };
+                ElementDataPairs[attribute.Name.LocalName] = new StormElementData(this, attribute.Name.LocalName, attribute, "0");
             }
             else if (attribute.Name.LocalName.Equals("parent", StringComparison.OrdinalIgnoreCase) &&
                 ElementDataPairs.TryGetValue("id", out StormElementData? existingIdData) && !string.IsNullOrEmpty(existingIdData.RawValue) &&
@@ -455,25 +457,18 @@ public sealed class StormElementData
             {
                 ParseElementWithIndex(element, elementName, indexAtt, isRemovedElement);
             }
-            else if (isInnerArray || elementName.AsSpan().EndsWith("array", StringComparison.OrdinalIgnoreCase) || _otherElementArrays.Contains(elementName))
+            else if (isInnerArray || elementName.AsSpan().EndsWith("array", StringComparison.OrdinalIgnoreCase) || _otherElementArrays.Contains(elementName) || IsElementArrayForCurrentType(elementName))
             {
                 if (ElementDataPairs.TryGetValue(elementName, out StormElementData? existingData))
                 {
-                    string nextIndex;
-
-                    if (existingData.HasNumericalIndex)
-                        nextIndex = (existingData.ElementDataPairs.Keys.Max(int.Parse) + 1).ToString();
-                    else
-                        nextIndex = existingData.ElementDataPairs.Keys.Count.ToString();
+                    existingData._currentIndex++;
+                    string nextIndex = existingData._currentIndex.ToString();
 
                     existingData.ElementDataPairs[nextIndex] = new StormElementData(existingData, nextIndex, element, true, true);
                 }
                 else
                 {
-                    ElementDataPairs[elementName] = new StormElementData(this, elementName, element, "0", true)
-                    {
-                        HasNumericalIndex = true,
-                    };
+                    ElementDataPairs[elementName] = new StormElementData(this, elementName, element, "0", true);
                 }
             }
             else if (ElementDataPairs.TryGetValue(elementName, out StormElementData? existingData))
@@ -493,6 +488,8 @@ public sealed class StormElementData
 
     private void ParseElementWithIndex(XElement element, string elementName, string indexAtt, bool isRemoved)
     {
+        int? numericalIndex = int.TryParse(indexAtt, out int parsedIndex) ? parsedIndex : null;
+
         if (ElementDataPairs.TryGetValue(elementName, out StormElementData? existingElementData))
         {
             if (existingElementData.ElementDataPairs.TryGetValue(indexAtt, out StormElementData? existingIndexedData))
@@ -507,18 +504,22 @@ public sealed class StormElementData
             }
             else
             {
+                existingElementData._currentIndex = numericalIndex ?? existingElementData._currentIndex + 1;
                 existingElementData.ElementDataPairs[indexAtt] = new StormElementData(existingElementData, indexAtt, element, true, true);
             }
         }
         else
         {
-            bool numericalIndex = int.TryParse(indexAtt, out _);
-
-            ElementDataPairs[elementName] = new StormElementData(this, elementName, element, indexAtt, true)
-            {
-                HasNumericalIndex = numericalIndex,
-                HasTextIndex = !numericalIndex,
-            };
+            _currentIndex = numericalIndex ?? _currentIndex + 1;
+            ElementDataPairs[elementName] = new StormElementData(this, elementName, element, indexAtt, true);
         }
+    }
+
+    private bool IsElementArrayForCurrentType(string elementName)
+    {
+        if (_elementTypeByElementArray.TryGetValue(elementName, out string? elementType))
+            return StormElement.ElementType.Equals(elementType, StringComparison.OrdinalIgnoreCase);
+
+        return false;
     }
 }

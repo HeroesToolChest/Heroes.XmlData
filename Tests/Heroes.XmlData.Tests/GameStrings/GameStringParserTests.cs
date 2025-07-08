@@ -407,7 +407,7 @@ public class GameStringParserTests
     }
 
     [TestMethod]
-    public void ParseTooltipDescription_CostIsAnArray_ParsedGameString()
+    public void ParseTooltipDescription_CostHasAnArrayIndex_ParsedGameString()
     {
         // arrange
         string description = "If Sand Blast travels at least <c val=\"bfd4fd\"><d ref=\"Validator,ChromieFastForwardDistanceCheck,Range/Effect,ChromieSandBlastLaunchMissile,ImpactLocation.ProjectionDistanceScale*100\"/>%</c> of its base distance and hits a Hero, its cooldown is reduced to <c val=\"bfd4fd\"><d ref=\"Effect,ChromieSandBlastFastForwardCooldownReduction,Cost[0].CooldownTimeUse\" precision=\"2\"/></c> seconds.";
@@ -1883,7 +1883,6 @@ public class GameStringParserTests
                 {
                     ("Behavior", "CBehaviorBuff"),
                     ("Accumulator", "CAccumulatorToken"),
-
                 })
                 .AddElements(new List<XElement>()
                 {
@@ -1935,7 +1934,7 @@ public class GameStringParserTests
     }
 
     [TestMethod]
-    public void ParseTooltipDescription__ParsedGameString()
+    public void ParseTooltipDescription_Scaling_ParsedGameString()
     {
         // arrange
         string description = "Deal <c val=\"#TooltipNumbers\"><d ref=\"Effect,GallShadowflameDamage,Amount\"/></c> damage to enemies in the area.";
@@ -1983,5 +1982,191 @@ public class GameStringParserTests
 
         // assert
         parsed.Should().Be("Deal <c val=\"#TooltipNumbers\">135~~0.05~~</c> damage to enemies in the area.");
+    }
+
+    [TestMethod]
+    public void ParseTooltipDescription_HasNumericalAndTextIndex_ParsedGameString()
+    {
+        // arrange
+        string description = "Increase Dread's damage by <C val=\"#TooltipNumbers\"><d ref=\"Effect,OrpheaDreadLineDamage,MultiplicativeModifierArray[GrowingNightmarePassive].Modifier * 100\"/>%</c>. <n/><n/><c val=\"#TooltipQuest\">Quest:</c> Hit <C val=\"#TooltipNumbers\"><d ref=\"Behavior,OrpheaDreadGrowingNightmareMarkerBehavior,MaxStackCount\"/></c> enemy Heroes with a single cast of Dread's eruption.<n/><n/><c val=\"#TooltipQuest\">Reward:</c> Permanently increase Dread's eruption damage by <C val=\"#TooltipNumbers\"><d ref=\"100*Effect,OrpheaDreadFinalDamage,MultiplicativeModifierArray[GrowingNightmareQuestComplete].Modifier\"/>%</c> and increase the Slow amount of Dread's eruption by <C val=\"#TooltipNumbers\"><d ref=\"-100*Effect,OrpheaDreadGrowingNightmareQuestCompletionModifyPlayer,EffectArray[0].Value\"/>%</c>.";
+
+        HeroesXmlLoader loader = HeroesXmlLoader.LoadWithEmpty()
+            .LoadCustomMod(new ManualModLoader("custom")
+                .AddBaseElementTypes(new List<(string, string)>()
+                {
+                    ("Behavior", "CBehaviorBuff"),
+                    ("Effect", "CEffectDamage"),
+                })
+                .AddElements(new List<XElement>()
+                {
+                    XElement.Parse(
+                        """
+                        <CBehaviorBuff id="OrpheaDreadGrowingNightmareMarkerBehavior">
+                          <MaxStackCount value="3" />
+                          <Duration value="0.0625" />
+                        </CBehaviorBuff>
+                        """),
+                    XElement.Parse(
+                        """
+                        <CEffectDamage id="OrpheaDreadLineDamage" parent="StormSpell">
+                          <Amount value="85">
+                            <AccumulatorArray value="OrpheaMindDevourerAccumulator" />
+                          </Amount>
+                          <MultiplicativeModifierArray index="0" Validator="OrpheaAncestralStrengthDamageValidator" Modifier="0.15" Crit="1" />
+                          <MultiplicativeModifierArray index="GrowingNightmarePassive" Validator="OrpheaHasGrowingNightmareTalent" Modifier="0.5" />
+                        </CEffectDamage>
+                        """),
+                    XElement.Parse(
+                        """
+                        <CEffectDamage id="OrpheaDreadFinalDamage" parent="StormSpell">
+                          <Amount value="175">
+                            <AccumulatorArray value="OrpheaMindDevourerAccumulator" />
+                          </Amount>
+                          <MultiplicativeModifierArray index="0" Validator="OrpheaAncestralStrengthDamageValidator" Modifier="0.15" Crit="1" />
+                          <MultiplicativeModifierArray index="GrowingNightmareQuestComplete" Validator="OrpheaDreadHasMaxGrowingNightmareTokens" Modifier="0.5" />
+                          <MultiplicativeModifierArray index="GrowingNightmarePassive" Validator="OrpheaHasGrowingNightmareTalent" Modifier="0.5" />
+                        </CEffectDamage>
+                        """),
+                    XElement.Parse(
+                        """
+                        <CEffectModifyPlayer id="OrpheaDreadGrowingNightmareQuestCompletionModifyPlayer">
+                          <WhichPlayer Value="Caster" />
+                          <EffectArray Reference="Behavior,OrpheaDreadFinalSlow,Modification.UnifiedMoveSpeedFactor" Value="-0.15" />
+                        </CEffectModifyPlayer>
+                        """),
+                }));
+
+        HeroesData heroesData = loader.HeroesData;
+
+        // act
+        string parsed = GameStringParser.ParseTooltipDescription(heroesData.StormStorage, description);
+
+        // assert
+        parsed.Should().Be("Increase Dread's damage by <C val=\"#TooltipNumbers\">50%</c>. <n/><n/><c val=\"#TooltipQuest\">Quest:</c> Hit <C val=\"#TooltipNumbers\">3</c> enemy Heroes with a single cast of Dread's eruption.<n/><n/><c val=\"#TooltipQuest\">Reward:</c> Permanently increase Dread's eruption damage by <C val=\"#TooltipNumbers\">50%</c> and increase the Slow amount of Dread's eruption by <C val=\"#TooltipNumbers\">15%</c>.");
+    }
+
+    [TestMethod]
+    public void ParseTooltipDescription_CostIsAnArray_ParsedGameString()
+    {
+        // arrange
+        string description = "Reduce the Mana cost of Summon Demon Warrior from <c val=\"#TooltipNumbers\"><d ref=\"Abil,AzmodanSummonDemonWarrior,Cost.Vital[Energy]\"Player=\"0\"/></c> to <c val=\"#TooltipNumbers\"><d ref=\"Abil,AzmodanSummonDemonWarrior,Cost.Vital[Energy]+Talent,AzmodanBattleborn,AbilityModificationArray[0].Modifications[0].Value\"Player=\"0\"/></c>. Azmodan's Basic Attacks reduce the cooldown of Summon Demon Warrior by <c val=\"#TooltipNumbers\"><d ref=\"-Effect,AzmodanHeroWeaponBattlebornTalentModifyCooldown,Cost[0].CooldownTimeUse\"precision=\"2\"/></c> seconds and Demon Lieutenant by <c val=\"#TooltipNumbers\"><d ref=\"-Effect,AzmodanHeroWeaponBattlebornTalentModifyCooldown,Cost[1].CooldownTimeUse\"precision=\"1\"/></c> seconds.";
+
+        HeroesXmlLoader loader = HeroesXmlLoader.LoadWithEmpty()
+            .LoadCustomMod(new ManualModLoader("custom")
+                .AddBaseElementTypes(new List<(string, string)>()
+                {
+                    ("Abil", "CAbilEffectTarget"),
+                    ("Talent", "CTalent"),
+                    ("Effect", "CEffectModifyUnit"),
+                })
+                .AddElements(new List<XElement>()
+                {
+                    XElement.Parse(
+                        """
+                        <CAbilEffectTarget id="AzmodanSummonDemonWarrior">
+                          <Cost>
+                            <Vital index="Energy" value="25" />
+                            <Cooldown TimeUse="10" />
+                          </Cost>
+                        </CAbilEffectTarget>
+                        """),
+                    XElement.Parse(
+                        """
+                        <CTalent id="AzmodanBattleborn">
+                          <Face value="AzmodanGlobOfAnnihilationBattlebornTalent" />
+                          <AbilityModificationArray>
+                            <Modifications>
+                              <Type value="FlatModification" />
+                              <Entry value="AzmodanSummonDemonWarrior" />
+                              <Field value="Cost.Vital[Energy]" />
+                              <Value value="-5.000000" />
+                            </Modifications>
+                          </AbilityModificationArray>
+                        </CTalent>
+                        """),
+                    XElement.Parse(
+                        """
+                        <CEffectModifyUnit id="AzmodanHeroWeaponBattlebornTalentModifyCooldown">
+                          <ValidatorArray value="AzmodanHasBattleborn" />
+                          <ValidatorArray value="CasterNotBlindedandTargetNotEvading" />
+                          <ImpactUnit Value="Caster" />
+                          <Cost Abil="AzmodanSummonDemonWarrior,Execute" CooldownOperation="Add" CooldownTimeUse="-0.75" />
+                          <Cost Abil="AzmodanDemonLieutenant,Execute" CooldownOperation="Add" CooldownTimeUse="-1.5" />
+                        </CEffectModifyUnit>
+                        """),
+                }));
+
+        HeroesData heroesData = loader.HeroesData;
+
+        // act
+        string parsed = GameStringParser.ParseTooltipDescription(heroesData.StormStorage, description);
+
+        // assert
+        parsed.Should().Be("Reduce the Mana cost of Summon Demon Warrior from <c val=\"#TooltipNumbers\">25</c> to <c val=\"#TooltipNumbers\">20</c>. Azmodan's Basic Attacks reduce the cooldown of Summon Demon Warrior by <c val=\"#TooltipNumbers\">0.75</c> seconds and Demon Lieutenant by <c val=\"#TooltipNumbers\">1.5</c> seconds.");
+    }
+
+    [TestMethod]
+    public void ParseTooltipDescription_ArrayStartsAt1_ParsedGameString()
+    {
+        // arrange
+        string description = "Activate to swing the Hammer of Twilight, dealing <c val=\"#TooltipNumbers\"><d ref=\"Effect,ChoGallTwilightHammerDamage,Amount\"/></c> damage, pushing enemies away, and Stunning them for <c val=\"#TooltipNumbers\"><d ref=\"Behavior,ChoHammerOfTwilightKnockbackBehaviorStun,Duration\" precision=\"2\"/></c> seconds.<n/><n/><c val=\"#AbilityPassive\">Passive:</c> Cho's Basic Attacks deal <c val=\"#TooltipNumbers\"><d ref=\"100*Effect,ChoHeroWeaponDamage,MultiplicativeModifierArray[1].Modifier\"/>%</c> increased damage.";
+
+        HeroesXmlLoader loader = HeroesXmlLoader.LoadWithEmpty()
+            .LoadCustomMod(new ManualModLoader("custom")
+                .AddBaseElementTypes(new List<(string, string)>()
+                {
+                    ("Abil", "CAbilEffectTarget"),
+                    ("Talent", "CTalent"),
+                    ("Effect", "CEffectModifyUnit"),
+                })
+                .AddElements(new List<XElement>()
+                {
+                    XElement.Parse(
+                        """
+                        <CEffectDamage id="ChoGallTwilightHammerDamage" parent="StormSpell">
+                          <Amount value="150" />
+                        </CEffectDamage>
+                        """),
+                    XElement.Parse(
+                        """
+                        <CEffectDamage id="ChoHeroWeaponDamage" parent="StormWeapon">
+                          <Amount value="130" />
+                          <MultiplicativeModifierArray index="1" Validator="ChoTalentHasHammerOfTwilight" Modifier="0.25" />
+                          <MultiplicativeModifierArray index="SearedFleshCrit" Validator="ChoSearedFleshCritCombine" Accumulator="ChoSearedFleshDamageAccumulator" Crit="1" />
+                          <MultiplicativeModifierArray index="SearedFleshNoCrit" Validator="ChoSearedFleshNoCritCombine" Accumulator="ChoSearedFleshDamageAccumulator" />
+                        </CEffectDamage>
+                        """),
+                    XElement.Parse(
+                        """
+                        <CBehaviorBuff id="ChoHammerOfTwilightKnockbackBehaviorStun" parent="StormStun">
+                          <Duration value="0.75" />
+                          <Modification>
+                            <ModifyFlags index="SuppressTurning" value="1" />
+                          </Modification>
+                        </CBehaviorBuff>
+                        """),
+                })
+                .AddLevelScalingArrayElements(new List<XElement>()
+                {
+                    XElement.Parse(
+                        """
+                        <LevelScalingArray>
+                          <Modifications>
+                            <Catalog value="Effect" />
+                            <Entry value="ChoGallTwilightHammerDamage" />
+                            <Field value="Amount" />
+                            <Value value="0.045000" />
+                          </Modifications>
+                        </LevelScalingArray>
+                        """),
+                }));
+
+        HeroesData heroesData = loader.HeroesData;
+
+        // act
+        string parsed = GameStringParser.ParseTooltipDescription(heroesData.StormStorage, description);
+
+        // assert
+        parsed.Should().Be("Activate to swing the Hammer of Twilight, dealing <c val=\"#TooltipNumbers\">150~~0.045~~</c> damage, pushing enemies away, and Stunning them for <c val=\"#TooltipNumbers\">0.75</c> seconds.<n/><n/><c val=\"#AbilityPassive\">Passive:</c> Cho's Basic Attacks deal <c val=\"#TooltipNumbers\">25%</c> increased damage.");
     }
 }

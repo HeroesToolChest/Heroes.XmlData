@@ -32,15 +32,16 @@ public class StormElement
     internal StormElement(StormElement baseValue)
     {
         _originalXElements = [.. baseValue.OriginalXElements];
+
+        ElementType = baseValue.ElementType;
         DataValues = new StormElementData(this, OriginalXElements[0].Value);
-        DefaultDataValues = DataValues;
 
         for (int i = 1; i < OriginalXElements.Count; i++)
         {
             AddToDataValues(OriginalXElements[i].Value);
         }
 
-        ElementType = baseValue.ElementType;
+        DefaultDataValues = DataValues;
     }
 
     /// <summary>

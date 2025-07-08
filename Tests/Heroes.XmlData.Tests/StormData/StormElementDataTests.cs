@@ -199,18 +199,8 @@ public class StormElementDataTests
         StormElementData data = new(null!, element);
 
         // assert
-        data.GetElementDataAt("OrderArray").HasNumericalIndex.Should().BeTrue();
-
-        data.GetElementDataAt("OrderArray").GetElementDataAt("0").HasNumericalIndex.Should().BeFalse();
-        data.GetElementDataAt("OrderArray").GetElementDataAt("0").GetElementDataAt("LineTexture").HasNumericalIndex.Should().BeTrue();
         data.GetElementDataAt("OrderArray").GetElementDataAt("0").GetElementDataAt("LineTexture").GetElementDataAt("0").RawValue.Should().Be("Assets\\Textures\\Storm_WayPointLine0.dds");
-
-        data.GetElementDataAt("OrderArray").GetElementDataAt("1").HasNumericalIndex.Should().BeFalse();
-        data.GetElementDataAt("OrderArray").GetElementDataAt("1").GetElementDataAt("LineTexture").HasNumericalIndex.Should().BeTrue();
         data.GetElementDataAt("OrderArray").GetElementDataAt("1").GetElementDataAt("LineTexture").GetElementDataAt("0").RawValue.Should().Be("Assets\\Textures\\Storm_WayPointLine1.dds");
-
-        data.GetElementDataAt("OrderArray").GetElementDataAt("2").HasNumericalIndex.Should().BeFalse();
-        data.GetElementDataAt("OrderArray").GetElementDataAt("2").GetElementDataAt("LineTexture").HasNumericalIndex.Should().BeTrue();
         data.GetElementDataAt("OrderArray").GetElementDataAt("2").GetElementDataAt("LineTexture").GetElementDataAt("0").RawValue.Should().Be("Assets\\Textures\\Storm_WayPointLine2.dds");
     }
 
@@ -243,65 +233,46 @@ public class StormElementDataTests
         StormElementData data = new(null!, element);
 
         // assert
-        data.GetElementDataAt("HeroAbilArray").HasNumericalIndex.Should().BeTrue();
-
         data.GetElementDataAt("HeroAbilArray").GetElementDataAt("0").GetElementDataAt("Abil").GetElementDataAt("0").RawValue.Should().Be("KelThuzadDeathAndDecay");
-        data.GetElementDataAt("HeroAbilArray").GetElementDataAt("0").GetElementDataAt("Abil").HasNumericalIndex.Should().BeTrue();
         data.GetElementDataAt("HeroAbilArray").GetElementDataAt("0").GetElementDataAt("Flags").GetElementDataAt("ShowInHeroSelect").RawValue.Should().Be("1");
-        data.GetElementDataAt("HeroAbilArray").GetElementDataAt("0").GetElementDataAt("Flags").HasNumericalIndex.Should().BeFalse();
-        data.GetElementDataAt("HeroAbilArray").GetElementDataAt("0").GetElementDataAt("Flags").HasTextIndex.Should().BeTrue();
 
         data.GetElementDataAt("HeroAbilArray").GetElementDataAt("2").GetElementDataAt("Abil").GetElementDataAt("0").RawValue.Should().Be("KelThuzadChains");
-        data.GetElementDataAt("HeroAbilArray").GetElementDataAt("2").GetElementDataAt("Abil").HasNumericalIndex.Should().BeTrue();
         data.GetElementDataAt("HeroAbilArray").GetElementDataAt("2").GetElementDataAt("Flags").GetElementDataAt("AffectedByOverdrive").RawValue.Should().Be("1");
-        data.GetElementDataAt("HeroAbilArray").GetElementDataAt("2").GetElementDataAt("Flags").HasNumericalIndex.Should().BeFalse();
-        data.GetElementDataAt("HeroAbilArray").GetElementDataAt("2").GetElementDataAt("Flags").HasTextIndex.Should().BeTrue();
     }
 
     [TestMethod]
     public void StormElementData_HasNumericalIndexInnerArray_IndexedArrayShouldHaveNumericalIndex()
     {
         // arrange
-        XElement element = XElement.Parse(@"
-<CHero id=""KelThuzad"">
-  <HeroAbilArray Abil=""KelThuzadDeathAndDecay"" Button=""KelThuzadDeathAndDecay"">
-    <Flags index=""0"" value=""1"" />
-    <Flags value=""2"" />
-    <Flags value=""3"" />
-  </HeroAbilArray>
-  <HeroAbilArray Abil=""KelThuzadFrostNova"" Button=""KelThuzadFrostNova"">
-    <Flags index=""0"" value=""1"" />
-    <Flags value=""2"" />
-    <Flags value=""3"" />
-  </HeroAbilArray>
-  <HeroAbilArray Abil=""KelThuzadChains"" Button=""KelThuzadChains"">
-    <Flags index=""0"" value=""1"" />
-    <Flags value=""2"" />
-    <Flags value=""3"" />
-  </HeroAbilArray>
-</CHero>
-
-");
+        XElement element = XElement.Parse("""
+            <CHero id="KelThuzad">
+              <HeroAbilArray Abil="KelThuzadDeathAndDecay" Button="KelThuzadDeathAndDecay">
+                <Flags index="0" value="1" />
+                <Flags value="2" />
+                <Flags value="3" />
+              </HeroAbilArray>
+              <HeroAbilArray Abil="KelThuzadFrostNova" Button="KelThuzadFrostNova">
+                <Flags index="0" value="1" />
+                <Flags value="2" />
+                <Flags value="3" />
+              </HeroAbilArray>
+              <HeroAbilArray Abil="KelThuzadChains" Button="KelThuzadChains">
+                <Flags index="0" value="1" />
+                <Flags value="2" />
+                <Flags value="3" />
+              </HeroAbilArray>
+            </CHero>
+            """);
 
         // act
         StormElementData data = new(null!, element);
 
         // assert
-        data.GetElementDataAt("HeroAbilArray").HasNumericalIndex.Should().BeTrue();
-
         data.GetElementDataAt("HeroAbilArray").GetElementDataAt("0").GetElementDataAt("Abil").GetElementDataAt("0").RawValue.Should().Be("KelThuzadDeathAndDecay");
-        data.GetElementDataAt("HeroAbilArray").GetElementDataAt("0").GetElementDataAt("Abil").HasNumericalIndex.Should().BeTrue();
-        data.GetElementDataAt("HeroAbilArray").GetElementDataAt("0").GetElementDataAt("Abil").HasTextIndex.Should().BeFalse();
         data.GetElementDataAt("HeroAbilArray").GetElementDataAt("0").GetElementDataAt("Flags").GetElementDataAt("0").RawValue.Should().Be("1");
-        data.GetElementDataAt("HeroAbilArray").GetElementDataAt("0").GetElementDataAt("Flags").HasNumericalIndex.Should().BeTrue();
-        data.GetElementDataAt("HeroAbilArray").GetElementDataAt("0").GetElementDataAt("Flags").HasTextIndex.Should().BeFalse();
 
         data.GetElementDataAt("HeroAbilArray").GetElementDataAt("2").GetElementDataAt("Abil").GetElementDataAt("0").RawValue.Should().Be("KelThuzadChains");
-        data.GetElementDataAt("HeroAbilArray").GetElementDataAt("2").GetElementDataAt("Abil").HasNumericalIndex.Should().BeTrue();
-        data.GetElementDataAt("HeroAbilArray").GetElementDataAt("2").GetElementDataAt("Abil").HasTextIndex.Should().BeFalse();
         data.GetElementDataAt("HeroAbilArray").GetElementDataAt("2").GetElementDataAt("Flags").GetElementDataAt("2").RawValue.Should().Be("3");
-        data.GetElementDataAt("HeroAbilArray").GetElementDataAt("2").GetElementDataAt("Flags").HasNumericalIndex.Should().BeTrue();
-        data.GetElementDataAt("HeroAbilArray").GetElementDataAt("2").GetElementDataAt("Flags").HasTextIndex.Should().BeFalse();
     }
 
     [TestMethod]
