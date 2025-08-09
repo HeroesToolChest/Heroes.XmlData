@@ -156,11 +156,11 @@ internal sealed class DataRefParser
         int indexOfOperator = text.IndexOfAny(_gameStringOps);
 
         // checking for inner bracket [d ref /]
-        int indexOfStartBracket = text.IndexOf("[d", StringComparison.OrdinalIgnoreCase);
-        if (indexOfStartBracket < indexOfOperator && indexOfStartBracket > -1)
-        {
-            int indexOfEndBracket = text.IndexOf("/]") + 1;
+        int indexOfStartBracket = text.IndexOf("[d ", StringComparison.OrdinalIgnoreCase);
+        int indexOfEndBracket = text.IndexOf("/]") + 1;
 
+        if (indexOfEndBracket > 0 && indexOfStartBracket < indexOfOperator && indexOfStartBracket > -1)
+        {
             return text[indexOfStartBracket..(indexOfEndBracket + 1)];
         }
 

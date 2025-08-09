@@ -2171,7 +2171,7 @@ public class GameStringParserTests
     }
 
     [TestMethod]
-    public void ParseTooltipDescription__ParsedGameString()
+    public void ParseTooltipDescription_CapitalDRef_ParsedGameString()
     {
         // arrange
         string description = "Deal <c val=\"#TooltipNumbers\"><d ref=\"Effect,ValeeraGarroteDamage,Amount\"/></c> damage to an enemy and an additional <c val=\"#TooltipNumbers\"><D ref=\"Behavior,ValeeraGarrote,Duration * Effect,ValeeraGarroteDoTDamage,Amount\"/></c> damage over <c val=\"#TooltipNumbers\"><d ref=\"Behavior,ValeeraGarrote,Duration\"/></c> seconds, and Silence them for <c val=\"#TooltipNumbers\"><d ref=\"Behavior,ValeeraGarroteSilence,Duration\" precision=\"2\"/></c> seconds.<n/><n/><c val=\"#GlowColorRed\">Awards 1 Combo Point.</c><n/><n/><c val=\"#ColorViolet\">Unstealth: Eviscerate<n/></c>High damage finishing move.";
@@ -2180,9 +2180,8 @@ public class GameStringParserTests
             .LoadCustomMod(new ManualModLoader("custom")
                 .AddBaseElementTypes(new List<(string, string)>()
                 {
-                    ("Abil", "CAbilEffectTarget"),
-                    ("Talent", "CTalent"),
-                    ("Effect", "CEffectModifyUnit"),
+                    ("Behavior", "CBehaviorBuff"),
+                    ("Effect", "CEffectDamage"),
                 })
                 .AddElements(new List<XElement>()
                 {
@@ -2235,5 +2234,48 @@ public class GameStringParserTests
 
         // assert
         parsed.Should().Be("Deal <c val=\"#TooltipNumbers\">20</c> damage to an enemy and an additional <c val=\"#TooltipNumbers\">140</c> damage over <c val=\"#TooltipNumbers\">7</c> seconds, and Silence them for <c val=\"#TooltipNumbers\">2.5</c> seconds.<n/><n/><c val=\"#GlowColorRed\">Awards 1 Combo Point.</c><n/><n/><c val=\"#ColorViolet\">Unstealth: Eviscerate<n/></c>High damage finishing move.");
+    }
+
+    [TestMethod]
+    public void ParseTooltipDescription_BracketedDeadRush_ParsedGameString()
+    {
+        // arrange
+        string description = "Zombie Wall deals <c val=\"#TooltipNumbers\"><d ref=\"Effect,WitchDoctorZombieWallWeaponDamage,MultiplicativeModifierArray[DeadRush].Modifier*100\"/>%</c> more damage. When it expires up to <c val=\"#TooltipNumbers\">5</c> remaining Zombies uproot and attack nearby enemies for <c val=\"#TooltipNumbers\"><d ref=\"Behavior,WitchDoctorZombieWallDeadRushTalentTimedLife,Duration\" player=\"0\"/></c> seconds.";
+
+        HeroesXmlLoader loader = HeroesXmlLoader.LoadWithEmpty()
+            .LoadCustomMod(new ManualModLoader("custom")
+                .AddBaseElementTypes(new List<(string, string)>()
+                {
+                    ("Behavior", "CBehaviorBuff"),
+                    ("Effect", "CEffectDamage"),
+                })
+                .AddElements(new List<XElement>()
+                {
+                    XElement.Parse(
+                        """
+                        <CEffectDamage id="WitchDoctorZombieWallWeaponDamage" parent="StormSummonedUnitWeapon">
+                          <Amount value="28" />
+                          <MultiplicativeModifierArray index="DeadRush" Validator="WitchDoctorZombieWallDeadRushSourceHasTalentBuffBehavior" Modifier="1" />
+                        </CEffectDamage>
+                        """),
+                    XElement.Parse(
+                        """
+                        <CBehaviorBuff id="WitchDoctorZombieWallDeadRushTalentTimedLife" parent="StormTimedLife">
+                          <DisplayDuration index="Self" value="0" />
+                          <DisplayDuration index="Ally" value="0" />
+                          <DisplayDuration index="Enemy" value="0" />
+                          <Duration value="3" />
+                          <InitialEffect value="WitchDoctorZombieWallDeadRushApplyBehaviorSource" />
+                        </CBehaviorBuff>
+                        """),
+                }));
+
+        HeroesData heroesData = loader.HeroesData;
+
+        // act
+        string parsed = GameStringParser.ParseTooltipDescription(heroesData.StormStorage, description);
+
+        // assert
+        parsed.Should().Be("Zombie Wall deals <c val=\"#TooltipNumbers\">100%</c> more damage. When it expires up to <c val=\"#TooltipNumbers\">5</c> remaining Zombies uproot and attack nearby enemies for <c val=\"#TooltipNumbers\">3</c> seconds.");
     }
 }
