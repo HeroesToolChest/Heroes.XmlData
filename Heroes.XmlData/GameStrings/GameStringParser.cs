@@ -158,7 +158,7 @@ internal sealed class GameStringParser
 
         while (_index < description.Length)
         {
-            if (description[_index] == '<' && _index + 2 < description.Length && description[_index + 1] == 'd' && description[_index + 2] == ' ')
+            if (description[_index] == '<' && _index + 2 < description.Length && (description[_index + 1] == 'd' || description[_index + 1] == 'D') && description[_index + 2] == ' ')
             {
 #if DEBUG
                 PushNormalText(description);

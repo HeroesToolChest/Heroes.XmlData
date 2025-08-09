@@ -2169,4 +2169,71 @@ public class GameStringParserTests
         // assert
         parsed.Should().Be("Activate to swing the Hammer of Twilight, dealing <c val=\"#TooltipNumbers\">150~~0.045~~</c> damage, pushing enemies away, and Stunning them for <c val=\"#TooltipNumbers\">0.75</c> seconds.<n/><n/><c val=\"#AbilityPassive\">Passive:</c> Cho's Basic Attacks deal <c val=\"#TooltipNumbers\">25%</c> increased damage.");
     }
+
+    [TestMethod]
+    public void ParseTooltipDescription__ParsedGameString()
+    {
+        // arrange
+        string description = "Deal <c val=\"#TooltipNumbers\"><d ref=\"Effect,ValeeraGarroteDamage,Amount\"/></c> damage to an enemy and an additional <c val=\"#TooltipNumbers\"><D ref=\"Behavior,ValeeraGarrote,Duration * Effect,ValeeraGarroteDoTDamage,Amount\"/></c> damage over <c val=\"#TooltipNumbers\"><d ref=\"Behavior,ValeeraGarrote,Duration\"/></c> seconds, and Silence them for <c val=\"#TooltipNumbers\"><d ref=\"Behavior,ValeeraGarroteSilence,Duration\" precision=\"2\"/></c> seconds.<n/><n/><c val=\"#GlowColorRed\">Awards 1 Combo Point.</c><n/><n/><c val=\"#ColorViolet\">Unstealth: Eviscerate<n/></c>High damage finishing move.";
+
+        HeroesXmlLoader loader = HeroesXmlLoader.LoadWithEmpty()
+            .LoadCustomMod(new ManualModLoader("custom")
+                .AddBaseElementTypes(new List<(string, string)>()
+                {
+                    ("Abil", "CAbilEffectTarget"),
+                    ("Talent", "CTalent"),
+                    ("Effect", "CEffectModifyUnit"),
+                })
+                .AddElements(new List<XElement>()
+                {
+                    XElement.Parse(
+                        """
+                        <CEffectDamage id="ValeeraGarroteDamage" parent="StormSpell">
+                          <Amount value="20" />
+                        </CEffectDamage>
+                        """),
+                    XElement.Parse(
+                        """
+                        <CEffectDamage id="ValeeraGarroteDoTDamage" parent="StormSpellDot">
+                          <ImpactLocation Value="SourceUnit" />
+                          <Amount value="20" />
+                          <MultiplicativeModifierArray index="ValeeraGarroteRuptureBonusDamage" Validator="ValeeraHasRupture" Modifier="1" />
+                          <SourceButtonFace value="ValeeraGarrote" />
+                        </CEffectDamage>
+                        """),
+                    XElement.Parse(
+                        """
+                        <CBehaviorBuff id="ValeeraGarrote" parent="StormDot">
+                          <Duration value="7" />
+                          <Period value="1" />
+                          <PeriodCount value="7" />
+                          <InitialEffect value="ValeeraGarroteDamageReveal" />
+                          <PeriodicEffect value="ValeeraGarroteDoTDamage" />
+                          <PeriodicDisplayEffect value="ValeeraGarroteDoTDamage" />
+                          <FinalEffect value="ValeeraGarroteRuptureRemoveTokenCounter" />
+                        </CBehaviorBuff>
+                        """),
+                    XElement.Parse(
+                        """
+                        <CBehaviorBuff id="ValeeraGarroteSilence" parent="StormSilence">
+                          <BuffFlags index="RemoveDamageResponseExhausted" value="0" />
+                          <Duration value="2.5" />
+                          <DamageResponse Handled="ValeeraGarroteSilenceRefresh">
+                            <Cost>
+                              <Charge CountMax="3" CountStart="3" CountUse="1" />
+                            </Cost>
+                            <RequireEffectArray value="ValeeraWeaponDamage" />
+                          </DamageResponse>
+                        </CBehaviorBuff>
+                        """),
+                }));
+
+        HeroesData heroesData = loader.HeroesData;
+
+        // act
+        string parsed = GameStringParser.ParseTooltipDescription(heroesData.StormStorage, description);
+
+        // assert
+        parsed.Should().Be("Deal <c val=\"#TooltipNumbers\">20</c> damage to an enemy and an additional <c val=\"#TooltipNumbers\">140</c> damage over <c val=\"#TooltipNumbers\">7</c> seconds, and Silence them for <c val=\"#TooltipNumbers\">2.5</c> seconds.<n/><n/><c val=\"#GlowColorRed\">Awards 1 Combo Point.</c><n/><n/><c val=\"#ColorViolet\">Unstealth: Eviscerate<n/></c>High damage finishing move.");
+    }
 }
