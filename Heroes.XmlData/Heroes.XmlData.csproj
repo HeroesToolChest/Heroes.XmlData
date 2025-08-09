@@ -4,7 +4,7 @@
     <TargetFrameworks>net8.0;net9.0</TargetFrameworks>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <Version>1.0.0-alpha.2.55</Version>
+    <Version>1.0.0-alpha.2.66</Version>
     <GenerateDocumentationFile>True</GenerateDocumentationFile>
     <Authors>Kevin Oliva</Authors>
     <Copyright>Copyright © 2024 - 2025 Kevin Oliva</Copyright>
@@ -42,7 +42,7 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="TestableIO.System.IO.Abstractions.Wrappers" Version="22.0.14" />
+    <PackageReference Include="TestableIO.System.IO.Abstractions.Wrappers" Version="22.0.15" />
     <PackageReference Include="U8XmlParser" Version="1.6.1" />
   </ItemGroup>
 
