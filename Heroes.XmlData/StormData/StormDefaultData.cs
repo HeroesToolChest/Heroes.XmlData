@@ -15,19 +15,7 @@ internal static class StormDefaultData
             XElement.Parse(
 """
 <CBehaviorBuff>
-  <DamageResponse ModifyLimit="0" />
-  <Modification>
-    <DamageDealtScaled index="Basic" value="0" />
-    <DamageDealtScaled index="Ability" value="0" />
-    <DamageDealtFraction index="Basic" value="0" />
-    <DamageDealtFraction index="Ability" value="0" />
-    <VitalMaxArray index="Life" value="0" />
-    <VitalMaxArray index="Shields" value="0" />
-    <VitalMaxArray index="Energy" value="0" />
-    <VitalRegenArray index="Life" value="0" />
-    <VitalRegenArray index="Shields" value="0" />
-    <VitalRegenArray index="Energy" value="0" />
-  </Modification>
+  <DamageResponse ModifyLimit="0" ModifyFraction="1" />
 </CBehaviorBuff>
 """),
             XElement.Parse("""

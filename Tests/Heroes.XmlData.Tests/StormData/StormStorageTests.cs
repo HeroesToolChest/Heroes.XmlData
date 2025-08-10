@@ -546,6 +546,7 @@ public class StormStorageTests
 #else
         stormStorage.StormCache.StormElementsByDataObjectType.Add("Unit", newStormElementById);
 #endif
+
         // act
         StormElement? result = stormStorage.GetStormElementById("Hero1", "Unit");
 

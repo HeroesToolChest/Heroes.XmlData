@@ -2278,4 +2278,164 @@ public class GameStringParserTests
         // assert
         parsed.Should().Be("Zombie Wall deals <c val=\"#TooltipNumbers\">100%</c> more damage. When it expires up to <c val=\"#TooltipNumbers\">5</c> remaining Zombies uproot and attack nearby enemies for <c val=\"#TooltipNumbers\">3</c> seconds.");
     }
+
+    [TestMethod]
+    public void ParseTooltipDescription_ModificationDamageDealtFraction_ParsedGameString()
+    {
+        // arrange
+        string description = "Jaina gains <c val=\"#TooltipNumbers\"><d ref=\"100*Behavior,JainaArcaneIntellectSpellPower,Modification.DamageDealtFraction\"/>%</c> Spell Power.";
+
+        HeroesXmlLoader loader = HeroesXmlLoader.LoadWithEmpty()
+            .LoadCustomMod(new ManualModLoader("custom")
+                .AddBaseElementTypes(new List<(string, string)>()
+                {
+                    ("Behavior", "CBehaviorBuff"),
+                })
+                .AddElements(new List<XElement>()
+                {
+                    XElement.Parse(
+                        """
+                        <CBehaviorBuff default="1">
+                          <MaxStackCount value="1" />
+                          <DurationBonusMin value="-1" />
+                          <DurationBonusMax value="-1" />
+                          <TimeScaleSource Value="Target" />
+                          <Player Value="Unknown" />
+                          <AcquirePlayer Value="Unknown" />
+                          <BuffFlags index="Countdown" value="1" />
+                          <BuffFlags index="RemoveDamageResponseExhausted" value="1" />
+                          <HealResponse Location="Receiver">
+                            <Vital value="Life" />
+                            <HealTypes index="CreateHealer" value="1" />
+                            <HealTypes index="Leech" value="1" />
+                          </HealResponse>
+                          <DamageResponse Location="Defender" />
+                          <KillCredit Value="Unknown" />
+                          <RevealUnit Value="Unknown" />
+                          <ShowInUI value="1" />
+                        </CBehaviorBuff>
+                        """),
+                    XElement.Parse(
+                        """
+                        <CBehaviorBuff default="1" id="CarryBehaviorParent">
+                          <BehaviorFlags index="Permanent" value="1" />
+                          <BehaviorFlags index="EnabledWhileDead" value="1" />
+                        </CBehaviorBuff>
+                        """),
+                    XElement.Parse(
+                        """
+                        <CBehaviorBuff id="JainaArcaneIntellectSpellPower" parent="CarryBehaviorParent">
+                          <DisableValidatorArray value="JainaHasGTE75PercentMana" />
+                          <Modification>
+                            <HealDealtAdditiveMultiplier index="Life" value="0.1" />
+                            <HealDealtAdditiveMultiplier index="Shields" value="0.1" />
+                            <DamageDealtFraction index="Ability" value="0.1" />
+                          </Modification>
+                          <Face value="JainaFrostbiteArcaneIntellectTalentSpellPower" />
+                          <Alignment value="Positive" />
+                          <InfoFlags index="Hidden" value="0" />
+                          <SortIndex value="20" />
+                        </CBehaviorBuff>
+                        """),
+                }));
+
+        HeroesData heroesData = loader.HeroesData;
+
+        // act
+        string parsed = GameStringParser.ParseTooltipDescription(heroesData.StormStorage, description);
+
+        // assert
+        parsed.Should().Be("Jaina gains <c val=\"#TooltipNumbers\">10%</c> Spell Power.");
+    }
+
+    [TestMethod]
+    public void ParseTooltipDescription_DamageResponseModifyFraction_ParsedGameString()
+    {
+        // arrange
+        string description = "<c val=\"#ColorCreamYellow\">Human</c> Basic Attacks splash for <c val=\"#TooltipNumbers\"><d ref=\"Behavior,GreymaneHuntersBlunderbussCarryBehavior,DamageResponse.ModifyFraction*100\"/>%</c> damage behind the target.";
+
+        HeroesXmlLoader loader = HeroesXmlLoader.LoadWithEmpty()
+            .LoadCustomMod(new ManualModLoader("custom")
+                .AddBaseElementTypes(new List<(string, string)>()
+                {
+                    ("Behavior", "CBehaviorBuff"),
+                })
+                .AddElements(new List<XElement>()
+                {
+                    XElement.Parse(
+                        """
+                        <CBehaviorBuff default="1">
+                        </CBehaviorBuff>
+                        """),
+                    XElement.Parse(
+                        """
+                        <CBehaviorBuff default="1" id="CarryBehaviorParent">
+                        </CBehaviorBuff>
+                        """),
+                    XElement.Parse(
+                        """
+                        <CBehaviorBuff id="GreymaneHuntersBlunderbussCarryBehavior" parent="CarryBehaviorParent">
+                          <DamageResponse Chance="1" Location="Attacker">
+                            <RequireEffectArray value="GreymaneHuntersBlunderbussDamage" />
+                          </DamageResponse>
+                          <Modification>
+                            <WeaponDisableArray value="HeroGreymaneMeleeWeapon" />
+                          </Modification>
+                        </CBehaviorBuff>
+                        """),
+                }));
+
+        HeroesData heroesData = loader.HeroesData;
+
+        // act
+        string parsed = GameStringParser.ParseTooltipDescription(heroesData.StormStorage, description);
+
+        // assert
+        parsed.Should().Be("<c val=\"#ColorCreamYellow\">Human</c> Basic Attacks splash for <c val=\"#TooltipNumbers\">100%</c> damage behind the target.");
+    }
+
+    [TestMethod]
+    public void ParseTooltipDescription_SameArrayIndexOverride_ParsedGameString()
+    {
+        // arrange
+        string description = "While above <c val=\"#TooltipNumbers\">40</c> Energy, Zarya's Basic Attack size is increased by <c val=\"#TooltipNumbers\"><d ref=\"(Effect,ZaryaWeaponToTheLimitSearch,AreaArray[0].RectangleWidth)-(Effect,ZaryaWeaponSplashTargetSearch,AreaArray[0].RectangleWidth)*100\"/>%</c>.";
+
+        HeroesXmlLoader loader = HeroesXmlLoader.LoadWithEmpty()
+            .LoadCustomMod(new ManualModLoader("custom")
+                .AddBaseElementTypes(new List<(string, string)>()
+                {
+                    ("Effect", "CEffectEnumArea"),
+                })
+                .AddElements(new List<XElement>()
+                {
+                    XElement.Parse(
+                        """
+                        <CEffectEnumArea id="ZaryaWeaponSplashTargetSearch">
+                          <AreaArray Effect="ZaryaWeaponSplashDamageSet">
+                            <Radius value="0.5" />
+                            <RectangleWidth value="1" />
+                            <RectangleHeight value="6.25" />
+                          </AreaArray>
+                        </CEffectEnumArea>
+                        """),
+                    XElement.Parse(
+                        """
+                        <CEffectEnumArea id="ZaryaWeaponToTheLimitSearch" parent="ZaryaWeaponSplashTargetSearch">
+                          <AreaArray index="0" Effect="ZaryaWeaponSplashDamageSet">
+                            <RectangleWidth value="1.35" />
+                            <RectangleHeight value="8.4375" />
+                          </AreaArray>
+                          <AreaRelativeOffset Y="5.4438" />
+                        </CEffectEnumArea>
+                        """),
+                }));
+
+        HeroesData heroesData = loader.HeroesData;
+
+        // act
+        string parsed = GameStringParser.ParseTooltipDescription(heroesData.StormStorage, description);
+
+        // assert
+        parsed.Should().Be("While above <c val=\"#TooltipNumbers\">40</c> Energy, Zarya's Basic Attack size is increased by <c val=\"#TooltipNumbers\">35%</c>.");
+    }
 }

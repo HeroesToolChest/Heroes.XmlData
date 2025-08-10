@@ -44,16 +44,16 @@ public class StormElementTests
         // assert
         stormElement.ElementType.Should().Be("CAbilEffectInstant");
         stormElement.DataValues.GetElementDataAt("name").RawValue.Should().Be("Abil/Name/##id##");
-        stormElement.DataValues.GetElementDataAt("OrderArray").GetElementDataAt("0".AsSpan()).GetElementDataAt("color").GetElementDataAt("0").RawValue.Should().Be("255,0,255,0");
-        stormElement.DataValues.GetElementDataAt("OrderArray").GetElementDataAt("0").GetElementDataAt("Model").GetElementDataAt("0").RawValue.Should().Be("Assets\\UI\\Feedback\\WayPointConfirm\\WayPointConfirm.m3");
-        stormElement.DataValues.GetElementDataAt("OrderArray").GetElementDataAt("0").GetElementDataAt("LineTexture").GetElementDataAt("0").RawValue.Should().Be("Assets\\Textures\\Storm_WayPointLine.dds");
+        stormElement.DataValues.GetElementDataAt("OrderArray").GetElementDataAt("0".AsSpan()).GetElementDataAt("color").RawValue.Should().Be("255,0,255,0");
+        stormElement.DataValues.GetElementDataAt("OrderArray").GetElementDataAt("0").GetElementDataAt("Model").RawValue.Should().Be("Assets\\UI\\Feedback\\WayPointConfirm\\WayPointConfirm.m3");
+        stormElement.DataValues.GetElementDataAt("OrderArray").GetElementDataAt("0").GetElementDataAt("LineTexture").RawValue.Should().Be("Assets\\Textures\\Storm_WayPointLine.dds");
         stormElement.DataValues.GetElementDataAt("SharedFlags").GetElementDataAt("disableWhileDead").RawValue.Should().Be("0");
         stormElement.DataValues.GetElementDataAt("SharedFlags").GetElementDataAt("AllowQuickCastCustomization").RawValue.Should().Be("1");
         stormElement.DataValues.GetElementDataAt("SharedFlags").GetElementDataAt("TargetCursorVisibleInBlackMask").RawValue.Should().Be("1");
         stormElement.DataValues.GetElementDataAt("Flags").GetElementDataAt("AllowMovement".AsSpan()).RawValue.Should().Be("1");
         stormElement.DataValues.GetElementDataAt("Flags").GetElementDataAt("WaitToSpend").RawValue.Should().Be("0");
         stormElement.DataValues.GetElementDataAt("Flags").GetElementDataAt("ValidateButtonState").RawValue.Should().Be("1");
-        stormElement.DataValues.GetElementDataAt("CmdButtonArray").GetElementDataAt("Execute").GetElementDataAt("AutoQueueId").GetElementDataAt("0").RawValue.Should().Be("Spell");
+        stormElement.DataValues.GetElementDataAt("CmdButtonArray").GetElementDataAt("Execute").GetElementDataAt("AutoQueueId").RawValue.Should().Be("Spell");
         stormElement.DataValues.GetElementDataAt("CmdButtonArray").GetElementDataAt("Execute").GetElementDataAt("Flags").GetElementDataAt("Continuous").RawValue.Should().Be("1");
     }
 
@@ -97,16 +97,16 @@ public class StormElementTests
         // assert
         stormElement.ElementType.Should().Be("CAbilEffectInstant");
         stormElement.DataValues.GetElementDataAt("name").RawValue.Should().Be("Abil/Name/##id##");
-        stormElement.DataValues.GetElementDataAt("OrderArray").GetElementDataAt("0").GetElementDataAt("color").GetElementDataAt("0").RawValue.Should().Be("255,0,255,0");
-        stormElement.DataValues.GetElementDataAt("OrderArray").GetElementDataAt("0").GetElementDataAt("Model").GetElementDataAt("0").RawValue.Should().Be("Assets\\UI\\Feedback\\WayPointConfirm\\WayPointConfirm.m3");
-        stormElement.DataValues.GetElementDataAt("OrderArray").GetElementDataAt("0").GetElementDataAt("LineTexture").GetElementDataAt("0").RawValue.Should().Be("Assets\\Textures\\Storm_WayPointLine.dds");
+        stormElement.DataValues.GetElementDataAt("OrderArray").GetElementDataAt("0").GetElementDataAt("color").RawValue.Should().Be("255,0,255,0");
+        stormElement.DataValues.GetElementDataAt("OrderArray").GetElementDataAt("0").GetElementDataAt("Model").RawValue.Should().Be("Assets\\UI\\Feedback\\WayPointConfirm\\WayPointConfirm.m3");
+        stormElement.DataValues.GetElementDataAt("OrderArray").GetElementDataAt("0").GetElementDataAt("LineTexture").RawValue.Should().Be("Assets\\Textures\\Storm_WayPointLine.dds");
         stormElement.DataValues.GetElementDataAt("SharedFlags").GetElementDataAt("disableWhileDead").RawValue.Should().Be("0");
         stormElement.DataValues.GetElementDataAt("SharedFlags").GetElementDataAt("AllowQuickCastCustomization").RawValue.Should().Be("1");
         stormElement.DataValues.GetElementDataAt("SharedFlags").GetElementDataAt("TargetCursorVisibleInBlackMask").RawValue.Should().Be("1");
         stormElement.DataValues.GetElementDataAt("Flags").GetElementDataAt("AllowMovement").RawValue.Should().Be("1");
         stormElement.DataValues.GetElementDataAt("Flags").GetElementDataAt("WaitToSpend").RawValue.Should().Be("0");
         stormElement.DataValues.GetElementDataAt("Flags").GetElementDataAt("ValidateButtonState").RawValue.Should().Be("1");
-        stormElement.DataValues.GetElementDataAt("CmdButtonArray").GetElementDataAt("Execute").GetElementDataAt("AutoQueueId").GetElementDataAt("0").RawValue.Should().Be("Spell");
+        stormElement.DataValues.GetElementDataAt("CmdButtonArray").GetElementDataAt("Execute").GetElementDataAt("AutoQueueId").RawValue.Should().Be("Spell");
         stormElement.DataValues.GetElementDataAt("CmdButtonArray").GetElementDataAt("Execute").GetElementDataAt("Flags").GetElementDataAt("Continuous").RawValue.Should().Be("1");
 
         stormElement.OriginalXElements.Count.Should().Be(2);
@@ -193,9 +193,9 @@ public class StormElementTests
         stormElement.DataValues.GetElementDataAt("DamageModifierSource").HasValue.Should().BeTrue();
         stormElement.DataValues.GetElementDataAt("AmountScoreArray").GetElementDataAt("3").RawValue.Should().Be("MinionDamage");
         stormElement.DataValues.GetElementDataAt("AmountScoreArray").GetElementDataAt("3").HasValue.Should().BeTrue();
-        stormElement.DataValues.GetElementDataAt("AmountScoreArray").GetElementDataAt("3").GetElementDataAt("Validator").GetElementDataAt("0").RawValue.Should().Be("TargetMinion");
+        stormElement.DataValues.GetElementDataAt("AmountScoreArray").GetElementDataAt("3").GetElementDataAt("Validator").RawValue.Should().Be("TargetMinion");
         stormElement.DataValues.GetElementDataAt("AmountScoreArray").GetElementDataAt("3").IsIndexed.Should().BeTrue();
-        stormElement.DataValues.GetElementDataAt("MultiplicativeModifierArray").GetElementDataAt("MuradinStormboltSledgehammer").GetElementDataAt("Modifier").GetElementDataAt("0").RawValue.Should().Be("2.5");
+        stormElement.DataValues.GetElementDataAt("MultiplicativeModifierArray").GetElementDataAt("MuradinStormboltSledgehammer").GetElementDataAt("Modifier").RawValue.Should().Be("2.5");
 
         stormElement.DataValues.GetElementDataAt("SplashHistory").IsIndexed.Should().BeFalse();
         stormElement.DataValues.GetElementDataAt("ResponseFlags").IsIndexed.Should().BeFalse();
@@ -418,7 +418,7 @@ public class StormElementTests
             .SatisfyRespectively(
                 first =>
                 {
-                    first.Field.Should().Be("CmdButtonArray[Execute].AutoQueueId[0]");
+                    first.Field.Should().Be("CmdButtonArray[Execute].AutoQueueId");
                 },
                 second =>
                 {
@@ -689,9 +689,9 @@ public class StormElementTests
 
         // assert
         stormElement.DataValues["Buttons"].ElementDataCount.Should().Be(3);
-        stormElement.DataValues["Buttons"]["0"]["Face"]["0"].RawValue.Should().Be("NecromancerBoneArmor");
-        stormElement.DataValues["Buttons"]["1"]["Face"]["0"].RawValue.Should().Be("NecromancerBoneArmorAbilBacklash");
-        stormElement.DataValues["Buttons"]["2"]["Face"]["0"].RawValue.Should().Be("NecromancerBoneArmorAbilShackler");
+        stormElement.DataValues["Buttons"]["0"]["Face"].RawValue.Should().Be("NecromancerBoneArmor");
+        stormElement.DataValues["Buttons"]["1"]["Face"].RawValue.Should().Be("NecromancerBoneArmorAbilBacklash");
+        stormElement.DataValues["Buttons"]["2"]["Face"].RawValue.Should().Be("NecromancerBoneArmorAbilShackler");
     }
 
     [TestMethod]
@@ -712,5 +712,39 @@ public class StormElementTests
         stormElement.DataValues["Cost"].ElementDataCount.Should().Be(2);
         stormElement.DataValues["Cost"]["0"]["CooldownTimeUse"].RawValue.Should().Be("-0.75");
         stormElement.DataValues["Cost"]["1"]["CooldownTimeUse"].RawValue.Should().Be("-1.5");
+    }
+
+    [TestMethod]
+    public void AddValue_ArrayWithNonInnerArrays_DataValuesAreMerged()
+    {
+        XElement element = XElement.Parse(@"
+<CEffectEnumArea id=""ZaryaWeaponSplashTargetSearch"">
+  <AreaArray Effect=""ZaryaWeaponSplashDamageSet"">
+    <Radius value=""0.5"" />
+    <RectangleWidth value=""1"" />
+    <RectangleHeight value=""6.25"" />
+  </AreaArray>
+</CEffectEnumArea>
+");
+
+        XElement mergingElement = XElement.Parse(@"
+<CEffectEnumArea id=""ZaryaWeaponToTheLimitSearch"" parent=""ZaryaWeaponSplashTargetSearch"">
+  <AreaArray index=""0"" Effect=""ZaryaWeaponSplashDamageSet"">
+    <RectangleWidth value=""1.35"" />
+    <RectangleHeight value=""8.4375"" />
+  </AreaArray>
+  <AreaRelativeOffset Y=""5.4438"" />
+</CEffectEnumArea>
+");
+        StormElement stormElement = new(new StormXElementValuePath(element, TestHelpers.GetStormPath("some\\path")));
+
+        // act
+        stormElement.AddValue(new StormXElementValuePath(mergingElement, TestHelpers.GetStormPath("some\\other\\path")));
+
+        // assert
+        stormElement.ElementType.Should().Be("CEffectEnumArea");
+        stormElement.DataValues["AreaArray"]["0"]["RectangleWidth"].RawValue.Should().Be("1.35");
+        stormElement.DataValues["AreaArray"]["0"]["RectangleHeight"].RawValue.Should().Be("8.4375");
+        stormElement.DataValues["AreaArray"]["0"]["Radius"].RawValue.Should().Be("0.5");
     }
 }

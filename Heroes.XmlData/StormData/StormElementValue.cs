@@ -7,16 +7,11 @@
 public readonly ref struct StormElementValue
 {
     private readonly StormElementData _defaultStormElementData;
-    //private readonly StormElementData _stormElementData;
 
     internal StormElementValue(StormElementData stormElementData)
     {
         // move to parent
         _defaultStormElementData = stormElementData.StormElement.DefaultDataValues;
-        //while (stormElementData.Parent is not null)
-        //    stormElementData = stormElementData.Parent;
-
-        //_stormElementData = stormElementData;
     }
 
     internal ReadOnlySpan<char> Value { get; init; }

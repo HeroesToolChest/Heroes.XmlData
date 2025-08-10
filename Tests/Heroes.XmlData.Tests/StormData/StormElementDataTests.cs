@@ -22,8 +22,8 @@ public class StormElementDataTests
         StormElementData stormElementData = new(null!, element);
 
         // assert
-        stormElementData["OrderArray"]["0"]["LineTexture"]["0".AsSpan()].RawValue.Should().Be("Assets\\Textures\\Storm_WayPointLine.dds");
-        stormElementData["OrderArray".AsSpan()]["0".AsSpan()]["LineTexture".AsSpan()]["0"].RawValue.Should().Be("Assets\\Textures\\Storm_WayPointLine.dds");
+        stormElementData["OrderArray"]["0".AsSpan()]["LineTexture".AsSpan()].RawValue.Should().Be("Assets\\Textures\\Storm_WayPointLine.dds");
+        stormElementData["OrderArray".AsSpan()]["0".AsSpan()]["LineTexture".AsSpan()].RawValue.Should().Be("Assets\\Textures\\Storm_WayPointLine.dds");
     }
 
     [TestMethod]
@@ -70,11 +70,11 @@ public class StormElementDataTests
         StormElementData stormElementDataAsElements = new(null!, withElements);
 
         // assert
-        stormElementDataAsAttributes.GetElementDataAt("OrderArray").GetElementDataAt("0").GetElementDataAt("LineTexture").GetElementDataAt("0").RawValue.Should().Be("Assets\\Textures\\Storm_WayPointLine.dds");
-        stormElementDataAsElements.GetElementDataAt("OrderArray").GetElementDataAt("0").GetElementDataAt("LineTexture").GetElementDataAt("0").RawValue.Should().Be("Assets\\Textures\\Storm_WayPointLine.dds");
+        stormElementDataAsAttributes.GetElementDataAt("OrderArray").GetElementDataAt("0").GetElementDataAt("LineTexture").RawValue.Should().Be("Assets\\Textures\\Storm_WayPointLine.dds");
+        stormElementDataAsElements.GetElementDataAt("OrderArray").GetElementDataAt("0").GetElementDataAt("LineTexture").RawValue.Should().Be("Assets\\Textures\\Storm_WayPointLine.dds");
 
-        stormElementDataAsAttributes.GetElementDataAt("OrderArray").GetElementDataAt("0").GetElementDataAt("LineTexture").GetElementDataAt("0").ElementDataCount.Should().Be(0);
-        stormElementDataAsElements.GetElementDataAt("OrderArray").GetElementDataAt("0").GetElementDataAt("LineTexture").GetElementDataAt("0").ElementDataCount.Should().Be(0);
+        stormElementDataAsAttributes.GetElementDataAt("OrderArray").GetElementDataAt("0").GetElementDataAt("LineTexture").ElementDataCount.Should().Be(0);
+        stormElementDataAsElements.GetElementDataAt("OrderArray").GetElementDataAt("0").GetElementDataAt("LineTexture").ElementDataCount.Should().Be(0);
     }
 
     [TestMethod]
@@ -126,7 +126,7 @@ public class StormElementDataTests
         // assert
         data.GetElementDataAt("ConditionalEvents").GetElementDataAt("0").GetElementDataAt("Compare").RawValue.Should().Be("GE");
         data.GetElementDataAt("ConditionalEvents").GetElementDataAt("0").GetElementDataAt("CompareValue").RawValue.Should().Be("15");
-        data.GetElementDataAt("ConditionalEvents").GetElementDataAt("0").GetElementDataAt("Event").GetElementDataAt("0").GetElementDataAt("Effect").RawValue.Should().Be("KelThuzadMasterOfTheColdDarkTier1ModifyPlayer");
+        data.GetElementDataAt("ConditionalEvents").GetElementDataAt("0").GetElementDataAt("Event").GetElementDataAt("Effect").RawValue.Should().Be("KelThuzadMasterOfTheColdDarkTier1ModifyPlayer");
     }
 
     [TestMethod]
@@ -170,11 +170,11 @@ public class StormElementDataTests
         // assert
         data.GetElementDataAt("AbilityModificationArray").GetElementDataAt("0").GetElementDataAt("Modifications").GetElementDataAt("0").GetElementDataAt("Field").RawValue.Should().Be("AreaArray[0].Radius");
         data.GetElementDataAt("AbilityModificationArray").GetElementDataAt("0").GetElementDataAt("Modifications").GetElementDataAt("0").GetElementDataAt("Value").RawValue.Should().Be("1.600000");
-        data.GetElementDataAt("AbilityModificationArray").GetElementDataAt("0").GetElementDataAt("Modifications").GetElementDataAt("0").GetElementDataAt("Value").GetElementDataAt("0").RawValue.Should().Be("1.600000");
+        data.GetElementDataAt("AbilityModificationArray").GetElementDataAt("0").GetElementDataAt("Modifications").GetElementDataAt("0").GetElementDataAt("Value").RawValue.Should().Be("1.600000");
 
         data.GetElementDataAt("AbilityModificationArray").GetElementDataAt("0").GetElementDataAt("Modifications").GetElementDataAt("2").GetElementDataAt("Field").RawValue.Should().Be("AnubarakBurrowChargeCursorSplat");
         data.GetElementDataAt("AbilityModificationArray").GetElementDataAt("0").GetElementDataAt("Modifications").GetElementDataAt("2").GetElementDataAt("Value").RawValue.Should().Be("0.600000");
-        data.GetElementDataAt("AbilityModificationArray").GetElementDataAt("0").GetElementDataAt("Modifications").GetElementDataAt("2").GetElementDataAt("Value").GetElementDataAt("0").RawValue.Should().Be("0.600000");
+        data.GetElementDataAt("AbilityModificationArray").GetElementDataAt("0").GetElementDataAt("Modifications").GetElementDataAt("2").GetElementDataAt("Value").RawValue.Should().Be("0.600000");
     }
 
     [TestMethod]
@@ -199,9 +199,9 @@ public class StormElementDataTests
         StormElementData data = new(null!, element);
 
         // assert
-        data.GetElementDataAt("OrderArray").GetElementDataAt("0").GetElementDataAt("LineTexture").GetElementDataAt("0").RawValue.Should().Be("Assets\\Textures\\Storm_WayPointLine0.dds");
-        data.GetElementDataAt("OrderArray").GetElementDataAt("1").GetElementDataAt("LineTexture").GetElementDataAt("0").RawValue.Should().Be("Assets\\Textures\\Storm_WayPointLine1.dds");
-        data.GetElementDataAt("OrderArray").GetElementDataAt("2").GetElementDataAt("LineTexture").GetElementDataAt("0").RawValue.Should().Be("Assets\\Textures\\Storm_WayPointLine2.dds");
+        data.GetElementDataAt("OrderArray").GetElementDataAt("0").GetElementDataAt("LineTexture").RawValue.Should().Be("Assets\\Textures\\Storm_WayPointLine0.dds");
+        data.GetElementDataAt("OrderArray").GetElementDataAt("1").GetElementDataAt("LineTexture").RawValue.Should().Be("Assets\\Textures\\Storm_WayPointLine1.dds");
+        data.GetElementDataAt("OrderArray").GetElementDataAt("2").GetElementDataAt("LineTexture").RawValue.Should().Be("Assets\\Textures\\Storm_WayPointLine2.dds");
     }
 
     [TestMethod]
@@ -233,10 +233,10 @@ public class StormElementDataTests
         StormElementData data = new(null!, element);
 
         // assert
-        data.GetElementDataAt("HeroAbilArray").GetElementDataAt("0").GetElementDataAt("Abil").GetElementDataAt("0").RawValue.Should().Be("KelThuzadDeathAndDecay");
+        data.GetElementDataAt("HeroAbilArray").GetElementDataAt("0").GetElementDataAt("Abil").RawValue.Should().Be("KelThuzadDeathAndDecay");
         data.GetElementDataAt("HeroAbilArray").GetElementDataAt("0").GetElementDataAt("Flags").GetElementDataAt("ShowInHeroSelect").RawValue.Should().Be("1");
 
-        data.GetElementDataAt("HeroAbilArray").GetElementDataAt("2").GetElementDataAt("Abil").GetElementDataAt("0").RawValue.Should().Be("KelThuzadChains");
+        data.GetElementDataAt("HeroAbilArray").GetElementDataAt("2").GetElementDataAt("Abil").RawValue.Should().Be("KelThuzadChains");
         data.GetElementDataAt("HeroAbilArray").GetElementDataAt("2").GetElementDataAt("Flags").GetElementDataAt("AffectedByOverdrive").RawValue.Should().Be("1");
     }
 
@@ -268,10 +268,10 @@ public class StormElementDataTests
         StormElementData data = new(null!, element);
 
         // assert
-        data.GetElementDataAt("HeroAbilArray").GetElementDataAt("0").GetElementDataAt("Abil").GetElementDataAt("0").RawValue.Should().Be("KelThuzadDeathAndDecay");
+        data.GetElementDataAt("HeroAbilArray").GetElementDataAt("0").GetElementDataAt("Abil").RawValue.Should().Be("KelThuzadDeathAndDecay");
         data.GetElementDataAt("HeroAbilArray").GetElementDataAt("0").GetElementDataAt("Flags").GetElementDataAt("0").RawValue.Should().Be("1");
 
-        data.GetElementDataAt("HeroAbilArray").GetElementDataAt("2").GetElementDataAt("Abil").GetElementDataAt("0").RawValue.Should().Be("KelThuzadChains");
+        data.GetElementDataAt("HeroAbilArray").GetElementDataAt("2").GetElementDataAt("Abil").RawValue.Should().Be("KelThuzadChains");
         data.GetElementDataAt("HeroAbilArray").GetElementDataAt("2").GetElementDataAt("Flags").GetElementDataAt("2").RawValue.Should().Be("3");
     }
 
@@ -419,17 +419,17 @@ public class StormElementDataTests
 
         // assert
         data.GetElementDataAt("HeroAbilArray").Field.Should().Be("HeroAbilArray");
-        data.GetElementDataAt("HeroAbilArray").GetElementDataAt("0").GetElementDataAt("Abil").GetElementDataAt("0").Field.Should().Be("HeroAbilArray[0].Abil[0]");
+        data.GetElementDataAt("HeroAbilArray").GetElementDataAt("0").GetElementDataAt("Abil").Field.Should().Be("HeroAbilArray[0].Abil");
         data.GetElementDataAt("HeroAbilArray").GetElementDataAt("0").GetElementDataAt("Flags").GetElementDataAt("ShowInHeroSelect").Field.Should().Be("HeroAbilArray[0].Flags[ShowInHeroSelect]");
         data.GetElementDataAt("HeroAbilArray").GetElementDataAt("0").GetElementDataAt("Flags").GetElementDataAt("AffectedByCooldownReduction").Field.Should().Be("HeroAbilArray[0].Flags[AffectedByCooldownReduction]");
         data.GetElementDataAt("HeroAbilArray").GetElementDataAt("0").GetElementDataAt("Flags").GetElementDataAt("AffectedByOverdrive").Field.Should().Be("HeroAbilArray[0].Flags[AffectedByOverdrive]");
 
-        data.GetElementDataAt("HeroAbilArray").GetElementDataAt("1").GetElementDataAt("Abil").GetElementDataAt("0").Field.Should().Be("HeroAbilArray[1].Abil[0]");
+        data.GetElementDataAt("HeroAbilArray").GetElementDataAt("1").GetElementDataAt("Abil").Field.Should().Be("HeroAbilArray[1].Abil");
         data.GetElementDataAt("HeroAbilArray").GetElementDataAt("1").GetElementDataAt("Flags").GetElementDataAt("ShowInHeroSelect").Field.Should().Be("HeroAbilArray[1].Flags[ShowInHeroSelect]");
         data.GetElementDataAt("HeroAbilArray").GetElementDataAt("1").GetElementDataAt("Flags").GetElementDataAt("AffectedByCooldownReduction").Field.Should().Be("HeroAbilArray[1].Flags[AffectedByCooldownReduction]");
         data.GetElementDataAt("HeroAbilArray").GetElementDataAt("1").GetElementDataAt("Flags").GetElementDataAt("AffectedByOverdrive").Field.Should().Be("HeroAbilArray[1].Flags[AffectedByOverdrive]");
 
-        data.GetElementDataAt("HeroAbilArray").GetElementDataAt("2").GetElementDataAt("Abil").GetElementDataAt("0").Field.Should().Be("HeroAbilArray[2].Abil[0]");
+        data.GetElementDataAt("HeroAbilArray").GetElementDataAt("2").GetElementDataAt("Abil").Field.Should().Be("HeroAbilArray[2].Abil");
         data.GetElementDataAt("HeroAbilArray").GetElementDataAt("2").GetElementDataAt("Flags").GetElementDataAt("ShowInHeroSelect").Field.Should().Be("HeroAbilArray[2].Flags[ShowInHeroSelect]");
         data.GetElementDataAt("HeroAbilArray").GetElementDataAt("2").GetElementDataAt("Flags").GetElementDataAt("AffectedByCooldownReduction").Field.Should().Be("HeroAbilArray[2].Flags[AffectedByCooldownReduction]");
         data.GetElementDataAt("HeroAbilArray").GetElementDataAt("2").GetElementDataAt("Flags").GetElementDataAt("AffectedByOverdrive").Field.Should().Be("HeroAbilArray[2].Flags[AffectedByOverdrive]");
@@ -465,17 +465,17 @@ public class StormElementDataTests
 
         // assert
         data.GetElementDataAt("HeroAbilArray").Field.Should().Be("HeroAbilArray");
-        data.GetElementDataAt("HeroAbilArray").GetElementDataAt("0").GetElementDataAt("Abil").GetElementDataAt("0").Field.Should().Be("HeroAbilArray[0].Abil[0]");
+        data.GetElementDataAt("HeroAbilArray").GetElementDataAt("0").GetElementDataAt("Abil").Field.Should().Be("HeroAbilArray[0].Abil");
         data.GetElementDataAt("HeroAbilArray").GetElementDataAt("0").GetElementDataAt("Flags").GetElementDataAt("0").Field.Should().Be("HeroAbilArray[0].Flags[0]");
         data.GetElementDataAt("HeroAbilArray").GetElementDataAt("0").GetElementDataAt("Flags").GetElementDataAt("1").Field.Should().Be("HeroAbilArray[0].Flags[1]");
         data.GetElementDataAt("HeroAbilArray").GetElementDataAt("0").GetElementDataAt("Flags").GetElementDataAt("2").Field.Should().Be("HeroAbilArray[0].Flags[2]");
 
-        data.GetElementDataAt("HeroAbilArray").GetElementDataAt("1").GetElementDataAt("Abil").GetElementDataAt("0").Field.Should().Be("HeroAbilArray[1].Abil[0]");
+        data.GetElementDataAt("HeroAbilArray").GetElementDataAt("1").GetElementDataAt("Abil").Field.Should().Be("HeroAbilArray[1].Abil");
         data.GetElementDataAt("HeroAbilArray").GetElementDataAt("1").GetElementDataAt("Flags").GetElementDataAt("0").Field.Should().Be("HeroAbilArray[1].Flags[0]");
         data.GetElementDataAt("HeroAbilArray").GetElementDataAt("1").GetElementDataAt("Flags").GetElementDataAt("1").Field.Should().Be("HeroAbilArray[1].Flags[1]");
         data.GetElementDataAt("HeroAbilArray").GetElementDataAt("1").GetElementDataAt("Flags").GetElementDataAt("2").Field.Should().Be("HeroAbilArray[1].Flags[2]");
 
-        data.GetElementDataAt("HeroAbilArray").GetElementDataAt("2").GetElementDataAt("Abil").GetElementDataAt("0").Field.Should().Be("HeroAbilArray[2].Abil[0]");
+        data.GetElementDataAt("HeroAbilArray").GetElementDataAt("2").GetElementDataAt("Abil").Field.Should().Be("HeroAbilArray[2].Abil");
         data.GetElementDataAt("HeroAbilArray").GetElementDataAt("2").GetElementDataAt("Flags").GetElementDataAt("0").Field.Should().Be("HeroAbilArray[2].Flags[0]");
         data.GetElementDataAt("HeroAbilArray").GetElementDataAt("2").GetElementDataAt("Flags").GetElementDataAt("1").Field.Should().Be("HeroAbilArray[2].Flags[1]");
         data.GetElementDataAt("HeroAbilArray").GetElementDataAt("2").GetElementDataAt("Flags").GetElementDataAt("2").Field.Should().Be("HeroAbilArray[2].Flags[2]");

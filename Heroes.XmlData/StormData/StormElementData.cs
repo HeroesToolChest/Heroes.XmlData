@@ -8,15 +8,17 @@ public sealed class StormElementData
 {
     private static readonly HashSet<string> _otherElementArrays = new(StringComparer.OrdinalIgnoreCase)
     {
-        "CatalogModifications",
+        "Buttons",
         "CardLayouts",
+        "CatalogModifications",
         "ConditionalEvents",
+        "DurationOverride",
+        "Flags",
         "LayoutButtons",
+        "Modifications",
         "On",
         "Remove",
         "TooltipAppender",
-        "DurationOverride",
-        "Buttons",
     };
 
     // elements arrays that should only be arrays for the given element type
@@ -76,22 +78,16 @@ public sealed class StormElementData
         _value = value;
     }
 
-    private StormElementData(StormElementData parent, string field, XElement rootElement, bool isInnerArray = false, bool isIndex = false)
+    private StormElementData(StormElementData parent, string field, XElement rootElement, bool isIndex = false)
         : this(parent, field, isIndex)
     {
-        Parse(rootElement, isInnerArray);
+        Parse(rootElement);
     }
 
-    private StormElementData(StormElementData parent, string field, XElement element, string index, bool isInnerArray = false)
+    private StormElementData(StormElementData parent, string field, XElement element, string index)
         : this(parent, field)
     {
-        ElementDataPairs[index] = new StormElementData(this, index, element, isInnerArray, true);
-    }
-
-    private StormElementData(StormElementData parent, string field, XAttribute attribute, string index)
-        : this(parent, field)
-    {
-        ElementDataPairs[index] = new StormElementData(this, index, attribute.Value, true);
+        ElementDataPairs[index] = new StormElementData(this, index, element, true);
     }
 
     /// <summary>
@@ -400,12 +396,12 @@ public sealed class StormElementData
         }
     }
 
-    internal void AddXElement(XElement element, bool isInnerArray = false)
+    internal void AddXElement(XElement element)
     {
-        Parse(element, isInnerArray);
+        Parse(element);
     }
 
-    private void Parse(XElement rootElement, bool isInnerArray = false)
+    private void Parse(XElement rootElement)
     {
         IEnumerable<XAttribute> attributes = rootElement.Attributes();
         IEnumerable<XElement> elements = rootElement.Elements();
@@ -427,11 +423,7 @@ public sealed class StormElementData
                 continue;
             }
 
-            if (isInnerArray)
-            {
-                ElementDataPairs[attribute.Name.LocalName] = new StormElementData(this, attribute.Name.LocalName, attribute, "0");
-            }
-            else if (attribute.Name.LocalName.Equals("parent", StringComparison.OrdinalIgnoreCase) &&
+            if (attribute.Name.LocalName.Equals("parent", StringComparison.OrdinalIgnoreCase) &&
                 ElementDataPairs.TryGetValue("id", out StormElementData? existingIdData) && !string.IsNullOrEmpty(existingIdData.RawValue) &&
                 existingIdData.RawValue.Equals(attribute.Value))
             {
@@ -457,18 +449,18 @@ public sealed class StormElementData
             {
                 ParseElementWithIndex(element, elementName, indexAtt, isRemovedElement);
             }
-            else if (isInnerArray || elementName.AsSpan().EndsWith("array", StringComparison.OrdinalIgnoreCase) || _otherElementArrays.Contains(elementName) || IsElementArrayForCurrentType(elementName))
+            else if (elementName.EndsWith("array", StringComparison.OrdinalIgnoreCase) || _otherElementArrays.Contains(elementName) || IsElementArrayForCurrentType(elementName))
             {
                 if (ElementDataPairs.TryGetValue(elementName, out StormElementData? existingData))
                 {
                     existingData._currentIndex++;
                     string nextIndex = existingData._currentIndex.ToString();
 
-                    existingData.ElementDataPairs[nextIndex] = new StormElementData(existingData, nextIndex, element, true, true);
+                    existingData.ElementDataPairs[nextIndex] = new StormElementData(existingData, nextIndex, element, true);
                 }
                 else
                 {
-                    ElementDataPairs[elementName] = new StormElementData(this, elementName, element, "0", true);
+                    ElementDataPairs[elementName] = new StormElementData(this, elementName, element, "0");
                 }
             }
             else if (ElementDataPairs.TryGetValue(elementName, out StormElementData? existingData))
@@ -500,18 +492,18 @@ public sealed class StormElementData
                     return;
                 }
 
-                existingIndexedData.AddXElement(element, true);
+                existingIndexedData.AddXElement(element);
             }
             else
             {
                 existingElementData._currentIndex = numericalIndex ?? existingElementData._currentIndex + 1;
-                existingElementData.ElementDataPairs[indexAtt] = new StormElementData(existingElementData, indexAtt, element, true, true);
+                existingElementData.ElementDataPairs[indexAtt] = new StormElementData(existingElementData, indexAtt, element, true);
             }
         }
         else
         {
             _currentIndex = numericalIndex ?? _currentIndex + 1;
-            ElementDataPairs[elementName] = new StormElementData(this, elementName, element, indexAtt, true);
+            ElementDataPairs[elementName] = new StormElementData(this, elementName, element, indexAtt);
         }
     }
 
