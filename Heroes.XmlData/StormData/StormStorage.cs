@@ -57,14 +57,14 @@ internal sealed partial class StormStorage : IStormStorage
         currentStormCache.NotFoundFilesList.Add(stormFile);
     }
 
-    public void AddGameString(StormModType stormModType, string id, GameStringText gameStringText)
+    public void AddGameString(StormModType stormModType, string id, GameStringFileText gameStringText)
     {
         StormCache currentStormCache = GetCurrentStormCache(stormModType);
 
         currentStormCache.GameStringsById[id] = gameStringText;
     }
 
-    public (string Id, GameStringText GameStringText)? GetGameStringWithId(string gamestring, StormPath stormPath)
+    public (string Id, GameStringFileText GameStringText)? GetGameStringWithId(string gamestring, StormPath stormPath)
     {
         ReadOnlySpan<char> gamestringSpan = gamestring.AsSpan();
         Span<Range> ranges = stackalloc Range[2];
@@ -74,7 +74,7 @@ internal sealed partial class StormStorage : IStormStorage
         if (gamestringSpan[ranges[0]].IsEmpty || gamestringSpan[ranges[0]].IsWhiteSpace())
             return null;
 
-        GameStringText gameStringText = new(gamestringSpan[ranges[1]].ToString(), stormPath);
+        GameStringFileText gameStringText = new(gamestringSpan[ranges[1]].ToString(), stormPath);
 
         string id = gamestringSpan[ranges[0]].ToString();
 

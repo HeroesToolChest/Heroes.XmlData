@@ -2099,9 +2099,9 @@ public class StormStorageTests
         StormStorage stormStorage = new(false);
 
         // act
-        stormStorage.StormCache.GameStringsById.Add("id1", new GameStringText("If Chomp hits a Hero", TestHelpers.GetStormPath("normal")));
-        stormStorage.StormMapCache.GameStringsById.Add("id1", new GameStringText("Shadow Waltz deals an increased", TestHelpers.GetStormPath("map")));
-        stormStorage.StormCustomCache.GameStringsById.Add("id1", new GameStringText("After a short delay", TestHelpers.GetStormPath("custom")));
+        stormStorage.StormCache.GameStringsById.Add("id1", new GameStringFileText("If Chomp hits a Hero", TestHelpers.GetStormPath("normal")));
+        stormStorage.StormMapCache.GameStringsById.Add("id1", new GameStringFileText("Shadow Waltz deals an increased", TestHelpers.GetStormPath("map")));
+        stormStorage.StormCustomCache.GameStringsById.Add("id1", new GameStringFileText("After a short delay", TestHelpers.GetStormPath("custom")));
 
         // assert
         StormGameString? stormGameString = stormStorage.GetStormGameString("id1");
@@ -2120,7 +2120,7 @@ public class StormStorageTests
         StormStorage stormStorage = new(false);
 
         // act
-        stormStorage.StormCache.GameStringsById.Add("id1", new GameStringText("If Chomp hits a Hero", TestHelpers.GetStormPath("normal")));
+        stormStorage.StormCache.GameStringsById.Add("id1", new GameStringFileText("If Chomp hits a Hero", TestHelpers.GetStormPath("normal")));
 
         // assert
         StormGameString? stormGameString = stormStorage.GetStormGameString("id1");
@@ -2139,7 +2139,7 @@ public class StormStorageTests
         StormStorage stormStorage = new(false);
 
         // act
-        stormStorage.StormMapCache.GameStringsById.Add("id1", new GameStringText("Shadow Waltz deals an increased", TestHelpers.GetStormPath("map")));
+        stormStorage.StormMapCache.GameStringsById.Add("id1", new GameStringFileText("Shadow Waltz deals an increased", TestHelpers.GetStormPath("map")));
 
         // assert
         StormGameString? stormGameString = stormStorage.GetStormGameString("id1");
@@ -2158,7 +2158,7 @@ public class StormStorageTests
         StormStorage stormStorage = new(false);
 
         // act
-        stormStorage.StormCustomCache.GameStringsById.Add("id1", new GameStringText("After a short delay", TestHelpers.GetStormPath("custom")));
+        stormStorage.StormCustomCache.GameStringsById.Add("id1", new GameStringFileText("After a short delay", TestHelpers.GetStormPath("custom")));
 
         // assert
         StormGameString? stormGameString = stormStorage.GetStormGameString("id1");
@@ -2177,8 +2177,8 @@ public class StormStorageTests
         StormStorage stormStorage = new(false);
 
         // act
-        stormStorage.StormCache.GameStringsById.Add("id1", new GameStringText("If Chomp hits a Hero", TestHelpers.GetStormPath("normal")));
-        stormStorage.StormMapCache.GameStringsById.Add("id1", new GameStringText("Shadow Waltz deals an increased", TestHelpers.GetStormPath("map")));
+        stormStorage.StormCache.GameStringsById.Add("id1", new GameStringFileText("If Chomp hits a Hero", TestHelpers.GetStormPath("normal")));
+        stormStorage.StormMapCache.GameStringsById.Add("id1", new GameStringFileText("Shadow Waltz deals an increased", TestHelpers.GetStormPath("map")));
 
         // assert
         StormGameString? stormGameString = stormStorage.GetStormGameString("id1");
@@ -2197,14 +2197,14 @@ public class StormStorageTests
         StormStorage stormStorage = new(false);
 
         // act
-        stormStorage.StormCache.GameStringsById.Add("id1", new GameStringText("If Chomp hits a Hero", TestHelpers.GetStormPath("normal")));
-        stormStorage.StormCache.GameStringsById.Add("id2", new GameStringText("Spawn an Overgrowth that", TestHelpers.GetStormPath("normal")));
+        stormStorage.StormCache.GameStringsById.Add("id1", new GameStringFileText("If Chomp hits a Hero", TestHelpers.GetStormPath("normal")));
+        stormStorage.StormCache.GameStringsById.Add("id2", new GameStringFileText("Spawn an Overgrowth that", TestHelpers.GetStormPath("normal")));
 
-        stormStorage.StormMapCache.GameStringsById.Add("id1", new GameStringText("Shadow Waltz deals an increased", TestHelpers.GetStormPath("map")));
-        stormStorage.StormMapCache.GameStringsById.Add("id3", new GameStringText("Hitting a Warp Rift", TestHelpers.GetStormPath("map")));
+        stormStorage.StormMapCache.GameStringsById.Add("id1", new GameStringFileText("Shadow Waltz deals an increased", TestHelpers.GetStormPath("map")));
+        stormStorage.StormMapCache.GameStringsById.Add("id3", new GameStringFileText("Hitting a Warp Rift", TestHelpers.GetStormPath("map")));
 
-        stormStorage.StormCustomCache.GameStringsById.Add("id1", new GameStringText("After a short delay", TestHelpers.GetStormPath("custom")));
-        stormStorage.StormCustomCache.GameStringsById.Add("id4", new GameStringText("Raynor and all nearby allied", TestHelpers.GetStormPath("custom")));
+        stormStorage.StormCustomCache.GameStringsById.Add("id1", new GameStringFileText("After a short delay", TestHelpers.GetStormPath("custom")));
+        stormStorage.StormCustomCache.GameStringsById.Add("id4", new GameStringFileText("Raynor and all nearby allied", TestHelpers.GetStormPath("custom")));
 
         // assert
         List<StormGameString> stormGameString = stormStorage.GetStormGameStrings();
@@ -3089,7 +3089,7 @@ public class StormStorageTests
         StormStorage stormStorage = new(false);
 
         // act
-        (string Id, GameStringText GameStringText)? gamestring = stormStorage.GetGameStringWithId("id=value", TestHelpers.GetStormPath("normal"));
+        (string Id, GameStringFileText GameStringText)? gamestring = stormStorage.GetGameStringWithId("id=value", TestHelpers.GetStormPath("normal"));
 
         // assert
         gamestring.HasValue.Should().BeTrue();
@@ -3104,7 +3104,7 @@ public class StormStorageTests
         StormStorage stormStorage = new(false);
 
         // act
-        (string Id, GameStringText GameStringText)? gamestring = stormStorage.GetGameStringWithId("idvalue", TestHelpers.GetStormPath("normal"));
+        (string Id, GameStringFileText GameStringText)? gamestring = stormStorage.GetGameStringWithId("idvalue", TestHelpers.GetStormPath("normal"));
 
         // assert
         gamestring.HasValue.Should().BeTrue();
@@ -3119,8 +3119,8 @@ public class StormStorageTests
         StormStorage stormStorage = new(false);
 
         // act
-        (string Id, GameStringText GameStringText)? gamestring = stormStorage.GetGameStringWithId("=value", TestHelpers.GetStormPath("normal"));
-        (string Id, GameStringText GameStringText)? gamestringSpace = stormStorage.GetGameStringWithId(" =value", TestHelpers.GetStormPath("normal"));
+        (string Id, GameStringFileText GameStringText)? gamestring = stormStorage.GetGameStringWithId("=value", TestHelpers.GetStormPath("normal"));
+        (string Id, GameStringFileText GameStringText)? gamestringSpace = stormStorage.GetGameStringWithId(" =value", TestHelpers.GetStormPath("normal"));
 
         // assert
         gamestring.HasValue.Should().BeFalse();
@@ -3134,7 +3134,7 @@ public class StormStorageTests
         StormStorage stormStorage = new(false);
 
         // act
-        (string Id, GameStringText GameStringText)? gamestring = stormStorage.GetGameStringWithId("id=", TestHelpers.GetStormPath("normal"));
+        (string Id, GameStringFileText GameStringText)? gamestring = stormStorage.GetGameStringWithId("id=", TestHelpers.GetStormPath("normal"));
 
         // assert
         gamestring.HasValue.Should().BeTrue();

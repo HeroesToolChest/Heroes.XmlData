@@ -32,7 +32,7 @@ internal interface IStormModStorage
 
     int? BuildId { get; }
 
-    Dictionary<string, GameStringText> GameStringsById { get; }
+    Dictionary<string, GameStringFileText> GameStringsById { get; }
 
     string Name { get; }
 
@@ -50,7 +50,7 @@ internal interface IStormModStorage
 
     void AddFileNotFound(StormPath requiredStormFile);
 
-    void AddGameString(string id, GameStringText gameStringText);
+    void AddGameString(string id, GameStringFileText gameStringText);
 
     void AddGameStringFile(Stream stream, StormPath stormPath);
 

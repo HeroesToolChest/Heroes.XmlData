@@ -578,7 +578,7 @@ internal sealed partial class StormStorage
         StormGameString? stormGameString = null;
 
         // normal cache first
-        if (StormCache.GameStringsById.TryGetValue(id, out GameStringText? gameStringText))
+        if (StormCache.GameStringsById.TryGetValue(id, out GameStringFileText? gameStringText))
             stormGameString = Get(id, stormGameString, gameStringText);
 
         if (StormMapCache.GameStringsById.TryGetValue(id, out gameStringText))
@@ -587,7 +587,7 @@ internal sealed partial class StormStorage
         if (StormCustomCache.GameStringsById.TryGetValue(id, out gameStringText))
             stormGameString = Get(id, stormGameString, gameStringText);
 
-        static StormGameString Get(string id, StormGameString? stormGameString, GameStringText gameStringText)
+        static StormGameString Get(string id, StormGameString? stormGameString, GameStringFileText gameStringText)
         {
             stormGameString ??= new StormGameString(id, gameStringText.Value);
             stormGameString.AddPath(gameStringText.StormPath);
@@ -813,7 +813,7 @@ internal sealed partial class StormStorage
         return stormImage;
     }
 
-    private static void AddStormGameString(Dictionary<string, StormGameString> stormGameStrings, KeyValuePair<string, GameStringText> item)
+    private static void AddStormGameString(Dictionary<string, StormGameString> stormGameStrings, KeyValuePair<string, GameStringFileText> item)
     {
         if (stormGameStrings.TryGetValue(item.Key, out StormGameString? existingStormGameString))
         {

@@ -18,11 +18,11 @@ internal interface IStormStorage
 
     void AddFileNotFound(StormModType stormModType, StormPath stormFile);
 
-    void AddGameString(StormModType stormModType, string id, GameStringText gameStringText);
+    void AddGameString(StormModType stormModType, string id, GameStringFileText gameStringText);
 
     void AddAssetText(StormModType stormModType, string id, AssetText assetText);
 
-    (string Id, GameStringText GameStringText)? GetGameStringWithId(string gamestring, StormPath stormPath);
+    (string Id, GameStringFileText GameStringText)? GetGameStringWithId(string gamestring, StormPath stormPath);
 
     (string Id, AssetText AssetText)? GetAssetWithId(string asset, StormPath stormPath);
 

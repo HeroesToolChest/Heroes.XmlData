@@ -5,4 +5,4 @@
 /// </summary>
 /// <param name="Value">The value of the gamestring.</param>
 /// <param name="StormPath">The file where the gamestring resides from.</param>
-public sealed record GameStringText(string Value, StormPath StormPath) : StormStringValue(Value, StormPath);
+public sealed record GameStringFileText(string Value, StormPath StormPath) : StormStringValue(Value, StormPath);

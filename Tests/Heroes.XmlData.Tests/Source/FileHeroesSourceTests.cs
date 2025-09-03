@@ -22,7 +22,7 @@ public class FileHeroesSourceTests
     [TestMethod]
     [DataRow(true, "somefile.txt")]
     [DataRow(false, "file-no-exist.txt")]
-    public void FileExists_PathLookupStartsWithMods_RetunsResult(bool found, string fileToLookup)
+    public void FileExists_PathLookupStartsWithMods_ReturnsResult(bool found, string fileToLookup)
     {
         // arrange
         const string rootDirectory = "mods";
@@ -45,7 +45,7 @@ public class FileHeroesSourceTests
     [TestMethod]
     [DataRow(true, "somefile.txt")]
     [DataRow(false, "file-no-exist.txt")]
-    public void FileExists_PathLookupStartsWithOutMods_RetunsResult(bool found, string fileToLookup)
+    public void FileExists_PathLookupStartsWithOutMods_ReturnsResult(bool found, string fileToLookup)
     {
         // arrange
         const string rootDirectory = "mods";

@@ -64,9 +64,9 @@ public class StormModStorageTests
         StormPath stormPath2 = TestHelpers.GetStormPath("test2");
         StormPath stormPath3 = TestHelpers.GetStormPath("test3");
 
-        GameStringText gameStringText1 = new("value1", stormPath1);
-        GameStringText gameStringText2 = new("value2", stormPath2);
-        GameStringText gameStringText3 = new("value2", stormPath3);
+        GameStringFileText gameStringText1 = new("value1", stormPath1);
+        GameStringFileText gameStringText2 = new("value2", stormPath2);
+        GameStringFileText gameStringText3 = new("value2", stormPath3);
 
         // act
         stormModStorage.AddGameString("id1", gameStringText1);
@@ -74,7 +74,7 @@ public class StormModStorageTests
         stormModStorage.AddGameString("id2", gameStringText3);
 
         // assert
-        stormModStorage.GameStringsById.Should().BeEquivalentTo(new Dictionary<string, GameStringText>
+        stormModStorage.GameStringsById.Should().BeEquivalentTo(new Dictionary<string, GameStringFileText>
         {
             { "id1", gameStringText2 },
             { "id2", gameStringText3 },
@@ -138,7 +138,7 @@ public class StormModStorageTests
 
         // assert
         stormModStorage.AddedGameStringFilePaths.Should().BeEquivalentTo(new[] { stormPath1 });
-        stormModStorage.GameStringsById.Should().BeEquivalentTo(new Dictionary<string, GameStringText>
+        stormModStorage.GameStringsById.Should().BeEquivalentTo(new Dictionary<string, GameStringFileText>
         {
             { "id1", new("value2", stormPath1) },
             { "id2", new("value3", stormPath1) },
@@ -172,7 +172,7 @@ public class StormModStorageTests
 
         // assert
         stormModStorage.AddedGameStringFilePaths.Should().BeEquivalentTo(new[] { stormPath1 });
-        stormModStorage.GameStringsById.Should().BeEquivalentTo(new Dictionary<string, GameStringText>
+        stormModStorage.GameStringsById.Should().BeEquivalentTo(new Dictionary<string, GameStringFileText>
         {
             { "id1", new("value1", stormPath1) },
         });

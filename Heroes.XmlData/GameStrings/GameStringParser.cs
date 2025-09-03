@@ -22,7 +22,7 @@ internal sealed class GameStringParser
         _dataRefParser = new DataRefParser(this, _stormStorage);
     }
 
-    public static string ParseTooltipDescription(IStormStorage stormStorage, ReadOnlySpan<char> description)
+    public static string ParseGameStringText(IStormStorage stormStorage, ReadOnlySpan<char> description)
     {
         GameStringParser gameStringParser = new(stormStorage);
 

@@ -212,33 +212,33 @@ public class HeroesData
     }
 
     /// <summary>
-    /// Parses and evaluates a gamestring into a <see cref="TooltipDescription"/>.
+    /// Parses and evaluates a gamestring into a <see cref="GameStringText"/>.
     /// </summary>
     /// <param name="gameString">The gamestring to parse.</param>
     /// <param name="gameStringLocale">The localization of the <paramref name="gameString"/>.</param>
     /// <param name="extractFontValues">
-    /// If <see langword="true"/>, then the font style and constant tags will have their val values saved in <see cref="TooltipDescription.FontStyleValues"/> and  <see cref="TooltipDescription.FontStyleConstantValues"/>.
+    /// If <see langword="true"/>, then the font style and constant tags will have their val values saved in <see cref="GameStringText.FontStyleValues"/> and  <see cref="GameStringText.FontStyleConstantValues"/>.
     /// If not needing the output with color tags, then set to <see langword="false"/> for faster parsing performance.
     /// </param>
-    /// <returns>A parsed <see cref="TooltipDescription"/>.</returns>
-    public TooltipDescription ParseGameString(string gameString, StormLocale gameStringLocale = StormLocale.ENUS, bool extractFontValues = false)
+    /// <returns>A parsed <see cref="GameStringText"/>.</returns>
+    public GameStringText ParseGameString(string gameString, StormLocale gameStringLocale = StormLocale.ENUS, bool extractFontValues = false)
     {
-        return new TooltipDescription(GameStringParser.ParseTooltipDescription(_stormStorage, gameString), gameStringLocale, extractFontValues);
+        return new GameStringText(GameStringParser.ParseGameStringText(_stormStorage, gameString), gameStringLocale, extractFontValues);
     }
 
     /// <summary>
-    /// Parses and evaluates a gamestring into a <see cref="TooltipDescription"/>.
+    /// Parses and evaluates a gamestring into a <see cref="GameStringText"/>.
     /// </summary>
     /// <param name="stormGameString">The gamestring to parse.</param>
     /// <param name="gameStringLocale">The localization of the <paramref name="stormGameString"/>.</param>
     /// <param name="extractFontValues">
-    /// If <see langword="true"/>, then the font style and constant tags will have their val values saved in <see cref="TooltipDescription.FontStyleValues"/> and  <see cref="TooltipDescription.FontStyleConstantValues"/>.
+    /// If <see langword="true"/>, then the font style and constant tags will have their val values saved in <see cref="GameStringText.FontStyleValues"/> and  <see cref="GameStringText.FontStyleConstantValues"/>.
     /// If not needing the output with color tags, then set to <see langword="false"/> for faster parsing performance.
     /// </param>
-    /// <returns>A parsed <see cref="TooltipDescription"/>.</returns>
-    public TooltipDescription ParseGameString(StormGameString stormGameString, StormLocale gameStringLocale = StormLocale.ENUS, bool extractFontValues = false)
+    /// <returns>A parsed <see cref="GameStringText"/>.</returns>
+    public GameStringText ParseGameString(StormGameString stormGameString, StormLocale gameStringLocale = StormLocale.ENUS, bool extractFontValues = false)
     {
-        return new TooltipDescription(GameStringParser.ParseTooltipDescription(_stormStorage, stormGameString.Value), gameStringLocale, extractFontValues);
+        return new GameStringText(GameStringParser.ParseGameStringText(_stormStorage, stormGameString.Value), gameStringLocale, extractFontValues);
     }
 
     /// <summary>

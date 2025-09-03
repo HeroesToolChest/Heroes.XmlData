@@ -22,7 +22,7 @@ public class GameStringParserTests
         HeroesData heroesData = loader.HeroesData;
 
         // act
-        string parsed = GameStringParser.ParseTooltipDescription(heroesData.StormStorage, description);
+        string parsed = GameStringParser.ParseGameStringText(heroesData.StormStorage, description);
 
         // assert
         parsed.Should().Be("Yrel sanctifies the ground around her, gaining <c val=\"#TooltipNumbers\">50</c> Armor until she leaves the area.");
@@ -97,7 +97,7 @@ public class GameStringParserTests
         HeroesData heroesData = loader.HeroesData;
 
         // act
-        string parsed = GameStringParser.ParseTooltipDescription(heroesData.StormStorage, description);
+        string parsed = GameStringParser.ParseGameStringText(heroesData.StormStorage, description);
 
         // assert
         parsed.Should().Be("After <c val=\"#TooltipNumbers\">0.5</c> seconds, deal <c val=\"#TooltipNumbers\">120~~0.04~~</c> damage to enemy Heroes in an area and Fear them for <c val=\"#TooltipNumbers\">2</c> seconds. While Feared, Heroes are Silenced and are forced to run away from Horrify's center.");
@@ -238,7 +238,7 @@ public class GameStringParserTests
         HeroesData heroesData = loader.HeroesData;
 
         // act
-        string parsed = GameStringParser.ParseTooltipDescription(heroesData.StormStorage, description);
+        string parsed = GameStringParser.ParseGameStringText(heroesData.StormStorage, description);
 
         // assert
         parsed.Should().Be("Rain a small army of Demonic Grunts down on enemies, dealing <c val=\"#TooltipNumbers\">85~~0.04~~</c> damage per impact. Grunts deal <c val=\"#TooltipNumbers\">39~~0.04~~</c> damage, have <c val=\"#TooltipNumbers\">750~~0.04~~</c> Health and last up to <c val=\"#TooltipNumbers\">10</c> seconds. When Grunts die they explode, dealing <c val=\"#TooltipNumbers\">40~~0.04~~</c> damage to nearby enemies, doubled against enemy Heroes.<n/><n/>Usable while Channeling All Shall Burn.");
@@ -330,7 +330,7 @@ public class GameStringParserTests
         HeroesData heroesData = loader.HeroesData;
 
         // act
-        string parsed = GameStringParser.ParseTooltipDescription(heroesData.StormStorage, description);
+        string parsed = GameStringParser.ParseGameStringText(heroesData.StormStorage, description);
 
         // assert
         parsed.Should().Be("Toxic Nests deal <c val=\"#TooltipNumbers\">75%</c> more damage over <c val=\"#TooltipNumbers\">3</c> seconds and reduce the Armor of enemy Heroes hit by <c val=\"#TooltipNumbers\">10</c> for <c val=\"#TooltipNumbers\">4</c> seconds.");
@@ -400,7 +400,7 @@ public class GameStringParserTests
         HeroesData heroesData = loader.HeroesData;
 
         // act
-        string parsed = GameStringParser.ParseTooltipDescription(heroesData.StormStorage, description);
+        string parsed = GameStringParser.ParseGameStringText(heroesData.StormStorage, description);
 
         // assert
         parsed.Should().Be("Zarya's Basic Attack deals <c val=\"bfd4fd\">50%</c> additional damage to enemies in melee range.");
@@ -448,7 +448,7 @@ public class GameStringParserTests
         HeroesData heroesData = loader.HeroesData;
 
         // act
-        string parsed = GameStringParser.ParseTooltipDescription(heroesData.StormStorage, description);
+        string parsed = GameStringParser.ParseGameStringText(heroesData.StormStorage, description);
 
         // assert
         parsed.Should().Be("If Sand Blast travels at least <c val=\"bfd4fd\">50%</c> of its base distance and hits a Hero, its cooldown is reduced to <c val=\"bfd4fd\">0.5</c> seconds.");
@@ -479,7 +479,7 @@ public class GameStringParserTests
         HeroesData heroesData = loader.HeroesData;
 
         // act
-        string parsed = GameStringParser.ParseTooltipDescription(heroesData.StormStorage, description);
+        string parsed = GameStringParser.ParseGameStringText(heroesData.StormStorage, description);
 
         // assert
         parsed.Should().Be("reduces its cooldown by <c val=\"#TooltipNumbers\">60</c>");
@@ -530,7 +530,7 @@ public class GameStringParserTests
         HeroesData heroesData = loader.HeroesData;
 
         // act
-        string parsed = GameStringParser.ParseTooltipDescription(heroesData.StormStorage, description);
+        string parsed = GameStringParser.ParseGameStringText(heroesData.StormStorage, description);
 
         // assert
         parsed.Should().Be("Increase the damage of Octo-Grab by <c val=\"#TooltipNumbers\">13700~~0.04~~%</c>");
@@ -612,7 +612,7 @@ public class GameStringParserTests
         HeroesData heroesData = loader.HeroesData;
 
         // act
-        string parsed = GameStringParser.ParseTooltipDescription(heroesData.StormStorage, description);
+        string parsed = GameStringParser.ParseGameStringText(heroesData.StormStorage, description);
 
         // assert
         parsed.Should().Be("Globe of Annihilation deals <c val=\"#TooltipNumbers\">15%</c> more damage to non-Heroic targets.<n/><n/><img path=\"@UI/StormTalentInTextQuestIcon\" alignment=\"uppermiddle\" color=\"B48E4C\" width=\"20\" height=\"22\"/><c val=\"#TooltipQuest\">Quest:</c> After gaining <c val=\"#TooltipNumbers\">200</c> Annihilation, increase the range of All Shall Burn by <c val=\"#TooltipNumbers\">25%</c> and Demon Warriors gain <c val=\"#TooltipNumbers\">20%</c> Attack Speed and Movement Speed.");
@@ -680,7 +680,7 @@ public class GameStringParserTests
         HeroesData heroesData = loader.HeroesData;
 
         // act
-        string parsed = GameStringParser.ParseTooltipDescription(heroesData.StormStorage, description);
+        string parsed = GameStringParser.ParseGameStringText(heroesData.StormStorage, description);
 
         // assert
         parsed.Should().Be("Channel on an allied or destroyed Fort or Keep to replace it with Ragnaros's ultimate form, temporarily gaining new Abilities, having <c val=\"#TooltipNumbers\">3996~~0.04~~</c> Health that burns away over <c val=\"#TooltipNumbers\">18</c> seconds.<n/><n/>Ragnaros returns to his normal form upon losing all Health in Molten Core.");
@@ -732,7 +732,7 @@ public class GameStringParserTests
         HeroesData heroesData = loader.HeroesData;
 
         // act
-        string parsed = GameStringParser.ParseTooltipDescription(heroesData.StormStorage, description);
+        string parsed = GameStringParser.ParseGameStringText(heroesData.StormStorage, description);
 
         // assert
         parsed.Should().Be("Deal <c val=\"#TooltipNumbers\">159~~0.04~~</c> damage to enemies within the target area.");
@@ -787,7 +787,7 @@ public class GameStringParserTests
         HeroesData heroesData = loader.HeroesData;
 
         // act
-        string parsed = GameStringParser.ParseTooltipDescription(heroesData.StormStorage, description);
+        string parsed = GameStringParser.ParseGameStringText(heroesData.StormStorage, description);
 
         // assert
         parsed.Should().Be("Shields Tyrael for <c val=\"#TooltipNumbers\">336~~0.04~~</c> damage and nearby allied Heroes and Minions for <c val=\"#TooltipNumbers\">40%</c> as much for <c val=\"#TooltipNumbers\">4</c> seconds.");
@@ -859,7 +859,7 @@ public class GameStringParserTests
         HeroesData heroesData = loader.HeroesData;
 
         // act
-        string parsed = GameStringParser.ParseTooltipDescription(heroesData.StormStorage, description);
+        string parsed = GameStringParser.ParseGameStringText(heroesData.StormStorage, description);
 
         // assert
         parsed.Should().Be("<c val=\"#AbilityPassive\">Pilot Mode: </c>Instead of a single shot, Big Shot fires <c val=\"#TooltipNumbers\">3</c> shots over <c val=\"#TooltipNumbers\">0.5</c> seconds. Each shot deals <c val=\"#TooltipNumbers\">75%</c> damage.");
@@ -958,7 +958,7 @@ public class GameStringParserTests
         HeroesData heroesData = loader.HeroesData;
 
         // act
-        string parsed = GameStringParser.ParseTooltipDescription(heroesData.StormStorage, description);
+        string parsed = GameStringParser.ParseGameStringText(heroesData.StormStorage, description);
 
         // assert
         parsed.Should().Be("Eject from the Mech, setting it to self-destruct after <c val=\"#TooltipNumbers\">4</c> seconds. Deals <c val=\"#TooltipNumbers\">400~~0.04~~</c> to <c val=\"#TooltipNumbers\">1100~~0.04~~</c> damage in a large area, depending on distance from center. Deals <c val=\"#TooltipNumbers\">50%</c> damage against Structures.</n></n><c val=\"FF8000\">Gain <c val=\"#TooltipNumbers\">1%</c> Charge for every <c val=\"#TooltipNumbers\">2</c> seconds spent Basic Attacking, and <c val=\"#TooltipNumbers\">25%</c> Charge per <c val=\"#TooltipNumbers\">100%</c> of Mech Health lost.</c>");
@@ -1022,7 +1022,7 @@ public class GameStringParserTests
         HeroesData heroesData = loader.HeroesData;
 
         // act
-        string parsed = GameStringParser.ParseTooltipDescription(heroesData.StormStorage, description);
+        string parsed = GameStringParser.ParseGameStringText(heroesData.StormStorage, description);
 
         // assert
         parsed.Should().Be("Transform for <c val=\"#TooltipNumbers\">20</c> seconds, gaining <c val=\"#TooltipNumbers\">1000~~0.04~~</c> Health.");
@@ -1085,7 +1085,7 @@ public class GameStringParserTests
         HeroesData heroesData = loader.HeroesData;
 
         // act
-        string parsed = GameStringParser.ParseTooltipDescription(heroesData.StormStorage, description);
+        string parsed = GameStringParser.ParseGameStringText(heroesData.StormStorage, description);
 
         // assert
         parsed.Should().Be("While at or below <c val=\"#TooltipNumbers\">50</c> Brew, gain <c val=\"#TooltipNumbers\">20%</c> Movement Speed. While at or above <c val=\"#TooltipNumbers\">50</c> Brew, regenerate an additional <c val=\"#TooltipNumbers\">18~~0.04~~</c> Health per second.");
@@ -1131,7 +1131,7 @@ public class GameStringParserTests
         HeroesData heroesData = loader.HeroesData;
 
         // act
-        string parsed = GameStringParser.ParseTooltipDescription(heroesData.StormStorage, description);
+        string parsed = GameStringParser.ParseGameStringText(heroesData.StormStorage, description);
 
         // assert
         parsed.Should().Be("Increase Hardened Carapace's Spell Armor by <c val=\"#TooltipNumbers\">25</c>.");
@@ -1193,7 +1193,7 @@ public class GameStringParserTests
         HeroesData heroesData = loader.HeroesData;
 
         // act
-        string parsed = GameStringParser.ParseTooltipDescription(heroesData.StormStorage, description);
+        string parsed = GameStringParser.ParseGameStringText(heroesData.StormStorage, description);
 
         // assert
         parsed.Should().Be("Increases Burrow Charge impact area by <c val=\"#TooltipNumbers\">60%</c> and lowers the cooldown by <c val=\"#TooltipNumbers\">1</c> second for each Hero hit.");
@@ -1256,7 +1256,7 @@ public class GameStringParserTests
         HeroesData heroesData = loader.HeroesData;
 
         // act
-        string parsed = GameStringParser.ParseTooltipDescription(heroesData.StormStorage, description);
+        string parsed = GameStringParser.ParseGameStringText(heroesData.StormStorage, description);
 
         // assert
         parsed.Should().Be("<img path=\"@UI/StormTalentInTextQuestIcon\" alignment=\"uppermiddle\" color=\"B48E4C\" width=\"20\" height=\"22\"/><c val=\"#TooltipQuest\">Quest:</c> Gain <c val=\"#TooltipNumbers\">1</c> Blight every time a Hero is Rooted by Frost Nova or hit by Chains of Kel'Thuzad.<n/><n/><img path=\"@UI/StormTalentInTextQuestIcon\" alignment=\"uppermiddle\" color=\"B48E4C\" width=\"20\" height=\"22\"/><c val=\"#TooltipQuest\">Reward:</c> After gaining <c val=\"#TooltipNumbers\">15</c> Blight, gain the Glacial Spike Ability.<n/><n/><img path=\"@UI/StormTalentInTextQuestIcon\" alignment=\"uppermiddle\" color=\"B48E4C\" width=\"20\" height=\"22\"/><c val=\"#TooltipQuest\">Reward:</c> After gaining <c val=\"#TooltipNumbers\">30</c> Blight, gain <c val=\"#TooltipNumbers\">75%</c> Spell Power.<n/><n/><c val=\"#TooltipQuest\">Blight:</c> <c val=\"#TooltipNumbers\" validator=\"True\">0/30</c>");
@@ -1322,7 +1322,7 @@ public class GameStringParserTests
         HeroesData heroesData = loader.HeroesData;
 
         // act
-        string parsed = GameStringParser.ParseTooltipDescription(heroesData.StormStorage, description);
+        string parsed = GameStringParser.ParseGameStringText(heroesData.StormStorage, description);
 
         // assert
         parsed.Should().Be("Launch a grenade that explodes at the end of its path or upon hitting an enemy, dealing <c val=\"#TooltipNumbers\">124~~0.04~~</c> damage to nearby enemies. Grenades can ricochet off of terrain. Deals <c val=\"#TooltipNumbers\">50%</c> less damage to Structures.<n/><n/>Stores up to <c val=\"#TooltipNumbers\">4</c> charges. Frag Launcher's cooldown replenishes all charges at the same time.");
@@ -1397,7 +1397,7 @@ public class GameStringParserTests
         HeroesData heroesData = loader.HeroesData;
 
         // act
-        string parsed = GameStringParser.ParseTooltipDescription(heroesData.StormStorage, description);
+        string parsed = GameStringParser.ParseGameStringText(heroesData.StormStorage, description);
 
         // assert
         parsed.Should().Be("<img path=\"@UI/StormTalentInTextQuestIcon\" alignment=\"uppermiddle\" color=\"B48E4C\" width=\"20\" height=\"22\"/><c val=\"#TooltipQuest\">Repeatable Quest:</c> Basic Attacks against Heroes while Windfury's Movement Speed bonus is active increase Attack Damage by <c val=\"#TooltipNumbers\">1</c>.<n/><n/><img path=\"@UI/StormTalentInTextQuestIcon\" alignment=\"uppermiddle\" color=\"B48E4C\" width=\"20\" height=\"22\"/><c val=\"#TooltipQuest\">Reward:</c> After gaining <c val=\"#TooltipNumbers\">20</c> Attack Damage, increase the Movement Speed bonus of Windfury to <c val=\"#TooltipNumbers\">40%</c>.<n/><n/><img path=\"@UI/StormTalentInTextQuestIcon\" alignment=\"uppermiddle\" color=\"B48E4C\" width=\"20\" height=\"22\"/><c val=\"#TooltipQuest\">Reward:</c> After gaining <c val=\"#TooltipNumbers\">40</c> Attack Damage, Thrall permanently gains <c val=\"#TooltipNumbers\">15%</c> increased Movement Speed.");
@@ -1441,7 +1441,7 @@ public class GameStringParserTests
         HeroesData heroesData = loader.HeroesData;
 
         // act
-        string parsed = GameStringParser.ParseTooltipDescription(heroesData.StormStorage, description);
+        string parsed = GameStringParser.ParseGameStringText(heroesData.StormStorage, description);
 
         // assert
         parsed.Should().Be("Increase the Slow amount of each Twin Cleave axe by <c val=\"#TooltipNumbers\">10%</c> and its duration by <c val=\"#TooltipNumbers\">0.5</c> seconds.");
@@ -1516,7 +1516,7 @@ public class GameStringParserTests
         HeroesData heroesData = loader.HeroesData;
 
         // act
-        string parsed = GameStringParser.ParseTooltipDescription(heroesData.StormStorage, description);
+        string parsed = GameStringParser.ParseGameStringText(heroesData.StormStorage, description);
 
         // assert
         parsed.Should().Be("Probius gains permanent Shields equal to <c val=\"#TooltipNumbers\">10% </c>of his max Health. Shields regenerate quickly as long as he hasn't taken damage recently.");
@@ -1590,7 +1590,7 @@ public class GameStringParserTests
         HeroesData heroesData = loader.HeroesData;
 
         // act
-        string parsed = GameStringParser.ParseTooltipDescription(heroesData.StormStorage, description);
+        string parsed = GameStringParser.ParseGameStringText(heroesData.StormStorage, description);
 
         // assert
         parsed.Should().Be("Launch a fireball, Burning enemies hit for <c val=\"#TooltipNumbers\">75</c> damage over <c val=\"#TooltipNumbers\">5.5</c> seconds.<n/><n/>Hitting enemies that are already Burning deals <c val=\"#TooltipNumbers\">125</c> bonus damage upon impact, Slows them by <c val=\"#TooltipNumbers\">40%</c> decaying over <c val=\"#TooltipNumbers\">2</c> seconds, and refunds the Mana cost.<n/><n/><c val=\"#ColorViolet\">Dragonqueen: Wing Buffet</c><n/>Damage and Knockback enemies in an arc.");
@@ -1631,7 +1631,7 @@ public class GameStringParserTests
         HeroesData heroesData = loader.HeroesData;
 
         // act
-        string parsed = GameStringParser.ParseTooltipDescription(heroesData.StormStorage, description);
+        string parsed = GameStringParser.ParseGameStringText(heroesData.StormStorage, description);
 
         // assert
         parsed.Should().Be("Basic Attacks with Repeater Cannon reduce Ability cooldowns by <c val=\"#TooltipNumbers\">0.5</c> seconds. Basic Attacks with Phase Bomb active reduce Ability cooldowns by <c val=\"#TooltipNumbers\">0.5</c></c> seconds per Hero hit.");
@@ -1667,7 +1667,7 @@ public class GameStringParserTests
         HeroesData heroesData = loader.HeroesData;
 
         // act
-        string parsed = GameStringParser.ParseTooltipDescription(heroesData.StormStorage, description);
+        string parsed = GameStringParser.ParseGameStringText(heroesData.StormStorage, description);
 
         // assert
         parsed.Should().Be("<s val=\"StandardTooltipDetails\">222</s>");
@@ -1765,7 +1765,7 @@ public class GameStringParserTests
         HeroesData heroesData = loader.HeroesData;
 
         // act
-        string parsed = GameStringParser.ParseTooltipDescription(heroesData.StormStorage, description);
+        string parsed = GameStringParser.ParseGameStringText(heroesData.StormStorage, description);
 
         // assert
         parsed.Should().Be("Wall Ride's Movement Speed bonus gradually increases to <c val=\"#TooltipNumbers\">40%</c> over <c val=\"#TooltipNumbers\">6</c> seconds while Lúcio maintains its effect.");
@@ -1802,7 +1802,7 @@ public class GameStringParserTests
         HeroesData heroesData = loader.HeroesData;
 
         // act
-        string parsed = GameStringParser.ParseTooltipDescription(heroesData.StormStorage, description);
+        string parsed = GameStringParser.ParseGameStringText(heroesData.StormStorage, description);
 
         // assert
         parsed.Should().Be("Scharfschütze fügt Gegnern in der Nähe des Einschlagorts zusätzlich <c val=\"#TooltipNumbers\">0%</c> des Schadens zu.");
@@ -1865,7 +1865,7 @@ public class GameStringParserTests
         HeroesData heroesData = loader.HeroesData;
 
         // act
-        string parsed = GameStringParser.ParseTooltipDescription(heroesData.StormStorage, description);
+        string parsed = GameStringParser.ParseGameStringText(heroesData.StormStorage, description);
 
         // assert
         parsed.Should().Be("Activate to make Arthas's next Basic Attack strike immediately and deal <c val=\"#TooltipNumbers\">99~~0.04~~</c> increased damage. Dealing damage restores <c val=\"#TooltipNumbers\">30</c> Mana.");
@@ -1927,7 +1927,7 @@ public class GameStringParserTests
         HeroesData heroesData = loader.HeroesData;
 
         // act
-        string parsed = GameStringParser.ParseTooltipDescription(heroesData.StormStorage, description);
+        string parsed = GameStringParser.ParseGameStringText(heroesData.StormStorage, description);
 
         // assert
         parsed.Should().Be("Basic Attacks grant <c val=\"#TooltipNumbers\">10</c> Physical Armor for <c val=\"#TooltipNumbers\">4</c> seconds, stacking up to <c val=\"#TooltipNumbers\">40</c>.<n/><n/><img path=\"@UI/StormTalentInTextQuestIcon\" alignment=\"uppermiddle\" color=\"B48E4C\" width=\"20\" height=\"22\"/><c val=\"#TooltipQuest\">Gambit:</c> Gain <c val=\"#TooltipNumbers\">25%</c> bonus maximum Health. Every death reduces this bonus by <c val=\"#TooltipNumbers\">5%</c>.");
@@ -1978,7 +1978,7 @@ public class GameStringParserTests
         HeroesData heroesData = loader.HeroesData;
 
         // act
-        string parsed = GameStringParser.ParseTooltipDescription(heroesData.StormStorage, description);
+        string parsed = GameStringParser.ParseGameStringText(heroesData.StormStorage, description);
 
         // assert
         parsed.Should().Be("Deal <c val=\"#TooltipNumbers\">135~~0.05~~</c> damage to enemies in the area.");
@@ -2039,7 +2039,7 @@ public class GameStringParserTests
         HeroesData heroesData = loader.HeroesData;
 
         // act
-        string parsed = GameStringParser.ParseTooltipDescription(heroesData.StormStorage, description);
+        string parsed = GameStringParser.ParseGameStringText(heroesData.StormStorage, description);
 
         // assert
         parsed.Should().Be("Increase Dread's damage by <C val=\"#TooltipNumbers\">50%</c>. <n/><n/><c val=\"#TooltipQuest\">Quest:</c> Hit <C val=\"#TooltipNumbers\">3</c> enemy Heroes with a single cast of Dread's eruption.<n/><n/><c val=\"#TooltipQuest\">Reward:</c> Permanently increase Dread's eruption damage by <C val=\"#TooltipNumbers\">50%</c> and increase the Slow amount of Dread's eruption by <C val=\"#TooltipNumbers\">15%</c>.");
@@ -2099,7 +2099,7 @@ public class GameStringParserTests
         HeroesData heroesData = loader.HeroesData;
 
         // act
-        string parsed = GameStringParser.ParseTooltipDescription(heroesData.StormStorage, description);
+        string parsed = GameStringParser.ParseGameStringText(heroesData.StormStorage, description);
 
         // assert
         parsed.Should().Be("Reduce the Mana cost of Summon Demon Warrior from <c val=\"#TooltipNumbers\">25</c> to <c val=\"#TooltipNumbers\">20</c>. Azmodan's Basic Attacks reduce the cooldown of Summon Demon Warrior by <c val=\"#TooltipNumbers\">0.75</c> seconds and Demon Lieutenant by <c val=\"#TooltipNumbers\">1.5</c> seconds.");
@@ -2164,7 +2164,7 @@ public class GameStringParserTests
         HeroesData heroesData = loader.HeroesData;
 
         // act
-        string parsed = GameStringParser.ParseTooltipDescription(heroesData.StormStorage, description);
+        string parsed = GameStringParser.ParseGameStringText(heroesData.StormStorage, description);
 
         // assert
         parsed.Should().Be("Activate to swing the Hammer of Twilight, dealing <c val=\"#TooltipNumbers\">150~~0.045~~</c> damage, pushing enemies away, and Stunning them for <c val=\"#TooltipNumbers\">0.75</c> seconds.<n/><n/><c val=\"#AbilityPassive\">Passive:</c> Cho's Basic Attacks deal <c val=\"#TooltipNumbers\">25%</c> increased damage.");
@@ -2230,7 +2230,7 @@ public class GameStringParserTests
         HeroesData heroesData = loader.HeroesData;
 
         // act
-        string parsed = GameStringParser.ParseTooltipDescription(heroesData.StormStorage, description);
+        string parsed = GameStringParser.ParseGameStringText(heroesData.StormStorage, description);
 
         // assert
         parsed.Should().Be("Deal <c val=\"#TooltipNumbers\">20</c> damage to an enemy and an additional <c val=\"#TooltipNumbers\">140</c> damage over <c val=\"#TooltipNumbers\">7</c> seconds, and Silence them for <c val=\"#TooltipNumbers\">2.5</c> seconds.<n/><n/><c val=\"#GlowColorRed\">Awards 1 Combo Point.</c><n/><n/><c val=\"#ColorViolet\">Unstealth: Eviscerate<n/></c>High damage finishing move.");
@@ -2273,7 +2273,7 @@ public class GameStringParserTests
         HeroesData heroesData = loader.HeroesData;
 
         // act
-        string parsed = GameStringParser.ParseTooltipDescription(heroesData.StormStorage, description);
+        string parsed = GameStringParser.ParseGameStringText(heroesData.StormStorage, description);
 
         // assert
         parsed.Should().Be("Zombie Wall deals <c val=\"#TooltipNumbers\">100%</c> more damage. When it expires up to <c val=\"#TooltipNumbers\">5</c> remaining Zombies uproot and attack nearby enemies for <c val=\"#TooltipNumbers\">3</c> seconds.");
@@ -2342,7 +2342,7 @@ public class GameStringParserTests
         HeroesData heroesData = loader.HeroesData;
 
         // act
-        string parsed = GameStringParser.ParseTooltipDescription(heroesData.StormStorage, description);
+        string parsed = GameStringParser.ParseGameStringText(heroesData.StormStorage, description);
 
         // assert
         parsed.Should().Be("Jaina gains <c val=\"#TooltipNumbers\">10%</c> Spell Power.");
@@ -2388,7 +2388,7 @@ public class GameStringParserTests
         HeroesData heroesData = loader.HeroesData;
 
         // act
-        string parsed = GameStringParser.ParseTooltipDescription(heroesData.StormStorage, description);
+        string parsed = GameStringParser.ParseGameStringText(heroesData.StormStorage, description);
 
         // assert
         parsed.Should().Be("<c val=\"#ColorCreamYellow\">Human</c> Basic Attacks splash for <c val=\"#TooltipNumbers\">100%</c> damage behind the target.");
@@ -2433,7 +2433,7 @@ public class GameStringParserTests
         HeroesData heroesData = loader.HeroesData;
 
         // act
-        string parsed = GameStringParser.ParseTooltipDescription(heroesData.StormStorage, description);
+        string parsed = GameStringParser.ParseGameStringText(heroesData.StormStorage, description);
 
         // assert
         parsed.Should().Be("While above <c val=\"#TooltipNumbers\">40</c> Energy, Zarya's Basic Attack size is increased by <c val=\"#TooltipNumbers\">35%</c>.");

@@ -37,7 +37,7 @@ internal sealed class StormCache
     /// <summary>
     /// Gets a dictionary of gamestrings by id.
     /// </summary>
-    public Dictionary<string, GameStringText> GameStringsById { get; } = [];
+    public Dictionary<string, GameStringFileText> GameStringsById { get; } = [];
 
     /// <summary>
     /// Gets a dictionary of assets text values by id.

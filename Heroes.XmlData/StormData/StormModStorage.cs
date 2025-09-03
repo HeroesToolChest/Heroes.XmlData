@@ -47,7 +47,7 @@ internal sealed class StormModStorage : IStormModStorage
 
     public IEnumerable<StormPath> FoundAssetFilePaths => _foundAssetFilePathsList;
 
-    public Dictionary<string, GameStringText> GameStringsById { get; } = [];
+    public Dictionary<string, GameStringFileText> GameStringsById { get; } = [];
 
     public Dictionary<string, AssetText> AssetTextsById { get; } = [];
 
@@ -79,7 +79,7 @@ internal sealed class StormModStorage : IStormModStorage
         _stormStorage.AddFileNotFound(StormModType, requiredStormFile);
     }
 
-    public void AddGameString(string id, GameStringText gameStringText)
+    public void AddGameString(string id, GameStringFileText gameStringText)
     {
         GameStringsById[id] = gameStringText;
 
@@ -107,7 +107,7 @@ internal sealed class StormModStorage : IStormModStorage
             if (string.IsNullOrWhiteSpace(line))
                 continue;
 
-            (string Id, GameStringText StormStringValue)? stormStringValue = _stormStorage.GetGameStringWithId(line, stormPath);
+            (string Id, GameStringFileText StormStringValue)? stormStringValue = _stormStorage.GetGameStringWithId(line, stormPath);
 
             if (stormStringValue is not null)
             {

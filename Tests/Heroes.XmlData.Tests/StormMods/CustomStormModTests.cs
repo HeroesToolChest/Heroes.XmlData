@@ -67,16 +67,16 @@ public class CustomStormModTests
 
         CustomStormMod customStormMod = new(_heroesSource, manualModLoader);
 
-        _heroesSource.StormStorage.GetGameStringWithId("Gamestring1=value1", Arg.Any<StormPath>()).Returns(("Gamestring1", new GameStringText("value1", TestHelpers.GetStormPath("custom"))));
-        _heroesSource.StormStorage.GetGameStringWithId("Gamestring2=value2", Arg.Any<StormPath>()).Returns(("Gamestring2", new GameStringText("value2", TestHelpers.GetStormPath("custom"))));
-        _heroesSource.StormStorage.GetGameStringWithId("Gamestring3=value3", Arg.Any<StormPath>()).Returns(("Gamestring3", new GameStringText("value3", TestHelpers.GetStormPath("custom"))));
+        _heroesSource.StormStorage.GetGameStringWithId("Gamestring1=value1", Arg.Any<StormPath>()).Returns(("Gamestring1", new GameStringFileText("value1", TestHelpers.GetStormPath("custom"))));
+        _heroesSource.StormStorage.GetGameStringWithId("Gamestring2=value2", Arg.Any<StormPath>()).Returns(("Gamestring2", new GameStringFileText("value2", TestHelpers.GetStormPath("custom"))));
+        _heroesSource.StormStorage.GetGameStringWithId("Gamestring3=value3", Arg.Any<StormPath>()).Returns(("Gamestring3", new GameStringFileText("value3", TestHelpers.GetStormPath("custom"))));
 
         // act
         customStormMod.LoadStormGameStrings(StormLocale.ENUS);
 
         // assert
-        customStormMod.StormModStorage.Received().AddGameString("Gamestring1", Arg.Any<GameStringText>());
-        customStormMod.StormModStorage.Received().AddGameString("Gamestring2", Arg.Any<GameStringText>());
-        customStormMod.StormModStorage.Received().AddGameString("Gamestring3", Arg.Any<GameStringText>());
+        customStormMod.StormModStorage.Received().AddGameString("Gamestring1", Arg.Any<GameStringFileText>());
+        customStormMod.StormModStorage.Received().AddGameString("Gamestring2", Arg.Any<GameStringFileText>());
+        customStormMod.StormModStorage.Received().AddGameString("Gamestring3", Arg.Any<GameStringFileText>());
     }
 }
