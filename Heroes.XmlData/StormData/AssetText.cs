@@ -1,8 +1,8 @@
 ﻿namespace Heroes.XmlData.StormData;
 
 /// <summary>
-/// Containst the properties for an asset text.
+/// Contains the properties for an asset text form an asset text file.
 /// </summary>
 /// <param name="Value">The value of the asset.</param>
 /// <param name="StormPath">The file where the asset resides from.</param>
-public sealed record AssetText(string Value, StormPath StormPath) : StormStringValue(Value, StormPath);
+internal sealed record AssetText(string Value, StormPath StormPath) : StormStringValue(Value, StormPath);

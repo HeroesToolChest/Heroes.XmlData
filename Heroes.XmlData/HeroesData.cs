@@ -183,7 +183,7 @@ public class HeroesData
     }
 
     /// <summary>
-    /// Gets an unparsed gamestring.
+    /// Gets an unparsed gamestring (from a gamestrings.txt file).
     /// </summary>
     /// <param name="id">The id of the gamestring.</param>
     /// <returns>An unparsed gamestring or <see langword="null"/> if not found.</returns>
@@ -193,17 +193,17 @@ public class HeroesData
     }
 
     /// <summary>
-    /// Gets an asset text string (from the assets.txt file).
+    /// Gets an asset text string (from an assets.txt file).
     /// </summary>
     /// <param name="id">The id of the asset.</param>
-    /// <returns>The value of the asset or <see langword="null"/> if not found.</returns>
+    /// <returns>The text of the asset or <see langword="null"/> if not found.</returns>
     public StormAssetString? GetStormAssetString(string id)
     {
         return _stormStorage.GetStormAssetString(id);
     }
 
     /// <summary>
-    /// Get a collection of all the unparsed gamestrings.
+    /// Get a collection of all the unparsed gamestrings (from the gamestrings.txt files).
     /// </summary>
     /// <returns>A collection of unparsed gamestrings.</returns>
     public IEnumerable<StormGameString> GetStormGameStrings()
@@ -212,10 +212,10 @@ public class HeroesData
     }
 
     /// <summary>
-    /// Parses and evaluates a gamestring into a <see cref="GameStringText"/>.
+    /// Parses and evaluates an unparsed gamestring into a <see cref="GameStringText"/>.
     /// </summary>
     /// <param name="gameString">The gamestring to parse.</param>
-    /// <param name="gameStringLocale">The localization of the <paramref name="gameString"/>.</param>
+    /// <param name="gameStringLocale">The localization of the <paramref name="gameString"/>. Used only for scaling text.</param>
     /// <param name="extractFontValues">
     /// If <see langword="true"/>, then the font style and constant tags will have their val values saved in <see cref="GameStringText.FontStyleValues"/> and  <see cref="GameStringText.FontStyleConstantValues"/>.
     /// If not needing the output with color tags, then set to <see langword="false"/> for faster parsing performance.
@@ -227,10 +227,10 @@ public class HeroesData
     }
 
     /// <summary>
-    /// Parses and evaluates a gamestring into a <see cref="GameStringText"/>.
+    /// Parses and evaluates an unparsed gamestring into a <see cref="GameStringText"/>.
     /// </summary>
     /// <param name="stormGameString">The gamestring to parse.</param>
-    /// <param name="gameStringLocale">The localization of the <paramref name="stormGameString"/>.</param>
+    /// <param name="gameStringLocale">The localization of the <paramref name="stormGameString"/>. Used only for scaling text.</param>
     /// <param name="extractFontValues">
     /// If <see langword="true"/>, then the font style and constant tags will have their val values saved in <see cref="GameStringText.FontStyleValues"/> and  <see cref="GameStringText.FontStyleConstantValues"/>.
     /// If not needing the output with color tags, then set to <see langword="false"/> for faster parsing performance.
