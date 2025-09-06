@@ -97,19 +97,19 @@ internal sealed class HeroesPrefixNotation
         {
             return value;
         }
-        else if (expression.StartsWith("negate"))
+        else if (expression.StartsWith("negate", StringComparison.OrdinalIgnoreCase))
         {
             ReadOnlySpan<char> valueToBeNegatedSpan = expression[7..^1];  // removed negate( and )
 
             return Evaluate(valueToBeNegatedSpan) * -1;
         }
-        else if (expression.StartsWith("max"))
+        else if (expression.StartsWith("max", StringComparison.OrdinalIgnoreCase))
         {
             (double firstParam, double secondParam) = GetOperatorParameters(expression);
 
             return Math.Max(firstParam, secondParam);
         }
-        else if (expression.StartsWith("min"))
+        else if (expression.StartsWith("min", StringComparison.OrdinalIgnoreCase))
         {
             (double firstParam, double secondParam) = GetOperatorParameters(expression);
 
