@@ -85,17 +85,9 @@ internal sealed class HeroesPrefixNotation
         {
             char op = expression[0];
 
-            ReadOnlySpan<char> currentExpression = GetExpression(expression);
+            (double firstParam, double secondParam) = GetOperatorParameters(expression);
 
-            int indexSplit = GetSplitIndex(currentExpression);
-
-            ReadOnlySpan<char> firstValueSpan = currentExpression[..indexSplit];
-            double firstValue = Evaluate(firstValueSpan);
-
-            ReadOnlySpan<char> secondValueSpan = currentExpression[(indexSplit + 1)..];
-            double secondValue = Evaluate(secondValueSpan);
-
-            return HeroesCalculator.ApplyOperator(op, secondValue, firstValue);
+            return HeroesCalculator.ApplyOperator(op, secondParam, firstParam);
         }
         else if (expression[0] == '$')
         {
@@ -111,7 +103,34 @@ internal sealed class HeroesPrefixNotation
 
             return Evaluate(valueToBeNegatedSpan) * -1;
         }
+        else if (expression.StartsWith("max"))
+        {
+            (double firstParam, double secondParam) = GetOperatorParameters(expression);
+
+            return Math.Max(firstParam, secondParam);
+        }
+        else if (expression.StartsWith("min"))
+        {
+            (double firstParam, double secondParam) = GetOperatorParameters(expression);
+
+            return Math.Min(firstParam, secondParam);
+        }
 
         return 0;
+    }
+
+    private (double FirstParam, double SecondParam) GetOperatorParameters(ReadOnlySpan<char> expression)
+    {
+        ReadOnlySpan<char> currentExpression = GetExpression(expression);
+
+        int indexSplit = GetSplitIndex(currentExpression);
+
+        ReadOnlySpan<char> firstValueSpan = currentExpression[..indexSplit];
+        double firstValue = Evaluate(firstValueSpan);
+
+        ReadOnlySpan<char> secondValueSpan = currentExpression[(indexSplit + 1)..];
+        double secondValue = Evaluate(secondValueSpan);
+
+        return (firstValue, secondValue);
     }
 }
