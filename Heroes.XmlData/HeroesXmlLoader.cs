@@ -6,6 +6,7 @@
 public class HeroesXmlLoader
 {
     private const string ProductName = "hero";
+    private const string ProductPtrName = "herot";
 
     private readonly IHeroesSource _heroesSource;
 
@@ -114,11 +115,12 @@ public class HeroesXmlLoader
     /// <summary>
     /// Helper method to get a <see cref="CASCConfig"/> from Blizzard's online servers.
     /// </summary>
+    /// <param name="isPtr">Set to <see langword="true"/> to download from ptr.</param>
     /// <param name="loggerOptions">Logging options for the casclib.</param>
     /// <returns>A <see cref="CASCConfig"/> instance.</returns>
-    public static CASCConfig GetOnlineCASCConfig(ILoggerOptions? loggerOptions = null)
+    public static CASCConfig GetOnlineCASCConfig(bool isPtr = false, ILoggerOptions? loggerOptions = null)
     {
-        return CASCConfig.LoadOnlineStorageConfig(ProductName, "us", false, loggerOptions ?? new HeroesLoggerOptions());
+        return CASCConfig.LoadOnlineStorageConfig(isPtr ? ProductPtrName : ProductName, "us", false, loggerOptions ?? new HeroesLoggerOptions());
     }
 
     /// <summary>
