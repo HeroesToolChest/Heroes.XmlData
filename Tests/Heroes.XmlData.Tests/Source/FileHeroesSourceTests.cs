@@ -459,4 +459,77 @@ public class FileHeroesSourceTests
         act.Should().Throw<FileNotFoundException>()
             .Which.FileName.Should().Be("does-not-exist");
     }
+
+    [TestMethod]
+    public void GetVersion_FileDoesNotExists_ReturnsNull()
+    {
+        // arrange
+        const string rootDirectory = "mods";
+
+        MockFileSystem mockFileSystem = new(new Dictionary<string, MockFileData>
+        {
+        });
+        StormStorage stormStorage = new(false);
+        FileHeroesSource fileHeroesSource = new(mockFileSystem, stormStorage, _stormModFactory, _depotCacheFactory, rootDirectory, _backgroundWorkerEx);
+
+        // act
+        string? result = fileHeroesSource.GetVersion();
+
+        // assert
+        result.Should().BeNull();
+    }
+
+    [TestMethod]
+    public void GetVersion_FileExistsWithNoVersionProperty_ReturnsNull()
+    {
+        // arrange
+        const string rootDirectory = "mods";
+
+        MockFileSystem mockFileSystem = new(new Dictionary<string, MockFileData>
+        {
+            {
+                Path.Join(rootDirectory, ".info"), new MockFileData(
+                    """
+                    {
+                        "property": "value"
+                    }
+                    """)
+            },
+        });
+        StormStorage stormStorage = new(false);
+        FileHeroesSource fileHeroesSource = new(mockFileSystem, stormStorage, _stormModFactory, _depotCacheFactory, rootDirectory, _backgroundWorkerEx);
+
+        // act
+        string? result = fileHeroesSource.GetVersion();
+
+        // assert
+        result.Should().BeNull();
+    }
+
+    [TestMethod]
+    public void GetVersion_FileExistsWithVersionProperty_ReturnsVersion()
+    {
+        // arrange
+        const string rootDirectory = "mods";
+
+        MockFileSystem mockFileSystem = new(new Dictionary<string, MockFileData>
+        {
+            {
+                Path.Join(rootDirectory, ".info"), new MockFileData(
+                    """
+                    {
+                        "version": "2.55.13.95301"
+                    }
+                    """)
+            },
+        });
+        StormStorage stormStorage = new(false);
+        FileHeroesSource fileHeroesSource = new(mockFileSystem, stormStorage, _stormModFactory, _depotCacheFactory, rootDirectory, _backgroundWorkerEx);
+
+        // act
+        string? result = fileHeroesSource.GetVersion();
+
+        // assert
+        result.Should().Be("2.55.13.95301");
+    }
 }

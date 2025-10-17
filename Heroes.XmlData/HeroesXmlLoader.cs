@@ -5,6 +5,8 @@
 /// </summary>
 public class HeroesXmlLoader
 {
+    private const string ProductName = "hero";
+
     private readonly IHeroesSource _heroesSource;
 
     private bool _baseStormModsLoaded = false;
@@ -30,7 +32,10 @@ public class HeroesXmlLoader
     private HeroesXmlLoader(string pathToModsDirectory, IBackgroundWorkerEx? backgroundWorkerEx)
     {
         StormStorage stormStorage = new();
-        _heroesSource = new FileHeroesSource(stormStorage, new StormModFactory(), new DepotCacheFactory(), pathToModsDirectory, backgroundWorkerEx);
+        FileHeroesSource fileHeroesSource = new(stormStorage, new StormModFactory(), new DepotCacheFactory(), pathToModsDirectory, backgroundWorkerEx);
+        HeroesVersion = fileHeroesSource.GetVersion();
+
+        _heroesSource = fileHeroesSource;
 
         HeroesData = new HeroesData(stormStorage);
 
@@ -38,7 +43,7 @@ public class HeroesXmlLoader
         RootDirectory = _heroesSource.ModsBaseDirectoryPath;
     }
 
-    private HeroesXmlLoader(CASCHeroesStorage cascHeroesStorage, IBackgroundWorkerEx? backgroundWorkerEx)
+    private HeroesXmlLoader(CASCHeroesStorage cascHeroesStorage, string version, IBackgroundWorkerEx? backgroundWorkerEx)
     {
         StormStorage stormStorage = new();
         _heroesSource = new CASCHeroesSource(stormStorage, new StormModFactory(), new DepotCacheFactory(), cascHeroesStorage, backgroundWorkerEx);
@@ -47,12 +52,19 @@ public class HeroesXmlLoader
 
         LoadedType = HeroesXmlLoaderType.CASC;
         RootDirectory = _heroesSource.ModsBaseDirectoryPath;
+        HeroesVersion = version;
     }
 
     /// <summary>
-    /// Gets the loaded heroes build number.
+    /// <para>Gets the loaded internal heroes build number from the buildid.txt file.</para>
+    /// <para>This is sometimes not updated to the (latest) correct build.</para>
     /// </summary>
     public int? Build => _heroesSource.StormStorage.GetBuildId();
+
+    /// <summary>
+    /// Gets the version of the loaded Heroes of the Storm data.
+    /// </summary>
+    public string? HeroesVersion { get; }
 
     /// <summary>
     /// Gets the type of the loaded source data.
@@ -89,6 +101,27 @@ public class HeroesXmlLoader
     }
 
     /// <summary>
+    /// Helper method to get a <see cref="CASCConfig"/> from a local Heroes of the Storm directory.
+    /// </summary>
+    /// <param name="pathToHeroesDirectory">The path to the Heroes of the storm directory.</param>
+    /// <param name="loggerOptions">Logging options for the casclib.</param>
+    /// <returns>A <see cref="CASCConfig"/> instance.</returns>
+    public static CASCConfig GetCASCConfig(string pathToHeroesDirectory, ILoggerOptions? loggerOptions = null)
+    {
+        return CASCConfig.LoadLocalStorageConfig(pathToHeroesDirectory, ProductName, loggerOptions ?? new HeroesLoggerOptions());
+    }
+
+    /// <summary>
+    /// Helper method to get a <see cref="CASCConfig"/> from Blizzard's online servers.
+    /// </summary>
+    /// <param name="loggerOptions">Logging options for the casclib.</param>
+    /// <returns>A <see cref="CASCConfig"/> instance.</returns>
+    public static CASCConfig GetOnlineCASCConfig(ILoggerOptions? loggerOptions = null)
+    {
+        return CASCConfig.LoadOnlineStorageConfig(ProductName, "us", false, loggerOptions ?? new HeroesLoggerOptions());
+    }
+
+    /// <summary>
     /// Gets an instance of the <see cref="HeroesXmlLoader"/> class. Sets the source of the data to be loaded from an extracted file source.
     /// </summary>
     /// <param name="rootDirectory">The root directory path, usually the mods directory.</param>
@@ -101,26 +134,14 @@ public class HeroesXmlLoader
     }
 
     /// <summary>
-    /// Gets an instance of the <see cref="HeroesXmlLoader"/> class. Sets the source of the data to be loaded from the Heroes of the Storm directory.
+    /// Gets an instance of the <see cref="HeroesXmlLoader"/> class. Sets the source of data to be loaded locally or online.
     /// </summary>
-    /// <param name="pathToHeroesDirectory">The Heroes of the storm directory.</param>
-    /// <param name="loggerOptions">Logging options for the casclib.</param>
+    /// <param name="cascConfig">The <see cref="CASCConfig"/> to determine on how to load data from the data files.</param>
     /// <param name="backgroundWorkerEx">A background worker used to report loading progress.</param>
     /// <returns>A <see cref="HeroesXmlLoader"/> instance.</returns>
-    public static HeroesXmlLoader LoadWithCASC(string pathToHeroesDirectory, ILoggerOptions? loggerOptions = null, IBackgroundWorkerEx? backgroundWorkerEx = null)
+    public static HeroesXmlLoader LoadWithCASC(CASCConfig cascConfig, IBackgroundWorkerEx? backgroundWorkerEx = null)
     {
-        return LoadAsCASCInternal(CASCConfig.LoadLocalStorageConfig(pathToHeroesDirectory, "hero", loggerOptions ?? new HeroesLoggerOptions()), backgroundWorkerEx);
-    }
-
-    /// <summary>
-    /// Gets an instance of the <see cref="HeroesXmlLoader"/> class. Sets the source of the data to be downloaded from Blizzard's online servers.
-    /// </summary>
-    /// <param name="loggerOptions">Logging options for the casclib.</param>
-    /// <param name="backgroundWorkerEx">A background worker used to report loading progress.</param>
-    /// <returns>A <see cref="HeroesXmlLoader"/> instance.</returns>
-    public static HeroesXmlLoader LoadWithOnlineCASC(ILoggerOptions? loggerOptions = null, IBackgroundWorkerEx? backgroundWorkerEx = null)
-    {
-        return LoadAsCASCInternal(CASCConfig.LoadOnlineStorageConfig("hero", "us", false, loggerOptions ?? new HeroesLoggerOptions()), backgroundWorkerEx);
+        return LoadAsCASCInternal(cascConfig, backgroundWorkerEx);
     }
 
     /// <summary>
@@ -470,7 +491,7 @@ public class HeroesXmlLoader
 
         CASCFolder cascFolderRoot = cascHandler.Root.SetFlags(LocaleFlags.All);
 
-        return new HeroesXmlLoader(new CASCHeroesStorage(cascHandler, cascFolderRoot), backgroundWorkerEx);
+        return new HeroesXmlLoader(new CASCHeroesStorage(cascHandler, cascFolderRoot), cascConfig.VersionName, backgroundWorkerEx);
     }
 
     private void LoadBaseStormMods()

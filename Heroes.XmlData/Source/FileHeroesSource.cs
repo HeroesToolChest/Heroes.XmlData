@@ -1,4 +1,5 @@
 ﻿using System.IO.Abstractions;
+using System.Text.Json;
 
 namespace Heroes.XmlData.Source;
 
@@ -58,6 +59,28 @@ internal sealed class FileHeroesSource : HeroesSource, IFileHeroesSource
             return GetMpqFileEntry(stormFile.StormPath.StormModPath, stormFile.StormPath.Path);
         else
             return GetFile(stormFile.StormPath.Path);
+    }
+
+    public string? GetVersion()
+    {
+        string infoFilePath = Path.Join(ModsBaseDirectoryPath, ".info");
+
+        if (!_fileSystem.File.Exists(infoFilePath))
+            return null;
+
+        using Stream fileStream = _fileSystem.File.OpenRead(infoFilePath);
+        using JsonDocument document = JsonDocument.Parse(fileStream, new JsonDocumentOptions()
+        {
+            MaxDepth = 4,
+        });
+
+        JsonElement rootElement = document.RootElement;
+        if (rootElement.TryGetProperty("version", out JsonElement versionElement))
+        {
+            return versionElement.GetString();
+        }
+
+        return null;
     }
 
     protected override IStormMod GetStormMod(string directoryPath, StormModType stormModType, BackgroundWorkerEx? backgroundWorkerEx = null) => StormModFactory.CreateFileStormModInstance(this, directoryPath, stormModType);

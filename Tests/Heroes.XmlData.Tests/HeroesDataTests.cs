@@ -1,6 +1,4 @@
-﻿using Microsoft.VisualStudio.TestPlatform.MSTest.TestAdapter.ObjectModel;
-
-namespace Heroes.XmlData.Tests;
+﻿namespace Heroes.XmlData.Tests;
 
 [TestClass]
 public class HeroesDataTests

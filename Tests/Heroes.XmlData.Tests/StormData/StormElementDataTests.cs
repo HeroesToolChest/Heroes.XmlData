@@ -1,6 +1,4 @@
 ﻿using Heroes.XmlData.Tests;
-using System.Xml;
-using System.Xml.Linq;
 
 namespace Heroes.XmlData.StormData.Tests;
 

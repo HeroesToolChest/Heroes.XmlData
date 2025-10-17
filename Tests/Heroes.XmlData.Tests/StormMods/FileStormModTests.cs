@@ -154,7 +154,7 @@ public class FileStormModTests
         });
 
         // act
-        List<IStormMod> stormMapMods = fileStormMod.GetStormMapMods(properties).ToList();
+        List<IStormMod> stormMapMods = [.. fileStormMod.GetStormMapMods(properties)];
 
         // assert
         stormMapMods.Should().HaveCount(6).And
