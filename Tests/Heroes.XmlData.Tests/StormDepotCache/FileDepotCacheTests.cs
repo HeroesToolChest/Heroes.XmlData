@@ -9,13 +9,13 @@ public class FileDepotCacheTests
 
     private readonly IStormModFactory _stormModFactory;
     private readonly IDepotCacheFactory _depotCacheFactory;
-    private readonly IBackgroundWorkerEx _backgroundWorkerEx;
+    private readonly IProgressReporter _progressReporter;
 
     public FileDepotCacheTests()
     {
         _stormModFactory = Substitute.For<IStormModFactory>();
         _depotCacheFactory = Substitute.For<IDepotCacheFactory>();
-        _backgroundWorkerEx = Substitute.For<IBackgroundWorkerEx>();
+        _progressReporter = Substitute.For<IProgressReporter>();
     }
 
     [TestMethod]
@@ -32,7 +32,7 @@ public class FileDepotCacheTests
         });
 
         StormStorage stormStorage = new(false);
-        FileHeroesSource fileHeroesSource = new(stormStorage, _stormModFactory, _depotCacheFactory, "mods", _backgroundWorkerEx);
+        FileHeroesSource fileHeroesSource = new(stormStorage, _stormModFactory, _depotCacheFactory, "mods", _progressReporter);
         FileDepotCache fileDepotCache = new(mockFileSystem, fileHeroesSource);
 
         // act
@@ -253,7 +253,7 @@ public class FileDepotCacheTests
         });
 
         StormStorage stormStorage = new(false);
-        FileHeroesSource fileHeroesSource = new(stormStorage, _stormModFactory, _depotCacheFactory, "mods", _backgroundWorkerEx);
+        FileHeroesSource fileHeroesSource = new(stormStorage, _stormModFactory, _depotCacheFactory, "mods", _progressReporter);
         FileDepotCache fileDepotCache = new(mockFileSystem, fileHeroesSource);
 
         // act
@@ -276,7 +276,7 @@ public class FileDepotCacheTests
         });
 
         StormStorage stormStorage = new(false);
-        FileHeroesSource fileHeroesSource = new(stormStorage, _stormModFactory, _depotCacheFactory, "mods", _backgroundWorkerEx);
+        FileHeroesSource fileHeroesSource = new(stormStorage, _stormModFactory, _depotCacheFactory, "mods", _progressReporter);
         FileDepotCache fileDepotCache = new(mockFileSystem, fileHeroesSource);
 
         // act

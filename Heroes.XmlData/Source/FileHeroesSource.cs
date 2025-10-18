@@ -7,12 +7,12 @@ internal sealed class FileHeroesSource : HeroesSource, IFileHeroesSource
 {
     private readonly IFileSystem _fileSystem;
 
-    public FileHeroesSource(IStormStorage stormStorage, IStormModFactory stormModFactory, IDepotCacheFactory depotCacheFactory, string modsDirectoryPath, IBackgroundWorkerEx? backgroundWorkerEx)
+    public FileHeroesSource(IStormStorage stormStorage, IStormModFactory stormModFactory, IDepotCacheFactory depotCacheFactory, string modsDirectoryPath, IProgressReporter? backgroundWorkerEx)
         : this(new FileSystem(), stormStorage, stormModFactory, depotCacheFactory, modsDirectoryPath, backgroundWorkerEx)
     {
     }
 
-    public FileHeroesSource(IFileSystem fileSystem, IStormStorage stormStorage, IStormModFactory stormModFactory, IDepotCacheFactory depotCacheFactory, string modsDirectoryPath, IBackgroundWorkerEx? backgroundWorkerEx)
+    public FileHeroesSource(IFileSystem fileSystem, IStormStorage stormStorage, IStormModFactory stormModFactory, IDepotCacheFactory depotCacheFactory, string modsDirectoryPath, IProgressReporter? backgroundWorkerEx)
         : base(stormStorage, stormModFactory, depotCacheFactory, modsDirectoryPath, backgroundWorkerEx)
     {
         _fileSystem = fileSystem;
@@ -83,7 +83,7 @@ internal sealed class FileHeroesSource : HeroesSource, IFileHeroesSource
         return null;
     }
 
-    protected override IStormMod GetStormMod(string directoryPath, StormModType stormModType, BackgroundWorkerEx? backgroundWorkerEx = null) => StormModFactory.CreateFileStormModInstance(this, directoryPath, stormModType);
+    protected override IStormMod GetStormMod(string directoryPath, StormModType stormModType, IProgressReporter? progressReporter = null) => StormModFactory.CreateFileStormModInstance(this, directoryPath, stormModType);
 
     protected override IStormMod GetMpqStormMod(string name, string directoryPath, StormModType stormModType) => StormModFactory.CreateFileMpqStormModInstance(this, name, directoryPath, stormModType);
 

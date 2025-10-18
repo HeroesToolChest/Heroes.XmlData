@@ -13,14 +13,14 @@ public class CASCHeroesSourceTests
     private readonly IStormModFactory _stormModFactory;
     private readonly IDepotCacheFactory _depotCacheFactory;
     private readonly ICASCHeroesStorage _cascHeroesStorage;
-    private readonly IBackgroundWorkerEx _backgroundWorkerEx;
+    private readonly IProgressReporter _progressReporter;
 
     public CASCHeroesSourceTests()
     {
         _stormModFactory = Substitute.For<IStormModFactory>();
         _depotCacheFactory = Substitute.For<IDepotCacheFactory>();
         _cascHeroesStorage = Substitute.For<ICASCHeroesStorage>();
-        _backgroundWorkerEx = Substitute.For<IBackgroundWorkerEx>();
+        _progressReporter = Substitute.For<IProgressReporter>();
     }
 
     [TestMethod]
@@ -30,7 +30,7 @@ public class CASCHeroesSourceTests
     {
         // arrange
         StormStorage stormStorage = new(false);
-        CASCHeroesSource cascHeroesSource = new(stormStorage, _stormModFactory, _depotCacheFactory, _cascHeroesStorage, _backgroundWorkerEx);
+        CASCHeroesSource cascHeroesSource = new(stormStorage, _stormModFactory, _depotCacheFactory, _cascHeroesStorage, _progressReporter);
 
         const string rootDirectory = "mods";
 
@@ -54,7 +54,7 @@ public class CASCHeroesSourceTests
     {
         // arrange
         StormStorage stormStorage = new(false);
-        CASCHeroesSource cascHeroesSource = new(stormStorage, _stormModFactory, _depotCacheFactory, _cascHeroesStorage, _backgroundWorkerEx);
+        CASCHeroesSource cascHeroesSource = new(stormStorage, _stormModFactory, _depotCacheFactory, _cascHeroesStorage, _progressReporter);
 
         const string rootDirectory = "mods";
 
@@ -78,7 +78,7 @@ public class CASCHeroesSourceTests
     {
         // arrange
         StormStorage stormStorage = new(false);
-        CASCHeroesSource cascHeroesSource = new(stormStorage, _stormModFactory, _depotCacheFactory, _cascHeroesStorage, _backgroundWorkerEx);
+        CASCHeroesSource cascHeroesSource = new(stormStorage, _stormModFactory, _depotCacheFactory, _cascHeroesStorage, _progressReporter);
 
         const string rootDirectory = "mods";
 
@@ -103,7 +103,7 @@ public class CASCHeroesSourceTests
     {
         // arrange
         StormStorage stormStorage = new(false);
-        CASCHeroesSource cascHeroesSource = new(stormStorage, _stormModFactory, _depotCacheFactory, _cascHeroesStorage, _backgroundWorkerEx);
+        CASCHeroesSource cascHeroesSource = new(stormStorage, _stormModFactory, _depotCacheFactory, _cascHeroesStorage, _progressReporter);
 
         const string rootDirectory = "mods";
 
@@ -129,7 +129,7 @@ public class CASCHeroesSourceTests
     {
         // arrange
         StormStorage stormStorage = new(false);
-        CASCHeroesSource cascHeroesSource = new(stormStorage, _stormModFactory, _depotCacheFactory, _cascHeroesStorage, _backgroundWorkerEx);
+        CASCHeroesSource cascHeroesSource = new(stormStorage, _stormModFactory, _depotCacheFactory, _cascHeroesStorage, _progressReporter);
 
         const string rootDirectory = "mods";
 
@@ -160,7 +160,7 @@ public class CASCHeroesSourceTests
     {
         // arrange
         StormStorage stormStorage = new(false);
-        CASCHeroesSource cascHeroesSource = new(stormStorage, _stormModFactory, _depotCacheFactory, _cascHeroesStorage, _backgroundWorkerEx);
+        CASCHeroesSource cascHeroesSource = new(stormStorage, _stormModFactory, _depotCacheFactory, _cascHeroesStorage, _progressReporter);
 
         const string rootDirectory = "mods";
 
@@ -192,7 +192,7 @@ public class CASCHeroesSourceTests
     {
         // arrange
         StormStorage stormStorage = new(false);
-        CASCHeroesSource cascHeroesSource = new(stormStorage, _stormModFactory, _depotCacheFactory, _cascHeroesStorage, _backgroundWorkerEx);
+        CASCHeroesSource cascHeroesSource = new(stormStorage, _stormModFactory, _depotCacheFactory, _cascHeroesStorage, _progressReporter);
 
         const string rootDirectory = "mods";
 
@@ -224,7 +224,7 @@ public class CASCHeroesSourceTests
     {
         // arrange
         StormStorage stormStorage = new(false);
-        CASCHeroesSource cascHeroesSource = new(stormStorage, _stormModFactory, _depotCacheFactory, _cascHeroesStorage, _backgroundWorkerEx);
+        CASCHeroesSource cascHeroesSource = new(stormStorage, _stormModFactory, _depotCacheFactory, _cascHeroesStorage, _progressReporter);
 
         // act
         bool result = cascHeroesSource.FileExists(emptyPath);
@@ -238,7 +238,7 @@ public class CASCHeroesSourceTests
     {
         // arrange
         StormStorage stormStorage = new(false);
-        CASCHeroesSource cascHeroesSource = new(stormStorage, _stormModFactory, _depotCacheFactory, _cascHeroesStorage, _backgroundWorkerEx);
+        CASCHeroesSource cascHeroesSource = new(stormStorage, _stormModFactory, _depotCacheFactory, _cascHeroesStorage, _progressReporter);
 
         const string rootDirectory = "mods";
 
@@ -264,7 +264,7 @@ public class CASCHeroesSourceTests
     {
         // arrange
         StormStorage stormStorage = new(false);
-        CASCHeroesSource cascHeroesSource = new(stormStorage, _stormModFactory, _depotCacheFactory, _cascHeroesStorage, _backgroundWorkerEx);
+        CASCHeroesSource cascHeroesSource = new(stormStorage, _stormModFactory, _depotCacheFactory, _cascHeroesStorage, _progressReporter);
 
         const string rootDirectory = "mods";
 
@@ -287,7 +287,7 @@ public class CASCHeroesSourceTests
     {
         // arrange
         StormStorage stormStorage = new(false);
-        CASCHeroesSource cascHeroesSource = new(stormStorage, _stormModFactory, _depotCacheFactory, _cascHeroesStorage, _backgroundWorkerEx);
+        CASCHeroesSource cascHeroesSource = new(stormStorage, _stormModFactory, _depotCacheFactory, _cascHeroesStorage, _progressReporter);
 
         const string rootDirectory = "mods";
 
@@ -309,7 +309,7 @@ public class CASCHeroesSourceTests
     {
         // arrange
         StormStorage stormStorage = new(false);
-        CASCHeroesSource cascHeroesSource = new(stormStorage, _stormModFactory, _depotCacheFactory, _cascHeroesStorage, _backgroundWorkerEx);
+        CASCHeroesSource cascHeroesSource = new(stormStorage, _stormModFactory, _depotCacheFactory, _cascHeroesStorage, _progressReporter);
 
         const string rootDirectory = "mods";
 
@@ -331,7 +331,7 @@ public class CASCHeroesSourceTests
     {
         // arrange
         StormStorage stormStorage = new(false);
-        CASCHeroesSource cascHeroesSource = new(stormStorage, _stormModFactory, _depotCacheFactory, _cascHeroesStorage, _backgroundWorkerEx);
+        CASCHeroesSource cascHeroesSource = new(stormStorage, _stormModFactory, _depotCacheFactory, _cascHeroesStorage, _progressReporter);
 
         const string rootDirectory = "mods";
 
@@ -356,7 +356,7 @@ public class CASCHeroesSourceTests
     {
         // arrange
         StormStorage stormStorage = new(false);
-        CASCHeroesSource cascHeroesSource = new(stormStorage, _stormModFactory, _depotCacheFactory, _cascHeroesStorage, _backgroundWorkerEx);
+        CASCHeroesSource cascHeroesSource = new(stormStorage, _stormModFactory, _depotCacheFactory, _cascHeroesStorage, _progressReporter);
 
         const string rootDirectory = "mods";
 
@@ -386,7 +386,7 @@ public class CASCHeroesSourceTests
     {
         // arrange
         StormStorage stormStorage = new(false);
-        CASCHeroesSource cascHeroesSource = new(stormStorage, _stormModFactory, _depotCacheFactory, _cascHeroesStorage, _backgroundWorkerEx);
+        CASCHeroesSource cascHeroesSource = new(stormStorage, _stormModFactory, _depotCacheFactory, _cascHeroesStorage, _progressReporter);
 
         CASCFolder rootFolder = new("name");
 
@@ -412,7 +412,7 @@ public class CASCHeroesSourceTests
     {
         // arrange
         StormStorage stormStorage = new(false);
-        CASCHeroesSource cascHeroesSource = new(stormStorage, _stormModFactory, _depotCacheFactory, _cascHeroesStorage, _backgroundWorkerEx);
+        CASCHeroesSource cascHeroesSource = new(stormStorage, _stormModFactory, _depotCacheFactory, _cascHeroesStorage, _progressReporter);
 
         const string rootDirectory = "mods";
 

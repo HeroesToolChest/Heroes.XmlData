@@ -4,7 +4,7 @@ internal interface IHeroesSource
 {
     IStormModFactory StormModFactory { get; }
 
-    IBackgroundWorkerEx? BackgroundWorkerEx { get; }
+    IProgressReporter? ProgressReporter { get; }
 
     /// <summary>
     /// Gets the base directory path of the selected mods folder.

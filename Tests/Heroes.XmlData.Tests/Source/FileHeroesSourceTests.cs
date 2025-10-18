@@ -10,13 +10,13 @@ public class FileHeroesSourceTests
 
     private readonly IStormModFactory _stormModFactory;
     private readonly IDepotCacheFactory _depotCacheFactory;
-    private readonly IBackgroundWorkerEx _backgroundWorkerEx;
+    private readonly IProgressReporter _progressReporter;
 
     public FileHeroesSourceTests()
     {
         _stormModFactory = Substitute.For<IStormModFactory>();
         _depotCacheFactory = Substitute.For<IDepotCacheFactory>();
-        _backgroundWorkerEx = Substitute.For<IBackgroundWorkerEx>();
+        _progressReporter = Substitute.For<IProgressReporter>();
     }
 
     [TestMethod]
@@ -33,7 +33,7 @@ public class FileHeroesSourceTests
         });
 
         StormStorage stormStorage = new(false);
-        FileHeroesSource fileHeroesSource = new(mockFileSystem, stormStorage, _stormModFactory, _depotCacheFactory, rootDirectory, _backgroundWorkerEx);
+        FileHeroesSource fileHeroesSource = new(mockFileSystem, stormStorage, _stormModFactory, _depotCacheFactory, rootDirectory, _progressReporter);
 
         // act
         bool result = fileHeroesSource.FileExists(Path.Join(rootDirectory, "test.stormmod", "base.stormdata", fileToLookup));
@@ -56,7 +56,7 @@ public class FileHeroesSourceTests
         });
 
         StormStorage stormStorage = new(false);
-        FileHeroesSource fileHeroesSource = new(mockFileSystem, stormStorage, _stormModFactory, _depotCacheFactory, rootDirectory, _backgroundWorkerEx);
+        FileHeroesSource fileHeroesSource = new(mockFileSystem, stormStorage, _stormModFactory, _depotCacheFactory, rootDirectory, _progressReporter);
 
         // act
         bool result = fileHeroesSource.FileExists(Path.Join("test.stormmod", "base.stormdata", fileToLookup));
@@ -78,7 +78,7 @@ public class FileHeroesSourceTests
             { Path.Join(rootDirectory, "test.stormmod", "base.stormdata", "depotcache", "mpq.s2ma"), new MockFileData(File.ReadAllBytes(Path.Join(TestFilesFolder, "8d554.s2ma"))) },
         });
         StormStorage stormStorage = new(false);
-        FileHeroesSource fileHeroesSource = new(mockFileSystem, stormStorage, _stormModFactory, _depotCacheFactory, rootDirectory, _backgroundWorkerEx);
+        FileHeroesSource fileHeroesSource = new(mockFileSystem, stormStorage, _stormModFactory, _depotCacheFactory, rootDirectory, _progressReporter);
 
         // act
         bool result = fileHeroesSource.FileExists("(listfile)", Path.Join("test.stormmod", "base.stormdata", "depotcache", mpqFile));
@@ -100,7 +100,7 @@ public class FileHeroesSourceTests
             { Path.Join(rootDirectory, "test.stormmod", "base.stormdata", "depotcache", "mpq.s2ma"), new MockFileData(File.ReadAllBytes(Path.Join(TestFilesFolder, "8d554.s2ma"))) },
         });
         StormStorage stormStorage = new(false);
-        FileHeroesSource fileHeroesSource = new(mockFileSystem, stormStorage, _stormModFactory, _depotCacheFactory, rootDirectory, _backgroundWorkerEx);
+        FileHeroesSource fileHeroesSource = new(mockFileSystem, stormStorage, _stormModFactory, _depotCacheFactory, rootDirectory, _progressReporter);
 
         // act
         bool result = fileHeroesSource.FileExists(fileToLookup, Path.Join("test.stormmod", "base.stormdata", "depotcache", "mpq.s2ma"));
@@ -124,7 +124,7 @@ public class FileHeroesSourceTests
         });
 
         StormStorage stormStorage = new(false);
-        FileHeroesSource fileHeroesSource = new(mockFileSystem, stormStorage, _stormModFactory, _depotCacheFactory, rootDirectory, _backgroundWorkerEx);
+        FileHeroesSource fileHeroesSource = new(mockFileSystem, stormStorage, _stormModFactory, _depotCacheFactory, rootDirectory, _progressReporter);
 
         // act
         bool result = fileHeroesSource.FileExists(new StormFile(new StormPath()
@@ -153,7 +153,7 @@ public class FileHeroesSourceTests
             { Path.Join(rootDirectory, "test.stormmod", "base.stormdata", "depotcache", "mpq.s2ma"), new MockFileData(File.ReadAllBytes(Path.Join(TestFilesFolder, "8d554.s2ma"))) },
         });
         StormStorage stormStorage = new(false);
-        FileHeroesSource fileHeroesSource = new(mockFileSystem, stormStorage, _stormModFactory, _depotCacheFactory, rootDirectory, _backgroundWorkerEx);
+        FileHeroesSource fileHeroesSource = new(mockFileSystem, stormStorage, _stormModFactory, _depotCacheFactory, rootDirectory, _progressReporter);
 
         // act
         bool result = fileHeroesSource.FileExists(new StormFile(new StormPath()
@@ -182,7 +182,7 @@ public class FileHeroesSourceTests
             { Path.Join(rootDirectory, "test.stormmod", "base.stormdata", "depotcache", "mpq.s2ma"), new MockFileData(File.ReadAllBytes(Path.Join(TestFilesFolder, "8d554.s2ma"))) },
         });
         StormStorage stormStorage = new(false);
-        FileHeroesSource fileHeroesSource = new(mockFileSystem, stormStorage, _stormModFactory, _depotCacheFactory, rootDirectory, _backgroundWorkerEx);
+        FileHeroesSource fileHeroesSource = new(mockFileSystem, stormStorage, _stormModFactory, _depotCacheFactory, rootDirectory, _progressReporter);
 
         // act
         bool result = fileHeroesSource.FileExists(new StormFile(new StormPath()
@@ -210,7 +210,7 @@ public class FileHeroesSourceTests
         {
         });
         StormStorage stormStorage = new(false);
-        FileHeroesSource fileHeroesSource = new(mockFileSystem, stormStorage, _stormModFactory, _depotCacheFactory, rootDirectory, _backgroundWorkerEx);
+        FileHeroesSource fileHeroesSource = new(mockFileSystem, stormStorage, _stormModFactory, _depotCacheFactory, rootDirectory, _progressReporter);
 
         // act
         bool result = fileHeroesSource.FileExists(emptyPath);
@@ -231,7 +231,7 @@ public class FileHeroesSourceTests
         });
 
         StormStorage stormStorage = new(false);
-        FileHeroesSource fileHeroesSource = new(mockFileSystem, stormStorage, _stormModFactory, _depotCacheFactory, rootDirectory, _backgroundWorkerEx);
+        FileHeroesSource fileHeroesSource = new(mockFileSystem, stormStorage, _stormModFactory, _depotCacheFactory, rootDirectory, _progressReporter);
 
         // act
         Stream result = fileHeroesSource.GetFile(Path.Join(rootDirectory, "test.stormmod", "base.stormdata", "somefile.txt"));
@@ -251,7 +251,7 @@ public class FileHeroesSourceTests
             { Path.Join(rootDirectory, "test.stormmod", "base.stormdata", "depotcache", "mpq.s2ma"), new MockFileData(File.ReadAllBytes(Path.Join(TestFilesFolder, "8d554.s2ma"))) },
         });
         StormStorage stormStorage = new(false);
-        FileHeroesSource fileHeroesSource = new(mockFileSystem, stormStorage, _stormModFactory, _depotCacheFactory, rootDirectory, _backgroundWorkerEx);
+        FileHeroesSource fileHeroesSource = new(mockFileSystem, stormStorage, _stormModFactory, _depotCacheFactory, rootDirectory, _progressReporter);
 
         // act
         Stream result = fileHeroesSource.GetFile("(listfile)", Path.Join("test.stormmod", "base.stormdata", "depotcache", "mpq.s2ma"));
@@ -271,7 +271,7 @@ public class FileHeroesSourceTests
         });
 
         StormStorage stormStorage = new(false);
-        FileHeroesSource fileHeroesSource = new(mockFileSystem, stormStorage, _stormModFactory, _depotCacheFactory, rootDirectory, _backgroundWorkerEx);
+        FileHeroesSource fileHeroesSource = new(mockFileSystem, stormStorage, _stormModFactory, _depotCacheFactory, rootDirectory, _progressReporter);
 
         // act
         Action act = () => fileHeroesSource.GetFile(Path.Join("test.stormmod", "base.stormdata", "somefile.txt"));
@@ -291,7 +291,7 @@ public class FileHeroesSourceTests
         {
         });
         StormStorage stormStorage = new(false);
-        FileHeroesSource fileHeroesSource = new(mockFileSystem, stormStorage, _stormModFactory, _depotCacheFactory, rootDirectory, _backgroundWorkerEx);
+        FileHeroesSource fileHeroesSource = new(mockFileSystem, stormStorage, _stormModFactory, _depotCacheFactory, rootDirectory, _progressReporter);
 
         // act
         Action act = () => fileHeroesSource.GetFile("(listfile)", Path.Join("test.stormmod", "base.stormdata", "depotcache", "mpq.s2ma"));
@@ -312,7 +312,7 @@ public class FileHeroesSourceTests
             { Path.Join(rootDirectory, "test.stormmod", "base.stormdata", "depotcache", "mpq.s2ma"), new MockFileData(File.ReadAllBytes(Path.Join(TestFilesFolder, "8d554.s2ma"))) },
         });
         StormStorage stormStorage = new(false);
-        FileHeroesSource fileHeroesSource = new(mockFileSystem, stormStorage, _stormModFactory, _depotCacheFactory, rootDirectory, _backgroundWorkerEx);
+        FileHeroesSource fileHeroesSource = new(mockFileSystem, stormStorage, _stormModFactory, _depotCacheFactory, rootDirectory, _progressReporter);
 
         // act
         Action act = () => fileHeroesSource.GetFile("does-not-exist", Path.Join("test.stormmod", "base.stormdata", "depotcache", "mpq.s2ma"));
@@ -335,7 +335,7 @@ public class FileHeroesSourceTests
         });
 
         StormStorage stormStorage = new(false);
-        FileHeroesSource fileHeroesSource = new(mockFileSystem, stormStorage, _stormModFactory, _depotCacheFactory, rootDirectory, _backgroundWorkerEx);
+        FileHeroesSource fileHeroesSource = new(mockFileSystem, stormStorage, _stormModFactory, _depotCacheFactory, rootDirectory, _progressReporter);
 
         // act
         Stream result = fileHeroesSource.GetFile(new StormFile(new StormPath()
@@ -362,7 +362,7 @@ public class FileHeroesSourceTests
         });
 
         StormStorage stormStorage = new(false);
-        FileHeroesSource fileHeroesSource = new(mockFileSystem, stormStorage, _stormModFactory, _depotCacheFactory, rootDirectory, _backgroundWorkerEx);
+        FileHeroesSource fileHeroesSource = new(mockFileSystem, stormStorage, _stormModFactory, _depotCacheFactory, rootDirectory, _progressReporter);
 
         // act
         Action act = () => fileHeroesSource.GetFile(new StormFile(new StormPath()
@@ -390,7 +390,7 @@ public class FileHeroesSourceTests
             { Path.Join(rootDirectory, "test.stormmod", "base.stormdata", "depotcache", "mpq.s2ma"), new MockFileData(File.ReadAllBytes(Path.Join(TestFilesFolder, "8d554.s2ma"))) },
         });
         StormStorage stormStorage = new(false);
-        FileHeroesSource fileHeroesSource = new(mockFileSystem, stormStorage, _stormModFactory, _depotCacheFactory, rootDirectory, _backgroundWorkerEx);
+        FileHeroesSource fileHeroesSource = new(mockFileSystem, stormStorage, _stormModFactory, _depotCacheFactory, rootDirectory, _progressReporter);
 
         // act
         Stream result = fileHeroesSource.GetFile(new StormFile(new StormPath()
@@ -416,7 +416,7 @@ public class FileHeroesSourceTests
         {
         });
         StormStorage stormStorage = new(false);
-        FileHeroesSource fileHeroesSource = new(mockFileSystem, stormStorage, _stormModFactory, _depotCacheFactory, rootDirectory, _backgroundWorkerEx);
+        FileHeroesSource fileHeroesSource = new(mockFileSystem, stormStorage, _stormModFactory, _depotCacheFactory, rootDirectory, _progressReporter);
 
         // act
         Action act = () => fileHeroesSource.GetFile(new StormFile(new StormPath()
@@ -444,7 +444,7 @@ public class FileHeroesSourceTests
             { Path.Join(rootDirectory, "test.stormmod", "base.stormdata", "depotcache", "mpq.s2ma"), new MockFileData(File.ReadAllBytes(Path.Join(TestFilesFolder, "8d554.s2ma"))) },
         });
         StormStorage stormStorage = new(false);
-        FileHeroesSource fileHeroesSource = new(mockFileSystem, stormStorage, _stormModFactory, _depotCacheFactory, rootDirectory, _backgroundWorkerEx);
+        FileHeroesSource fileHeroesSource = new(mockFileSystem, stormStorage, _stormModFactory, _depotCacheFactory, rootDirectory, _progressReporter);
 
         // act
         Action act = () => fileHeroesSource.GetFile(new StormFile(new StormPath()
@@ -470,7 +470,7 @@ public class FileHeroesSourceTests
         {
         });
         StormStorage stormStorage = new(false);
-        FileHeroesSource fileHeroesSource = new(mockFileSystem, stormStorage, _stormModFactory, _depotCacheFactory, rootDirectory, _backgroundWorkerEx);
+        FileHeroesSource fileHeroesSource = new(mockFileSystem, stormStorage, _stormModFactory, _depotCacheFactory, rootDirectory, _progressReporter);
 
         // act
         string? result = fileHeroesSource.GetVersion();
@@ -497,7 +497,7 @@ public class FileHeroesSourceTests
             },
         });
         StormStorage stormStorage = new(false);
-        FileHeroesSource fileHeroesSource = new(mockFileSystem, stormStorage, _stormModFactory, _depotCacheFactory, rootDirectory, _backgroundWorkerEx);
+        FileHeroesSource fileHeroesSource = new(mockFileSystem, stormStorage, _stormModFactory, _depotCacheFactory, rootDirectory, _progressReporter);
 
         // act
         string? result = fileHeroesSource.GetVersion();
@@ -524,7 +524,7 @@ public class FileHeroesSourceTests
             },
         });
         StormStorage stormStorage = new(false);
-        FileHeroesSource fileHeroesSource = new(mockFileSystem, stormStorage, _stormModFactory, _depotCacheFactory, rootDirectory, _backgroundWorkerEx);
+        FileHeroesSource fileHeroesSource = new(mockFileSystem, stormStorage, _stormModFactory, _depotCacheFactory, rootDirectory, _progressReporter);
 
         // act
         string? result = fileHeroesSource.GetVersion();
