@@ -461,7 +461,7 @@ public class FileHeroesSourceTests
     }
 
     [TestMethod]
-    public void GetVersion_FileDoesNotExists_ReturnsNull()
+    public void GetInfoFile_FileDoesNotExists_ReturnsNull()
     {
         // arrange
         const string rootDirectory = "mods";
@@ -473,14 +473,14 @@ public class FileHeroesSourceTests
         FileHeroesSource fileHeroesSource = new(mockFileSystem, stormStorage, _stormModFactory, _depotCacheFactory, rootDirectory, _progressReporter);
 
         // act
-        string? result = fileHeroesSource.GetVersion();
+        InfoFile? result = fileHeroesSource.GetInfoFile();
 
         // assert
         result.Should().BeNull();
     }
 
     [TestMethod]
-    public void GetVersion_FileExistsWithNoVersionProperty_ReturnsNull()
+    public void GetInfoFile_FileExistsWithNoVersionProperty_PropertyReturnsNull()
     {
         // arrange
         const string rootDirectory = "mods";
@@ -500,14 +500,16 @@ public class FileHeroesSourceTests
         FileHeroesSource fileHeroesSource = new(mockFileSystem, stormStorage, _stormModFactory, _depotCacheFactory, rootDirectory, _progressReporter);
 
         // act
-        string? result = fileHeroesSource.GetVersion();
+        InfoFile? result = fileHeroesSource.GetInfoFile();
 
         // assert
-        result.Should().BeNull();
+        result.Should().NotBeNull();
+        result.Version.Should().BeNull();
+        result.IsPtr.Should().BeFalse();
     }
 
     [TestMethod]
-    public void GetVersion_FileExistsWithVersionProperty_ReturnsVersion()
+    public void GetInfoFile_FileExistsWithProperties_ReturnsFileInfo()
     {
         // arrange
         const string rootDirectory = "mods";
@@ -518,7 +520,10 @@ public class FileHeroesSourceTests
                 Path.Join(rootDirectory, ".info"), new MockFileData(
                     """
                     {
-                        "version": "2.55.13.95301"
+                        // some version
+                        "version": "2.55.13.95301",
+                        "isPtr": true,
+                        "customproperty": "customvalue"
                     }
                     """)
             },
@@ -527,9 +532,11 @@ public class FileHeroesSourceTests
         FileHeroesSource fileHeroesSource = new(mockFileSystem, stormStorage, _stormModFactory, _depotCacheFactory, rootDirectory, _progressReporter);
 
         // act
-        string? result = fileHeroesSource.GetVersion();
+        InfoFile? result = fileHeroesSource.GetInfoFile();
 
         // assert
-        result.Should().Be("2.55.13.95301");
+        result.Should().NotBeNull();
+        result.Version.Should().Be("2.55.13.95301");
+        result.IsPtr.Should().BeTrue();
     }
 }

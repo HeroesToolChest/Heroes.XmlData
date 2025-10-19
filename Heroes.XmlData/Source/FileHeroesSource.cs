@@ -61,7 +61,7 @@ internal sealed class FileHeroesSource : HeroesSource, IFileHeroesSource
             return GetFile(stormFile.StormPath.Path);
     }
 
-    public string? GetVersion()
+    public InfoFile? GetInfoFile()
     {
         string infoFilePath = Path.Join(ModsBaseDirectoryPath, ".info");
 
@@ -69,18 +69,12 @@ internal sealed class FileHeroesSource : HeroesSource, IFileHeroesSource
             return null;
 
         using Stream fileStream = _fileSystem.File.OpenRead(infoFilePath);
-        using JsonDocument document = JsonDocument.Parse(fileStream, new JsonDocumentOptions()
+
+        return JsonSerializer.Deserialize<InfoFile>(fileStream, new JsonSerializerOptions()
         {
-            MaxDepth = 4,
+             PropertyNameCaseInsensitive = true,
+             ReadCommentHandling = JsonCommentHandling.Skip,
         });
-
-        JsonElement rootElement = document.RootElement;
-        if (rootElement.TryGetProperty("version", out JsonElement versionElement))
-        {
-            return versionElement.GetString();
-        }
-
-        return null;
     }
 
     protected override IStormMod GetStormMod(string directoryPath, StormModType stormModType, IProgressReporter? progressReporter = null) => StormModFactory.CreateFileStormModInstance(this, directoryPath, stormModType);

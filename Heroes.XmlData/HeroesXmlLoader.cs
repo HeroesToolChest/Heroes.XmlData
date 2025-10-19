@@ -34,7 +34,13 @@ public class HeroesXmlLoader
     {
         StormStorage stormStorage = new();
         FileHeroesSource fileHeroesSource = new(stormStorage, new StormModFactory(), new DepotCacheFactory(), pathToModsDirectory, progressReporter);
-        HeroesVersion = fileHeroesSource.GetVersion();
+
+        InfoFile? infoFile = fileHeroesSource.GetInfoFile();
+        if (infoFile is not null)
+        {
+            HeroesVersion = infoFile.Version;
+            IsPtr = infoFile.IsPtr;
+        }
 
         _heroesSource = fileHeroesSource;
 
@@ -44,7 +50,7 @@ public class HeroesXmlLoader
         RootDirectory = _heroesSource.ModsBaseDirectoryPath;
     }
 
-    private HeroesXmlLoader(CASCHeroesStorage cascHeroesStorage, string version, IProgressReporter? progressReporter)
+    private HeroesXmlLoader(CASCHeroesStorage cascHeroesStorage, CASCConfig cascConfig, IProgressReporter? progressReporter)
     {
         StormStorage stormStorage = new();
         _heroesSource = new CASCHeroesSource(stormStorage, new StormModFactory(), new DepotCacheFactory(), cascHeroesStorage, progressReporter);
@@ -53,19 +59,25 @@ public class HeroesXmlLoader
 
         LoadedType = HeroesXmlLoaderType.CASC;
         RootDirectory = _heroesSource.ModsBaseDirectoryPath;
-        HeroesVersion = version;
+        HeroesVersion = cascConfig.VersionName;
+        IsPtr = cascConfig.Product == ProductPtrName;
     }
 
     /// <summary>
     /// <para>Gets the loaded internal heroes build number from the buildid.txt file.</para>
     /// <para>This is sometimes not updated to the (latest) correct build.</para>
     /// </summary>
-    public int? Build => _heroesSource.StormStorage.GetBuildId();
+    public int? BuildId => _heroesSource.StormStorage.GetBuildId();
 
     /// <summary>
     /// Gets the version of the loaded Heroes of the Storm data.
     /// </summary>
     public string? HeroesVersion { get; }
+
+    /// <summary>
+    /// Gets a value indicating whether the data is from the PTR.
+    /// </summary>
+    public bool IsPtr { get; }
 
     /// <summary>
     /// Gets the type of the loaded source data.
@@ -493,7 +505,7 @@ public class HeroesXmlLoader
 
         CASCFolder cascFolderRoot = cascHandler.Root.SetFlags(LocaleFlags.All);
 
-        return new HeroesXmlLoader(new CASCHeroesStorage(cascHandler, cascFolderRoot), cascConfig.VersionName, progressReporter);
+        return new HeroesXmlLoader(new CASCHeroesStorage(cascHandler, cascFolderRoot), cascConfig, progressReporter);
     }
 
     private void LoadBaseStormMods()

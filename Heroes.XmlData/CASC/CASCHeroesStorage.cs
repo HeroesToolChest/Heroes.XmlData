@@ -1,6 +1,4 @@
-﻿using Heroes.XmlData.CASC;
-
-namespace Heroes.XmlData;
+﻿namespace Heroes.XmlData.CASC;
 
 internal sealed class CASCHeroesStorage : ICASCHeroesStorage
 {
