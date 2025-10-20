@@ -13,4 +13,5 @@ global using Heroes.XmlData.StormMath;
 global using Heroes.XmlData.StormMods;
 global using System.Diagnostics;
 global using System.Diagnostics.CodeAnalysis;
+global using System.Text.Json;
 global using System.Xml.Linq;

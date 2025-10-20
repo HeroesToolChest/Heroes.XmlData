@@ -8,6 +8,12 @@ public class HeroesXmlLoader
     private const string ProductName = "hero";
     private const string ProductPtrName = "herot";
 
+    private static readonly JsonSerializerOptions _modsInfoFileJsonSerializerOptions = new()
+    {
+        PropertyNameCaseInsensitive = true,
+        ReadCommentHandling = JsonCommentHandling.Skip,
+    };
+
     private readonly IHeroesSource _heroesSource;
 
     private bool _baseStormModsLoaded = false;
@@ -26,20 +32,21 @@ public class HeroesXmlLoader
     }
 
     private HeroesXmlLoader()
-        : this(string.Empty, progressReporter: null)
+        : this(string.Empty, modsInfoFile: null, progressReporter: null)
     {
     }
 
-    private HeroesXmlLoader(string pathToModsDirectory, IProgressReporter? progressReporter)
+    private HeroesXmlLoader(string pathToModsDirectory, ModsInfoFile? modsInfoFile, IProgressReporter? progressReporter)
     {
         StormStorage stormStorage = new();
         FileHeroesSource fileHeroesSource = new(stormStorage, new StormModFactory(), new DepotCacheFactory(), pathToModsDirectory, progressReporter);
 
-        InfoFile? infoFile = fileHeroesSource.GetInfoFile();
-        if (infoFile is not null)
+        modsInfoFile ??= GetModsInfoFile(pathToModsDirectory);
+
+        if (modsInfoFile is not null)
         {
-            HeroesVersion = infoFile.Version;
-            IsPtr = infoFile.IsPtr;
+            HeroesVersion = modsInfoFile.Version;
+            IsPtr = modsInfoFile.IsPtr;
         }
 
         _heroesSource = fileHeroesSource;
@@ -114,6 +121,16 @@ public class HeroesXmlLoader
     }
 
     /// <summary>
+    /// Gets the properties from a .info file from a local mods directory.
+    /// </summary>
+    /// <param name="rootDirectory">The root directory path, usually the mods directory.</param>
+    /// <returns>The <see cref="ModsInfoFile"/> or <see langword="null"/> if file was not found.</returns>
+    public static ModsInfoFile? GetModsInfoFile(string rootDirectory)
+    {
+        return GetModsInfoFileInternal(rootDirectory);
+    }
+
+    /// <summary>
     /// Helper method to get a <see cref="CASCConfig"/> from a local Heroes of the Storm directory.
     /// </summary>
     /// <param name="pathToHeroesDirectory">The path to the Heroes of the storm directory.</param>
@@ -139,12 +156,13 @@ public class HeroesXmlLoader
     /// Gets an instance of the <see cref="HeroesXmlLoader"/> class. Sets the source of the data to be loaded from an extracted file source.
     /// </summary>
     /// <param name="rootDirectory">The root directory path, usually the mods directory.</param>
+    /// <param name="modsInfoFile">File properties of the extracted file source.</param>
     /// <param name="progressReporter">Used to report loading progress.</param>
     /// <returns>A <see cref="HeroesXmlLoader"/> instance.</returns>
     /// <remarks>On linux and macos, all directories and files should be in lowercase characters, otherwise some files and directories may not be found.</remarks>
-    public static HeroesXmlLoader LoadWithFile(string rootDirectory, IProgressReporter? progressReporter = null)
+    public static HeroesXmlLoader LoadWithFile(string rootDirectory, ModsInfoFile? modsInfoFile = null, IProgressReporter? progressReporter = null)
     {
-        return new HeroesXmlLoader(rootDirectory, progressReporter);
+        return new HeroesXmlLoader(rootDirectory, modsInfoFile, progressReporter);
     }
 
     /// <summary>
@@ -506,6 +524,18 @@ public class HeroesXmlLoader
         CASCFolder cascFolderRoot = cascHandler.Root.SetFlags(LocaleFlags.All);
 
         return new HeroesXmlLoader(new CASCHeroesStorage(cascHandler, cascFolderRoot), cascConfig, progressReporter);
+    }
+
+    private static ModsInfoFile? GetModsInfoFileInternal(string modsDirectoryPath)
+    {
+        string infoFilePath = Path.Join(modsDirectoryPath, ".info");
+
+        if (!File.Exists(infoFilePath))
+            return null;
+
+        using Stream fileStream = File.OpenRead(infoFilePath);
+
+        return JsonSerializer.Deserialize<ModsInfoFile>(fileStream, _modsInfoFileJsonSerializerOptions);
     }
 
     private void LoadBaseStormMods()

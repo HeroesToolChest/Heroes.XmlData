@@ -39,7 +39,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="TestFiles\" />
+    <Folder Include="TestFiles\modsNoVersion\" />
   </ItemGroup>
 
   <ItemGroup>

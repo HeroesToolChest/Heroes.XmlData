@@ -916,4 +916,47 @@ public class HeroesXmlLoaderTests
         // assert
         dataFilePaths.Should().HaveCount(4);
     }
+
+    [TestMethod]
+    public void GetInfoFile_FileDoesNotExists_ReturnsNull()
+    {
+        // arrange
+        string rootDirectory = Path.Combine("test", nameof(HeroesXmlLoaderTests), "mods");
+
+        // act
+        ModsInfoFile? result = HeroesXmlLoader.GetModsInfoFile(rootDirectory);
+
+        // assert
+        result.Should().BeNull();
+    }
+
+    [TestMethod]
+    public void GetInfoFile_FileExistsWithNoVersionProperty_PropertyReturnsNull()
+    {
+        // arrange
+        string rootDirectory = Path.Combine("TestFiles", "modsNoVersion");
+
+        // act
+        ModsInfoFile? result = HeroesXmlLoader.GetModsInfoFile(rootDirectory);
+
+        // assert
+        result.Should().NotBeNull();
+        result.Version.Should().BeNull();
+        result.IsPtr.Should().BeFalse();
+    }
+
+    [TestMethod]
+    public void GetInfoFile_FileExistsWithProperties_ReturnsFileInfo()
+    {
+        // arrange
+        string rootDirectory = Path.Combine("TestFiles", "modsProperties");
+
+        // act
+        ModsInfoFile? result = HeroesXmlLoader.GetModsInfoFile(rootDirectory);
+
+        // assert
+        result.Should().NotBeNull();
+        result.Version.Should().Be("2.55.13.95301");
+        result.IsPtr.Should().BeTrue();
+    }
 }

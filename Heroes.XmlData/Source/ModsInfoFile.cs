@@ -3,7 +3,7 @@
 /// <summary>
 /// Represents the .info file in a file-based heroes source.
 /// </summary>
-internal sealed class InfoFile
+public sealed class ModsInfoFile
 {
     /// <summary>
     /// Gets or sets the Heroes of the Storm version.
