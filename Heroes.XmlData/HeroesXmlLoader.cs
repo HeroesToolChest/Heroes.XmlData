@@ -5,8 +5,15 @@
 /// </summary>
 public class HeroesXmlLoader
 {
-    private const string ProductName = "hero";
-    private const string ProductPtrName = "herot";
+    /// <summary>
+    /// The product name for Heroes of the Storm.
+    /// </summary>
+    public const string ProductName = "hero";
+
+    /// <summary>
+    /// The product name for Heroes of the Storm PTR.
+    /// </summary>
+    public const string ProductPtrName = "herot";
 
     private static readonly JsonSerializerOptions _modsInfoFileJsonSerializerOptions = new()
     {
