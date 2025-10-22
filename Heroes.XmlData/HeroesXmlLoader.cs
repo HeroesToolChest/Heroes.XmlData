@@ -152,11 +152,12 @@ public class HeroesXmlLoader
     /// Helper method to get a <see cref="CASCConfig"/> from Blizzard's online servers.
     /// </summary>
     /// <param name="isPtr">Set to <see langword="true"/> to download from ptr.</param>
+    /// <param name="httpClient">Pass in a instance <see cref="HttpClient"/> or a default one will be used.</param>
     /// <param name="loggerOptions">Logging options for the casclib.</param>
     /// <returns>A <see cref="CASCConfig"/> instance.</returns>
-    public static CASCConfig GetOnlineCASCConfig(bool isPtr = false, ILoggerOptions? loggerOptions = null)
+    public static CASCConfig GetOnlineCASCConfig(bool isPtr = false, HttpClient? httpClient = null, ILoggerOptions? loggerOptions = null)
     {
-        return CASCConfig.LoadOnlineStorageConfig(isPtr ? ProductPtrName : ProductName, "us", false, loggerOptions ?? new HeroesLoggerOptions());
+        return CASCConfig.LoadOnlineStorageConfig(isPtr ? ProductPtrName : ProductName, "us", false, httpClient, loggerOptions ?? new HeroesLoggerOptions());
     }
 
     /// <summary>
@@ -176,11 +177,12 @@ public class HeroesXmlLoader
     /// Gets an instance of the <see cref="HeroesXmlLoader"/> class. Sets the source of data to be loaded locally or online.
     /// </summary>
     /// <param name="cascConfig">The <see cref="CASCConfig"/> to determine on how to load data from the data files.</param>
+    /// <param name="httpClient">Pass in a instance <see cref="HttpClient"/> or a default one will be used.</param>
     /// <param name="progressReporter">Used to report loading progress.</param>
     /// <returns>A <see cref="HeroesXmlLoader"/> instance.</returns>
-    public static HeroesXmlLoader LoadWithCASC(CASCConfig cascConfig, IProgressReporter? progressReporter = null)
+    public static HeroesXmlLoader LoadWithCASC(CASCConfig cascConfig, HttpClient? httpClient = null, IProgressReporter? progressReporter = null)
     {
-        return LoadAsCASCInternal(cascConfig, progressReporter);
+        return LoadAsCASCInternal(cascConfig, httpClient, progressReporter);
     }
 
     /// <summary>
@@ -520,12 +522,12 @@ public class HeroesXmlLoader
         return new HeroesXmlLoader(heroesSource);
     }
 
-    private static HeroesXmlLoader LoadAsCASCInternal(CASCConfig cascConfig, IProgressReporter? progressReporter)
+    private static HeroesXmlLoader LoadAsCASCInternal(CASCConfig cascConfig, HttpClient? httpClient = null, IProgressReporter? progressReporter = null)
     {
         CASCConfig.ThrowOnFileNotFound = true;
         CASCConfig.ThrowOnMissingDecryptionKey = true;
 
-        CASCHandler cascHandler = CASCHandler.OpenStorage(cascConfig, (ProgressReporter?)progressReporter);
+        CASCHandler cascHandler = CASCHandler.OpenStorage(cascConfig, httpClient: httpClient, worker: (ProgressReporter?)progressReporter);
         cascHandler.Root.LoadListFile(string.Empty, (ProgressReporter?)progressReporter);
 
         CASCFolder cascFolderRoot = cascHandler.Root.SetFlags(LocaleFlags.All);
