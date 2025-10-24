@@ -157,7 +157,7 @@ public class HeroesXmlLoader
     /// <returns>A <see cref="CASCConfig"/> instance.</returns>
     public static CASCConfig GetOnlineCASCConfig(HttpClient httpClient, bool isPtr = false, ILoggerOptions? loggerOptions = null)
     {
-        return CASCConfig.LoadOnlineStorageConfig(isPtr ? ProductPtrName : ProductName, "us", false, httpClient, loggerOptions ?? new HeroesLoggerOptions());
+        return CASCConfig.LoadOnlineStorageConfig(isPtr ? ProductPtrName : ProductName, "us", httpClient, false, loggerOptions ?? new HeroesLoggerOptions());
     }
 
     /// <summary>
@@ -177,10 +177,10 @@ public class HeroesXmlLoader
     /// Gets an instance of the <see cref="HeroesXmlLoader"/> class. Sets the source of data to be loaded locally or online.
     /// </summary>
     /// <param name="cascConfig">The <see cref="CASCConfig"/> to determine on how to load data from the data files.</param>
-    /// <param name="httpClient">An instance of <see cref="HttpClient"/>.</param>
+    /// <param name="httpClient">An instance of <see cref="HttpClient"/> if using online mode.</param>
     /// <param name="progressReporter">Used to report loading progress.</param>
     /// <returns>A <see cref="HeroesXmlLoader"/> instance.</returns>
-    public static HeroesXmlLoader LoadWithCASC(CASCConfig cascConfig, HttpClient httpClient, IProgressReporter? progressReporter = null)
+    public static HeroesXmlLoader LoadWithCASC(CASCConfig cascConfig, HttpClient? httpClient = null, IProgressReporter? progressReporter = null)
     {
         return LoadAsCASCInternal(cascConfig, httpClient, progressReporter);
     }
@@ -522,7 +522,7 @@ public class HeroesXmlLoader
         return new HeroesXmlLoader(heroesSource);
     }
 
-    private static HeroesXmlLoader LoadAsCASCInternal(CASCConfig cascConfig, HttpClient httpClient, IProgressReporter? progressReporter = null)
+    private static HeroesXmlLoader LoadAsCASCInternal(CASCConfig cascConfig, HttpClient? httpClient = null, IProgressReporter? progressReporter = null)
     {
         CASCConfig.ThrowOnFileNotFound = true;
         CASCConfig.ThrowOnMissingDecryptionKey = true;
