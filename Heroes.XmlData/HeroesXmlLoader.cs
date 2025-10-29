@@ -38,8 +38,8 @@ public class HeroesXmlLoader
         RootDirectory = _heroesSource.ModsBaseDirectoryPath;
     }
 
-    private HeroesXmlLoader()
-        : this(string.Empty, modsInfoFile: null, progressReporter: null)
+    private HeroesXmlLoader(string rootDirectory)
+        : this(rootDirectory, modsInfoFile: null, progressReporter: null)
     {
     }
 
@@ -121,10 +121,11 @@ public class HeroesXmlLoader
     /// <summary>
     /// Gets an instance of the <see cref="HeroesXmlLoader"/> class. The source of data will be emtpy.
     /// </summary>
+    /// <param name="rootDirectory">The root directory path, usually the mods directory.</param>
     /// <returns>A <see cref="HeroesXmlLoader"/>.</returns>
-    public static HeroesXmlLoader LoadWithEmpty()
+    public static HeroesXmlLoader LoadWithEmpty(string? rootDirectory = null)
     {
-        return new HeroesXmlLoader();
+        return new HeroesXmlLoader(rootDirectory ?? string.Empty);
     }
 
     /// <summary>

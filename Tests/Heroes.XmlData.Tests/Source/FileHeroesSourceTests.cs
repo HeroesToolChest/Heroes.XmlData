@@ -20,36 +20,35 @@ public class FileHeroesSourceTests
     }
 
     [TestMethod]
-    [DataRow(true, "somefile.txt")]
-    [DataRow(false, "file-no-exist.txt")]
-    public void FileExists_PathLookupStartsWithMods_ReturnsResult(bool found, string fileToLookup)
+    [DataRow("mods", true, "somefile.txt")]
+    [DataRow("mods", false, "file-no-exist.txt")]
+    [DataRow("other", false, "somefile.txt")]
+    public void FileExists_PathLookupStartsWithInput_ReturnsResult(string inputRootDirectory, bool found, string fileToLookup)
     {
         // arrange
-        const string rootDirectory = "mods";
-
         MockFileSystem mockFileSystem = new(new Dictionary<string, MockFileData>
         {
-            { Path.Join(rootDirectory, "test.stormmod", "base.stormdata", "somefile.txt"), new MockFileData("text") },
+            { Path.Join(inputRootDirectory, "test.stormmod", "base.stormdata", "somefile.txt"), new MockFileData("text") },
         });
 
         StormStorage stormStorage = new(false);
-        FileHeroesSource fileHeroesSource = new(mockFileSystem, stormStorage, _stormModFactory, _depotCacheFactory, rootDirectory, _progressReporter);
+        FileHeroesSource fileHeroesSource = new(mockFileSystem, stormStorage, _stormModFactory, _depotCacheFactory, inputRootDirectory, _progressReporter);
 
         // act
-        bool result = fileHeroesSource.FileExists(Path.Join(rootDirectory, "test.stormmod", "base.stormdata", fileToLookup));
+        bool result = fileHeroesSource.FileExists(Path.Join(inputRootDirectory, "test.stormmod", "base.stormdata", fileToLookup));
 
         // assert
         result.Should().Be(found);
     }
 
     [TestMethod]
-    [DataRow(true, "somefile.txt")]
-    [DataRow(false, "file-no-exist.txt")]
-    public void FileExists_PathLookupStartsWithOutMods_ReturnsResult(bool found, string fileToLookup)
+    [DataRow("mods", true, "somefile.txt")]
+    [DataRow("mods_1234", true, "somefile.txt")]
+    [DataRow("mods", false, "file-no-exist.txt")]
+    [DataRow("other", true, "somefile.txt")]
+    public void FileExists_PathLookupStartsWithOutMods_ReturnsResult(string rootDirectory, bool expectedIsFound, string fileToLookup)
     {
         // arrange
-        const string rootDirectory = "mods";
-
         MockFileSystem mockFileSystem = new(new Dictionary<string, MockFileData>
         {
             { Path.Join(rootDirectory, "test.stormmod", "base.stormdata", "somefile.txt"), new MockFileData("text") },
@@ -62,7 +61,7 @@ public class FileHeroesSourceTests
         bool result = fileHeroesSource.FileExists(Path.Join("test.stormmod", "base.stormdata", fileToLookup));
 
         // assert
-        result.Should().Be(found);
+        result.Should().Be(expectedIsFound);
     }
 
     [TestMethod]

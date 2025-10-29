@@ -11,6 +11,25 @@ public class HeroesXmlLoaderTests
     }
 
     [TestMethod]
+    [DataRow(null)]
+    [DataRow("")]
+    [DataRow("mods")]
+    [DataRow("mods_1234")]
+    [DataRow("other")]
+    public void LoadWithEmptyStatic_InputRootDirectory_SetsRootDirectory(string? rootDirectory)
+    {
+        // arrange
+        string expectedRootDirectory = rootDirectory ?? string.Empty;
+
+        // act
+        HeroesXmlLoader heroesXmlLoader = HeroesXmlLoader.LoadWithEmpty(rootDirectory);
+
+        // assert
+        heroesXmlLoader.RootDirectory.Should().Be(expectedRootDirectory);
+        heroesXmlLoader.LoadedType.Should().Be(HeroesXmlLoaderType.File);
+    }
+
+    [TestMethod]
     public void LoadStormMods_InitialLoad_Loads()
     {
         // arrange
