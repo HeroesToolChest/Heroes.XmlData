@@ -28,7 +28,7 @@ internal sealed class CASCStormMod : StormMod<ICASCHeroesSource>, IStormMod
         }
 
         IEnumerable<string> files = gameDataFolder.Files.Select(x => x.Value)
-            .Where(x => Path.GetExtension(x.FullName).Equals(XmlFileExtension, StringComparison.OrdinalIgnoreCase))
+            .Where(x => Path.GetExtension(x.FullName.AsSpan()).Equals(XmlFileExtension, StringComparison.OrdinalIgnoreCase))
             .Select(x => PathHelper.NormalizePath(x.FullName))
             .OrderBy(x => x);
 
@@ -41,7 +41,7 @@ internal sealed class CASCStormMod : StormMod<ICASCHeroesSource>, IStormMod
             return;
 
         IEnumerable<string> files = EnumerateDirectory(layoutFolder)
-            .Where(x => Path.GetExtension(x.FullName).Equals(StormLayoutFileExtension, StringComparison.OrdinalIgnoreCase))
+            .Where(x => Path.GetExtension(x.FullName.AsSpan()).Equals(StormLayoutFileExtension, StringComparison.OrdinalIgnoreCase))
             .Select(x => PathHelper.NormalizePath(x.FullName))
             .OrderBy(x => x);
 
@@ -54,7 +54,7 @@ internal sealed class CASCStormMod : StormMod<ICASCHeroesSource>, IStormMod
             return;
 
         IEnumerable<string> files = EnumerateDirectory(assetsFolder)
-            .Where(x => Path.GetExtension(x.FullName).Equals(DDSFileExtension, StringComparison.OrdinalIgnoreCase))
+            .Where(x => Path.GetExtension(x.FullName.AsSpan()).Equals(DDSFileExtension, StringComparison.OrdinalIgnoreCase))
             .Select(x => PathHelper.NormalizePath(x.FullName))
             .OrderBy(x => x);
 
