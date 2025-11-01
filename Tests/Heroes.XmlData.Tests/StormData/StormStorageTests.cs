@@ -3422,4 +3422,330 @@ public class StormStorageTests
         // assert
         result.Should().Be(returnValue);
     }
+
+    [TestMethod]
+    public void AddModStorage_AddsInAnyOrder_HasCorrectOrder()
+    {
+        // arrange
+        IStormModStorage stormModeStorageNormal1 = Substitute.For<IStormModStorage>();
+        stormModeStorageNormal1.StormModType.Returns(StormModType.Normal);
+        stormModeStorageNormal1.Name.Returns("Normal Mod 1");
+
+        IStormModStorage stormModeStorageNormal2 = Substitute.For<IStormModStorage>();
+        stormModeStorageNormal2.StormModType.Returns(StormModType.Normal);
+        stormModeStorageNormal2.Name.Returns("Normal Mod 2");
+
+        IStormModStorage stormModeStorageNormal3 = Substitute.For<IStormModStorage>();
+        stormModeStorageNormal3.StormModType.Returns(StormModType.Normal);
+        stormModeStorageNormal3.Name.Returns("Normal Mod 3");
+
+        IStormModStorage stormModeStorageCustom1 = Substitute.For<IStormModStorage>();
+        stormModeStorageCustom1.StormModType.Returns(StormModType.Custom);
+        stormModeStorageCustom1.Name.Returns("Custom Mod 1");
+
+        IStormModStorage stormModeStorageCustom2 = Substitute.For<IStormModStorage>();
+        stormModeStorageCustom2.StormModType.Returns(StormModType.Custom);
+        stormModeStorageCustom2.Name.Returns("Custom Mod 2");
+
+        IStormModStorage stormModeStorageMap1 = Substitute.For<IStormModStorage>();
+        stormModeStorageMap1.StormModType.Returns(StormModType.Map);
+        stormModeStorageMap1.Name.Returns("Map Mod 1");
+
+        IStormModStorage stormModeStorageMap2 = Substitute.For<IStormModStorage>();
+        stormModeStorageMap2.StormModType.Returns(StormModType.Map);
+        stormModeStorageMap2.Name.Returns("Map Mod 2");
+
+        IStormModStorage stormModeStorageMap3 = Substitute.For<IStormModStorage>();
+        stormModeStorageMap3.StormModType.Returns(StormModType.Map);
+        stormModeStorageMap3.Name.Returns("Map Mod 3");
+
+        StormStorage stormStorage = new(false);
+
+        // act
+        stormStorage.AddModStorage(stormModeStorageNormal1);
+        stormStorage.AddModStorage(stormModeStorageNormal2);
+        stormStorage.AddModStorage(stormModeStorageCustom1);
+        stormStorage.AddModStorage(stormModeStorageMap1);
+        stormStorage.AddModStorage(stormModeStorageMap2);
+        stormStorage.AddModStorage(stormModeStorageCustom2);
+        stormStorage.AddModStorage(stormModeStorageNormal2);
+        stormStorage.AddModStorage(stormModeStorageMap3);
+
+        // assert
+        stormStorage.StormModStorages.Should().HaveCount(8);
+        stormStorage.StormModStorages[0].StormModType.Should().Be(StormModType.Normal);
+        stormStorage.StormModStorages[0].Name.Should().Be("Normal Mod 1");
+        stormStorage.StormModStorages[1].StormModType.Should().Be(StormModType.Normal);
+        stormStorage.StormModStorages[1].Name.Should().Be("Normal Mod 2");
+        stormStorage.StormModStorages[2].StormModType.Should().Be(StormModType.Normal);
+        stormStorage.StormModStorages[2].Name.Should().Be("Normal Mod 2");
+        stormStorage.StormModStorages[3].StormModType.Should().Be(StormModType.Map);
+        stormStorage.StormModStorages[3].Name.Should().Be("Map Mod 1");
+        stormStorage.StormModStorages[4].StormModType.Should().Be(StormModType.Map);
+        stormStorage.StormModStorages[4].Name.Should().Be("Map Mod 2");
+        stormStorage.StormModStorages[5].StormModType.Should().Be(StormModType.Map);
+        stormStorage.StormModStorages[5].Name.Should().Be("Map Mod 3");
+        stormStorage.StormModStorages[6].StormModType.Should().Be(StormModType.Custom);
+        stormStorage.StormModStorages[6].Name.Should().Be("Custom Mod 1");
+        stormStorage.StormModStorages[7].StormModType.Should().Be(StormModType.Custom);
+        stormStorage.StormModStorages[7].Name.Should().Be("Custom Mod 2");
+    }
+
+    [TestMethod]
+    public void AddModStorage_NormalThenCustomThenMap_HasCorrectOrder()
+    {
+        // arrange
+        IStormModStorage stormModeStorageNormal1 = Substitute.For<IStormModStorage>();
+        stormModeStorageNormal1.StormModType.Returns(StormModType.Normal);
+        stormModeStorageNormal1.Name.Returns("Normal Mod 1");
+
+        IStormModStorage stormModeStorageNormal2 = Substitute.For<IStormModStorage>();
+        stormModeStorageNormal2.StormModType.Returns(StormModType.Normal);
+        stormModeStorageNormal2.Name.Returns("Normal Mod 2");
+
+        IStormModStorage stormModeStorageCustom1 = Substitute.For<IStormModStorage>();
+        stormModeStorageCustom1.StormModType.Returns(StormModType.Custom);
+        stormModeStorageCustom1.Name.Returns("Custom Mod 1");
+
+        IStormModStorage stormModeStorageMap1 = Substitute.For<IStormModStorage>();
+        stormModeStorageMap1.StormModType.Returns(StormModType.Map);
+        stormModeStorageMap1.Name.Returns("Map Mod 1");
+
+        IStormModStorage stormModeStorageMap2 = Substitute.For<IStormModStorage>();
+        stormModeStorageMap2.StormModType.Returns(StormModType.Map);
+        stormModeStorageMap2.Name.Returns("Map Mod 2");
+
+        StormStorage stormStorage = new(false);
+
+        // act
+        stormStorage.AddModStorage(stormModeStorageNormal1);
+        stormStorage.AddModStorage(stormModeStorageNormal2);
+        stormStorage.AddModStorage(stormModeStorageCustom1);
+        stormStorage.AddModStorage(stormModeStorageMap1);
+        stormStorage.AddModStorage(stormModeStorageMap2);
+
+        // assert
+        stormStorage.StormModStorages.Should().HaveCount(5);
+        stormStorage.StormModStorages[0].StormModType.Should().Be(StormModType.Normal);
+        stormStorage.StormModStorages[0].Name.Should().Be("Normal Mod 1");
+        stormStorage.StormModStorages[1].StormModType.Should().Be(StormModType.Normal);
+        stormStorage.StormModStorages[1].Name.Should().Be("Normal Mod 2");
+        stormStorage.StormModStorages[2].StormModType.Should().Be(StormModType.Map);
+        stormStorage.StormModStorages[2].Name.Should().Be("Map Mod 1");
+        stormStorage.StormModStorages[3].StormModType.Should().Be(StormModType.Map);
+        stormStorage.StormModStorages[3].Name.Should().Be("Map Mod 2");
+        stormStorage.StormModStorages[4].StormModType.Should().Be(StormModType.Custom);
+        stormStorage.StormModStorages[4].Name.Should().Be("Custom Mod 1");
+    }
+
+    [TestMethod]
+    public void AddModStorage_NormalThenMapThenCustom_HasCorrectOrder()
+    {
+        // arrange
+        IStormModStorage stormModeStorageNormal1 = Substitute.For<IStormModStorage>();
+        stormModeStorageNormal1.StormModType.Returns(StormModType.Normal);
+        stormModeStorageNormal1.Name.Returns("Normal Mod 1");
+
+        IStormModStorage stormModeStorageNormal2 = Substitute.For<IStormModStorage>();
+        stormModeStorageNormal2.StormModType.Returns(StormModType.Normal);
+        stormModeStorageNormal2.Name.Returns("Normal Mod 2");
+
+        IStormModStorage stormModeStorageMap1 = Substitute.For<IStormModStorage>();
+        stormModeStorageMap1.StormModType.Returns(StormModType.Map);
+        stormModeStorageMap1.Name.Returns("Map Mod 1");
+
+        IStormModStorage stormModeStorageMap2 = Substitute.For<IStormModStorage>();
+        stormModeStorageMap2.StormModType.Returns(StormModType.Map);
+        stormModeStorageMap2.Name.Returns("Map Mod 2");
+
+        IStormModStorage stormModeStorageCustom1 = Substitute.For<IStormModStorage>();
+        stormModeStorageCustom1.StormModType.Returns(StormModType.Custom);
+        stormModeStorageCustom1.Name.Returns("Custom Mod 1");
+
+        StormStorage stormStorage = new(false);
+
+        // act
+        stormStorage.AddModStorage(stormModeStorageNormal1);
+        stormStorage.AddModStorage(stormModeStorageNormal2);
+        stormStorage.AddModStorage(stormModeStorageMap1);
+        stormStorage.AddModStorage(stormModeStorageMap2);
+        stormStorage.AddModStorage(stormModeStorageCustom1);
+
+        // assert
+        stormStorage.StormModStorages.Should().HaveCount(5);
+        stormStorage.StormModStorages[0].StormModType.Should().Be(StormModType.Normal);
+        stormStorage.StormModStorages[0].Name.Should().Be("Normal Mod 1");
+        stormStorage.StormModStorages[1].StormModType.Should().Be(StormModType.Normal);
+        stormStorage.StormModStorages[1].Name.Should().Be("Normal Mod 2");
+        stormStorage.StormModStorages[2].StormModType.Should().Be(StormModType.Map);
+        stormStorage.StormModStorages[2].Name.Should().Be("Map Mod 1");
+        stormStorage.StormModStorages[3].StormModType.Should().Be(StormModType.Map);
+        stormStorage.StormModStorages[3].Name.Should().Be("Map Mod 2");
+        stormStorage.StormModStorages[4].StormModType.Should().Be(StormModType.Custom);
+        stormStorage.StormModStorages[4].Name.Should().Be("Custom Mod 1");
+    }
+
+    [TestMethod]
+    public void AddModStorage_CustomThenNormalThenMap_HasCorrectOrder()
+    {
+        // arrange
+        IStormModStorage stormModeStorageCustom1 = Substitute.For<IStormModStorage>();
+        stormModeStorageCustom1.StormModType.Returns(StormModType.Custom);
+        stormModeStorageCustom1.Name.Returns("Custom Mod 1");
+
+        IStormModStorage stormModeStorageNormal1 = Substitute.For<IStormModStorage>();
+        stormModeStorageNormal1.StormModType.Returns(StormModType.Normal);
+        stormModeStorageNormal1.Name.Returns("Normal Mod 1");
+
+        IStormModStorage stormModeStorageNormal2 = Substitute.For<IStormModStorage>();
+        stormModeStorageNormal2.StormModType.Returns(StormModType.Normal);
+        stormModeStorageNormal2.Name.Returns("Normal Mod 2");
+
+        IStormModStorage stormModeStorageMap1 = Substitute.For<IStormModStorage>();
+        stormModeStorageMap1.StormModType.Returns(StormModType.Map);
+        stormModeStorageMap1.Name.Returns("Map Mod 1");
+
+        IStormModStorage stormModeStorageMap2 = Substitute.For<IStormModStorage>();
+        stormModeStorageMap2.StormModType.Returns(StormModType.Map);
+        stormModeStorageMap2.Name.Returns("Map Mod 2");
+
+        StormStorage stormStorage = new(false);
+
+        // act
+        stormStorage.AddModStorage(stormModeStorageCustom1);
+        stormStorage.AddModStorage(stormModeStorageNormal1);
+        stormStorage.AddModStorage(stormModeStorageNormal2);
+        stormStorage.AddModStorage(stormModeStorageMap1);
+        stormStorage.AddModStorage(stormModeStorageMap2);
+
+        // assert
+        stormStorage.StormModStorages.Should().HaveCount(5);
+        stormStorage.StormModStorages[0].StormModType.Should().Be(StormModType.Normal);
+        stormStorage.StormModStorages[0].Name.Should().Be("Normal Mod 1");
+        stormStorage.StormModStorages[1].StormModType.Should().Be(StormModType.Normal);
+        stormStorage.StormModStorages[1].Name.Should().Be("Normal Mod 2");
+        stormStorage.StormModStorages[2].StormModType.Should().Be(StormModType.Map);
+        stormStorage.StormModStorages[2].Name.Should().Be("Map Mod 1");
+        stormStorage.StormModStorages[3].StormModType.Should().Be(StormModType.Map);
+        stormStorage.StormModStorages[3].Name.Should().Be("Map Mod 2");
+        stormStorage.StormModStorages[4].StormModType.Should().Be(StormModType.Custom);
+        stormStorage.StormModStorages[4].Name.Should().Be("Custom Mod 1");
+    }
+
+    [TestMethod]
+    public void ClearStormMapMods_HasNormalAndCustomAndMapTypes_RemovesAllMaps()
+    {
+        // arrange
+        IStormModStorage stormModeStorageNormal1 = Substitute.For<IStormModStorage>();
+        stormModeStorageNormal1.StormModType.Returns(StormModType.Normal);
+        stormModeStorageNormal1.Name.Returns("Normal Mod 1");
+
+        IStormModStorage stormModeStorageCustom1 = Substitute.For<IStormModStorage>();
+        stormModeStorageCustom1.StormModType.Returns(StormModType.Custom);
+        stormModeStorageCustom1.Name.Returns("Custom Mod 1");
+
+        IStormModStorage stormModeStorageCustom2 = Substitute.For<IStormModStorage>();
+        stormModeStorageCustom2.StormModType.Returns(StormModType.Custom);
+        stormModeStorageCustom2.Name.Returns("Custom Mod 2");
+
+        IStormModStorage stormModeStorageMap1 = Substitute.For<IStormModStorage>();
+        stormModeStorageMap1.StormModType.Returns(StormModType.Map);
+        stormModeStorageMap1.Name.Returns("Map Mod 1");
+
+        IStormModStorage stormModeStorageMap2 = Substitute.For<IStormModStorage>();
+        stormModeStorageMap2.StormModType.Returns(StormModType.Map);
+        stormModeStorageMap2.Name.Returns("Map Mod 2");
+
+        StormStorage stormStorage = new(false);
+        stormStorage.AddModStorage(stormModeStorageNormal1);
+        stormStorage.AddModStorage(stormModeStorageCustom1);
+        stormStorage.AddModStorage(stormModeStorageMap1);
+        stormStorage.AddModStorage(stormModeStorageMap2);
+        stormStorage.AddModStorage(stormModeStorageCustom2);
+
+        // act
+        stormStorage.ClearStormMapMods();
+
+        // assert
+        stormStorage.StormModStorages.Should().HaveCount(3);
+        stormStorage.StormModStorages[0].StormModType.Should().Be(StormModType.Normal);
+        stormStorage.StormModStorages[0].Name.Should().Be("Normal Mod 1");
+        stormStorage.StormModStorages[1].StormModType.Should().Be(StormModType.Custom);
+        stormStorage.StormModStorages[1].Name.Should().Be("Custom Mod 1");
+        stormStorage.StormModStorages[2].StormModType.Should().Be(StormModType.Custom);
+        stormStorage.StormModStorages[2].Name.Should().Be("Custom Mod 2");
+    }
+
+    [TestMethod]
+    public void ClearStormMapMods_HasCustomAndMapTypes_RemovesAllMaps()
+    {
+        // arrange
+        IStormModStorage stormModeStorageCustom1 = Substitute.For<IStormModStorage>();
+        stormModeStorageCustom1.StormModType.Returns(StormModType.Custom);
+        stormModeStorageCustom1.Name.Returns("Custom Mod 1");
+
+        IStormModStorage stormModeStorageCustom2 = Substitute.For<IStormModStorage>();
+        stormModeStorageCustom2.StormModType.Returns(StormModType.Custom);
+        stormModeStorageCustom2.Name.Returns("Custom Mod 2");
+
+        IStormModStorage stormModeStorageMap1 = Substitute.For<IStormModStorage>();
+        stormModeStorageMap1.StormModType.Returns(StormModType.Map);
+        stormModeStorageMap1.Name.Returns("Map Mod 1");
+
+        IStormModStorage stormModeStorageMap2 = Substitute.For<IStormModStorage>();
+        stormModeStorageMap2.StormModType.Returns(StormModType.Map);
+        stormModeStorageMap2.Name.Returns("Map Mod 2");
+
+        StormStorage stormStorage = new(false);
+        stormStorage.AddModStorage(stormModeStorageCustom1);
+        stormStorage.AddModStorage(stormModeStorageMap1);
+        stormStorage.AddModStorage(stormModeStorageMap2);
+        stormStorage.AddModStorage(stormModeStorageCustom2);
+
+        // act
+        stormStorage.ClearStormMapMods();
+
+        // assert
+        stormStorage.StormModStorages.Should().HaveCount(2);
+        stormStorage.StormModStorages[0].StormModType.Should().Be(StormModType.Custom);
+        stormStorage.StormModStorages[0].Name.Should().Be("Custom Mod 1");
+        stormStorage.StormModStorages[1].StormModType.Should().Be(StormModType.Custom);
+        stormStorage.StormModStorages[1].Name.Should().Be("Custom Mod 2");
+    }
+
+    [TestMethod]
+    public void ClearCustomMods_HasMapTypes_RemovesAllCustoms()
+    {
+        // arrange
+        IStormModStorage stormModeStorageNormal1 = Substitute.For<IStormModStorage>();
+        stormModeStorageNormal1.StormModType.Returns(StormModType.Normal);
+
+        IStormModStorage stormModeStorageCustom1 = Substitute.For<IStormModStorage>();
+        stormModeStorageCustom1.StormModType.Returns(StormModType.Custom);
+
+        IStormModStorage stormModeStorageCustom2 = Substitute.For<IStormModStorage>();
+        stormModeStorageCustom2.StormModType.Returns(StormModType.Custom);
+
+        IStormModStorage stormModeStorageMap1 = Substitute.For<IStormModStorage>();
+        stormModeStorageMap1.StormModType.Returns(StormModType.Map);
+
+        IStormModStorage stormModeStorageMap2 = Substitute.For<IStormModStorage>();
+        stormModeStorageMap2.StormModType.Returns(StormModType.Map);
+
+        StormStorage stormStorage = new(false);
+        stormStorage.AddModStorage(stormModeStorageNormal1);
+        stormStorage.AddModStorage(stormModeStorageCustom1);
+        stormStorage.AddModStorage(stormModeStorageMap1);
+        stormStorage.AddModStorage(stormModeStorageMap2);
+        stormStorage.AddModStorage(stormModeStorageCustom2);
+
+        // act
+        stormStorage.ClearCustomMods();
+
+        // assert
+        stormStorage.StormModStorages.Should().HaveCount(3);
+        stormStorage.StormModStorages[0].StormModType.Should().Be(StormModType.Normal);
+        stormStorage.StormModStorages[1].StormModType.Should().Be(StormModType.Map);
+        stormStorage.StormModStorages[2].StormModType.Should().Be(StormModType.Map);
+    }
 }

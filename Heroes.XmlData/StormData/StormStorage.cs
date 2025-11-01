@@ -6,7 +6,10 @@
 internal sealed partial class StormStorage : IStormStorage
 {
     private readonly StormPath _rootFilePath;
+
+    private int _loadedNormalMods;
     private int _loadedMapMods;
+    private int _loadedCustomMods;
 
     public StormStorage(bool hasRootDefaults = true)
     {
@@ -30,6 +33,12 @@ internal sealed partial class StormStorage : IStormStorage
 
     public List<IStormModStorage> StormModStorages { get; } = [];
 
+    private bool HasLoadedNormalMods => _loadedNormalMods > 0;
+
+    private bool HasLoadedMapMods => _loadedMapMods > 0;
+
+    private bool HasLoadedCustomMods => _loadedCustomMods > 0;
+
     public IStormModStorage CreateModStorage(IStormMod stormMod)
     {
         return new StormModStorage(stormMod, this);
@@ -37,10 +46,45 @@ internal sealed partial class StormStorage : IStormStorage
 
     public void AddModStorage(IStormModStorage stormModStorage)
     {
-        StormModStorages.Add(stormModStorage);
+        if (stormModStorage.StormModType == StormModType.Normal)
+        {
+            if (HasLoadedMapMods)
+            {
+                int insertIndex = StormModStorages.FindIndex(x => x.StormModType == StormModType.Map);
+                StormModStorages.Insert(insertIndex, stormModStorage);
+            }
+            else if (HasLoadedCustomMods)
+            {
+                int insertIndex = StormModStorages.FindIndex(x => x.StormModType == StormModType.Custom);
+                StormModStorages.Insert(insertIndex, stormModStorage);
+            }
+            else
+            {
+                StormModStorages.Add(stormModStorage);
+            }
 
-        if (stormModStorage.StormModType == StormModType.Map)
+            _loadedNormalMods++;
+        }
+        else if (stormModStorage.StormModType == StormModType.Map)
+        {
+            if (HasLoadedCustomMods)
+            {
+                int insertIndex = StormModStorages.FindIndex(x => x.StormModType == StormModType.Custom);
+                StormModStorages.Insert(insertIndex, stormModStorage);
+            }
+            else
+            {
+                StormModStorages.Add(stormModStorage);
+            }
+
             _loadedMapMods++;
+        }
+        else if (stormModStorage.StormModType == StormModType.Custom)
+        {
+            StormModStorages.Add(stormModStorage);
+
+            _loadedCustomMods++;
+        }
     }
 
     public void AddDirectoryNotFound(StormModType stormModType, StormPath stormDirectory)
@@ -418,6 +462,14 @@ internal sealed partial class StormStorage : IStormStorage
         StormMapCache.Clear();
     }
 
+    public void ClearCustomMods()
+    {
+        StormModStorages.RemoveAll(x => x.StormModType == StormModType.Custom);
+        StormCustomCache.Clear();
+
+        _loadedCustomMods = 0;
+    }
+
     public int? GetBuildId()
     {
         return StormModStorages.FirstOrDefault()?.BuildId;
@@ -493,8 +545,8 @@ internal sealed partial class StormStorage : IStormStorage
 
     private void ClearStormMapContainers()
     {
-        // stormmap mods are always at the end
-        for (int i = StormModStorages.Count - 1; i > 0; i--)
+        // stormmap mods are always at the end (or before customs) and grouped together
+        for (int i = StormModStorages.Count - 1; i >= 0; i--)
         {
             if (_loadedMapMods < 1)
                 break;

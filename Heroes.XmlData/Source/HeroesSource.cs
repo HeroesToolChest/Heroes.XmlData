@@ -219,6 +219,7 @@ internal abstract class HeroesSource : IHeroesSource
 
     public void UnloadCustomMods()
     {
+        StormStorage.ClearCustomMods();
         _stormCustomMods.Clear();
     }
 

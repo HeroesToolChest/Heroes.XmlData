@@ -54,6 +54,8 @@ internal interface IStormStorage
 
     void ClearStormMapMods();
 
+    void ClearCustomMods();
+
     int? GetBuildId();
 
     bool TryGetFirstConstantXElementById(ReadOnlySpan<char> id, [NotNullWhen(true)] out StormXElementValuePath? stormXElementValuePath);

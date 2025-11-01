@@ -207,7 +207,10 @@ public class HeroesXmlLoader
     /// Loads a map mod. Only one can be loaded at a time. Will automatically load the base stormmods if not already loaded.
     /// All Gamestrings will be reloaded if <see cref="LoadGameStrings(StormLocale)"/> was already called.
     /// </summary>
-    /// <param name="mapTitle">A map's title. Can be found from <see cref="GetMapTitles"/>. Is not case-sensitive.</param>
+    /// <param name="mapTitle">
+    /// <para>A map's title. Can be found from <see cref="GetMapTitles"/>. Is not case-sensitive.</para>
+    /// <para>Only enUS maps titles are accepted.</para>
+    /// </param>
     /// <returns>The current <see cref="HeroesXmlLoader"/> instance.</returns>
     public HeroesXmlLoader LoadMapMod(string mapTitle)
     {
@@ -289,7 +292,7 @@ public class HeroesXmlLoader
     }
 
     /// <summary>
-    /// Gets a collection of the map titles to be used for <see cref="LoadMapMod(string)"/>.
+    /// Gets a collection of the map titles (enUS) to be used for <see cref="LoadMapMod(string)"/>.
     /// </summary>
     /// <returns>A collection of map titles.</returns>
     /// <returns>The current <see cref="HeroesXmlLoader"/> instance.</returns>
