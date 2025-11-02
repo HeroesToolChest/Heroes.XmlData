@@ -37,11 +37,7 @@ public class ScaleValueParserTests
             },
         };
 
-#if NET9_0_OR_GREATER
         stormStorage.StormCustomCache.StormElementsByDataObjectType.Add("Effect", newStormElementById.GetAlternateLookup<ReadOnlySpan<char>>());
-#else
-        stormStorage.StormCustomCache.StormElementsByDataObjectType.Add("Effect", newStormElementById);
-#endif
 
         LevelScalingEntry levelScalingEntry = new("Effect", "AzmodanDemonicInvasionImpactDamage", "Amount");
         StormStringValue stormStringValue = new("0.040000", TestHelpers.GetStormPath("custom"));
@@ -96,11 +92,7 @@ public class ScaleValueParserTests
             },
         };
 
-#if NET9_0_OR_GREATER
         stormStorage.StormCustomCache.StormElementsByDataObjectType.Add("Effect", newStormElementById.GetAlternateLookup<ReadOnlySpan<char>>());
-#else
-        stormStorage.StormCustomCache.StormElementsByDataObjectType.Add("Effect", newStormElementById);
-#endif
 
         LevelScalingEntry levelScalingEntry = new("Effect", "AzmodanDemonicInvasionImpactDamage", "Amount");
         StormStringValue stormStringValue = new("0.040000", TestHelpers.GetStormPath("custom"));

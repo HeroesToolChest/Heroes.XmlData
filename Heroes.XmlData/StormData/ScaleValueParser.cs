@@ -58,7 +58,6 @@ internal static class ScaleValueParser
         XElement xElement = new(levelScalingEntry.Catalog);
         XElement innerElement = xElement;
 
-#if NET9_0_OR_GREATER
         foreach (Range fieldPart in fullField.Split('.'))
         {
             ReadOnlySpan<char> fieldPartSpan = fullField[fieldPart];
@@ -66,17 +65,6 @@ internal static class ScaleValueParser
             if (fieldPartSpan.IsWhiteSpace() || fieldPartSpan.IsEmpty)
                 continue;
 
-#else
-
-        int splitterCount = fullField.Count('.');
-        Span<Range> fieldParts = stackalloc Range[splitterCount + 1];
-
-        fullField.Split(fieldParts, '.', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
-
-        foreach (Range fieldPart in fieldParts)
-        {
-            ReadOnlySpan<char> fieldPartSpan = fullField[fieldPart];
-#endif
             innerElement = BuildInnerXElement(innerElement, fieldPartSpan);
         }
 

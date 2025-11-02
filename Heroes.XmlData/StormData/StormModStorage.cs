@@ -245,14 +245,10 @@ internal sealed class StormModStorage : IStormModStorage
         if (attributeSpan[0] != '@')
             return;
 
-#if NET9_0_OR_GREATER
         string assetValue = string.Empty;
         if (_stormStorage.TryGetStormAssetStringValue(attributeSpan[1..], out string? value))
             assetValue = value;
 
         element.SetAttributeValue(attribute.Name, assetValue);
-#else
-        element.SetAttributeValue(attribute.Name, _stormStorage.GetStormAssetString(attributeSpan[1..].ToString())?.Value ?? string.Empty);
-#endif
     }
 }

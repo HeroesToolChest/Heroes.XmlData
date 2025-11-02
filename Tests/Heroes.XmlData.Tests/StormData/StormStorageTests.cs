@@ -467,11 +467,8 @@ public class StormStorageTests
                     TestHelpers.GetStormPath("normal")))
             },
         };
-#if NET9_0_OR_GREATER
+
         stormStorage.StormCache.StormElementsByDataObjectType.Add("Unit", newStormElementById.GetAlternateLookup<ReadOnlySpan<char>>());
-#else
-        stormStorage.StormCache.StormElementsByDataObjectType.Add("Unit", newStormElementById);
-#endif
 
         Dictionary<string, StormElement> newStormElementById2 = new()
         {
@@ -486,11 +483,8 @@ public class StormStorageTests
                     TestHelpers.GetStormPath("map")))
             },
         };
-#if NET9_0_OR_GREATER
+
         stormStorage.StormMapCache.StormElementsByDataObjectType.Add("Unit", newStormElementById2.GetAlternateLookup<ReadOnlySpan<char>>());
-#else
-        stormStorage.StormMapCache.StormElementsByDataObjectType.Add("Unit", newStormElementById2);
-#endif
 
         Dictionary<string, StormElement> newStormElementById3 = new()
         {
@@ -505,11 +499,8 @@ public class StormStorageTests
                     TestHelpers.GetStormPath("custom")))
             },
         };
-#if NET9_0_OR_GREATER
+
         stormStorage.StormCustomCache.StormElementsByDataObjectType.Add("Unit", newStormElementById3.GetAlternateLookup<ReadOnlySpan<char>>());
-#else
-        stormStorage.StormCustomCache.StormElementsByDataObjectType.Add("Unit", newStormElementById3);
-#endif
 
         // act
         StormElement? result = stormStorage.GetStormElementById("Hero1", "Unit");
@@ -541,11 +532,8 @@ public class StormStorageTests
                     TestHelpers.GetStormPath("normal")))
             },
         };
-#if NET9_0_OR_GREATER
+
         stormStorage.StormCache.StormElementsByDataObjectType.Add("Unit", newStormElementById.GetAlternateLookup<ReadOnlySpan<char>>());
-#else
-        stormStorage.StormCache.StormElementsByDataObjectType.Add("Unit", newStormElementById);
-#endif
 
         // act
         StormElement? result = stormStorage.GetStormElementById("Hero1", "Unit");
@@ -575,11 +563,8 @@ public class StormStorageTests
                     TestHelpers.GetStormPath("map")))
             },
         };
-#if NET9_0_OR_GREATER
+
         stormStorage.StormMapCache.StormElementsByDataObjectType.Add("Unit", newStormElementById.GetAlternateLookup<ReadOnlySpan<char>>());
-#else
-        stormStorage.StormMapCache.StormElementsByDataObjectType.Add("Unit", newStormElementById);
-#endif
 
         // act
         StormElement? result = stormStorage.GetStormElementById("Hero1", "Unit");
@@ -609,11 +594,8 @@ public class StormStorageTests
                     TestHelpers.GetStormPath("normal")))
             },
         };
-#if NET9_0_OR_GREATER
+
         stormStorage.StormCache.StormElementsByDataObjectType.Add("Unit", newStormElementById.GetAlternateLookup<ReadOnlySpan<char>>());
-#else
-        stormStorage.StormCache.StormElementsByDataObjectType.Add("Unit", newStormElementById);
-#endif
 
         Dictionary<string, StormElement> newStormElementById2 = new()
         {
@@ -628,11 +610,8 @@ public class StormStorageTests
                     TestHelpers.GetStormPath("map")))
             },
         };
-#if NET9_0_OR_GREATER
+
         stormStorage.StormMapCache.StormElementsByDataObjectType.Add("Unit", newStormElementById2.GetAlternateLookup<ReadOnlySpan<char>>());
-#else
-        stormStorage.StormMapCache.StormElementsByDataObjectType.Add("Unit", newStormElementById2);
-#endif
 
         // act
         StormElement? result = stormStorage.GetStormElementById("Hero1", "Unit");
@@ -676,11 +655,8 @@ public class StormStorageTests
                     TestHelpers.GetStormPath("normal")))
             },
         };
-#if NET9_0_OR_GREATER
+
         stormStorage.StormCache.StormElementsByDataObjectType.Add("Unit", newStormElementById.GetAlternateLookup<ReadOnlySpan<char>>());
-#else
-        stormStorage.StormCache.StormElementsByDataObjectType.Add("Unit", newStormElementById);
-#endif
 
         Dictionary<string, StormElement> newStormElementById2 = new()
         {
@@ -696,11 +672,8 @@ public class StormStorageTests
                     TestHelpers.GetStormPath("map")))
             },
         };
-#if NET9_0_OR_GREATER
+
         stormStorage.StormMapCache.StormElementsByDataObjectType.Add("Unit", newStormElementById2.GetAlternateLookup<ReadOnlySpan<char>>());
-#else
-        stormStorage.StormMapCache.StormElementsByDataObjectType.Add("Unit", newStormElementById2);
-#endif
 
         Dictionary<string, StormElement> newStormElementById3 = new()
         {
@@ -717,11 +690,8 @@ public class StormStorageTests
                     TestHelpers.GetStormPath("custom")))
             },
         };
-#if NET9_0_OR_GREATER
+
         stormStorage.StormCustomCache.StormElementsByDataObjectType.Add("Unit", newStormElementById3.GetAlternateLookup<ReadOnlySpan<char>>());
-#else
-        stormStorage.StormCustomCache.StormElementsByDataObjectType.Add("Unit", newStormElementById3);
-#endif
 
         // act
         StormElement? result = stormStorage.GetStormElementById("Hero1", "Unit");
@@ -763,11 +733,8 @@ public class StormStorageTests
                     TestHelpers.GetStormPath("normal")))
             },
         };
-#if NET9_0_OR_GREATER
+
         stormStorage.StormCache.StormElementsByDataObjectType.Add("Unit", newStormElementById.GetAlternateLookup<ReadOnlySpan<char>>());
-#else
-        stormStorage.StormCache.StormElementsByDataObjectType.Add("Unit", newStormElementById);
-#endif
 
         Dictionary<string, StormElement> newStormElementById2 = new()
         {
@@ -782,11 +749,8 @@ public class StormStorageTests
                     TestHelpers.GetStormPath("map")))
             },
         };
-#if NET9_0_OR_GREATER
+
         stormStorage.StormMapCache.StormElementsByDataObjectType.Add("Unit", newStormElementById2.GetAlternateLookup<ReadOnlySpan<char>>());
-#else
-        stormStorage.StormMapCache.StormElementsByDataObjectType.Add("Unit", newStormElementById2);
-#endif
 
         Dictionary<string, StormElement> newStormElementById3 = new()
         {
@@ -801,11 +765,8 @@ public class StormStorageTests
                     TestHelpers.GetStormPath("custom")))
             },
         };
-#if NET9_0_OR_GREATER
+
         stormStorage.StormCustomCache.StormElementsByDataObjectType.Add("Unit", newStormElementById3.GetAlternateLookup<ReadOnlySpan<char>>());
-#else
-        stormStorage.StormCustomCache.StormElementsByDataObjectType.Add("Unit", newStormElementById3);
-#endif
 
         // act
         bool result = stormStorage.StormElementExists("Hero1", "Unit");
@@ -833,11 +794,8 @@ public class StormStorageTests
                     TestHelpers.GetStormPath("normal")))
             },
         };
-#if NET9_0_OR_GREATER
+
         stormStorage.StormCache.StormElementsByDataObjectType.Add("Unit", newStormElementById.GetAlternateLookup<ReadOnlySpan<char>>());
-#else
-        stormStorage.StormCache.StormElementsByDataObjectType.Add("Unit", newStormElementById);
-#endif
 
         // act
         bool result = stormStorage.StormElementExists("Hero1", "Unit");
@@ -865,11 +823,8 @@ public class StormStorageTests
                     TestHelpers.GetStormPath("map")))
             },
         };
-#if NET9_0_OR_GREATER
+
         stormStorage.StormMapCache.StormElementsByDataObjectType.Add("Unit", newStormElementById.GetAlternateLookup<ReadOnlySpan<char>>());
-#else
-        stormStorage.StormMapCache.StormElementsByDataObjectType.Add("Unit", newStormElementById);
-#endif
 
         // act
         bool result = stormStorage.StormElementExists("Hero1", "Unit");
@@ -897,11 +852,8 @@ public class StormStorageTests
                     TestHelpers.GetStormPath("normal")))
             },
         };
-#if NET9_0_OR_GREATER
+
         stormStorage.StormCache.StormElementsByDataObjectType.Add("Unit", newStormElementById.GetAlternateLookup<ReadOnlySpan<char>>());
-#else
-        stormStorage.StormCache.StormElementsByDataObjectType.Add("Unit", newStormElementById);
-#endif
 
         Dictionary<string, StormElement> newStormElementById2 = new()
         {
@@ -916,11 +868,8 @@ public class StormStorageTests
                     TestHelpers.GetStormPath("map")))
             },
         };
-#if NET9_0_OR_GREATER
+
         stormStorage.StormMapCache.StormElementsByDataObjectType.Add("Unit", newStormElementById2.GetAlternateLookup<ReadOnlySpan<char>>());
-#else
-        stormStorage.StormMapCache.StormElementsByDataObjectType.Add("Unit", newStormElementById2);
-#endif
 
         // act
         bool result = stormStorage.StormElementExists("Hero1", "Unit");
@@ -1411,11 +1360,8 @@ public class StormStorageTests
                     TestHelpers.GetStormPath("custom")))
             },
         };
-#if NET9_0_OR_GREATER
+
         stormStorage.StormCustomCache.StormElementsByDataObjectType.Add("Effect", newStormElementById.GetAlternateLookup<ReadOnlySpan<char>>());
-#else
-        stormStorage.StormCustomCache.StormElementsByDataObjectType.Add("Effect", newStormElementById);
-#endif
 
         // act
         StormElement? stormElement = stormStorage.GetCompleteStormElement("ZagaraInfestApplyBuffBehavior", "Effect");
@@ -1446,13 +1392,9 @@ public class StormStorageTests
                     TestHelpers.GetStormPath("custom")))
             },
         };
-#if NET9_0_OR_GREATER
-        stormStorage.StormCustomCache.StormElementsByDataObjectType.Add("Effect", newStormElementById.GetAlternateLookup<ReadOnlySpan<char>>());
-#else
-        stormStorage.StormCustomCache.StormElementsByDataObjectType.Add("Effect", newStormElementById);
-#endif
 
-#if NET9_0_OR_GREATER
+        stormStorage.StormCustomCache.StormElementsByDataObjectType.Add("Effect", newStormElementById.GetAlternateLookup<ReadOnlySpan<char>>());
+
         stormStorage.StormCustomCache.StormElementsByDataObjectType["Effect"].Dictionary.Add(
             "KelThuzadMasterOfTheColdDarkModifyToken", new StormElement(new StormXElementValuePath(
                 XElement.Parse(@"
@@ -1461,16 +1403,6 @@ public class StormStorageTests
                     </CEffectModifyTokenCount>
                     "),
                 TestHelpers.GetStormPath("custom"))));
-#else
-        stormStorage.StormCustomCache.StormElementsByDataObjectType["Effect"].Add(
-            "KelThuzadMasterOfTheColdDarkModifyToken", new StormElement(new StormXElementValuePath(
-                XElement.Parse(@"
-                    <CEffectModifyTokenCount id=""KelThuzadMasterOfTheColdDarkModifyToken"" parent=""BaseEffectModifyTokenCount"">
-                      <ValidatorArray value=""TargetIsHero"" />
-                    </CEffectModifyTokenCount>
-                    "),
-                TestHelpers.GetStormPath("custom"))));
-#endif
 
         // act
         StormElement? stormElement = stormStorage.GetCompleteStormElement("KelThuzadMasterOfTheColdDarkModifyToken", "Effect");
@@ -1500,11 +1432,8 @@ public class StormStorageTests
                     TestHelpers.GetStormPath("custom")))
             },
         };
-#if NET9_0_OR_GREATER
+
         stormStorage.StormCustomCache.StormElementsByDataObjectType.Add("Effect", newStormElementById.GetAlternateLookup<ReadOnlySpan<char>>());
-#else
-        stormStorage.StormCustomCache.StormElementsByDataObjectType.Add("Effect", newStormElementById);
-#endif
 
         // act
         StormElement? stormElement = stormStorage.GetCompleteStormElement("KelThuzadMasterOfTheColdDarkModifyToken", "Effect");
@@ -1551,11 +1480,8 @@ public class StormStorageTests
                     TestHelpers.GetStormPath("custom")))
             },
         };
-#if NET9_0_OR_GREATER
+
         stormStorage.StormCustomCache.StormElementsByDataObjectType.Add("Unit", newStormElementById.GetAlternateLookup<ReadOnlySpan<char>>());
-#else
-        stormStorage.StormCustomCache.StormElementsByDataObjectType.Add("Unit", newStormElementById);
-#endif
 
         // act
         StormElement? stormElement = stormStorage.GetCompleteStormElement("StormBasicHeroicUnit", "Unit");
@@ -1622,11 +1548,8 @@ public class StormStorageTests
                 "LootChestChristmas2018Common", baseStormElement
             },
         };
-#if NET9_0_OR_GREATER
+
         stormStorage.StormCustomCache.StormElementsByDataObjectType.Add("LootChest", newStormElementById.GetAlternateLookup<ReadOnlySpan<char>>());
-#else
-        stormStorage.StormCustomCache.StormElementsByDataObjectType.Add("LootChest", newStormElementById);
-#endif
 
         // act
         StormElement? stormElement = stormStorage.GetCompleteStormElement("LootChestChristmas2018Common", "LootChest");
@@ -2278,11 +2201,8 @@ public class StormStorageTests
                     TestHelpers.GetStormPath("normal")))
             },
         };
-#if NET9_0_OR_GREATER
+
         stormStorage.StormCache.StormElementsByDataObjectType.Add("Unit", newStormElementById.GetAlternateLookup<ReadOnlySpan<char>>());
-#else
-        stormStorage.StormCache.StormElementsByDataObjectType.Add("Unit", newStormElementById);
-#endif
 
         Dictionary<string, StormElement> newStormElementById2 = new()
         {
@@ -2296,11 +2216,8 @@ public class StormStorageTests
                     TestHelpers.GetStormPath("map")))
             },
         };
-#if NET9_0_OR_GREATER
+
         stormStorage.StormMapCache.StormElementsByDataObjectType.Add("Unit", newStormElementById2.GetAlternateLookup<ReadOnlySpan<char>>());
-#else
-        stormStorage.StormMapCache.StormElementsByDataObjectType.Add("Unit", newStormElementById2);
-#endif
 
         Dictionary<string, StormElement> newStormElementById3 = new()
         {
@@ -2314,11 +2231,8 @@ public class StormStorageTests
                     TestHelpers.GetStormPath("custom")))
             },
         };
-#if NET9_0_OR_GREATER
+
         stormStorage.StormCustomCache.StormElementsByDataObjectType.Add("Unit", newStormElementById3.GetAlternateLookup<ReadOnlySpan<char>>());
-#else
-        stormStorage.StormCustomCache.StormElementsByDataObjectType.Add("Unit", newStormElementById3);
-#endif
 
         // act
         List<string> ids = stormStorage.GetStormElementIds("Unit");
@@ -2359,11 +2273,8 @@ public class StormStorageTests
                     TestHelpers.GetStormPath("normal")))
             },
         };
-#if NET9_0_OR_GREATER
+
         stormStorage.StormCache.StormElementsByDataObjectType.Add("Unit", newStormElementById.GetAlternateLookup<ReadOnlySpan<char>>());
-#else
-        stormStorage.StormCache.StormElementsByDataObjectType.Add("Unit", newStormElementById);
-#endif
 
         Dictionary<string, StormElement> newStormElementById2 = new()
         {
@@ -2377,11 +2288,8 @@ public class StormStorageTests
                     TestHelpers.GetStormPath("map")))
             },
         };
-#if NET9_0_OR_GREATER
+
         stormStorage.StormMapCache.StormElementsByDataObjectType.Add("Unit", newStormElementById2.GetAlternateLookup<ReadOnlySpan<char>>());
-#else
-        stormStorage.StormMapCache.StormElementsByDataObjectType.Add("Unit", newStormElementById2);
-#endif
 
         Dictionary<string, StormElement> newStormElementById3 = new()
         {
@@ -2395,11 +2303,8 @@ public class StormStorageTests
                     TestHelpers.GetStormPath("custom")))
             },
         };
-#if NET9_0_OR_GREATER
+
         stormStorage.StormCustomCache.StormElementsByDataObjectType.Add("Unit", newStormElementById3.GetAlternateLookup<ReadOnlySpan<char>>());
-#else
-        stormStorage.StormCustomCache.StormElementsByDataObjectType.Add("Unit", newStormElementById3);
-#endif
 
         // act
         List<string> ids = stormStorage.GetStormElementIds("Unit", StormCacheType.Normal);
@@ -2432,11 +2337,8 @@ public class StormStorageTests
                     TestHelpers.GetStormPath("normal")))
             },
         };
-#if NET9_0_OR_GREATER
+
         stormStorage.StormCache.StormElementsByDataObjectType.Add("Unit", newStormElementById.GetAlternateLookup<ReadOnlySpan<char>>());
-#else
-        stormStorage.StormCache.StormElementsByDataObjectType.Add("Unit", newStormElementById);
-#endif
 
         Dictionary<string, StormElement> newStormElementById2 = new()
         {
@@ -2450,11 +2352,8 @@ public class StormStorageTests
                     TestHelpers.GetStormPath("map")))
             },
         };
-#if NET9_0_OR_GREATER
+
         stormStorage.StormMapCache.StormElementsByDataObjectType.Add("Unit", newStormElementById2.GetAlternateLookup<ReadOnlySpan<char>>());
-#else
-        stormStorage.StormMapCache.StormElementsByDataObjectType.Add("Unit", newStormElementById2);
-#endif
 
         Dictionary<string, StormElement> newStormElementById3 = new()
         {
@@ -2468,11 +2367,8 @@ public class StormStorageTests
                     TestHelpers.GetStormPath("custom")))
             },
         };
-#if NET9_0_OR_GREATER
+
         stormStorage.StormCustomCache.StormElementsByDataObjectType.Add("Unit", newStormElementById3.GetAlternateLookup<ReadOnlySpan<char>>());
-#else
-        stormStorage.StormCustomCache.StormElementsByDataObjectType.Add("Unit", newStormElementById3);
-#endif
 
         // act
         List<string> ids = stormStorage.GetStormElementIds("Unit", StormCacheType.Map);
@@ -2505,11 +2401,8 @@ public class StormStorageTests
                     TestHelpers.GetStormPath("normal")))
             },
         };
-#if NET9_0_OR_GREATER
+
         stormStorage.StormCache.StormElementsByDataObjectType.Add("Unit", newStormElementById.GetAlternateLookup<ReadOnlySpan<char>>());
-#else
-        stormStorage.StormCache.StormElementsByDataObjectType.Add("Unit", newStormElementById);
-#endif
 
         Dictionary<string, StormElement> newStormElementById2 = new()
         {
@@ -2523,11 +2416,8 @@ public class StormStorageTests
                     TestHelpers.GetStormPath("map")))
             },
         };
-#if NET9_0_OR_GREATER
+
         stormStorage.StormMapCache.StormElementsByDataObjectType.Add("Unit", newStormElementById2.GetAlternateLookup<ReadOnlySpan<char>>());
-#else
-        stormStorage.StormMapCache.StormElementsByDataObjectType.Add("Unit", newStormElementById2);
-#endif
 
         Dictionary<string, StormElement> newStormElementById3 = new()
         {
@@ -2541,11 +2431,8 @@ public class StormStorageTests
                     TestHelpers.GetStormPath("custom")))
             },
         };
-#if NET9_0_OR_GREATER
+
         stormStorage.StormCustomCache.StormElementsByDataObjectType.Add("Unit", newStormElementById3.GetAlternateLookup<ReadOnlySpan<char>>());
-#else
-        stormStorage.StormCustomCache.StormElementsByDataObjectType.Add("Unit", newStormElementById3);
-#endif
 
         // act
         List<string> ids = stormStorage.GetStormElementIds("Unit", StormCacheType.Custom);

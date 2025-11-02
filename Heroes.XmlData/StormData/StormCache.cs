@@ -7,7 +7,6 @@ internal sealed class StormCache
 {
     public StormCache()
     {
-#if NET9_0_OR_GREATER
         ConstantXElementByIdAltLookup = ConstantXElementById.GetAlternateLookup<ReadOnlySpan<char>>();
         AssetTextsByIdAltLookup = AssetTextsById.GetAlternateLookup<ReadOnlySpan<char>>();
         StormStyleStyleElementsByNameAltLookup = StormStyleStyleElementsByName.GetAlternateLookup<ReadOnlySpan<char>>();
@@ -16,7 +15,6 @@ internal sealed class StormCache
         StormElementByElementTypeAltLookup = StormElementByElementType.GetAlternateLookup<ReadOnlySpan<char>>();
         DataObjectTypeByElementTypeAltLookup = DataObjectTypeByElementType.GetAlternateLookup<ReadOnlySpan<char>>();
         ScaleValueStormElementsByDataObjectTypeAltLookup = ScaleValueStormElementsByDataObjectType.GetAlternateLookup<ReadOnlySpan<char>>();
-#endif
     }
 
     /// <summary>
@@ -67,11 +65,7 @@ internal sealed class StormCache
     /// <summary>
     /// Gets a dictionary of <see cref="StormElement"/>s by their id attribute by their data object type (e.g. Effect).
     /// </summary>
-#if NET9_0_OR_GREATER
     public Dictionary<string, Dictionary<string, StormElement>.AlternateLookup<ReadOnlySpan<char>>> StormElementsByDataObjectType { get; } = new(StringComparer.OrdinalIgnoreCase);
-#else
-    public Dictionary<string, Dictionary<string, StormElement>> StormElementsByDataObjectType { get; } = new(StringComparer.OrdinalIgnoreCase);
-#endif
 
     /// <summary>
     /// Gets a dictionary of another dictionary of id attributes by their unit names (unitName attribute) by their data object type (e.g. Effect).
@@ -109,7 +103,6 @@ internal sealed class StormCache
     /// </summary>
     public Dictionary<string, StormPath> AssetFilesByRelativeAssetsPath { get; } = new(StringComparer.OrdinalIgnoreCase);
 
-#if NET9_0_OR_GREATER
     public Dictionary<string, StormXElementValuePath>.AlternateLookup<ReadOnlySpan<char>> ConstantXElementByIdAltLookup { get; }
 
     public Dictionary<string, AssetText>.AlternateLookup<ReadOnlySpan<char>> AssetTextsByIdAltLookup { get; }
@@ -126,7 +119,6 @@ internal sealed class StormCache
 
     public Dictionary<string, Dictionary<string, StormElement>>.AlternateLookup<ReadOnlySpan<char>> ScaleValueStormElementsByDataObjectTypeAltLookup { get; }
 
-#endif
     public void Clear()
     {
         NotFoundDirectoriesList.Clear();

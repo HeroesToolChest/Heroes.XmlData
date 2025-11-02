@@ -306,19 +306,12 @@ internal sealed partial class StormStorage : IStormStorage
             }
             else
             {
-#if NET9_0_OR_GREATER
                 Dictionary<string, StormElement> newStormElementById = new()
                 {
                     { idAtt, new StormElement(stormXElementValuePath) },
                 };
 
                 currentStormCache.StormElementsByDataObjectType[existingDataObjectType] = newStormElementById.GetAlternateLookup<ReadOnlySpan<char>>();
-#else
-                currentStormCache.StormElementsByDataObjectType[existingDataObjectType] = new()
-                {
-                    { idAtt, new StormElement(stormXElementValuePath) },
-                };
-#endif
             }
 
             // unit name

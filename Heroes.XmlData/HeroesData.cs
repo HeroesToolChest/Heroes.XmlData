@@ -114,7 +114,6 @@ public class HeroesData
         return null;
     }
 
-#if NET9_0_OR_GREATER
     /// <summary>
     /// Gets a <see cref="StormElement"/> that has been merged from the base element to the given <paramref name="id"/>'s element.
     /// </summary>
@@ -125,7 +124,6 @@ public class HeroesData
     {
         return _stormStorage.GetCompleteStormElement(id, dataObjectType);
     }
-#endif
 
     /// <summary>
     /// Gets a <see cref="StormElement"/> that has been merged from the base element to the given <paramref name="id"/>'s element.
@@ -138,7 +136,6 @@ public class HeroesData
         return _stormStorage.GetCompleteStormElement(id, dataObjectType);
     }
 
-#if NET9_0_OR_GREATER
     /// <summary>
     /// Gets a <see cref="StormElement"/> that represents a StormStyle Constant element.
     /// </summary>
@@ -148,7 +145,6 @@ public class HeroesData
     {
         return _stormStorage.GetStormStyleConstantElementsByName(name);
     }
-#endif
 
     /// <summary>
     /// Gets a <see cref="StormElement"/> that represents a StormStyle Constant element.
@@ -160,7 +156,6 @@ public class HeroesData
         return _stormStorage.GetStormStyleConstantElementsByName(name);
     }
 
-#if NET9_0_OR_GREATER
     /// <summary>
     /// Gets a <see cref="StormElement"/> that represents a StormStyle Style element.
     /// </summary>
@@ -170,7 +165,6 @@ public class HeroesData
     {
         return _stormStorage.GetStormStyleStyleElementsByName(name);
     }
-#endif
 
     /// <summary>
     /// Gets a <see cref="StormElement"/> that represents a StormStyle Style element.

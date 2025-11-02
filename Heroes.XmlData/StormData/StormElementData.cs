@@ -34,9 +34,7 @@ public sealed class StormElementData
     {
         StormElement = stormElement;
 
-#if NET9_0_OR_GREATER
         ElementDataPairsAltLookup = ElementDataPairs.GetAlternateLookup<ReadOnlySpan<char>>();
-#endif
 
         Parse(rootElement);
     }
@@ -45,9 +43,7 @@ public sealed class StormElementData
     {
         StormElement = parent.StormElement;
 
-#if NET9_0_OR_GREATER
         ElementDataPairsAltLookup = ElementDataPairs.GetAlternateLookup<ReadOnlySpan<char>>();
-#endif
 
         Parent = parent;
 
@@ -222,10 +218,8 @@ public sealed class StormElementData
     [DebuggerBrowsable(DebuggerBrowsableState.Collapsed)]
     internal Dictionary<string, StormElementData> ElementDataPairs { get; } = new(StringComparer.OrdinalIgnoreCase);
 
-#if NET9_0_OR_GREATER
     [DebuggerBrowsable(DebuggerBrowsableState.Collapsed)]
     internal Dictionary<string, StormElementData>.AlternateLookup<ReadOnlySpan<char>> ElementDataPairsAltLookup { get; }
-#endif
 
     [DebuggerBrowsable(DebuggerBrowsableState.Never)]
     private string DebuggerDisplay
@@ -295,14 +289,10 @@ public sealed class StormElementData
     /// <exception cref="KeyNotFoundException"><paramref name="index"/> was not found.</exception>
     public StormElementData GetElementDataAt(ReadOnlySpan<char> index)
     {
-#if NET9_0_OR_GREATER
         if (ElementDataPairsAltLookup.TryGetValue(index, out StormElementData? stormElementData))
             return stormElementData;
 
         throw new KeyNotFoundException($"Value '{index}' was not found.");
-#else
-        return GetElementDataAt(index.ToString());
-#endif
     }
 
     /// <summary>
@@ -330,11 +320,7 @@ public sealed class StormElementData
     /// <returns><see langword="true"/> if the index is found, otherwise <see langword="false"/>.</returns>
     public bool TryGetElementDataAt(ReadOnlySpan<char> index, [NotNullWhen(true)] out StormElementData? stormElementData)
     {
-#if NET9_0_OR_GREATER
         return ElementDataPairsAltLookup.TryGetValue(index, out stormElementData);
-#else
-        return TryGetElementDataAt(index.ToString(), out stormElementData);
-#endif
     }
 
     /// <summary>
@@ -358,11 +344,7 @@ public sealed class StormElementData
     /// <returns><see langword="true"/> if the index is found, otherwise <see langword="false"/>.</returns>
     public bool ContainsIndex(ReadOnlySpan<char> index)
     {
-#if NET9_0_OR_GREATER
         return ElementDataPairsAltLookup.ContainsKey(index);
-#else
-        return ContainsIndex(index.ToString());
-#endif
     }
 
     /// <summary>
