@@ -2438,4 +2438,57 @@ public class GameStringParserTests
         // assert
         parsed.Should().Be("While above <c val=\"#TooltipNumbers\">40</c> Energy, Zarya's Basic Attack size is increased by <c val=\"#TooltipNumbers\">35%</c>.");
     }
+
+    [TestMethod]
+    public void ParseTooltipDescription_KerriganRavageDrefContainsMoreThanNeeded_ParsedGameString()
+    {
+        // arrange
+        string description = "Minions grant <c val=\"#TooltipNumbers\"><d ref=\"Effect,KerriganRavageSharpenedBladesModifyTokenCountMinions,Value,KerriganRavageSharpenedBladesDamageAccumulator,Scale\" precision=\"1\"/></c> stack and Heroes grant <c val=\"#TooltipNumbers\"><d ref=\"Effect,KerriganRavageSharpenedBladesModifyTokenCountHeroes,Value,KerriganRavageSharpenedBladesDamageAccumulator,Scale\" precision=\"1\"/></c> stacks.";
+
+        HeroesXmlLoader loader = HeroesXmlLoader.LoadWithEmpty()
+            .LoadCustomMod(new ManualModLoader("custom")
+                .AddBaseElementTypes(new List<(string, string)>()
+                {
+                    ("Effect", "CEffectModifyTokenCount"),
+                })
+                .AddElements(new List<XElement>()
+                {
+                    XElement.Parse(
+                        """
+                        <CEffectModifyTokenCount default="1" id="BaseEffectModifyTokenCount">
+                          <Value value="1" />
+                        </CEffectModifyTokenCount>
+                        """),
+                    XElement.Parse(
+                        """
+                        <CEffectModifyTokenCount id="KerriganRavageSharpenedBladesModifyTokenCountMinions" parent="BaseEffectModifyTokenCount">
+                          <EffectCategory index="Quest" value="1" />
+                        </CEffectModifyTokenCount>
+                        """),
+                    XElement.Parse(
+                        """
+                        <CEffectModifyTokenCount default="1" id="BaseEffectModifyTokenCount">
+                          <Value value="1" />
+                          <ContextUnit Value="Target" />
+                          <CollationId value="##id##" />
+                        </CEffectModifyTokenCount>
+                        """),
+                    XElement.Parse(
+                        """
+                        <CEffectModifyTokenCount id="KerriganRavageSharpenedBladesModifyTokenCountHeroes" parent="BaseEffectModifyTokenCount">
+                          <EffectCategory index="Quest" value="1" />
+                          <TokenId value="KerriganRavageSharpenedBladesTokenCounter" />
+                          <Value value="5" />
+                        </CEffectModifyTokenCount>
+                        """),
+                }));
+
+        HeroesData heroesData = loader.HeroesData;
+
+        // act
+        string parsed = GameStringParser.ParseGameStringText(heroesData.StormStorage, description);
+
+        // assert
+        parsed.Should().Be("Minions grant <c val=\"#TooltipNumbers\">1</c> stack and Heroes grant <c val=\"#TooltipNumbers\">5</c> stacks.");
+    }
 }
