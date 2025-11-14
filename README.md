@@ -8,9 +8,9 @@ Heroes Xml Data is a .NET library that parses the Heroes of the Storm game data 
 ## Usage
 
 ## Developing
-To build and compile the code, it is recommended to use the latest version of [Visual Studio 2022 or Visual Studio Code](https://visualstudio.microsoft.com/downloads/).
+To build and compile the code, it is recommended to use the latest version of [Visual Studio 2026 or Visual Studio Code](https://visualstudio.microsoft.com/downloads/).
 
-Another option is to use the dotnet CLI tools from the [.NET 8.0 SDK](https://dotnet.microsoft.com/download).
+Another option is to use the dotnet CLI tools from the latest [.NET SDK](https://dotnet.microsoft.com/download).
 
 ## License
 [MIT license](/LICENSE)
