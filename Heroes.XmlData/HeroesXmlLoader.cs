@@ -178,11 +178,13 @@ public class HeroesXmlLoader
     /// Gets an instance of the <see cref="HeroesXmlLoader"/> class. Sets the source of data to be loaded locally or online.
     /// </summary>
     /// <param name="cascConfig">The <see cref="CASCConfig"/> to determine on how to load data from the data files.</param>
-    /// <param name="httpClient">An instance of <see cref="HttpClient"/> if using online mode.</param>
+    /// <param name="httpClient">An instance of <see cref="HttpClient"/>. Needed for both local and online.</param>
     /// <param name="progressReporter">Used to report loading progress.</param>
     /// <returns>A <see cref="HeroesXmlLoader"/> instance.</returns>
-    public static HeroesXmlLoader LoadWithCASC(CASCConfig cascConfig, HttpClient? httpClient = null, IProgressReporter? progressReporter = null)
+    public static HeroesXmlLoader LoadWithCASC(CASCConfig cascConfig, HttpClient httpClient, IProgressReporter? progressReporter = null)
     {
+        ArgumentNullException.ThrowIfNull(httpClient);
+
         return LoadAsCASCInternal(cascConfig, httpClient, progressReporter);
     }
 
@@ -526,7 +528,7 @@ public class HeroesXmlLoader
         return new HeroesXmlLoader(heroesSource);
     }
 
-    private static HeroesXmlLoader LoadAsCASCInternal(CASCConfig cascConfig, HttpClient? httpClient = null, IProgressReporter? progressReporter = null)
+    private static HeroesXmlLoader LoadAsCASCInternal(CASCConfig cascConfig, HttpClient httpClient, IProgressReporter? progressReporter = null)
     {
         CASCConfig.ThrowOnFileNotFound = true;
         CASCConfig.ThrowOnMissingDecryptionKey = true;
