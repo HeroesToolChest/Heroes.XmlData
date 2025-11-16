@@ -18,6 +18,7 @@ public sealed class StormElementData
         "Modifications",
         "On",
         "Remove",
+        "RolesMultiClass",
         "TooltipAppender",
     };
 
