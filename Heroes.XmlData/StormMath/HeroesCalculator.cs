@@ -51,28 +51,14 @@ public sealed class HeroesCalculator
         }
     }
 
-    internal static double ApplyOperator(char op, double b, double a)
+    internal static double ApplyOperator(char op, double b, double a) => op switch
     {
-        switch (op)
-        {
-            case '+':
-                return a + b;
-            case '-':
-                return a - b;
-            case '*':
-                return a * b;
-            case '/':
-                if (b == 0)
-                {
-                    // if divide by 0, return the numerator
-                    return a;
-                }
-
-                return a / b;
-        }
-
-        throw new InvalidOperationException($"Invalid operator: {op}");
-    }
+        '+' => a + b,
+        '-' => a - b,
+        '*' => a * b,
+        '/' => b == 0 ? a : a / b,
+        _ => throw new InvalidOperationException($"Invalid operator: {op}"),
+    };
 
     internal static bool IsOperator(char value) => value == '*' || value == '-' || value == '+' || value == '/';
 
@@ -86,17 +72,8 @@ public sealed class HeroesCalculator
 
     // only parentheses has precedence
     // if operator2 has same or higher then return true, otherwise return false
-#pragma warning disable IDE0060 // Remove unused parameter
-    private static bool CheckPrecedence(char operator1, char operator2)
-#pragma warning restore IDE0060 // Remove unused parameter
-    {
-        if (operator2 == '(' || operator2 == ')')
-            return false;
-        ////else if ((operator1 == '*' || operator1 == '/') && (operator2 == '+' || operator2 == '-'))
-        ////   return false;
-        else
-            return true;
-    }
+    // only operator2 as operator1 is not used
+    private static bool CheckPrecedence(char operator2) => operator2 is not ('(' or ')');
 
     /* Only parentheses have precedence
      * Divide by 0 results in the numerator
@@ -136,21 +113,19 @@ public sealed class HeroesCalculator
             }
             else if (tokens[i] == ')')
             {
-                while (_operators.Count > 0 && _operators.Peek() != '(')
+                while (_operators.TryPop(out char op) && op != '(')
                 {
-                    if (_operators.Peek() == 'b')
+                    if (op == 'b')
                     {
-                        _values.Push(_values.Pop() * -1);
-                        _operators.Pop();
+                        if (_values.TryPop(out double val))
+                            _values.Push(val * -1);
                     }
                     else
                     {
-                        _values.Push(ApplyOperator(_operators.Pop(), _values.Pop(), _values.Pop()));
+                        if (_values.TryPop(out double b) && _values.TryPop(out double a))
+                            _values.Push(ApplyOperator(op, b, a));
                     }
                 }
-
-                if (_operators.Count > 0)
-                    _operators.Pop(); // this pops the left parentheses
             }
             else if (IsOperator(tokens[i]))
             {
@@ -172,9 +147,10 @@ public sealed class HeroesCalculator
                 }
                 else
                 {
-                    while (_operators.Count > 0 && CheckPrecedence(tokens[i], _operators.Peek()))
+                    while (_operators.Count > 0 && CheckPrecedence(_operators.Peek()))
                     {
-                        if (_operators.Peek() == 'b')
+                        char topOp = _operators.Peek();
+                        if (topOp == 'b')
                         {
                             _values.Push(_values.Pop() * -1);
                             _operators.Pop();

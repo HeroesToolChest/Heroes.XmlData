@@ -19,7 +19,7 @@ public readonly ref struct StormElementValue
     internal bool IsNull { get; init; }
 
     [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-    private string? DebuggerDisplay => IsNull ? null : $"\"{Value.ToString()}\"";
+    private string? DebuggerDisplay => IsNull ? null : $"\"{Value}\"";
 
     /// <summary>
     /// Gets the current value as a <see cref="string"/>.
@@ -90,6 +90,18 @@ public readonly ref struct StormElementValue
         return GetString();
     }
 
+    private static void PushNormalText(ref int index, ref int startingIndex, List<(Range Text, bool Replace)> elementNameList)
+    {
+        int normalTextLength = index - startingIndex;
+        if (normalTextLength > 0)
+        {
+#if DEBUG
+            ReadOnlySpan<char> temp = Value.Slice(startingIndex, normalTextLength);
+#endif
+            elementNameList.Add((new Range(startingIndex, index), false));
+        }
+    }
+
     private readonly List<(Range Text, bool Replace)> ParseElementValues()
     {
         int index = 0;
@@ -158,7 +170,7 @@ public readonly ref struct StormElementValue
                 count += stormElementData.RawValue?.Length ?? 0;
             else
                 count += indexOfText.End.Value - indexOfText.Start.Value;
-        }
+    }
 
         return count;
     }
@@ -199,17 +211,5 @@ public readonly ref struct StormElementValue
         index += 2;
 
         return false;
-    }
-
-    private readonly void PushNormalText(ref int index, ref int startingIndex, List<(Range Text, bool Replace)> elementNameList)
-    {
-        int normalTextLength = index - startingIndex;
-        if (normalTextLength > 0)
-        {
-#if DEBUG
-            ReadOnlySpan<char> temp = Value.Slice(startingIndex, normalTextLength);
-#endif
-            elementNameList.Add((new Range(startingIndex, index), false));
-        }
     }
 }

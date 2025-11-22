@@ -29,12 +29,10 @@ internal sealed class HeroesPrefixNotation
     {
         int startIndex = expression.IndexOf('(');
 
-        int parenthesis = 0;
-
-        if (startIndex > -1)
-            parenthesis++;
-        else
+        if (startIndex == -1)
             return expression;
+
+        int parenthesis = 1;
 
         for (int i = startIndex + 1; i < expression.Length; i++)
         {
@@ -72,7 +70,7 @@ internal sealed class HeroesPrefixNotation
             }
             else if (parenthesis == 0 && expression[i] == ' ')
             {
-                return i++;
+                return i;
             }
         }
 
@@ -81,15 +79,17 @@ internal sealed class HeroesPrefixNotation
 
     private double Evaluate(ReadOnlySpan<char> expression)
     {
-        if (HeroesCalculator.IsOperator(expression[0]) && expression.Length > 1 && expression[1] == '(')
-        {
-            char op = expression[0];
+        char firstChar = expression[0];
 
-            (double firstParam, double secondParam) = GetOperatorParameters(expression);
+        if (HeroesCalculator.IsOperator(firstChar) && expression.Length > 1 && expression[1] == '(')
+        {
+            char op = firstChar;
+
+            GetOperatorParameters(expression, out double firstParam, out double secondParam);
 
             return HeroesCalculator.ApplyOperator(op, secondParam, firstParam);
         }
-        else if (expression[0] == '$')
+        else if (firstChar == '$')
         {
             return _stormStorage.GetValueFromConstTextAsNumber(expression);
         }
@@ -105,13 +105,13 @@ internal sealed class HeroesPrefixNotation
         }
         else if (expression.StartsWith("max", StringComparison.OrdinalIgnoreCase))
         {
-            (double firstParam, double secondParam) = GetOperatorParameters(expression);
+            GetOperatorParameters(expression, out double firstParam, out double secondParam);
 
             return Math.Max(firstParam, secondParam);
         }
         else if (expression.StartsWith("min", StringComparison.OrdinalIgnoreCase))
         {
-            (double firstParam, double secondParam) = GetOperatorParameters(expression);
+            GetOperatorParameters(expression, out double firstParam, out double secondParam);
 
             return Math.Min(firstParam, secondParam);
         }
@@ -119,18 +119,12 @@ internal sealed class HeroesPrefixNotation
         return 0;
     }
 
-    private (double FirstParam, double SecondParam) GetOperatorParameters(ReadOnlySpan<char> expression)
+    private void GetOperatorParameters(ReadOnlySpan<char> expression, out double firstParam, out double secondParam)
     {
         ReadOnlySpan<char> currentExpression = GetExpression(expression);
-
         int indexSplit = GetSplitIndex(currentExpression);
 
-        ReadOnlySpan<char> firstValueSpan = currentExpression[..indexSplit];
-        double firstValue = Evaluate(firstValueSpan);
-
-        ReadOnlySpan<char> secondValueSpan = currentExpression[(indexSplit + 1)..];
-        double secondValue = Evaluate(secondValueSpan);
-
-        return (firstValue, secondValue);
+        firstParam = Evaluate(currentExpression[..indexSplit]);
+        secondParam = Evaluate(currentExpression[(indexSplit + 1)..]);
     }
 }
