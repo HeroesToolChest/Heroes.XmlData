@@ -90,7 +90,11 @@ public readonly ref struct StormElementValue
         return GetString();
     }
 
+#if DEBUG
+    private readonly void PushNormalText(ref int index, ref int startingIndex, List<(Range Text, bool Replace)> elementNameList)
+#else
     private static void PushNormalText(ref int index, ref int startingIndex, List<(Range Text, bool Replace)> elementNameList)
+#endif
     {
         int normalTextLength = index - startingIndex;
         if (normalTextLength > 0)
