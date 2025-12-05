@@ -221,12 +221,17 @@ internal sealed class DataRefParser
     // Effect,AnduinHolyWordSalvationLightOfStormwindCooldownReduction,Cost[0].CooldownTimeUse
     private ValueScale ParsePart(ReadOnlySpan<char> fullPartSpan)
     {
+#if NET10_0_OR_GREATER
+        // a proper dref consists of <Catalog>.<Entry>.<Field>
+        // <Field>s are comma separated
+        int splitterCount = fullPartSpan.CountAny('.', ',');
+#else
         // a proper dref consists of <Catalog>.<Entry>.<Field>
         int splitterCount = fullPartSpan.Count('.');
 
         // <Field>s are comma separated
         splitterCount += fullPartSpan.Count(',');
-
+#endif
         if (splitterCount < 2)
             return new ValueScale(0);
 
