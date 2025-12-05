@@ -1,4 +1,6 @@
-﻿namespace Heroes.XmlData.StormData;
+﻿using System.Runtime.InteropServices;
+
+namespace Heroes.XmlData.StormData;
 
 /// <summary>
 /// Storage for all storm mods.
@@ -297,37 +299,35 @@ internal sealed partial class StormStorage : IStormStorage
                 existingDataObjectType = foundExistingDataObjectType;
             }
 
-            if (currentStormCache.StormElementsByDataObjectType.TryGetValue(existingDataObjectType, out var stormElementById))
-            {
-                if (stormElementById.TryGetValue(idAtt, out StormElement? stormElement))
-                    stormElement.AddValue(stormXElementValuePath);
-                else
-                    stormElementById[idAtt] = new StormElement(stormXElementValuePath);
-            }
-            else
+            ref var stormElementById = ref CollectionsMarshal.GetValueRefOrAddDefault(currentStormCache.StormElementsByDataObjectType, existingDataObjectType, out bool dataObjectExists);
+
+            if (!dataObjectExists)
             {
                 Dictionary<string, StormElement> newStormElementById = new()
                 {
                     { idAtt, new StormElement(stormXElementValuePath) },
                 };
+                stormElementById = newStormElementById.GetAlternateLookup<ReadOnlySpan<char>>();
+            }
+            else
+            {
+                ref var stormElement = ref CollectionsMarshal.GetValueRefOrAddDefault(stormElementById!, idAtt, out bool elementExists);
 
-                currentStormCache.StormElementsByDataObjectType[existingDataObjectType] = newStormElementById.GetAlternateLookup<ReadOnlySpan<char>>();
+                if (!elementExists)
+                    stormElement = new StormElement(stormXElementValuePath);
+                else
+                    stormElement!.AddValue(stormXElementValuePath);
             }
 
             // unit name
             if (!string.IsNullOrEmpty(unitNameAtt))
             {
-                if (currentStormCache.UnitNamesByDataObjectType.TryGetValue(existingDataObjectType, out var idsByUnitName))
-                {
-                    idsByUnitName[unitNameAtt] = idAtt;
-                }
-                else
-                {
-                    currentStormCache.UnitNamesByDataObjectType[existingDataObjectType] = new()
-                    {
-                        { unitNameAtt, idAtt },
-                    };
-                }
+                ref Dictionary<string, string>? idsByUnitName = ref CollectionsMarshal.GetValueRefOrAddDefault(currentStormCache.UnitNamesByDataObjectType, existingDataObjectType, out bool unitNameDictExists);
+
+                if (!unitNameDictExists)
+                    idsByUnitName = [];
+
+                idsByUnitName![unitNameAtt] = idAtt;
             }
         }
     }
@@ -339,10 +339,12 @@ internal sealed partial class StormStorage : IStormStorage
 
         StormCache currentStormCache = GetCurrentStormCache(stormModType);
 
-        if (currentStormCache.ElementTypesByDataObjectType.TryGetValue(dataObjectType, out HashSet<string>? elementTypes))
-            elementTypes.Add(elementName);
-        else
-            currentStormCache.ElementTypesByDataObjectType.Add(dataObjectType, new HashSet<string>(StringComparer.OrdinalIgnoreCase) { elementName });
+        ref HashSet<string>? elementTypes = ref CollectionsMarshal.GetValueRefOrAddDefault(currentStormCache.ElementTypesByDataObjectType, dataObjectType, out bool exists);
+
+        if (!exists)
+            elementTypes = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+        elementTypes!.Add(elementName);
 
         currentStormCache.DataObjectTypeByElementType.TryAdd(elementName, dataObjectType);
     }
@@ -422,20 +424,17 @@ internal sealed partial class StormStorage : IStormStorage
                 continue;
             }
 
-            if (currentStormCache.ScaleValueStormElementsByDataObjectType.TryGetValue(levelScalingEntry.Catalog, out var stormElementById))
-            {
-                if (stormElementById.TryGetValue(levelScalingEntry.Entry, out StormElement? existingStormElement))
-                    existingStormElement.AddValue(stormElement);
-                else
-                    stormElementById[levelScalingEntry.Entry] = stormElement;
-            }
+            ref Dictionary<string, StormElement>? stormElementById = ref CollectionsMarshal.GetValueRefOrAddDefault(currentStormCache.ScaleValueStormElementsByDataObjectType, levelScalingEntry.Catalog, out bool catalogExists);
+
+            if (!catalogExists)
+                stormElementById = [];
+
+            ref StormElement? existingStormElement = ref CollectionsMarshal.GetValueRefOrAddDefault(stormElementById!, levelScalingEntry.Entry, out bool entryExists);
+
+            if (!entryExists)
+                existingStormElement = stormElement;
             else
-            {
-                currentStormCache.ScaleValueStormElementsByDataObjectType[levelScalingEntry.Catalog] = new()
-                {
-                    { levelScalingEntry.Entry, stormElement },
-                };
-            }
+                existingStormElement!.AddValue(stormElement);
         }
     }
 
@@ -483,20 +482,24 @@ internal sealed partial class StormStorage : IStormStorage
 
     private static void AddBaseElementType(string elementName, string dataObjectType, StormCache currentStormCache)
     {
-        if (currentStormCache.ElementTypesByDataObjectType.TryGetValue(dataObjectType, out HashSet<string>? elementTypes))
-            elementTypes.Add(elementName);
-        else
-            currentStormCache.ElementTypesByDataObjectType.Add(dataObjectType, new HashSet<string>(StringComparer.OrdinalIgnoreCase) { elementName });
+        ref HashSet<string>? elementTypes = ref CollectionsMarshal.GetValueRefOrAddDefault(currentStormCache.ElementTypesByDataObjectType, dataObjectType, out bool exists);
+
+        if (!exists)
+            elementTypes = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+        elementTypes!.Add(elementName);
 
         currentStormCache.DataObjectTypeByElementType.TryAdd(elementName, dataObjectType);
     }
 
     private static void AddElementWithNoId(string elementName, StormCache currentStormCache, StormXElementValuePath stormXElementValuePath)
     {
-        if (currentStormCache.StormElementByElementType.TryGetValue(elementName, out StormElement? stormElement))
-            stormElement.AddValue(stormXElementValuePath);
+        ref StormElement? stormElement = ref CollectionsMarshal.GetValueRefOrAddDefault(currentStormCache.StormElementByElementType, elementName, out bool exists);
+
+        if (!exists)
+            stormElement = new StormElement(stormXElementValuePath);
         else
-            currentStormCache.StormElementByElementType.Add(elementName, new StormElement(stormXElementValuePath));
+            stormElement!.AddValue(stormXElementValuePath);
     }
 
     private void AddRootDefaults()
