@@ -174,7 +174,7 @@ public readonly ref struct StormElementValue
                 count += stormElementData.RawValue?.Length ?? 0;
             else
                 count += indexOfText.End.Value - indexOfText.Start.Value;
-    }
+        }
 
         return count;
     }

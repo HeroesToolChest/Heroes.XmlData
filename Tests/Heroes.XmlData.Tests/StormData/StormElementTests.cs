@@ -8,53 +8,14 @@ public class StormElementTests
     [TestMethod]
     public void AddValue_MergingSingleElement_DataValuesAreMerged()
     {
-        XElement element = XElement.Parse(@"
-<CAbil default=""1"">
-  <Name value=""Abil/Name/##id##"" />
-  <TechPlayer value=""Upkeep"" />
-  <TargetMessage value=""Abil/TargetMessage/DefaultTargetMessage"" />
-  <OrderArray>
-    <Color value=""255,0,255,0"" />
-    <Model value=""Assets\UI\Feedback\WayPointConfirm\WayPointConfirm.m3"" />
-    <LineTexture value=""Assets\Textures\WayPointLine.dds"" />
-  </OrderArray>
-  <SharedFlags index=""DisableWhileDead"" value=""1"" />
-  <SharedFlags index=""AllowQuickCastCustomization"" value=""1"" />
-  <SharedFlags index=""TargetCursorVisibleInBlackMask"" value=""1"" />
-</CAbil>
-");
-
-        XElement mergingElement = XElement.Parse(@"
-<CAbilEffectInstant default=""1"">
-  <CmdButtonArray index=""Execute"" AutoQueueId=""Spell"">
-    <Flags index=""Continuous"" value=""1"" />
-  </CmdButtonArray>
-  <OrderArray index=""0"" LineTexture=""Assets\Textures\Storm_WayPointLine.dds"" />
-  <Flags index=""AllowMovement"" value=""1"" />
-  <Flags index=""WaitToSpend"" value=""0"" />
-  <Flags index=""ValidateButtonState"" value=""1"" />
-  <SharedFlags index=""DisableWhileDead"" value=""0"" />
-</CAbilEffectInstant>
-");
+        SetElementsForMerginSingleElement(out XElement element, out XElement mergingElement);
         StormElement stormElement = new(new StormXElementValuePath(element, TestHelpers.GetStormPath("some\\path")));
 
         // act
         stormElement.AddValue(new StormXElementValuePath(mergingElement, TestHelpers.GetStormPath("some\\other\\path")));
 
         // assert
-        stormElement.ElementType.Should().Be("CAbilEffectInstant");
-        stormElement.DataValues.GetElementDataAt("name").RawValue.Should().Be("Abil/Name/##id##");
-        stormElement.DataValues.GetElementDataAt("OrderArray").GetElementDataAt("0".AsSpan()).GetElementDataAt("color").RawValue.Should().Be("255,0,255,0");
-        stormElement.DataValues.GetElementDataAt("OrderArray").GetElementDataAt("0").GetElementDataAt("Model").RawValue.Should().Be("Assets\\UI\\Feedback\\WayPointConfirm\\WayPointConfirm.m3");
-        stormElement.DataValues.GetElementDataAt("OrderArray").GetElementDataAt("0").GetElementDataAt("LineTexture").RawValue.Should().Be("Assets\\Textures\\Storm_WayPointLine.dds");
-        stormElement.DataValues.GetElementDataAt("SharedFlags").GetElementDataAt("disableWhileDead").RawValue.Should().Be("0");
-        stormElement.DataValues.GetElementDataAt("SharedFlags").GetElementDataAt("AllowQuickCastCustomization").RawValue.Should().Be("1");
-        stormElement.DataValues.GetElementDataAt("SharedFlags").GetElementDataAt("TargetCursorVisibleInBlackMask").RawValue.Should().Be("1");
-        stormElement.DataValues.GetElementDataAt("Flags").GetElementDataAt("AllowMovement".AsSpan()).RawValue.Should().Be("1");
-        stormElement.DataValues.GetElementDataAt("Flags").GetElementDataAt("WaitToSpend").RawValue.Should().Be("0");
-        stormElement.DataValues.GetElementDataAt("Flags").GetElementDataAt("ValidateButtonState").RawValue.Should().Be("1");
-        stormElement.DataValues.GetElementDataAt("CmdButtonArray").GetElementDataAt("Execute").GetElementDataAt("AutoQueueId").RawValue.Should().Be("Spell");
-        stormElement.DataValues.GetElementDataAt("CmdButtonArray").GetElementDataAt("Execute").GetElementDataAt("Flags").GetElementDataAt("Continuous").RawValue.Should().Be("1");
+        AssertMergingSingleElement(stormElement);
     }
 
     [TestMethod]
@@ -238,7 +199,11 @@ public class StormElementTests
 
         // assert
         stormElement.ElementType.Should().Be("CWeaponLegacy");
+        stormElement.ParentId.Should().Be("StormHeroFastWeapon");
         stormElement.DataValues["Cost"]["Vital"]["Energy"].RawValue.Should().Be("2");
+        stormElement.DataValues["Cost"].Value.GetString().Should().BeEmpty();
+        stormElement.DataValues["Cost"]["Cooldown"]["Link"].Value.GetString().Should().Be("Weapon/TracerHeroWeapon");
+        stormElement.DataValues["Cost"]["Cooldown"].Value.GetString().Should().Be("Weapon/TracerHeroWeapon");
     }
 
     [TestMethod]
@@ -746,5 +711,246 @@ public class StormElementTests
         stormElement.DataValues["AreaArray"]["0"]["RectangleWidth"].RawValue.Should().Be("1.35");
         stormElement.DataValues["AreaArray"]["0"]["RectangleHeight"].RawValue.Should().Be("8.4375");
         stormElement.DataValues["AreaArray"]["0"]["Radius"].RawValue.Should().Be("0.5");
+    }
+
+    [TestMethod]
+    public void ToXElement_NoId_XElementShouldBeCorrect()
+    {
+        // arrange
+        SetElementsForMerginSingleElement(out XElement element, out XElement mergingElement);
+        StormElement stormElement = new(new StormXElementValuePath(element, TestHelpers.GetStormPath("some\\path")));
+        stormElement.AddValue(new StormXElementValuePath(mergingElement, TestHelpers.GetStormPath("some\\other\\path")));
+
+        // act
+        XElement xElement = stormElement.ToXElement();
+
+        // assert
+        AssertMergingSingleElement(new(new StormXElementValuePath(xElement, TestHelpers.GetStormPath("some\\path"))));
+    }
+
+    [TestMethod]
+    public void ToXElement_HasIdWithParents_XElementShouldBeCorrect()
+    {
+        XElement element = XElement.Parse(@"
+<CEffect default=""1"">
+  <Chance value=""1"" />
+  <Marker Link=""Effect/##id##"" />
+  <DamageModifierSource Value=""Unknown"" />
+</CEffect>
+");
+
+        XElement mergingElement1 = XElement.Parse(@"
+<CEffectDamage default=""1"">
+  <Visibility value=""Snapshot"" />
+  <MaxCount value=""4294967295"" />
+  <MinCountError value=""CantFindEnoughTargets"" />
+  <LaunchLocation Value=""SourceUnit"" />
+  <ImpactLocation Value=""TargetUnitOrPoint"" />
+  <SearchFlags index=""SameCliff"" value=""1"" />
+  <Kind value=""Basic"" />
+  <KindSplash value=""Basic"" />
+</CEffectDamage>
+");
+
+        XElement mergingElement2 = XElement.Parse(@"
+<CEffectDamage default=""1"" id=""StormDamage"">
+  <ValidatorArray value=""TargetNotInvulnerable"" />
+  <ResponseFlags index=""Acquire"" value=""1"" />
+  <LeechScoreArray Value=""SelfHealing"" />
+  <Visibility value=""Visible"" />
+  <ImpactLocation History=""Damage"" />
+  <AmountScoreArray Validator=""IsHeroAndNotVehicleAndNotHallucination"" Value=""HeroDamage"" />
+  <AmountScoreArray Validator=""IsStructureAndNotDestructible"" Value=""StructureDamage"" />
+  <AmountScoreArray Validator=""IsStructureAndNotDestructible"" Value=""SiegeDamage"" />
+  <AmountScoreArray Validator=""TargetMinion"" Value=""MinionDamage"" />
+  <AmountScoreArray Validator=""TargetMinion"" Value=""SiegeDamage"" />
+  <AmountScoreArray Validator=""TargetIsMercLaner"" Value=""SiegeDamage"" />
+  <AmountScoreArray Validator=""TargetIsMercDefender"" Value=""CreepDamage"" />
+  <AmountScoreArray Validator=""IsSummonedUnit"" Value=""SummonDamage"" />
+  <AmountScoreArray Validator=""TargetIsSummonedandNotHeroic"" Value=""SiegeDamage"" />
+  <SplashHistory value=""Damage"" />
+  <DamageModifierSource Value=""Caster"" />
+  <LeechRecipientArray />
+</CEffectDamage>
+");
+
+        XElement mergingElement3 = XElement.Parse(@"
+<CEffectDamage default=""1"" id=""StormSpell"" parent=""StormDamage"">
+  <CritValidatorArray value=""CritAliasSpellPower"" />
+  <Kind value=""Ability"" />
+  <KindSplash value=""Ability"" />
+</CEffectDamage>
+");
+
+        XElement mergingElement4 = XElement.Parse(@"
+<CEffectDamage id=""StormBoltDamage"" parent=""StormSpell"">
+  <Amount value=""110"" />
+  <CritValidatorArray index=""0"" value=""CritAliasSpellPowerOrMuradinSledgehammerCombine"" />
+  <FlatModifierArray index=""MuradinStormboltPerfectStorm"" Accumulator=""MuradinStormboltPerfectStormAccumulator"" />
+  <MultiplicativeModifierArray index=""MuradinStormboltSledgehammer"" Validator=""HasMuradinStormhammerSledgehammerAndTargetNotHeroic"" Modifier=""2.5"" />
+</CEffectDamage>
+");
+        StormElement stormElement = new(new StormXElementValuePath(element, TestHelpers.GetStormPath("some\\path")));
+        stormElement.AddValue(new StormXElementValuePath(mergingElement1, TestHelpers.GetStormPath("some\\other1\\path")));
+        stormElement.AddValue(new StormXElementValuePath(mergingElement2, TestHelpers.GetStormPath("some\\other2\\path")));
+        stormElement.AddValue(new StormXElementValuePath(mergingElement3, TestHelpers.GetStormPath("some\\other3\\path")));
+        stormElement.AddValue(new StormXElementValuePath(mergingElement4, TestHelpers.GetStormPath("some\\other4\\path")));
+
+        // act
+        XElement xElement = stormElement.ToXElement();
+
+        // assert
+        StormElement stormElementResult = new(new StormXElementValuePath(xElement, TestHelpers.GetStormPath("some\\path")));
+        stormElementResult.DataValues.GetElementDataAt("Marker").Value.GetString().Should().Be("Effect/StormBoltDamage");
+        stormElementResult.DataValues.GetElementDataAt("ResponseFlags").GetElementDataAt("Acquire").RawValue.Should().Be("1");
+        stormElementResult.DataValues.GetElementDataAt("ResponseFlags").GetElementDataAt("Acquire").IsIndexed.Should().BeTrue();
+        stormElementResult.DataValues.GetElementDataAt("LeechScoreArray").GetElementDataAt("0").RawValue.Should().Be("SelfHealing");
+        stormElementResult.DataValues.GetElementDataAt("LeechScoreArray").GetElementDataAt("0").IsIndexed.Should().BeTrue();
+        stormElementResult.DataValues.GetElementDataAt("ImpactLocation").GetElementDataAt("Value").RawValue.Should().Be("TargetUnitOrPoint");
+        stormElementResult.DataValues.GetElementDataAt("ImpactLocation").RawValue.Should().Be("TargetUnitOrPoint");
+        stormElementResult.DataValues.GetElementDataAt("ImpactLocation").GetElementDataAt("History").RawValue.Should().Be("Damage");
+        stormElementResult.DataValues.GetElementDataAt("DamageModifierSource").RawValue.Should().Be("Caster");
+        stormElementResult.DataValues.GetElementDataAt("DamageModifierSource").HasValue.Should().BeTrue();
+        stormElementResult.DataValues.GetElementDataAt("AmountScoreArray").GetElementDataAt("3").RawValue.Should().Be("MinionDamage");
+        stormElementResult.DataValues.GetElementDataAt("AmountScoreArray").GetElementDataAt("3").HasValue.Should().BeTrue();
+        stormElementResult.DataValues.GetElementDataAt("AmountScoreArray").GetElementDataAt("3").GetElementDataAt("Validator").RawValue.Should().Be("TargetMinion");
+        stormElementResult.DataValues.GetElementDataAt("AmountScoreArray").GetElementDataAt("3").IsIndexed.Should().BeTrue();
+        stormElementResult.DataValues.GetElementDataAt("MultiplicativeModifierArray").GetElementDataAt("MuradinStormboltSledgehammer").GetElementDataAt("Modifier").RawValue.Should().Be("2.5");
+        stormElementResult.DataValues["LeechRecipientArray"]["0"].Value.GetString().Should().BeEmpty();
+
+        stormElementResult.DataValues.GetElementDataAt("SplashHistory").IsIndexed.Should().BeFalse();
+        stormElementResult.DataValues.GetElementDataAt("ResponseFlags").IsIndexed.Should().BeFalse();
+    }
+
+    [TestMethod]
+    public void ToXElement_MergeCostElement_XElementShouldBeCorrect()
+    {
+        XElement element1 = XElement.Parse(@"
+<CWeapon default=""1"">
+  <Cost>
+    <Cooldown Link=""Weapon/##id##""/>
+  </Cost>
+</CWeapon>
+");
+
+        XElement element2 = XElement.Parse(@"
+<CWeaponLegacy default=""1"" id=""StormHeroWeapon"">
+</CWeaponLegacy>
+");
+
+        XElement element3 = XElement.Parse(@"
+<CWeaponLegacy default=""1"" id=""StormHeroFastWeapon"" parent=""StormHeroWeapon"">
+</CWeaponLegacy>
+");
+
+        XElement element4 = XElement.Parse(@"
+<CWeaponLegacy id=""TracerHeroWeapon"" parent=""StormHeroFastWeapon"">
+  <Cost>
+    <Vital index=""Energy"" value=""2"" />
+  </Cost>
+</CWeaponLegacy>
+");
+        StormElement stormElement = new(new StormXElementValuePath(element1, TestHelpers.GetStormPath("some\\path")));
+        stormElement.AddValue(new StormXElementValuePath(element2, TestHelpers.GetStormPath("some\\other\\path")));
+        stormElement.AddValue(new StormXElementValuePath(element3, TestHelpers.GetStormPath("some\\other\\path")));
+        stormElement.AddValue(new StormXElementValuePath(element4, TestHelpers.GetStormPath("some\\other\\path")));
+
+        // act
+        XElement xElement = stormElement.ToXElement();
+
+        // assert
+        StormElement stormElementResult = new(new StormXElementValuePath(xElement, TestHelpers.GetStormPath("some\\path")));
+
+        stormElementResult.Id.Should().Be("TracerHeroWeapon");
+        stormElementResult.ElementType.Should().Be("CWeaponLegacy");
+        stormElementResult.ParentId.Should().BeNull();
+        stormElementResult.DataValues["Cost"]["Vital"]["Energy"].RawValue.Should().Be("2");
+        stormElementResult.DataValues["Cost"].Value.GetString().Should().BeEmpty();
+        stormElementResult.DataValues["Cost"]["Cooldown"]["Link"].Value.GetString().Should().Be("Weapon/TracerHeroWeapon");
+        stormElementResult.DataValues["Cost"]["Cooldown"].Value.GetString().Should().Be("Weapon/TracerHeroWeapon");
+    }
+
+    [TestMethod]
+    public void ToXElement_MergeCostElement2_XElementShouldBeCorrect()
+    {
+        XElement element1 = XElement.Parse(@"
+  <CAbilBehavior default=""1"">
+    <Cost>
+      <Charge Location=""Unit""/>
+      <Cooldown Location=""Unit""/>
+    </Cost>
+  </CAbilBehavior>
+");
+
+        XElement element2 = XElement.Parse(@"
+  <CAbilBehavior id=""LucioCrossfade"">
+    <Cost>
+      <Cooldown TimeUse=""0.5"" />
+    </Cost>
+  </CAbilBehavior>
+");
+
+        StormElement stormElement = new(new StormXElementValuePath(element1, TestHelpers.GetStormPath("some\\path")));
+        stormElement.AddValue(new StormXElementValuePath(element2, TestHelpers.GetStormPath("some\\other\\path")));
+
+        // act
+        XElement xElement = stormElement.ToXElement();
+
+        // assert
+        StormElement stormElementResult = new(new StormXElementValuePath(xElement, TestHelpers.GetStormPath("some\\path")));
+
+        stormElementResult.Id.Should().Be("LucioCrossfade");
+        stormElementResult.ParentId.Should().BeNull();
+        stormElementResult.DataValues["Cost"]["Cooldown"]["TimeUse"].RawValue.Should().Be("0.5");
+        stormElementResult.DataValues["Cost"]["Charge"]["Location"].Value.GetString().Should().Be("Unit");
+        stormElementResult.DataValues["Cost"]["Charge"].Value.GetString().Should().Be("Unit");
+    }
+
+    private static void SetElementsForMerginSingleElement(out XElement element, out XElement mergingElement)
+    {
+        element = XElement.Parse(@"
+<CAbil default=""1"">
+  <Name value=""Abil/Name/##id##"" />
+  <TechPlayer value=""Upkeep"" />
+  <TargetMessage value=""Abil/TargetMessage/DefaultTargetMessage"" />
+  <OrderArray>
+    <Color value=""255,0,255,0"" />
+    <Model value=""Assets\UI\Feedback\WayPointConfirm\WayPointConfirm.m3"" />
+    <LineTexture value=""Assets\Textures\WayPointLine.dds"" />
+  </OrderArray>
+  <SharedFlags index=""DisableWhileDead"" value=""1"" />
+  <SharedFlags index=""AllowQuickCastCustomization"" value=""1"" />
+  <SharedFlags index=""TargetCursorVisibleInBlackMask"" value=""1"" />
+</CAbil>
+");
+        mergingElement = XElement.Parse(@"
+<CAbilEffectInstant default=""1"">
+  <CmdButtonArray index=""Execute"" AutoQueueId=""Spell"">
+    <Flags index=""Continuous"" value=""1"" />
+  </CmdButtonArray>
+  <OrderArray index=""0"" LineTexture=""Assets\Textures\Storm_WayPointLine.dds"" />
+  <Flags index=""AllowMovement"" value=""1"" />
+  <Flags index=""WaitToSpend"" value=""0"" />
+  <Flags index=""ValidateButtonState"" value=""1"" />
+  <SharedFlags index=""DisableWhileDead"" value=""0"" />
+</CAbilEffectInstant>
+");
+    }
+
+    private static void AssertMergingSingleElement(StormElement stormElement)
+    {
+        stormElement.ElementType.Should().Be("CAbilEffectInstant");
+        stormElement.DataValues.GetElementDataAt("name").RawValue.Should().Be("Abil/Name/##id##");
+        stormElement.DataValues.GetElementDataAt("OrderArray").GetElementDataAt("0".AsSpan()).GetElementDataAt("color").RawValue.Should().Be("255,0,255,0");
+        stormElement.DataValues.GetElementDataAt("OrderArray").GetElementDataAt("0").GetElementDataAt("Model").RawValue.Should().Be("Assets\\UI\\Feedback\\WayPointConfirm\\WayPointConfirm.m3");
+        stormElement.DataValues.GetElementDataAt("OrderArray").GetElementDataAt("0").GetElementDataAt("LineTexture").RawValue.Should().Be("Assets\\Textures\\Storm_WayPointLine.dds");
+        stormElement.DataValues.GetElementDataAt("SharedFlags").GetElementDataAt("disableWhileDead").RawValue.Should().Be("0");
+        stormElement.DataValues.GetElementDataAt("SharedFlags").GetElementDataAt("AllowQuickCastCustomization").RawValue.Should().Be("1");
+        stormElement.DataValues.GetElementDataAt("SharedFlags").GetElementDataAt("TargetCursorVisibleInBlackMask").RawValue.Should().Be("1");
+        stormElement.DataValues.GetElementDataAt("Flags").GetElementDataAt("AllowMovement".AsSpan()).RawValue.Should().Be("1");
+        stormElement.DataValues.GetElementDataAt("Flags").GetElementDataAt("WaitToSpend").RawValue.Should().Be("0");
+        stormElement.DataValues.GetElementDataAt("Flags").GetElementDataAt("ValidateButtonState").RawValue.Should().Be("1");
+        stormElement.DataValues.GetElementDataAt("CmdButtonArray").GetElementDataAt("Execute").GetElementDataAt("AutoQueueId").RawValue.Should().Be("Spell");
+        stormElement.DataValues.GetElementDataAt("CmdButtonArray").GetElementDataAt("Execute").GetElementDataAt("Flags").GetElementDataAt("Continuous").RawValue.Should().Be("1");
     }
 }

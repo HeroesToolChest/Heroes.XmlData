@@ -120,10 +120,9 @@ public sealed class StormElementData
         get
         {
             if (_value is not null)
-            {
                 return _value;
-            }
-            else if (ElementDataPairs.Keys.Count == 1)
+
+            if (ElementDataPairs.Keys.Count == 1)
             {
                 if (ElementDataPairs.TryGetValue("0", out StormElementData? data) && data.HasValue)
                 {
@@ -135,6 +134,10 @@ public sealed class StormElementData
                     if (firstElementData.HasValue)
                         return firstElementData.RawValue;
                 }
+            }
+            else if (ElementDataPairs.Keys.Count > 0 && ElementDataPairs.TryGetValue("Value", out StormElementData? data) && data.HasValue)
+            {
+                return data.RawValue;
             }
 
             return null;
@@ -169,6 +172,10 @@ public sealed class StormElementData
                     isNull = firstElementData.Value.IsNull;
                     returnValue = firstElementData.Value.Value;
                 }
+            }
+            else if (ElementDataPairs.Keys.Count > 0 && ElementDataPairs.TryGetValue("Value", out StormElementData? data) && data.HasValue)
+            {
+                return data.Value;
             }
 
             return new StormElementValue(this)

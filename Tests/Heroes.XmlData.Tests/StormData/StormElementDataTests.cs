@@ -748,4 +748,34 @@ public class StormElementDataTests
         result[1].Value.GetElementDataAt("Validator").Value.GetString().Should().Be("SamuroHasPressTheAttack");
         result[2].Value.GetElementDataAt("Validator").Value.GetString().Should().Be("SamuroHasBlademastersPursuit");
     }
+
+    [TestMethod]
+    public void ElementData_HasValueAsAnElement_ReturnsFromGetRawValueOnRootElement()
+    {
+        // arrange
+        XElement element = XElement.Parse(
+            """
+            <CEffectLaunchMissile id="ChromieSandBlastLaunchMissile">
+              <ValidatorArray index="0" value="CasterNotDead" />
+              <ImpactLocation>
+                <ProjectionSourceValue value="OriginPoint" />
+                <Value value="TargetPoint" />
+                <ProjectionTargetValue value="TargetPoint" />
+                <UsesLineDash value="1" />
+                <LineDashType value="AllowedInUnpathable" />
+                <ProjectionDistanceScale value="15" />
+              </ImpactLocation>
+            </CEffectLaunchMissile>
+            """);
+
+        StormElement stormElement = new(new StormXElementValuePath(element, TestHelpers.GetStormPath("some\\path")));
+
+        // act
+        StormElementData data = new(stormElement, element);
+
+        // assert
+        data.GetElementDataAt("ImpactLocation").RawValue.Should().Be("TargetPoint");
+        data.GetElementDataAt("ImpactLocation").GetElementDataAt("Value").RawValue.Should().Be("TargetPoint");
+        data.GetElementDataAt("ImpactLocation").GetElementDataAt("ProjectionDistanceScale").RawValue.Should().Be("15");
+    }
 }

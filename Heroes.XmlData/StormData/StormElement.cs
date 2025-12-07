@@ -163,6 +163,153 @@ public class StormElement
         }
     }
 
+    /// <summary>
+    /// Creates an <see cref="XElement"/> that represents the merged values from <see cref="DataValues"/>.
+    /// <para>
+    /// This will not contain a parent attribute.
+    /// </para>
+    /// <para>
+    /// All element replacements, e.g. ##id##, will be evaluated.
+    /// </para>
+    /// </summary>
+    /// <returns>An <see cref="XElement"/> containing the merged data values.</returns>
+    public XElement ToXElement()
+    {
+        XElement rootElement = new(ElementType);
+
+        // Add id attribute first if it exists
+        if (DataValues.ElementDataPairs.TryGetValue("id", out StormElementData? idData) && idData.HasValue)
+        {
+            rootElement.SetAttributeValue("id", idData.Value.GetString());
+        }
+
+        BuildXElementFromData(rootElement, DataValues, true);
+
+        return rootElement;
+    }
+
+    private static void BuildXElementFromData(XElement parentElement, StormElementData stormElementData, bool isRootElement = false)
+    {
+        var elementData = stormElementData.GetElementData();
+
+        foreach (KeyValuePair<string, StormElementData> element in elementData)
+        {
+            string key = element.Key;
+            StormElementData childData = element.Value;
+
+            // Skip id on root element as it's already added first and skip parent attribute
+            if (isRootElement && (key.Equals("id", StringComparison.OrdinalIgnoreCase) || key.Equals("parent", StringComparison.OrdinalIgnoreCase)))
+                continue;
+
+            if (childData.HasValue && childData.ElementDataCount == 0)
+            {
+                // This is a simple attribute or element with a value
+                if (childData.IsIndexed)
+                {
+                    // This is an indexed element within an array
+                    XElement childElement = new(childData.Parent?.Field ?? key);
+                    childElement.SetAttributeValue("value", childData.Value.GetString());
+                    childElement.SetAttributeValue("index", key);
+                    parentElement.Add(childElement);
+                }
+                else if (isRootElement && IsRootAttribute(key))
+                {
+                    // This is a root-level attribute that should remain an attribute
+                    parentElement.SetAttributeValue(key, childData.Value.GetString());
+                }
+                else
+                {
+                    // Convert this attribute to a child element with a value attribute
+                    XElement childElement = new(key);
+                    childElement.SetAttributeValue("value", childData.Value.GetString());
+
+                    parentElement.Add(childElement);
+                }
+            }
+            else if (childData.ElementDataCount > 0)
+            {
+                // This is a complex element with nested data
+                if (childData.IsIndexed)
+                {
+                    // This is an indexed array element
+                    XElement childElement = new(childData.Parent?.Field ?? key);
+                    childElement.SetAttributeValue("index", key);
+
+                    BuildXElementFromData(childElement, childData);
+                    parentElement.Add(childElement);
+                }
+                else if (IsArrayElement(childData))
+                {
+                    // This is an array container, add it's indexed children
+                    var elementDataArray = childData.GetElementData();
+
+                    foreach (KeyValuePair<string, StormElementData> elementArray in elementDataArray)
+                    {
+                        XElement arrayElement = new(key);
+                        arrayElement.SetAttributeValue("index", elementArray.Key);
+
+                        // check if no elements, if not and has value, then set value attribute
+                        if (elementArray.Value.ElementDataCount == 0 && elementArray.Value.HasValue)
+                            arrayElement.SetAttributeValue("value", elementArray.Value.Value.GetString());
+                        else if (elementArray.Value.HasValue)
+                            arrayElement.Add(CreateValueXElement(elementArray.Value.Value.GetString()));
+
+                        BuildXElementFromData(arrayElement, elementArray.Value);
+
+                        parentElement.Add(arrayElement);
+                    }
+                }
+                else if (childData.HasValue)
+                {
+                    // This is a complex element with a value and nested data
+                    XElement childElement = new(key);
+
+                    XElement valueElement = CreateValueXElement(childData.Value.GetString());
+
+                    childElement.Add(valueElement);
+
+                    BuildXElementFromData(childElement, childData);
+                    parentElement.Add(childElement);
+                }
+                else
+                {
+                    // This is a regular nested element
+                    XElement childElement = new(key);
+
+                    BuildXElementFromData(childElement, childData);
+                    parentElement.Add(childElement);
+                }
+            }
+        }
+    }
+
+    private static XElement CreateValueXElement(string? value)
+    {
+        XElement valueElement = new("Value");
+        valueElement.SetAttributeValue("value", value);
+        return valueElement;
+    }
+
+    // if root element, then keep it as an root attribute
+    private static bool IsRootAttribute(string attributeName)
+    {
+        return attributeName.Equals("id", StringComparison.OrdinalIgnoreCase) ||
+               attributeName.Equals("parent", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static bool IsArrayElement(StormElementData data)
+    {
+        // Check if all children are indexed (numeric or string indices)
+        foreach (string index in data.GetElementDataIndexes())
+        {
+            StormElementData indexedData = data.GetElementDataAt(index);
+            if (!indexedData.IsIndexed)
+                return false;
+        }
+
+        return data.ElementDataCount > 0;
+    }
+
     private void AddToDataValues(XElement xElement)
     {
         string? defaultValue = xElement.Attribute("default")?.Value ?? xElement.Attribute("Default")?.Value;
