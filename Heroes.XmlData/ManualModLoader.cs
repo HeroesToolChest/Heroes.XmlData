@@ -34,6 +34,8 @@ public class ManualModLoader
     // image files
     internal HashSet<string> AssetFilePaths { get; } = [];
 
+    internal List<StormMap> StormMaps { get; } = [];
+
     /// <summary>
     /// Adds an unparsed gamestring collection to the custom cache storage. If an id already exists, it will be overridden.
     /// </summary>
@@ -127,6 +129,18 @@ public class ManualModLoader
     public ManualModLoader AddAssetFilePaths(IEnumerable<string> filePaths)
     {
         AssetFilePaths.UnionWith(filePaths);
+
+        return this;
+    }
+
+    /// <summary>
+    /// Adds a collection of <see cref="StormMap"/>s (data from s2mv and s2ma, not xml files).
+    /// </summary>
+    /// <param name="stormMaps">A collection of storm maps.</param>
+    /// <returns>The current <see cref="ManualModLoader"/> instance.</returns>
+    public ManualModLoader AddStormMaps(IEnumerable<StormMap> stormMaps)
+    {
+        StormMaps.AddRange(stormMaps);
 
         return this;
     }

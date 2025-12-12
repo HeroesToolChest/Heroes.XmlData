@@ -86,6 +86,26 @@ internal sealed class CustomStormMod : IStormMod
                 StormModPath = DirectoryPath,
             });
         }
+
+        foreach (StormMap stormMap in _manualModLoader.StormMaps)
+        {
+            _heroesSource.S2MAPropertiesByTitle.TryAdd(stormMap.Name, new S2MAProperties()
+            {
+                MapId = stormMap.MapId,
+                DirectoryPath = stormMap.S2MAFilePath,
+                S2MVProperties = new S2MVProperties()
+                {
+                    MapLink = stormMap.MapLink,
+                    MapSize = new Point(stormMap.MapSize.X, stormMap.MapSize.Y),
+                    NameByStormLocale = new Dictionary<StormLocale, string>(stormMap.NameByLocale),
+                    LoadingImage = stormMap.LoadingScreenImagePath,
+                    PreviewLargeImage = stormMap.ReplayPreviewImagePath,
+                    CustomLayout = stormMap.LayoutFilePath,
+                    CustomFrame = stormMap.LayoutLoadingScreenFrame,
+                    DirectoryPath = stormMap.S2MAFilePath,
+                },
+            });
+        }
     }
 
     public void LoadStormGameStrings(StormLocale stormLocale)

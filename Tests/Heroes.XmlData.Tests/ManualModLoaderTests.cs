@@ -376,4 +376,76 @@ public class ManualModLoaderTests
                 third.Should().Be("path/to/file4");
             });
     }
+
+    [TestMethod]
+    public void AddStormMaps_HasStormMaps_AddsStormMaps()
+    {
+        // arrange
+        ManualModLoader manualModLoader = new("TestMod");
+
+        StormMap stormMap1 = new()
+        {
+            Name = "Cursed Hollow",
+            NameByLocale = new Dictionary<StormLocale, string>
+            {
+                { StormLocale.ENUS, "Cursed Hollow" },
+                { StormLocale.DEDE, "Verfluchte Höhle" },
+            },
+            MapId = "CursedHollow",
+            MapLink = "CursedHollowLink",
+            MapSize = (200.0, 200.0),
+            ReplayPreviewImagePath = "Assets/Textures/CursedHollow_Preview.dds",
+            LoadingScreenImagePath = "Assets/Textures/CursedHollow_Loading.dds",
+            LayoutFilePath = "UI/Layout/CursedHollow.StormLayout",
+            LayoutLoadingScreenFrame = "LoadingScreenFrame",
+            S2MAFilePath = "Maps/CursedHollow.s2ma",
+            S2MVFilePath = "Maps/CursedHollow.s2mv",
+        };
+
+        StormMap stormMap2 = new()
+        {
+            Name = "Towers of Doom",
+            NameByLocale = new Dictionary<StormLocale, string>
+            {
+                { StormLocale.ENUS, "Towers of Doom" },
+                { StormLocale.FRFR, "Tours du destin" },
+            },
+            MapId = "TowersOfDoom",
+            MapLink = "TowersOfDoomLink",
+            MapSize = (180.0, 180.0),
+            ReplayPreviewImagePath = "Assets/Textures/TowersOfDoom_Preview.dds",
+            LoadingScreenImagePath = "Assets/Textures/TowersOfDoom_Loading.dds",
+            LayoutFilePath = "UI/Layout/TowersOfDoom.StormLayout",
+            LayoutLoadingScreenFrame = "LoadingScreenFrame",
+            S2MAFilePath = "Maps/TowersOfDoom.s2ma",
+            S2MVFilePath = "Maps/TowersOfDoom.s2mv",
+        };
+
+        List<StormMap> stormMaps = [stormMap1, stormMap2];
+
+        // act
+        ManualModLoader result = manualModLoader.AddStormMaps(stormMaps);
+
+        // assert
+        result.Should().BeSameAs(manualModLoader);
+        manualModLoader.StormMaps.Should().HaveCount(2);
+        manualModLoader.StormMaps.Should().BeEquivalentTo(stormMaps);
+        manualModLoader.StormMaps.Should().HaveElementAt(0, stormMap1);
+        manualModLoader.StormMaps.Should().HaveElementAt(1, stormMap2);
+    }
+
+    [TestMethod]
+    public void AddStormMaps_EmptyCollection_AddsNothing()
+    {
+        // arrange
+        ManualModLoader manualModLoader = new("TestMod");
+        List<StormMap> stormMaps = [];
+
+        // act
+        ManualModLoader result = manualModLoader.AddStormMaps(stormMaps);
+
+        // assert
+        result.Should().BeSameAs(manualModLoader);
+        manualModLoader.StormMaps.Should().BeEmpty();
+    }
 }

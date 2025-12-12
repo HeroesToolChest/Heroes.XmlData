@@ -34,9 +34,41 @@ public class CustomStormModTests
 </LevelScalingArray>
 ")])
             .AddStormStyleElements([XElement.Parse(@"<Constant name=""ColorChatCustomMessageHyperlink"" val=""c60000"" />")])
-            .AddAssetFilePaths([Path.Join("this", "is", "file", "path")]);
+            .AddAssetFilePaths([Path.Join("this", "is", "file", "path")])
+            .AddStormMaps(
+            [
+                new StormMap
+                {
+                    Name = "Custom Map",
+                    NameByLocale = new Dictionary<StormLocale, string> { { StormLocale.ENUS, "Custom Map" } },
+                    MapId = "CustomMapId",
+                    MapLink = "CustomMapLink",
+                    MapSize = (100.0, 100.0),
+                    ReplayPreviewImagePath = "preview.dds",
+                    LoadingScreenImagePath = "loading.dds",
+                    LayoutFilePath = "layout.StormLayout",
+                    LayoutLoadingScreenFrame = "Frame",
+                    S2MAFilePath = "custommap.s2ma",
+                    S2MVFilePath = "custommap.s2mv",
+                },
+                new StormMap
+                {
+                    Name = "Custom Map", // duplicate to test only one is added
+                    NameByLocale = new Dictionary<StormLocale, string> { { StormLocale.ENUS, "Custom Map" } },
+                    MapId = "CustomMapId",
+                    MapLink = "CustomMapLink",
+                    MapSize = (100.0, 100.0),
+                    ReplayPreviewImagePath = "preview.dds",
+                    LoadingScreenImagePath = "loading.dds",
+                    LayoutFilePath = "layout.StormLayout",
+                    LayoutLoadingScreenFrame = "Frame",
+                    S2MAFilePath = "custommap.s2ma",
+                    S2MVFilePath = "custommap.s2mv",
+                },
+            ]);
 
         _heroesSource.StormStorage.CreateModStorage(default!).ReturnsForAnyArgs(new StormModStorage(default!, default!));
+        _heroesSource.S2MAPropertiesByTitle.Returns(new Dictionary<string, S2MAProperties>());
 
         CustomStormMod customStormMod = new(_heroesSource, manualModLoader);
 
@@ -50,6 +82,8 @@ public class CustomStormModTests
         _heroesSource.StormStorage.Received().AddLevelScalingArrayElement(StormModType.Custom, Arg.Any<XElement>(), Arg.Any<StormPath>());
         _heroesSource.StormStorage.Received().AddStormStyleElement(StormModType.Custom, Arg.Any<XElement>(), Arg.Any<StormPath>());
         _heroesSource.StormStorage.Received().AddAssetFilePath(StormModType.Custom, Arg.Any<string>(), Arg.Any<StormPath>());
+        _heroesSource.S2MAPropertiesByTitle.Should().ContainSingle()
+            .And.ContainKey("Custom Map");
     }
 
     [TestMethod]
