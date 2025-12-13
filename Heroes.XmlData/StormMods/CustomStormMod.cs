@@ -106,6 +106,17 @@ internal sealed class CustomStormMod : IStormMod
                 },
             });
         }
+
+        foreach (string filePath in _manualModLoader.LayoutFilePaths)
+        {
+            _heroesSource.StormStorage.AddStormLayoutFilePath(StormModType, filePath, new StormPath()
+            {
+                Path = filePath,
+                PathType = StormPathType.File,
+                StormModName = $"custom-{Name}",
+                StormModPath = DirectoryPath,
+            });
+        }
     }
 
     public void LoadStormGameStrings(StormLocale stormLocale)

@@ -448,4 +448,76 @@ public class ManualModLoaderTests
         result.Should().BeSameAs(manualModLoader);
         manualModLoader.StormMaps.Should().BeEmpty();
     }
+
+    [TestMethod]
+    public void AddLayoutFilePaths_AddingTwoCollections_ShouldReturnTotal()
+    {
+        // arrange
+        ManualModLoader manualModLoader = new("custom");
+
+        // act
+        manualModLoader.AddLayoutFilePaths([
+            "path/to/layout1.stormlayout",
+            "path/to/layout2.stormlayout"
+            ]);
+
+        manualModLoader.AddLayoutFilePaths([
+            "path/to/layout3.stormlayout"
+            ]);
+
+        // assert
+        manualModLoader.LayoutFilePaths.Should().HaveCount(3).And
+            .SatisfyRespectively(
+                first =>
+                {
+                    first.Should().Be("path/to/layout1.stormlayout");
+                },
+                second =>
+                {
+                    second.Should().Be("path/to/layout2.stormlayout");
+                },
+                third =>
+                {
+                    third.Should().Be("path/to/layout3.stormlayout");
+                });
+    }
+
+    [TestMethod]
+    public void AddLayoutFilePaths_AddingDuplicates_OnlyStoresUnique()
+    {
+        // arrange
+        ManualModLoader manualModLoader = new("custom");
+
+        // act
+        manualModLoader.AddLayoutFilePaths([
+            "path/to/layout1.stormlayout",
+            "path/to/layout2.stormlayout"
+            ]);
+
+        manualModLoader.AddLayoutFilePaths([
+            "path/to/layout1.stormlayout",
+            "path/to/layout3.stormlayout"
+            ]);
+
+        // assert
+        manualModLoader.LayoutFilePaths.Should().HaveCount(3);
+        manualModLoader.LayoutFilePaths.Should().Contain("path/to/layout1.stormlayout");
+        manualModLoader.LayoutFilePaths.Should().Contain("path/to/layout2.stormlayout");
+        manualModLoader.LayoutFilePaths.Should().Contain("path/to/layout3.stormlayout");
+    }
+
+    [TestMethod]
+    public void AddLayoutFilePaths_EmptyCollection_AddsNothing()
+    {
+        // arrange
+        ManualModLoader manualModLoader = new("custom");
+        List<string> layoutPaths = [];
+
+        // act
+        ManualModLoader result = manualModLoader.AddLayoutFilePaths(layoutPaths);
+
+        // assert
+        result.Should().BeSameAs(manualModLoader);
+        manualModLoader.LayoutFilePaths.Should().BeEmpty();
+    }
 }

@@ -35,6 +35,7 @@ public class CustomStormModTests
 ")])
             .AddStormStyleElements([XElement.Parse(@"<Constant name=""ColorChatCustomMessageHyperlink"" val=""c60000"" />")])
             .AddAssetFilePaths([Path.Join("this", "is", "file", "path")])
+            .AddLayoutFilePaths([Path.Join("ui", "layout", "custom.stormlayout")])
             .AddStormMaps(
             [
                 new StormMap
@@ -82,6 +83,7 @@ public class CustomStormModTests
         _heroesSource.StormStorage.Received().AddLevelScalingArrayElement(StormModType.Custom, Arg.Any<XElement>(), Arg.Any<StormPath>());
         _heroesSource.StormStorage.Received().AddStormStyleElement(StormModType.Custom, Arg.Any<XElement>(), Arg.Any<StormPath>());
         _heroesSource.StormStorage.Received().AddAssetFilePath(StormModType.Custom, Arg.Any<string>(), Arg.Any<StormPath>());
+        _heroesSource.StormStorage.Received().AddStormLayoutFilePath(StormModType.Custom, Arg.Any<string>(), Arg.Any<StormPath>());
         _heroesSource.S2MAPropertiesByTitle.Should().ContainSingle()
             .And.ContainKey("Custom Map");
     }

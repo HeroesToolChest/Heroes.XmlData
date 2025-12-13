@@ -36,6 +36,8 @@ public class ManualModLoader
 
     internal List<StormMap> StormMaps { get; } = [];
 
+    internal HashSet<string> LayoutFilePaths { get; } = [];
+
     /// <summary>
     /// Adds an unparsed gamestring collection to the custom cache storage. If an id already exists, it will be overridden.
     /// </summary>
@@ -141,6 +143,21 @@ public class ManualModLoader
     public ManualModLoader AddStormMaps(IEnumerable<StormMap> stormMaps)
     {
         StormMaps.AddRange(stormMaps);
+
+        return this;
+    }
+
+    /// <summary>
+    /// Adds a collection of layout file paths to the custom cache storage.
+    /// </summary>
+    /// <param name="filePaths">
+    /// A collection of layout file paths. Normally layout file paths should begin with the "UI" directory, but in this
+    /// case since they are being added manually, the file path should be a real path that exists on disk.
+    /// </param>
+    /// <returns>The current <see cref="ManualModLoader"/> instance.</returns>
+    public ManualModLoader AddLayoutFilePaths(IEnumerable<string> filePaths)
+    {
+        LayoutFilePaths.UnionWith(filePaths);
 
         return this;
     }
