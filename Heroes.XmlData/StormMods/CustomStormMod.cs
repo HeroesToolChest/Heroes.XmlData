@@ -78,7 +78,7 @@ internal sealed class CustomStormMod : IStormMod
 
         foreach (string filePath in _manualModLoader.AssetFilePaths)
         {
-            _heroesSource.StormStorage.AddAssetFilePath(StormModType, filePath, new StormPath()
+            StormModStorage.AddAssetFilePath(filePath, new StormPath()
             {
                 Path = filePath,
                 PathType = StormPathType.File,
@@ -109,13 +109,21 @@ internal sealed class CustomStormMod : IStormMod
 
         foreach (string filePath in _manualModLoader.LayoutFilePaths)
         {
-            _heroesSource.StormStorage.AddStormLayoutFilePath(StormModType, filePath, new StormPath()
+            StormModStorage.AddStormLayoutFilePath(filePath, new StormPath()
             {
                 Path = filePath,
                 PathType = StormPathType.File,
                 StormModName = $"custom-{Name}",
                 StormModPath = DirectoryPath,
             });
+        }
+
+        foreach (string assetText in _manualModLoader.AssetTexts)
+        {
+            var asset = _heroesSource.StormStorage.GetAssetWithId(assetText, _stormPath);
+
+            if (asset is not null)
+                StormModStorage.AddAssetText(asset.Value.Id, asset.Value.AssetText);
         }
     }
 

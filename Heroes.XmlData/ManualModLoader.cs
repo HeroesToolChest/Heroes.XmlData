@@ -38,6 +38,9 @@ public class ManualModLoader
 
     internal HashSet<string> LayoutFilePaths { get; } = [];
 
+    // from the assest.txt files
+    internal HashSet<string> AssetTexts { get; } = [];
+
     /// <summary>
     /// Adds an unparsed gamestring collection to the custom cache storage. If an id already exists, it will be overridden.
     /// </summary>
@@ -158,6 +161,18 @@ public class ManualModLoader
     public ManualModLoader AddLayoutFilePaths(IEnumerable<string> filePaths)
     {
         LayoutFilePaths.UnionWith(filePaths);
+
+        return this;
+    }
+
+    /// <summary>
+    /// Adds a collection of assets to the custom cache storage. If an id already exists, it will be overridden.
+    /// </summary>
+    /// <param name="assets">A collection assets texts in a format of &lt;id&gt;=&lt;value&gt;.</param>
+    /// <returns>The current <see cref="ManualModLoader"/> instance.</returns>
+    public ManualModLoader AddAssetTexts(IEnumerable<string> assets)
+    {
+        AssetTexts.UnionWith(assets);
 
         return this;
     }

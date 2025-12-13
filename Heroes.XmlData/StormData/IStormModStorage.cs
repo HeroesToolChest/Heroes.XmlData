@@ -54,6 +54,8 @@ internal interface IStormModStorage
 
     void AddGameStringFile(Stream stream, StormPath stormPath);
 
+    void AddAssetText(string id, AssetText assetText);
+
     void AddXmlDataFile(XDocument document, StormPath stormPath);
 
     void AddStormLayoutFilePath(string relativePath, StormPath stormPath);

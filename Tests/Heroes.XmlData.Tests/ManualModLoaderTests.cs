@@ -520,4 +520,76 @@ public class ManualModLoaderTests
         result.Should().BeSameAs(manualModLoader);
         manualModLoader.LayoutFilePaths.Should().BeEmpty();
     }
+
+    [TestMethod]
+    public void AddAssetTexts_AddingTwoCollections_ShouldReturnTotal()
+    {
+        // arrange
+        ManualModLoader manualModLoader = new("custom");
+
+        // act
+        manualModLoader.AddAssetTexts([
+            "UI/LoadingScreen_SnowBrawl_Background=Assets\\Textures\\storm_ui_homescreenbackground_snowbrawl.dds",
+            "UI/LoadingScreen_TowersOfDoom_Background=Assets\\Textures\\storm_ui_homescreenbackground_towersofdoom.dds"
+            ]);
+
+        manualModLoader.AddAssetTexts([
+            "UI/HeroIcon_Abathur=Assets\\Textures\\storm_ui_ingame_heroselect_btn_abathur.dds"
+            ]);
+
+        // assert
+        manualModLoader.AssetTexts.Should().HaveCount(3).And
+            .SatisfyRespectively(
+                first =>
+                {
+                    first.Should().Be("UI/LoadingScreen_SnowBrawl_Background=Assets\\Textures\\storm_ui_homescreenbackground_snowbrawl.dds");
+                },
+                second =>
+                {
+                    second.Should().Be("UI/LoadingScreen_TowersOfDoom_Background=Assets\\Textures\\storm_ui_homescreenbackground_towersofdoom.dds");
+                },
+                third =>
+                {
+                    third.Should().Be("UI/HeroIcon_Abathur=Assets\\Textures\\storm_ui_ingame_heroselect_btn_abathur.dds");
+                });
+    }
+
+    [TestMethod]
+    public void AddAssetTexts_AddingDuplicates_OnlyStoresUnique()
+    {
+        // arrange
+        ManualModLoader manualModLoader = new("custom");
+
+        // act
+        manualModLoader.AddAssetTexts([
+            "UI/LoadingScreen_SnowBrawl_Background=Assets\\Textures\\storm_ui_homescreenbackground_snowbrawl.dds",
+            "UI/LoadingScreen_TowersOfDoom_Background=Assets\\Textures\\storm_ui_homescreenbackground_towersofdoom.dds"
+            ]);
+
+        manualModLoader.AddAssetTexts([
+            "UI/LoadingScreen_SnowBrawl_Background=Assets\\Textures\\storm_ui_homescreenbackground_snowbrawl.dds",
+            "UI/HeroIcon_Abathur=Assets\\Textures\\storm_ui_ingame_heroselect_btn_abathur.dds"
+            ]);
+
+        // assert
+        manualModLoader.AssetTexts.Should().HaveCount(3);
+        manualModLoader.AssetTexts.Should().Contain("UI/LoadingScreen_SnowBrawl_Background=Assets\\Textures\\storm_ui_homescreenbackground_snowbrawl.dds");
+        manualModLoader.AssetTexts.Should().Contain("UI/LoadingScreen_TowersOfDoom_Background=Assets\\Textures\\storm_ui_homescreenbackground_towersofdoom.dds");
+        manualModLoader.AssetTexts.Should().Contain("UI/HeroIcon_Abathur=Assets\\Textures\\storm_ui_ingame_heroselect_btn_abathur.dds");
+    }
+
+    [TestMethod]
+    public void AddAssetTexts_EmptyCollection_AddsNothing()
+    {
+        // arrange
+        ManualModLoader manualModLoader = new("custom");
+        List<string> assetTexts = [];
+
+        // act
+        ManualModLoader result = manualModLoader.AddAssetTexts(assetTexts);
+
+        // assert
+        result.Should().BeSameAs(manualModLoader);
+        manualModLoader.AssetTexts.Should().BeEmpty();
+    }
 }

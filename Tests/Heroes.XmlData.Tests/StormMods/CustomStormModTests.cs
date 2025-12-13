@@ -4,10 +4,14 @@
 public class CustomStormModTests
 {
     private readonly IHeroesSource _heroesSource;
+    private readonly IStormMod _stormMod;
+    private readonly IStormStorage _stormStorage;
 
     public CustomStormModTests()
     {
         _heroesSource = Substitute.For<IHeroesSource>();
+        _stormMod = Substitute.For<IStormMod>();
+        _stormStorage = Substitute.For<IStormStorage>();
     }
 
     [TestMethod]
@@ -36,6 +40,7 @@ public class CustomStormModTests
             .AddStormStyleElements([XElement.Parse(@"<Constant name=""ColorChatCustomMessageHyperlink"" val=""c60000"" />")])
             .AddAssetFilePaths([Path.Join("this", "is", "file", "path")])
             .AddLayoutFilePaths([Path.Join("ui", "layout", "custom.stormlayout")])
+            .AddAssetTexts(["UI/LoadingScreen_Custom=Assets\\Textures\\custom_loading.dds"])
             .AddStormMaps(
             [
                 new StormMap
@@ -68,8 +73,9 @@ public class CustomStormModTests
                 },
             ]);
 
-        _heroesSource.StormStorage.CreateModStorage(default!).ReturnsForAnyArgs(new StormModStorage(default!, default!));
-        _heroesSource.S2MAPropertiesByTitle.Returns(new Dictionary<string, S2MAProperties>());
+        _stormMod.StormModType.Returns(StormModType.Custom);
+        _heroesSource.StormStorage.CreateModStorage(default!).ReturnsForAnyArgs(new StormModStorage(_stormMod, _stormStorage));
+        _heroesSource.S2MAPropertiesByTitle.Returns([]);
 
         CustomStormMod customStormMod = new(_heroesSource, manualModLoader);
 
@@ -77,13 +83,15 @@ public class CustomStormModTests
         customStormMod.LoadStormData();
 
         // assert
+        _stormStorage.Received().AddStormLayoutFilePath(StormModType.Custom, Arg.Any<string>(), Arg.Any<StormPath>());
+        _stormStorage.Received().AddAssetFilePath(StormModType.Custom, Arg.Any<string>(), Arg.Any<StormPath>());
+
         _heroesSource.StormStorage.Received().AddConstantXElement(StormModType.Custom, Arg.Any<XElement>(), Arg.Any<StormPath>());
         _heroesSource.StormStorage.Received().AddBaseElementTypes(StormModType.Custom, Arg.Any<string>(), Arg.Any<string>());
         _heroesSource.StormStorage.Received().AddElement(StormModType.Custom, Arg.Any<XElement>(), Arg.Any<StormPath>());
         _heroesSource.StormStorage.Received().AddLevelScalingArrayElement(StormModType.Custom, Arg.Any<XElement>(), Arg.Any<StormPath>());
         _heroesSource.StormStorage.Received().AddStormStyleElement(StormModType.Custom, Arg.Any<XElement>(), Arg.Any<StormPath>());
-        _heroesSource.StormStorage.Received().AddAssetFilePath(StormModType.Custom, Arg.Any<string>(), Arg.Any<StormPath>());
-        _heroesSource.StormStorage.Received().AddStormLayoutFilePath(StormModType.Custom, Arg.Any<string>(), Arg.Any<StormPath>());
+        _heroesSource.StormStorage.Received().GetAssetWithId("UI/LoadingScreen_Custom=Assets\\Textures\\custom_loading.dds", Arg.Any<StormPath>());
         _heroesSource.S2MAPropertiesByTitle.Should().ContainSingle()
             .And.ContainKey("Custom Map");
     }
