@@ -3580,4 +3580,186 @@ public class StormStorageTests
         stormStorage.StormModStorages[1].StormModType.Should().Be(StormModType.Map);
         stormStorage.StormModStorages[2].StormModType.Should().Be(StormModType.Map);
     }
+
+    [TestMethod]
+    public void GetStormGameString_WithReadOnlySpan_AllThreeCaches_ReturnsFromCustom()
+    {
+        // arrange
+        StormStorage stormStorage = new(false);
+
+        stormStorage.StormCache.GameStringsById.Add("id1", new GameStringFileText("If Chomp hits a Hero", TestHelpers.GetStormPath("normal")));
+        stormStorage.StormMapCache.GameStringsById.Add("id1", new GameStringFileText("Shadow Waltz deals an increased", TestHelpers.GetStormPath("map")));
+        stormStorage.StormCustomCache.GameStringsById.Add("id1", new GameStringFileText("After a short delay", TestHelpers.GetStormPath("custom")));
+
+        // act
+        string? result = stormStorage.GetStormGameString("id1".AsSpan());
+
+        // assert
+        result.Should().Be("After a short delay");
+    }
+
+    [TestMethod]
+    public void GetStormGameString_WithReadOnlySpan_InNormalCache_ReturnsFromNormal()
+    {
+        // arrange
+        StormStorage stormStorage = new(false);
+
+        stormStorage.StormCache.GameStringsById.Add("id1", new GameStringFileText("If Chomp hits a Hero", TestHelpers.GetStormPath("normal")));
+
+        // act
+        string? result = stormStorage.GetStormGameString("id1".AsSpan());
+
+        // assert
+        result.Should().Be("If Chomp hits a Hero");
+    }
+
+    [TestMethod]
+    public void GetStormGameString_WithReadOnlySpan_InMapCache_ReturnsFromMap()
+    {
+        // arrange
+        StormStorage stormStorage = new(false);
+
+        stormStorage.StormMapCache.GameStringsById.Add("id1", new GameStringFileText("Shadow Waltz deals an increased", TestHelpers.GetStormPath("map")));
+
+        // act
+        string? result = stormStorage.GetStormGameString("id1".AsSpan());
+
+        // assert
+        result.Should().Be("Shadow Waltz deals an increased");
+    }
+
+    [TestMethod]
+    public void GetStormGameString_WithReadOnlySpan_InCustomCache_ReturnsFromCustom()
+    {
+        // arrange
+        StormStorage stormStorage = new(false);
+
+        stormStorage.StormCustomCache.GameStringsById.Add("id1", new GameStringFileText("After a short delay", TestHelpers.GetStormPath("custom")));
+
+        // act
+        string? result = stormStorage.GetStormGameString("id1".AsSpan());
+
+        // assert
+        result.Should().Be("After a short delay");
+    }
+
+    [TestMethod]
+    public void GetStormGameString_WithReadOnlySpan_NormalAndMapCache_ReturnsFromMap()
+    {
+        // arrange
+        StormStorage stormStorage = new(false);
+
+        stormStorage.StormCache.GameStringsById.Add("id1", new GameStringFileText("If Chomp hits a Hero", TestHelpers.GetStormPath("normal")));
+        stormStorage.StormMapCache.GameStringsById.Add("id1", new GameStringFileText("Shadow Waltz deals an increased", TestHelpers.GetStormPath("map")));
+
+        // act
+        string? result = stormStorage.GetStormGameString("id1".AsSpan());
+
+        // assert
+        result.Should().Be("Shadow Waltz deals an increased");
+    }
+
+    [TestMethod]
+    public void GetStormGameString_WithReadOnlySpan_NotFound_ReturnsNull()
+    {
+        // arrange
+        StormStorage stormStorage = new(false);
+
+        // act
+        string? result = stormStorage.GetStormGameString("nonexistent".AsSpan());
+
+        // assert
+        result.Should().BeNull();
+    }
+
+    [TestMethod]
+    public void GetStormAssetString_WithReadOnlySpan_AllThreeCaches_ReturnsFromCustom()
+    {
+        // arrange
+        StormStorage stormStorage = new(false);
+
+        stormStorage.StormCache.AssetTextsById.Add("id1", new AssetText("storm_ui_ingame_tooltipframe.dds", TestHelpers.GetStormPath("normal")));
+        stormStorage.StormMapCache.AssetTextsById.Add("id1", new AssetText("storm_standardbuttonmini_gold_normal.dds", TestHelpers.GetStormPath("map")));
+        stormStorage.StormCustomCache.AssetTextsById.Add("id1", new AssetText("storm_tutorial_veteran.ogv", TestHelpers.GetStormPath("custom")));
+
+        // act
+        string? result = stormStorage.GetStormAssetString("id1".AsSpan());
+
+        // assert
+        result.Should().Be("storm_tutorial_veteran.ogv");
+    }
+
+    [TestMethod]
+    public void GetStormAssetString_WithReadOnlySpan_InNormalCache_ReturnsFromNormal()
+    {
+        // arrange
+        StormStorage stormStorage = new(false);
+
+        stormStorage.StormCache.AssetTextsById.Add("id1", new AssetText("storm_ui_ingame_tooltipframe.dds", TestHelpers.GetStormPath("normal")));
+
+        // act
+        string? result = stormStorage.GetStormAssetString("id1".AsSpan());
+
+        // assert
+        result.Should().Be("storm_ui_ingame_tooltipframe.dds");
+    }
+
+    [TestMethod]
+    public void GetStormAssetString_WithReadOnlySpan_InMapCache_ReturnsFromMap()
+    {
+        // arrange
+        StormStorage stormStorage = new(false);
+
+        stormStorage.StormMapCache.AssetTextsById.Add("id1", new AssetText("storm_standardbuttonmini_gold_normal.dds", TestHelpers.GetStormPath("map")));
+
+        // act
+        string? result = stormStorage.GetStormAssetString("id1".AsSpan());
+
+        // assert
+        result.Should().Be("storm_standardbuttonmini_gold_normal.dds");
+    }
+
+    [TestMethod]
+    public void GetStormAssetString_WithReadOnlySpan_InCustomCache_ReturnsFromCustom()
+    {
+        // arrange
+        StormStorage stormStorage = new(false);
+
+        stormStorage.StormCustomCache.AssetTextsById.Add("id1", new AssetText("storm_tutorial_veteran.ogv", TestHelpers.GetStormPath("custom")));
+
+        // act
+        string? result = stormStorage.GetStormAssetString("id1".AsSpan());
+
+        // assert
+        result.Should().Be("storm_tutorial_veteran.ogv");
+    }
+
+    [TestMethod]
+    public void GetStormAssetString_WithReadOnlySpan_NormalAndMapCache_ReturnsFromMap()
+    {
+        // arrange
+        StormStorage stormStorage = new(false);
+
+        stormStorage.StormCache.AssetTextsById.Add("id1", new AssetText("storm_ui_ingame_tooltipframe.dds", TestHelpers.GetStormPath("normal")));
+        stormStorage.StormMapCache.AssetTextsById.Add("id1", new AssetText("storm_standardbuttonmini_gold_normal.dds", TestHelpers.GetStormPath("map")));
+
+        // act
+        string? result = stormStorage.GetStormAssetString("id1".AsSpan());
+
+        // assert
+        result.Should().Be("storm_standardbuttonmini_gold_normal.dds");
+    }
+
+    [TestMethod]
+    public void GetStormAssetString_WithReadOnlySpan_NotFound_ReturnsNull()
+    {
+        // arrange
+        StormStorage stormStorage = new(false);
+
+        // act
+        string? result = stormStorage.GetStormAssetString("nonexistent".AsSpan());
+
+        // assert
+        result.Should().BeNull();
+    }
 }

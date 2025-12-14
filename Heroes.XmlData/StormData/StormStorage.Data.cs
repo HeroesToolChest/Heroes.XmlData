@@ -325,6 +325,21 @@ internal sealed partial class StormStorage
         return stormGameString;
     }
 
+    public string? GetStormGameString(ReadOnlySpan<char> id)
+    {
+        // custom cache first
+        if (StormCustomCache.GameStringsByIdAltLookup.TryGetValue(id, out GameStringFileText? gameStringText))
+            return gameStringText.Value;
+
+        if (StormMapCache.GameStringsByIdAltLookup.TryGetValue(id, out gameStringText))
+            return gameStringText.Value;
+
+        if (StormCache.GameStringsByIdAltLookup.TryGetValue(id, out gameStringText))
+            return gameStringText.Value;
+
+        return null;
+    }
+
     public List<StormGameString> GetStormGameStrings()
     {
         Dictionary<string, StormGameString> stormGameStrings = [];
@@ -398,6 +413,21 @@ internal sealed partial class StormStorage
         }
 
         return stormAssetText;
+    }
+
+    public string? GetStormAssetString(ReadOnlySpan<char> id)
+    {
+        // custom cache first
+        if (StormCustomCache.AssetTextsByIdAltLookup.TryGetValue(id, out AssetText? assetText))
+            return assetText.Value;
+
+        if (StormMapCache.AssetTextsByIdAltLookup.TryGetValue(id, out assetText))
+            return assetText.Value;
+
+        if (StormCache.AssetTextsByIdAltLookup.TryGetValue(id, out assetText))
+            return assetText.Value;
+
+        return null;
     }
 
     public bool TryGetStormAssetStringValue(ReadOnlySpan<char> id, [NotNullWhen(true)] out string? value)

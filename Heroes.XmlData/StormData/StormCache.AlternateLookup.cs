@@ -17,6 +17,7 @@ internal sealed partial class StormCache
         ScaleValueStormElementsByDataObjectTypeAltLookup = ScaleValueStormElementsByDataObjectType.GetAlternateLookup<ReadOnlySpan<char>>();
         ElementTypesByDataObjectTypeAltLookup = ElementTypesByDataObjectType.GetAlternateLookup<ReadOnlySpan<char>>();
         UnitNamesByDataObjectTypeAltLookup = UnitNamesByDataObjectType.GetAlternateLookup<ReadOnlySpan<char>>();
+        GameStringsByIdAltLookup = GameStringsById.GetAlternateLookup<ReadOnlySpan<char>>();
     }
 
     public Dictionary<string, StormXElementValuePath>.AlternateLookup<ReadOnlySpan<char>> ConstantXElementByIdAltLookup { get; }
@@ -38,4 +39,6 @@ internal sealed partial class StormCache
     public Dictionary<string, HashSet<string>>.AlternateLookup<ReadOnlySpan<char>> ElementTypesByDataObjectTypeAltLookup { get; }
 
     public Dictionary<string, Dictionary<string, string>.AlternateLookup<ReadOnlySpan<char>>>.AlternateLookup<ReadOnlySpan<char>> UnitNamesByDataObjectTypeAltLookup { get; }
+
+    public Dictionary<string, GameStringFileText>.AlternateLookup<ReadOnlySpan<char>> GameStringsByIdAltLookup { get; }
 }

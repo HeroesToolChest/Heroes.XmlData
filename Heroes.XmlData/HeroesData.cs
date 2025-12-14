@@ -146,13 +146,33 @@ public class HeroesData
     }
 
     /// <summary>
+    /// Gets an unparsed <see cref="StormGameString"/> (from a gamestrings.txt file).
+    /// </summary>
+    /// <param name="id">The id of the gamestring.</param>
+    /// <returns>An unparsed <see cref="StormGameString"/> or <see langword="null"/> if not found.</returns>
+    public StormGameString? GetStormGameString(string id)
+    {
+        return _stormStorage.GetStormGameString(id);
+    }
+
+    /// <summary>
     /// Gets an unparsed gamestring (from a gamestrings.txt file).
     /// </summary>
     /// <param name="id">The id of the gamestring.</param>
     /// <returns>An unparsed gamestring or <see langword="null"/> if not found.</returns>
-    public StormGameString? GetStormGameString(string id)
+    public string? GetStormGameString(ReadOnlySpan<char> id)
     {
         return _stormStorage.GetStormGameString(id);
+    }
+
+    /// <summary>
+    /// Gets a <see cref="StormAssetString"/> (from an assets.txt file).
+    /// </summary>
+    /// <param name="id">The id of the asset.</param>
+    /// <returns>A <see cref="StormAssetString"/> or <see langword="null"/> if not found.</returns>
+    public StormAssetString? GetStormAssetString(string id)
+    {
+        return _stormStorage.GetStormAssetString(id);
     }
 
     /// <summary>
@@ -160,7 +180,7 @@ public class HeroesData
     /// </summary>
     /// <param name="id">The id of the asset.</param>
     /// <returns>The text of the asset or <see langword="null"/> if not found.</returns>
-    public StormAssetString? GetStormAssetString(string id)
+    public string? GetStormAssetString(ReadOnlySpan<char> id)
     {
         return _stormStorage.GetStormAssetString(id);
     }

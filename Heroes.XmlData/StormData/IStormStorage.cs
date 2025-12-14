@@ -88,11 +88,15 @@ internal interface IStormStorage
 
     StormGameString? GetStormGameString(string id);
 
+    string? GetStormGameString(ReadOnlySpan<char> id);
+
     List<StormGameString> GetStormGameStrings();
 
     List<string> GetStormElementIds(string dataObjectType, StormCacheType stormCacheType = StormCacheType.All);
 
     StormAssetString? GetStormAssetString(string id);
+
+    string? GetStormAssetString(ReadOnlySpan<char> id);
 
     bool TryGetStormAssetStringValue(ReadOnlySpan<char> id, [NotNullWhen(true)] out string? value);
 
