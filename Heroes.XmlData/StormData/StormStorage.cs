@@ -322,12 +322,18 @@ internal sealed partial class StormStorage : IStormStorage
             // unit name
             if (!string.IsNullOrEmpty(unitNameAtt))
             {
-                ref Dictionary<string, string>? idsByUnitName = ref CollectionsMarshal.GetValueRefOrAddDefault(currentStormCache.UnitNamesByDataObjectType, existingDataObjectType, out bool unitNameDictExists);
-
-                if (!unitNameDictExists)
-                    idsByUnitName = [];
-
-                idsByUnitName![unitNameAtt] = idAtt;
+                if (currentStormCache.UnitNamesByDataObjectType.TryGetValue(existingDataObjectType, out var idsByUnitName))
+                {
+                    idsByUnitName[unitNameAtt] = idAtt;
+                }
+                else
+                {
+                    currentStormCache.UnitNamesByDataObjectType[existingDataObjectType] = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+                    {
+                        { unitNameAtt, idAtt },
+                    }
+                    .GetAlternateLookup<ReadOnlySpan<char>>();
+                }
             }
         }
     }

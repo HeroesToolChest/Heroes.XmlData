@@ -37,7 +37,7 @@ public class HeroesData
     /// </summary>
     /// <param name="dataObjectType">The type of the element name (e.g. Effect).</param>
     /// <returns>A collection of all the element types of the data object type.</returns>
-    public IEnumerable<string> GetElementTypesByDataObjectType(string dataObjectType)
+    public IEnumerable<string> GetElementTypesByDataObjectType(ReadOnlySpan<char> dataObjectType)
     {
         return _stormStorage.GetElementTypesByDataObjectType(dataObjectType).AsReadOnly();
     }
@@ -47,7 +47,7 @@ public class HeroesData
     /// </summary>
     /// <param name="elementType">The name of the element.</param>
     /// <returns>The data object type or <see langword="null"/> if not found.</returns>
-    public string? GetDataObjectTypeByElementType(string elementType)
+    public string? GetDataObjectTypeByElementType(ReadOnlySpan<char> elementType)
     {
         return _stormStorage.GetDataObjectTypeByElementType(elementType);
     }
@@ -57,7 +57,7 @@ public class HeroesData
     /// </summary>
     /// <param name="elementType">The name of the element.</param>
     /// <returns>A <see cref="StormElement"/> or <see langword="null"/> if not found.</returns>
-    public StormElement? GetStormElement(string elementType)
+    public StormElement? GetStormElement(ReadOnlySpan<char> elementType)
     {
         return _stormStorage.GetStormElementByElementType(elementType);
     }
@@ -68,7 +68,7 @@ public class HeroesData
     /// <param name="dataObjectType">The type of the element name (e.g. Effect).</param>
     /// <param name="id">The id of element.</param>
     /// <returns>A <see cref="StormElement"/> or <see langword="null"/> if not found.</returns>
-    public StormElement? GetStormElement(string dataObjectType, string id)
+    public StormElement? GetStormElement(ReadOnlySpan<char> dataObjectType, ReadOnlySpan<char> id)
     {
         return _stormStorage.GetStormElementById(id, dataObjectType);
     }
@@ -79,7 +79,7 @@ public class HeroesData
     /// <param name="dataObjectType">The type of the element name (e.g. Effect).</param>
     /// <param name="id">The id of element.</param>
     /// <returns><see langword="true"/> if found, otherwise <see langword="false"/>.</returns>
-    public bool StormElementExists(string dataObjectType, string id)
+    public bool StormElementExists(ReadOnlySpan<char> dataObjectType, ReadOnlySpan<char> id)
     {
         return _stormStorage.StormElementExists(id, dataObjectType);
     }
@@ -90,7 +90,7 @@ public class HeroesData
     /// <param name="unitName">The unit name of an element.</param>
     /// <param name="dataObjectType">The type of the element name (e.g. Effect).</param>
     /// <returns>The id of the element or <see langword="null"/> if not found.</returns>
-    public string? GetStormElementIdByUnitName(string unitName, string dataObjectType)
+    public string? GetStormElementIdByUnitName(ReadOnlySpan<char> unitName, ReadOnlySpan<char> dataObjectType)
     {
         return _stormStorage.GetStormElementIdByUnitName(unitName, dataObjectType);
     }
@@ -126,17 +126,6 @@ public class HeroesData
     }
 
     /// <summary>
-    /// Gets a <see cref="StormElement"/> that has been merged from the base element to the given <paramref name="id"/>'s element.
-    /// </summary>
-    /// <param name="dataObjectType">The type of the element name (e.g. Effect).</param>
-    /// <param name="id">The value of an id attribute.</param>
-    /// <returns>A <see cref="StormElement"/> or <see langword="null"/> if not found.</returns>
-    public StormElement? GetCompleteStormElement(string dataObjectType, string id)
-    {
-        return _stormStorage.GetCompleteStormElement(id, dataObjectType);
-    }
-
-    /// <summary>
     /// Gets a <see cref="StormElement"/> that represents a StormStyle Constant element.
     /// </summary>
     /// <param name="name">The name of the Constant element.</param>
@@ -147,31 +136,11 @@ public class HeroesData
     }
 
     /// <summary>
-    /// Gets a <see cref="StormElement"/> that represents a StormStyle Constant element.
-    /// </summary>
-    /// <param name="name">The name of the Constant element.</param>
-    /// <returns>A StormStyle Constant <see cref="StormElement"/> or <see langword="null"/> if not found.</returns>
-    public StormStyleConstantElement? GetStormStyleConstantStormElement(string name)
-    {
-        return _stormStorage.GetStormStyleConstantElementsByName(name);
-    }
-
-    /// <summary>
     /// Gets a <see cref="StormElement"/> that represents a StormStyle Style element.
     /// </summary>
     /// <param name="name">The name of the Style element.</param>
     /// <returns>A StormStyle Style <see cref="StormElement"/> or <see langword="null"/> if not found.</returns>
     public StormStyleStyleElement? GetStormStyleStyleStormElement(ReadOnlySpan<char> name)
-    {
-        return _stormStorage.GetStormStyleStyleElementsByName(name);
-    }
-
-    /// <summary>
-    /// Gets a <see cref="StormElement"/> that represents a StormStyle Style element.
-    /// </summary>
-    /// <param name="name">The name of the Style element.</param>
-    /// <returns>A StormStyle Style <see cref="StormElement"/> or <see langword="null"/> if not found.</returns>
-    public StormStyleStyleElement? GetStormStyleStyleStormElement(string name)
     {
         return _stormStorage.GetStormStyleStyleElementsByName(name);
     }

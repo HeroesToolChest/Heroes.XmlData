@@ -892,22 +892,6 @@ public class StormStorageTests
     }
 
     [TestMethod]
-    [DataRow(null, "")]
-    [DataRow("", null)]
-    [DataRow(null, null)]
-    public void StormElementExists_NullParams_ThrowsException(string id, string dataObjectType)
-    {
-        // arrange
-        StormStorage stormStorage = new();
-
-        // act
-        Action result = () => stormStorage.StormElementExists(id, dataObjectType);
-
-        // assert
-        result.Should().Throw<ArgumentNullException>();
-    }
-
-    [TestMethod]
     [DataRow("HeroDVaMech", "Actor", "HeroDVaMech")]
     [DataRow("HeroChenEarth", "Actor", "ChenEarthUnit")]
     public void TryGetFirstStormElementIdByUnitName_UnitNamesAndDataObjectType_ReturnsId(string unitName, string dataObjectType, string id)
@@ -918,7 +902,7 @@ public class StormStorageTests
         stormStorage.StormCache.UnitNamesByDataObjectType.Add(dataObjectType, new Dictionary<string, string>()
         {
             { unitName, id },
-        });
+        }.GetAlternateLookup<ReadOnlySpan<char>>());
 
         // act
         bool result = stormStorage.TryGetFirstStormElementIdByUnitName(unitName, dataObjectType, out string? resultId);
@@ -939,7 +923,7 @@ public class StormStorageTests
         stormStorage.StormMapCache.UnitNamesByDataObjectType.Add(dataObjectType, new Dictionary<string, string>()
         {
             { unitName, id },
-        });
+        }.GetAlternateLookup<ReadOnlySpan<char>>());
 
         // act
         bool result = stormStorage.TryGetFirstStormElementIdByUnitName(unitName, dataObjectType, out string? resultId);
@@ -960,7 +944,7 @@ public class StormStorageTests
         stormStorage.StormCustomCache.UnitNamesByDataObjectType.Add(dataObjectType, new Dictionary<string, string>()
         {
             { unitName, id },
-        });
+        }.GetAlternateLookup<ReadOnlySpan<char>>());
 
         // act
         bool result = stormStorage.TryGetFirstStormElementIdByUnitName(unitName, dataObjectType, out string? resultId);
@@ -985,19 +969,6 @@ public class StormStorageTests
     }
 
     [TestMethod]
-    public void TryGetFirstStormElementIdByUnitName_NullParam_ThrowsException()
-    {
-        // arrange
-        StormStorage stormStorage = new();
-
-        // act
-        Action result = () => stormStorage.TryGetFirstStormElementIdByUnitName(null!, null!, out string? resultId);
-
-        // assert
-        result.Should().Throw<ArgumentNullException>();
-    }
-
-    [TestMethod]
     public void GetStormElementIdByUnitName_HasDataObjectTypeAndId_ReturnsResult()
     {
         // arrange
@@ -1006,7 +977,7 @@ public class StormStorageTests
         stormStorage.StormCustomCache.UnitNamesByDataObjectType.Add("Actor", new Dictionary<string, string>()
         {
             { "unitName", "id" },
-        });
+        }.GetAlternateLookup<ReadOnlySpan<char>>());
 
         // act
         string? result = stormStorage.GetStormElementIdByUnitName("unitName", "Actor");
@@ -1033,7 +1004,7 @@ public class StormStorageTests
     {
         // arrange
         StormStorage stormStorage = new(false);
-        stormStorage.StormCustomCache.UnitNamesByDataObjectType.Add("Actor", []);
+        stormStorage.StormCustomCache.UnitNamesByDataObjectType.Add("Actor", new Dictionary<string, string>().GetAlternateLookup<ReadOnlySpan<char>>());
 
         // act
         string? result = stormStorage.GetStormElementIdByUnitName("unitName", "Actor");
@@ -1053,7 +1024,7 @@ public class StormStorageTests
         stormStorage.StormCustomCache.UnitNamesByDataObjectType.Add("Actor", new Dictionary<string, string>()
         {
             { "unitName", "id" },
-        });
+        }.GetAlternateLookup<ReadOnlySpan<char>>());
 
         // act
         string? result = stormStorage.GetStormElementIdByUnitName("unitName", "Actor");
@@ -1764,19 +1735,6 @@ public class StormStorageTests
     }
 
     [TestMethod]
-    public void GetStormStyleConstantElementsByName_NullDataObjectType_ThrowsException()
-    {
-        // arrange
-        StormStorage stormStorage = new();
-
-        // act
-        Action result = () => stormStorage.GetStormStyleConstantElementsByName(null!);
-
-        // assert
-        result.Should().Throw<ArgumentNullException>();
-    }
-
-    [TestMethod]
     public void GetStormStyleConstantElementsByName_ModifiedReturnValue_ShouldNotModifiedInternalData()
     {
         // arrange
@@ -1961,19 +1919,6 @@ public class StormStorageTests
         // assert
         result.Should().BeEquivalentTo(resultSpan);
         result.Should().BeNull();
-    }
-
-    [TestMethod]
-    public void GetStormStyleStyleElementsByName_NullDataObjectType_ThrowsException()
-    {
-        // arrange
-        StormStorage stormStorage = new();
-
-        // act
-        Action result = () => stormStorage.GetStormStyleStyleElementsByName(null!);
-
-        // assert
-        result.Should().Throw<ArgumentNullException>();
     }
 
     [TestMethod]

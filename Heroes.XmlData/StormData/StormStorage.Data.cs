@@ -24,19 +24,17 @@ internal sealed partial class StormStorage
         return false;
     }
 
-    public List<string> GetElementTypesByDataObjectType(string dataObjectType)
+    public List<string> GetElementTypesByDataObjectType(ReadOnlySpan<char> dataObjectType)
     {
-        ArgumentNullException.ThrowIfNull(dataObjectType);
-
         HashSet<string>? elementTypes = null;
 
         // custom cache always first
-        if (StormCustomCache.ElementTypesByDataObjectType.TryGetValue(dataObjectType, out HashSet<string>? foundElementTypes))
+        if (StormCustomCache.ElementTypesByDataObjectTypeAltLookup.TryGetValue(dataObjectType, out HashSet<string>? foundElementTypes))
         {
             elementTypes ??= [.. foundElementTypes];
         }
 
-        if (StormMapCache.ElementTypesByDataObjectType.TryGetValue(dataObjectType, out foundElementTypes))
+        if (StormMapCache.ElementTypesByDataObjectTypeAltLookup.TryGetValue(dataObjectType, out foundElementTypes))
         {
             if (elementTypes is null)
                 elementTypes = [.. foundElementTypes];
@@ -44,7 +42,7 @@ internal sealed partial class StormStorage
                 elementTypes.UnionWith(foundElementTypes);
         }
 
-        if (StormCache.ElementTypesByDataObjectType.TryGetValue(dataObjectType, out foundElementTypes))
+        if (StormCache.ElementTypesByDataObjectTypeAltLookup.TryGetValue(dataObjectType, out foundElementTypes))
         {
             if (elementTypes is null)
                 elementTypes = [.. foundElementTypes];
@@ -139,25 +137,22 @@ internal sealed partial class StormStorage
         return stormElement;
     }
 
-    public bool StormElementExists(string id, string dataObjectType)
+    public bool StormElementExists(ReadOnlySpan<char> id, ReadOnlySpan<char> dataObjectType)
     {
-        ArgumentNullException.ThrowIfNull(dataObjectType);
-        ArgumentNullException.ThrowIfNull(id);
-
         // normal cache first
-        if (StormCache.StormElementsByDataObjectType.TryGetValue(dataObjectType, out var foundStormElementById) &&
+        if (StormCache.StormElementsByDataObjectTypeAltLookup.TryGetValue(dataObjectType, out var foundStormElementById) &&
             foundStormElementById.ContainsKey(id))
         {
             return true;
         }
 
-        if (StormMapCache.StormElementsByDataObjectType.TryGetValue(dataObjectType, out foundStormElementById) &&
+        if (StormMapCache.StormElementsByDataObjectTypeAltLookup.TryGetValue(dataObjectType, out foundStormElementById) &&
             foundStormElementById.ContainsKey(id))
         {
             return true;
         }
 
-        if (StormCustomCache.StormElementsByDataObjectType.TryGetValue(dataObjectType, out foundStormElementById) &&
+        if (StormCustomCache.StormElementsByDataObjectTypeAltLookup.TryGetValue(dataObjectType, out foundStormElementById) &&
             foundStormElementById.ContainsKey(id))
         {
             return true;
@@ -166,30 +161,27 @@ internal sealed partial class StormStorage
         return false;
     }
 
-    public bool TryGetFirstStormElementIdByUnitName(string unitName, string dataObjectType, [NotNullWhen(true)] out string? id)
+    public bool TryGetFirstStormElementIdByUnitName(ReadOnlySpan<char> unitName, ReadOnlySpan<char> dataObjectType, [NotNullWhen(true)] out string? id)
     {
-        ArgumentNullException.ThrowIfNull(dataObjectType);
-        ArgumentNullException.ThrowIfNull(unitName);
-
         id = null;
 
         // custom cache first
-        if (StormCustomCache.UnitNamesByDataObjectType.TryGetValue(dataObjectType, out var idsByUnitName) &&
+        if (StormCustomCache.UnitNamesByDataObjectTypeAltLookup.TryGetValue(dataObjectType, out var idsByUnitName) &&
             idsByUnitName.TryGetValue(unitName, out id))
             return true;
 
-        if (StormMapCache.UnitNamesByDataObjectType.TryGetValue(dataObjectType, out idsByUnitName) &&
+        if (StormMapCache.UnitNamesByDataObjectTypeAltLookup.TryGetValue(dataObjectType, out idsByUnitName) &&
             idsByUnitName.TryGetValue(unitName, out id))
             return true;
 
-        if (StormCache.UnitNamesByDataObjectType.TryGetValue(dataObjectType, out idsByUnitName) &&
+        if (StormCache.UnitNamesByDataObjectTypeAltLookup.TryGetValue(dataObjectType, out idsByUnitName) &&
             idsByUnitName.TryGetValue(unitName, out id))
             return true;
 
         return false;
     }
 
-    public string? GetStormElementIdByUnitName(string unitName, string dataObjectType)
+    public string? GetStormElementIdByUnitName(ReadOnlySpan<char> unitName, ReadOnlySpan<char> dataObjectType)
     {
         if (TryGetFirstStormElementIdByUnitName(unitName, dataObjectType, out string? id))
             return id;
@@ -276,37 +268,6 @@ internal sealed partial class StormStorage
         return stormElement;
     }
 
-    public StormStyleConstantElement? GetStormStyleConstantElementsByName(string name)
-    {
-        ArgumentNullException.ThrowIfNull(name);
-
-        StormStyleConstantElement? stormElement = null;
-
-        // normal cache first
-        if (StormCache.StormStyleConstantElementsByName.TryGetValue(name, out StormStyleConstantElement? foundStormElement))
-        {
-            stormElement ??= new StormStyleConstantElement(foundStormElement);
-        }
-
-        if (StormMapCache.StormStyleConstantElementsByName.TryGetValue(name, out foundStormElement))
-        {
-            if (stormElement is null)
-                stormElement = new StormStyleConstantElement(foundStormElement);
-            else
-                stormElement.AddValue(foundStormElement);
-        }
-
-        if (StormCustomCache.StormStyleConstantElementsByName.TryGetValue(name, out foundStormElement))
-        {
-            if (stormElement is null)
-                stormElement = new StormStyleConstantElement(foundStormElement);
-            else
-                stormElement.AddValue(foundStormElement);
-        }
-
-        return stormElement;
-    }
-
     public StormStyleStyleElement? GetStormStyleStyleElementsByName(ReadOnlySpan<char> name)
     {
         StormStyleStyleElement? stormElement = null;
@@ -326,37 +287,6 @@ internal sealed partial class StormStorage
         }
 
         if (StormCustomCache.StormStyleStyleElementsByNameAltLookup.TryGetValue(name, out foundStormElement))
-        {
-            if (stormElement is null)
-                stormElement = new StormStyleStyleElement(foundStormElement);
-            else
-                stormElement.AddValue(foundStormElement);
-        }
-
-        return stormElement;
-    }
-
-    public StormStyleStyleElement? GetStormStyleStyleElementsByName(string name)
-    {
-        ArgumentNullException.ThrowIfNull(name);
-
-        StormStyleStyleElement? stormElement = null;
-
-        // normal cache first
-        if (StormCache.StormStyleStyleElementsByName.TryGetValue(name, out StormStyleStyleElement? foundStormElement))
-        {
-            stormElement ??= new StormStyleStyleElement(foundStormElement);
-        }
-
-        if (StormMapCache.StormStyleStyleElementsByName.TryGetValue(name, out foundStormElement))
-        {
-            if (stormElement is null)
-                stormElement = new StormStyleStyleElement(foundStormElement);
-            else
-                stormElement.AddValue(foundStormElement);
-        }
-
-        if (StormCustomCache.StormStyleStyleElementsByName.TryGetValue(name, out foundStormElement))
         {
             if (stormElement is null)
                 stormElement = new StormStyleStyleElement(foundStormElement);

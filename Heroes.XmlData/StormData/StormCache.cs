@@ -3,20 +3,8 @@
 /// <summary>
 /// Combined storage for the types of <see cref="StormModType"/>s.
 /// </summary>
-internal sealed class StormCache
+internal sealed partial class StormCache
 {
-    public StormCache()
-    {
-        ConstantXElementByIdAltLookup = ConstantXElementById.GetAlternateLookup<ReadOnlySpan<char>>();
-        AssetTextsByIdAltLookup = AssetTextsById.GetAlternateLookup<ReadOnlySpan<char>>();
-        StormStyleStyleElementsByNameAltLookup = StormStyleStyleElementsByName.GetAlternateLookup<ReadOnlySpan<char>>();
-        StormStyleConstantElementsByNameAltLookup = StormStyleConstantElementsByName.GetAlternateLookup<ReadOnlySpan<char>>();
-        StormElementsByDataObjectTypeAltLookup = StormElementsByDataObjectType.GetAlternateLookup<ReadOnlySpan<char>>();
-        StormElementByElementTypeAltLookup = StormElementByElementType.GetAlternateLookup<ReadOnlySpan<char>>();
-        DataObjectTypeByElementTypeAltLookup = DataObjectTypeByElementType.GetAlternateLookup<ReadOnlySpan<char>>();
-        ScaleValueStormElementsByDataObjectTypeAltLookup = ScaleValueStormElementsByDataObjectType.GetAlternateLookup<ReadOnlySpan<char>>();
-    }
-
     /// <summary>
     /// Gets a collection of directories that were not found.
     /// </summary>
@@ -70,7 +58,7 @@ internal sealed class StormCache
     /// <summary>
     /// Gets a dictionary of another dictionary of id attributes by their unit names (unitName attribute) by their data object type (e.g. Effect).
     /// </summary>
-    public Dictionary<string, Dictionary<string, string>> UnitNamesByDataObjectType { get; } = new(StringComparer.OrdinalIgnoreCase);
+    public Dictionary<string, Dictionary<string, string>.AlternateLookup<ReadOnlySpan<char>>> UnitNamesByDataObjectType { get; } = new(StringComparer.OrdinalIgnoreCase);
 
     /// <summary>
     /// Gets a dictionary of <see cref="StormElement"/>s by their id attribute by their data object type (e.g. Effect).
@@ -102,22 +90,6 @@ internal sealed class StormCache
     /// Gets the assets files by their relative Assets path (relative path will start with Assets).
     /// </summary>
     public Dictionary<string, StormPath> AssetFilesByRelativeAssetsPath { get; } = new(StringComparer.OrdinalIgnoreCase);
-
-    public Dictionary<string, StormXElementValuePath>.AlternateLookup<ReadOnlySpan<char>> ConstantXElementByIdAltLookup { get; }
-
-    public Dictionary<string, AssetText>.AlternateLookup<ReadOnlySpan<char>> AssetTextsByIdAltLookup { get; }
-
-    public Dictionary<string, StormStyleStyleElement>.AlternateLookup<ReadOnlySpan<char>> StormStyleStyleElementsByNameAltLookup { get; }
-
-    public Dictionary<string, StormStyleConstantElement>.AlternateLookup<ReadOnlySpan<char>> StormStyleConstantElementsByNameAltLookup { get; }
-
-    public Dictionary<string, Dictionary<string, StormElement>.AlternateLookup<ReadOnlySpan<char>>>.AlternateLookup<ReadOnlySpan<char>> StormElementsByDataObjectTypeAltLookup { get; }
-
-    public Dictionary<string, StormElement>.AlternateLookup<ReadOnlySpan<char>> StormElementByElementTypeAltLookup { get; }
-
-    public Dictionary<string, string>.AlternateLookup<ReadOnlySpan<char>> DataObjectTypeByElementTypeAltLookup { get; }
-
-    public Dictionary<string, Dictionary<string, StormElement>>.AlternateLookup<ReadOnlySpan<char>> ScaleValueStormElementsByDataObjectTypeAltLookup { get; }
 
     public void Clear()
     {

@@ -60,7 +60,7 @@ internal interface IStormStorage
 
     bool TryGetFirstConstantXElementById(ReadOnlySpan<char> id, [NotNullWhen(true)] out StormXElementValuePath? stormXElementValuePath);
 
-    List<string> GetElementTypesByDataObjectType(string dataObjectType);
+    List<string> GetElementTypesByDataObjectType(ReadOnlySpan<char> dataObjectType);
 
     bool TryGetFirstDataObjectTypeByElementType(ReadOnlySpan<char> elementType, [NotNullWhen(true)] out string? dataObjectType);
 
@@ -70,11 +70,11 @@ internal interface IStormStorage
 
     StormElement? GetStormElementById(ReadOnlySpan<char> id, ReadOnlySpan<char> dataObjectType);
 
-    bool StormElementExists(string id, string dataObjectType);
+    bool StormElementExists(ReadOnlySpan<char> id, ReadOnlySpan<char> dataObjectType);
 
-    bool TryGetFirstStormElementIdByUnitName(string unitName, string dataObjectType, [NotNullWhen(true)] out string? id);
+    bool TryGetFirstStormElementIdByUnitName(ReadOnlySpan<char> unitName, ReadOnlySpan<char> dataObjectType, [NotNullWhen(true)] out string? id);
 
-    string? GetStormElementIdByUnitName(string unitName, string dataObjectType);
+    string? GetStormElementIdByUnitName(ReadOnlySpan<char> unitName, ReadOnlySpan<char> dataObjectType);
 
     StormElement? GetScaleValueStormElementById(ReadOnlySpan<char> id, ReadOnlySpan<char> dataObjectType);
 
@@ -85,10 +85,6 @@ internal interface IStormStorage
     StormStyleConstantElement? GetStormStyleConstantElementsByName(ReadOnlySpan<char> name);
 
     StormStyleStyleElement? GetStormStyleStyleElementsByName(ReadOnlySpan<char> name);
-
-    StormStyleConstantElement? GetStormStyleConstantElementsByName(string name);
-
-    StormStyleStyleElement? GetStormStyleStyleElementsByName(string name);
 
     StormGameString? GetStormGameString(string id);
 
