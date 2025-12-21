@@ -110,24 +110,7 @@ public class StormElement
     public bool HasParentId => DataValues.ElementDataPairs.ContainsKey(ParentAttribute);
 
     [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-    private string DebuggerDisplay
-    {
-        get
-        {
-            string display;
-
-            if (HasId && HasParentId)
-                display = $"{{<{ElementType} id=\"{Id}\" parent=\"{ParentId}\">}}";
-            else if (HasId && !HasParentId)
-                display = $"{{<{ElementType} id=\"{Id}\">}}";
-            else if (!HasId && HasParentId)
-                display = $"{{<{ElementType} parent=\"{ParentId}\">}}";
-            else
-                display = $"{{<{ElementType}>}}";
-
-            return display;
-        }
-    }
+    private string DebuggerDisplay => ToXElement().ToString();
 
     /// <summary>
     /// Gets a collection of all the inner elements and attributes.
