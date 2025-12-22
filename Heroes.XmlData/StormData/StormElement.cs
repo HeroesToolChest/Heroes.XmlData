@@ -10,7 +10,7 @@ public class StormElement
     private const string ParentAttribute = "parent";
     private readonly List<StormXElementValuePath> _originalXElements = [];
 
-    private bool _isCurrentDefault = true;
+    private bool _isDefault = true;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="StormElement"/> class.
@@ -108,6 +108,11 @@ public class StormElement
     /// </summary>
     [MemberNotNullWhen(true, nameof(ParentId))]
     public bool HasParentId => DataValues.ElementDataPairs.ContainsKey(ParentAttribute);
+
+    /// <summary>
+    /// Gets a value indicating whether the default attribute is set to 1.
+    /// </summary>
+    public bool IsDefault => _isDefault;
 
     [DebuggerBrowsable(DebuggerBrowsableState.Never)]
     private string DebuggerDisplay => ToXElement().ToString();
@@ -299,12 +304,12 @@ public class StormElement
         if (!string.IsNullOrWhiteSpace(defaultValue) && defaultValue == "1")
         {
             DefaultDataValues = new StormElementData(this, xElement);
-            _isCurrentDefault = true;
+            _isDefault = true;
         }
-        else if (_isCurrentDefault)
+        else if (_isDefault)
         {
             DefaultDataValues = new StormElementData(this, xElement);
-            _isCurrentDefault = false;
+            _isDefault = false;
         }
 
         DataValues.AddXElement(xElement);

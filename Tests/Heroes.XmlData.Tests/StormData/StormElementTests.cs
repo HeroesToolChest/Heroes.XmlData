@@ -71,6 +71,7 @@ public class StormElementTests
         stormElement.DataValues.GetElementDataAt("CmdButtonArray").GetElementDataAt("Execute").GetElementDataAt("Flags").GetElementDataAt("Continuous").RawValue.Should().Be("1");
 
         stormElement.OriginalXElements.Count.Should().Be(2);
+        stormElement.IsDefault.Should().BeTrue();
     }
 
     [TestMethod]
@@ -160,6 +161,8 @@ public class StormElementTests
 
         stormElement.DataValues.GetElementDataAt("SplashHistory").IsIndexed.Should().BeFalse();
         stormElement.DataValues.GetElementDataAt("ResponseFlags").IsIndexed.Should().BeFalse();
+
+        stormElement.IsDefault.Should().BeFalse();
     }
 
     [TestMethod]
@@ -279,6 +282,8 @@ public class StormElementTests
 
         stormElement.OriginalXElements[1].Value.Equals(mergingElement);
         stormElement.OriginalXElements[1].Value.Equals("some\\other\\path");
+
+        stormElement.IsDefault.Should().BeTrue();
     }
 
     [TestMethod]
@@ -591,6 +596,8 @@ public class StormElementTests
         stormElement.DefaultDataValues.ElementDataCount.Should().Be(2);
         stormElement.DefaultDataValues["id"].RawValue.Should().Be("MuradinSecondWind");
         stormElement.DefaultDataValues["parent"].RawValue.Should().Be("StormButtonParentTrait");
+
+        stormElement.IsDefault.Should().BeFalse();
     }
 
     [TestMethod]
