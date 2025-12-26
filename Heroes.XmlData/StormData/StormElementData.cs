@@ -395,6 +395,7 @@ public sealed class StormElementData
     {
         IEnumerable<XAttribute> attributes = rootElement.Attributes();
         IEnumerable<XElement> elements = rootElement.Elements();
+        IEnumerable<XProcessingInstruction> processingIntructions = rootElement.Nodes().OfType<XProcessingInstruction>();
 
         foreach (XAttribute attribute in attributes)
         {
@@ -465,6 +466,16 @@ public sealed class StormElementData
             {
                 ElementDataPairs[elementName] = new StormElementData(this, elementName, valueAtt);
             }
+        }
+
+        foreach (XProcessingInstruction processingInstruction in processingIntructions)
+        {
+            XElement piElement = XElement.Parse($"<{processingInstruction.Target} {processingInstruction.Data}/>");
+            string? id = piElement.Attribute("id")?.Value;
+            if (string.IsNullOrEmpty(id))
+                continue;
+
+            StormElement.ProcessingInstructionsById.Dictionary[id] = piElement;
         }
     }
 

@@ -913,6 +913,65 @@ public class StormElementTests
         stormElementResult.DataValues["Cost"]["Charge"].Value.GetString().Should().Be("Unit");
     }
 
+    [TestMethod]
+    public void ToXElement_HasProcessingInstructions_XElementShouldBeCorrect()
+    {
+        XElement element1 = XElement.Parse(@"
+  <CVoiceLine default=""1"">
+    <Name value=""VoiceLine/Name/##id##"" />
+    <SortName value=""VoiceLine/SortName/##id##"" />
+    <Description value=""VoiceLine/Description/##id##"" />
+    <ReleaseDate>
+      <Month value=""1"" />
+      <Day value=""1"" />
+      <Year value=""2014"" />
+    </ReleaseDate>
+    <AttributeId value=""TODO"" />
+    <ProductId value=""11089"" />
+    <LootChestRewardCutsceneFile value=""Cutscenes/UI_LootChest_Reward_BG.StormCutscene"" />
+    <TileCutsceneFile value=""Cutscenes/UI_LootChest_Reward_BG.StormCutscene"" />
+  </CVoiceLine>
+");
+
+        XElement element2 = XElement.Parse(@"
+  <CVoiceLine default=""1"" id=""StormVoiceLineCommonBase"">
+    <?token id=""heroid"" type=""CHeroLink"" value=""Bogus""?>
+    <Hero value=""##heroid##"" />
+    <TileTexture value=""Assets\Textures\Storm_UI_Voice_##heroid##.dds"" />
+  </CVoiceLine>
+");
+
+        XElement element3 = XElement.Parse(@"
+  <CVoiceLine default=""1"" id=""StormVoiceLine01Common"" parent=""StormVoiceLineCommonBase"">
+    <Flags index=""FreePlay"" value=""1"" />
+    <HyperlinkId value=""##heroid##VoiceLine01"" />
+    <ProductId value=""0"" />
+  </CVoiceLine>
+");
+
+        XElement element4 = XElement.Parse(@"
+  <CVoiceLine default=""1"" id=""Abathur_VoiceLine01Common"" parent=""StormVoiceLine01Common"">
+    <?token id=""heroid"" type=""CHeroLink"" value=""Abathur""?>
+    <AttributeId value=""AB01"" />
+    <Sound value=""AbathurHero_VoiceLineOne"" />
+  </CVoiceLine>
+");
+        StormElement stormElement = new(new StormXElementValuePath(element1, TestHelpers.GetStormPath("some\\path")));
+        stormElement.AddValue(new StormXElementValuePath(element2, TestHelpers.GetStormPath("some\\other\\path")));
+        stormElement.AddValue(new StormXElementValuePath(element3, TestHelpers.GetStormPath("some\\other\\path")));
+        stormElement.AddValue(new StormXElementValuePath(element4, TestHelpers.GetStormPath("some\\other\\path")));
+
+        // act
+        XElement xElement = stormElement.ToXElement();
+
+        // assert
+        StormElement stormElementResult = new(new StormXElementValuePath(xElement, TestHelpers.GetStormPath("some\\path")));
+
+        stormElementResult.Id.Should().Be("Abathur_VoiceLine01Common");
+        stormElementResult.DataValues["Hero"].Value.GetString().Should().Be("Abathur");
+        stormElementResult.ProcessingInstructionsById.Dictionary.Should().BeEmpty();
+    }
+
     private static void SetElementsForMerginSingleElement(out XElement element, out XElement mergingElement)
     {
         element = XElement.Parse(@"

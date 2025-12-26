@@ -9,8 +9,10 @@ public class StormElement
     private const string IdAttribute = "id";
     private const string ParentAttribute = "parent";
     private readonly List<StormXElementValuePath> _originalXElements = [];
+    private readonly Dictionary<string, XElement> _processingInstructionsById = [];
 
     private bool _isDefault = true;
+
 
     /// <summary>
     /// Initializes a new instance of the <see cref="StormElement"/> class.
@@ -18,11 +20,14 @@ public class StormElement
     /// <param name="baseValue">A <see cref="StormXElementValuePath"/>.</param>
     internal StormElement(StormXElementValuePath baseValue)
     {
+        ProcessingInstructionsById = _processingInstructionsById.GetAlternateLookup<ReadOnlySpan<char>>();
+
         _originalXElements.Add(baseValue);
         ElementType = baseValue.Value.Name.LocalName;
 
         DataValues = new StormElementData(this, baseValue.Value);
         DefaultDataValues = DataValues;
+
     }
 
     /// <summary>
@@ -31,6 +36,8 @@ public class StormElement
     /// <param name="baseValue">Another <see cref="StormElement"/> instance.</param>
     internal StormElement(StormElement baseValue)
     {
+        ProcessingInstructionsById = _processingInstructionsById.GetAlternateLookup<ReadOnlySpan<char>>();
+
         _originalXElements = [.. baseValue.OriginalXElements];
 
         ElementType = baseValue.ElementType;
@@ -113,6 +120,11 @@ public class StormElement
     /// Gets a value indicating whether the default attribute is set to 1.
     /// </summary>
     public bool IsDefault => _isDefault;
+
+    /// <summary>
+    /// Gets the processing instructions by the id in <see cref="XElement"/> form.
+    /// </summary>
+    public Dictionary<string, XElement>.AlternateLookup<ReadOnlySpan<char>> ProcessingInstructionsById { get; }
 
     [DebuggerBrowsable(DebuggerBrowsableState.Never)]
     private string DebuggerDisplay => ToXElement().ToString();

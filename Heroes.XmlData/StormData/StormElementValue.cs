@@ -150,19 +150,40 @@ public readonly ref struct StormElementValue
 
         foreach ((Range indexOfText, bool replace) in elementNameList)
         {
-            if (replace && _defaultStormElementData.TryGetElementDataAt(Value[indexOfText].Trim('#'), out StormElementData? stormElementData) && stormElementData.RawValue is not null)
+            ReadOnlySpan<char> currentValue = Value[indexOfText];
+            ReadOnlySpan<char> trimmedValue = currentValue.Trim('#');
+
+            if (replace && _defaultStormElementData.StormElement.ProcessingInstructionsById.TryGetValue(trimmedValue, out XElement? piElement))
+            {
+                string? piValue = piElement.Attribute("value")?.Value;
+                if (piValue is not null)
+                {
+                    piValue.CopyTo(buffer[indexOfBuffer..]);
+                    indexOfBuffer += piValue.Length;
+                }
+                else
+                {
+                    CopyValueToBuffer(ref indexOfBuffer, buffer, currentValue);
+                }
+            }
+            else if (replace && _defaultStormElementData.TryGetElementDataAt(trimmedValue, out StormElementData? stormElementData) && stormElementData.RawValue is not null)
             {
                 stormElementData.RawValue.CopyTo(buffer[indexOfBuffer..]);
                 indexOfBuffer += stormElementData.RawValue.Length;
             }
             else
             {
-                Value[indexOfText].CopyTo(buffer[indexOfBuffer..]);
-                indexOfBuffer += Value[indexOfText].Length;
+                CopyValueToBuffer(ref indexOfBuffer, buffer, currentValue);
             }
         }
 
         return buffer.ToString();
+
+        static void CopyValueToBuffer(ref int indexOfBuffer, Span<char> buffer, ReadOnlySpan<char> currentValue)
+        {
+            currentValue.CopyTo(buffer[indexOfBuffer..]);
+            indexOfBuffer += currentValue.Length;
+        }
     }
 
     private readonly int GetBufferSize(List<(Range Text, bool Replace)> elementNameList)
@@ -170,10 +191,15 @@ public readonly ref struct StormElementValue
         int count = 0;
         foreach ((Range indexOfText, bool replace) in elementNameList)
         {
-            if (replace && _defaultStormElementData.TryGetElementDataAt(Value[indexOfText].Trim('#'), out StormElementData? stormElementData))
-                count += stormElementData.RawValue?.Length ?? 0;
+            ReadOnlySpan<char> currentValue = Value[indexOfText];
+            ReadOnlySpan<char> trimmedValue = currentValue.Trim('#');
+
+            if (replace && _defaultStormElementData.StormElement.ProcessingInstructionsById.TryGetValue(trimmedValue, out XElement? piElement))
+                count += piElement.Attribute("value")?.Value.Length ?? currentValue.Length;
+            else if (replace && _defaultStormElementData.TryGetElementDataAt(trimmedValue, out StormElementData? stormElementData) && stormElementData.RawValue is not null)
+                count += stormElementData.RawValue.Length;
             else
-                count += indexOfText.End.Value - indexOfText.Start.Value;
+                count += currentValue.Length;
         }
 
         return count;

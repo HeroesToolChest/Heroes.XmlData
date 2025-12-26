@@ -1535,6 +1535,122 @@ public class StormStorageTests
     }
 
     [TestMethod]
+    public void GetCompleteStormElement_HasProcessingInstructions_ShouldReturnCorrectValue()
+    {
+        // arrange
+        StormStorage stormStorage = new(false);
+
+        stormStorage.StormCustomCache.DataObjectTypeByElementType.Add("CActorRange", "ActorRange");
+
+        Dictionary<string, StormElement> newStormElementById = new()
+        {
+            {
+                "RangeAbil", new StormElement(new StormXElementValuePath(
+                    XElement.Parse(@"
+  <CActorRange default=""1"" id=""RangeAbil"">
+    <?token id=""abil"" type=""CAbilLink""?>
+    <Abil Link=""##abil##"" />
+    <On Terms=""Abil.##abil##.TargetOn"" Send=""Create"" />
+    <On Terms=""Abil.##abil##.TargetOff"" Send=""Destroy"" />
+    <On Terms=""Abil.##abil##.ButtonHoverOn"" Send=""Create"" />
+    <On Terms=""Abil.##abil##.ButtonHoverOff"" Send=""Destroy"" />
+    <Flags index=""SuppressSaveLoad"" value=""1"" />
+  </CActorRange>
+"),
+                    TestHelpers.GetStormPath("custom")))
+            },
+        };
+
+        stormStorage.StormCustomCache.StormElementsByDataObjectType.Add("ActorRange", newStormElementById.GetAlternateLookup<ReadOnlySpan<char>>());
+
+        // act
+        StormElement? stormElement = stormStorage.GetCompleteStormElement("RangeAbil", "ActorRange");
+
+        // assert
+        stormElement.Should().NotBeNull();
+        stormElement.DataValues["Abil"].Value.GetString().Should().Be("##abil##");
+        stormElement.DataValues["On"]["0"]["Terms"].Value.GetString().Should().Be("Abil.##abil##.TargetOn");
+    }
+
+    [TestMethod]
+    public void GetCompleteStormElement_HasProcessingInstructionsWithReplacement_ShouldReturnCorrectValue()
+    {
+        // arrange
+        StormStorage stormStorage = new(false);
+
+        stormStorage.StormCustomCache.DataObjectTypeByElementType.Add("CVoiceLine", "VoiceLine");
+
+        StormElement baseStormElement = new(new StormXElementValuePath(
+            XElement.Parse(@"
+  <CVoiceLine default=""1"">
+    <Name value=""VoiceLine/Name/##id##"" />
+    <SortName value=""VoiceLine/SortName/##id##"" />
+    <Description value=""VoiceLine/Description/##id##"" />
+    <ReleaseDate>
+      <Month value=""1"" />
+      <Day value=""1"" />
+      <Year value=""2014"" />
+    </ReleaseDate>
+    <AttributeId value=""TODO"" />
+    <ProductId value=""11089"" />
+    <LootChestRewardCutsceneFile value=""Cutscenes/UI_LootChest_Reward_BG.StormCutscene"" />
+    <TileCutsceneFile value=""Cutscenes/UI_LootChest_Reward_BG.StormCutscene"" />
+  </CVoiceLine>
+"),
+            TestHelpers.GetStormPath("custom")));
+
+        stormStorage.StormCustomCache.StormElementByElementType.Add("CVoiceLine", baseStormElement);
+
+        Dictionary<string, StormElement> newStormElementById = new()
+        {
+            {
+                "StormVoiceLineCommonBase", new StormElement(new StormXElementValuePath(
+                    XElement.Parse(@"
+  <CVoiceLine default=""1"" id=""StormVoiceLineCommonBase"">
+    <?token id=""heroid"" type=""CHeroLink"" value=""Bogus""?>
+    <Hero value=""##heroid##"" />
+    <TileTexture value=""Assets\Textures\Storm_UI_Voice_##heroid##.dds"" />
+  </CVoiceLine>
+"),
+                    TestHelpers.GetStormPath("custom")))
+            },
+            {
+                "StormVoiceLine01Common", new StormElement(new StormXElementValuePath(
+                    XElement.Parse(@"
+  <CVoiceLine default=""1"" id=""StormVoiceLine01Common"" parent=""StormVoiceLineCommonBase"">
+    <Flags index=""FreePlay"" value=""1"" />
+    <HyperlinkId value=""##heroid##VoiceLine01"" />
+    <ProductId value=""0"" />
+  </CVoiceLine>
+"),
+                    TestHelpers.GetStormPath("custom")))
+            },
+            {
+                "Abathur_VoiceLine01Common", new StormElement(new StormXElementValuePath(
+                    XElement.Parse(@"
+  <CVoiceLine default=""1"" id=""Abathur_VoiceLine01Common"" parent=""StormVoiceLine01Common"">
+    <?token id=""heroid"" type=""CHeroLink"" value=""Abathur""?>
+    <AttributeId value=""AB01"" />
+    <Sound value=""AbathurHero_VoiceLineOne"" />
+  </CVoiceLine>
+"),
+                    TestHelpers.GetStormPath("custom")))
+            },
+        };
+
+        stormStorage.StormCustomCache.StormElementsByDataObjectType.Add("VoiceLine", newStormElementById.GetAlternateLookup<ReadOnlySpan<char>>());
+
+        // act
+        StormElement? stormElement = stormStorage.GetCompleteStormElement("Abathur_VoiceLine01Common", "VoiceLine");
+
+        // assert
+        stormElement.Should().NotBeNull();
+        stormElement.DataValues["HyperlinkId"].Value.GetString().Should().Be("AbathurVoiceLine01");
+        stormElement.DataValues["Hero"].Value.GetString().Should().Be("Abathur");
+        stormElement.DataValues["TileTexture"].Value.GetString().Should().Be("Assets\\Textures\\Storm_UI_Voice_Abathur.dds");
+    }
+
+    [TestMethod]
     public void GetBaseStormElement_FoundStormElementFromDataObjectType_ReturnsStormElement()
     {
         // arrange
