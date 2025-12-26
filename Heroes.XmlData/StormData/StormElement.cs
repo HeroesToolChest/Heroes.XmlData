@@ -13,7 +13,6 @@ public class StormElement
 
     private bool _isDefault = true;
 
-
     /// <summary>
     /// Initializes a new instance of the <see cref="StormElement"/> class.
     /// </summary>
@@ -27,7 +26,6 @@ public class StormElement
 
         DataValues = new StormElementData(this, baseValue.Value);
         DefaultDataValues = DataValues;
-
     }
 
     /// <summary>
