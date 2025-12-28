@@ -23,7 +23,7 @@ internal sealed partial class StormCache
     /// <summary>
     /// Gets a dictionary of gamestrings by id.
     /// </summary>
-    public Dictionary<string, GameStringFileText> GameStringsById { get; } = [];
+    public Dictionary<string, GameStringFileText> GameStringsById { get; } = new(StringComparer.Ordinal);
 
     /// <summary>
     /// Gets a dictionary of assets text values by id.

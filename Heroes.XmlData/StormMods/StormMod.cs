@@ -105,12 +105,12 @@ internal abstract class StormMod<T> : IStormMod
 
     public virtual void LoadStormGameStrings(StormLocale stormLocale)
     {
+        LoadBaseStormGameStrings(stormLocale);
+
         foreach (IStormMod stormMod in _includesStormModsCache)
         {
             stormMod.LoadStormGameStrings(stormLocale);
         }
-
-        LoadBaseStormGameStrings(stormLocale);
     }
 
     public IEnumerable<IStormMod> GetStormMapMods(S2MAProperties s2maProperties)

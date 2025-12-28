@@ -106,6 +106,42 @@ public class FileStormModTests
     }
 
     [TestMethod]
+    public void LoadStormGameStrings_HasDuplicateGameString_ShouldOverride()
+    {
+        // arrange
+        MockFileSystem mockFileSystem = new(new Dictionary<string, MockFileData>
+        {
+            {
+                Path.Join("mods", "test.stormmod", "base.stormdata", "includes.xml"), new MockFileData(
+@"<?xml version=""1.0"" encoding=""us-ascii""?>
+<Includes id=""Mods/HeroesData.StormMod"">
+  <Path value=""Mods/HeroMods/test1.StormMod"" />
+</Includes>
+")
+            },
+            { Path.Join("mods", "test.stormmod", "enus.stormdata", "localizeddata", "gamestrings.txt"), new MockFileData("﻿Abil/Activity/AbathurUltimateEvolution=Ultimate Evolution") },
+            { Path.Join("mods", "heromods", "test1.stormmod", "enus.stormdata", "localizeddata", "gamestrings.txt"), new MockFileData("Abil/Activity/AbathurUltimateEvolution=Uber Ultimate Evolution") },
+        });
+
+        StormStorage stormStorage = new(false);
+        FileHeroesSource fileHeroesSource = new(stormStorage, _stormModFactory, _depotCacheFactory, "mods", _progressReporter);
+        FileStormMod fileStormMod = new(mockFileSystem, fileHeroesSource, "test.stormmod", StormModType.Normal);
+
+        _stormModFactory.CreateFileStormModInstance(fileHeroesSource, Path.Join($"{Path.DirectorySeparatorChar}", "heromods", "test1.stormmod"), StormModType.Normal)
+            .Returns(new FileStormMod(mockFileSystem, fileHeroesSource, Path.Join($"{Path.DirectorySeparatorChar}", "heromods", "test1.stormmod"), StormModType.Normal));
+
+        fileStormMod.LoadIncludesStormMods();
+
+        // act
+        fileStormMod.LoadStormGameStrings(StormLocale.ENUS);
+
+        // assert
+        fileStormMod.StormModStorage.AddedGameStringFilePaths.Should().ContainSingle();
+        stormStorage.StormCache.GameStringsById.Should().ContainSingle();
+        stormStorage.StormCache.GameStringsById["Abil/Activity/AbathurUltimateEvolution"].Value.Should().Be("Uber Ultimate Evolution");
+    }
+
+    [TestMethod]
     public void LoadStormGameStrings_GameStringFileNotFound_AddsToFileNotFound()
     {
         // arrange
