@@ -14,6 +14,7 @@ public sealed class StormElementData
         "ConditionalEvents",
         "DurationOverride",
         "Flags",
+        "Instances",
         "LayoutButtons",
         "Modifications",
         "On",

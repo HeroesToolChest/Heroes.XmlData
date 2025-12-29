@@ -601,6 +601,117 @@ public class StormElementTests
     }
 
     [TestMethod]
+    public void AddValue_NoDefault_Returns()
+    {
+        XElement element1 = XElement.Parse(
+            """
+            <CUser id="EndOfMatchMapSpecificAward">
+                <Instances Id="[Default]">
+                    <Fixed Fixed="1">
+                        <Field Id="Base"/>
+                    </Fixed>
+                    <Fixed Fixed="1">
+                        <Field Id="Weight Modifier"/>
+                    </Fixed>
+                    <String String="false">
+                        <Field Id="Gated by Base"/>
+                    </String>
+                    <String String="false">
+                        <Field Id="Present as Ratio"/>
+                    </String>
+                </Instances>
+                <Instances Id="Generic Instance"/>
+                <Instances Id="Shriner">
+                    <Fixed Fixed="2">
+                        <Field Id="Base"/>
+                    </Fixed>
+                    <GameLink GameLink="EndOfMatchAwardMostDragonShrinesCapturedBoolean">
+                        <Field Id="Score Value Boolean"/>
+                    </GameLink>
+                    <String String="09">
+                        <Field Id="Award Badge Index"/>
+                    </String>
+                    <String String="true">
+                        <Field Id="Gated by Base"/>
+                    </String>
+                    <Text Text="UserData/EndOfMatchMapSpecificAward/Shriner_Award Name">
+                        <Field Id="Award Name"/>
+                    </Text>
+                    <Text Text="UserData/EndOfMatchMapSpecificAward/Shriner_Description">
+                        <Field Id="Description"/>
+                    </Text>
+                    <Text Text="UserData/EndOfMatchMapSpecificAward/Shriner_Tooltip Text">
+                        <Field Id="Tooltip Text"/>
+                    </Text>
+                </Instances>
+                <Instances Id="Master of the Curse">
+                    <Fixed Fixed="1498">
+                        <Field Id="Base"/>
+                    </Fixed>
+                    <GameLink GameLink="EndOfMatchAwardMostCurseDamageDoneBoolean">
+                        <Field Id="Score Value Boolean"/>
+                    </GameLink>
+                    <String String="16">
+                        <Field Id="Award Badge Index"/>
+                    </String>
+                    <String String="true">
+                        <Field Id="Present as Ratio"/>
+                    </String>
+                    <Text Text="UserData/EndOfMatchMapSpecificAward/Master of the Curse_Award Name">
+                        <Field Id="Award Name"/>
+                    </Text>
+                    <Text Text="UserData/EndOfMatchMapSpecificAward/Master of the Curse_Description">
+                        <Field Id="Description"/>
+                    </Text>
+                    <Text Text="UserData/EndOfMatchMapSpecificAward/Master of the Curse_Tooltip Text">
+                        <Field Id="Tooltip Text"/>
+                    </Text>
+                </Instances>
+            </CUser>
+            """);
+
+        XElement element2 = XElement.Parse(
+            """
+            <CUser id="EndOfMatchMapSpecificAward">
+                <Instances Id="[Override]Generic Instance">
+                    <Fixed Fixed="6">
+                        <Field Id="Base"/>
+                    </Fixed>
+                    <GameLink GameLink="EndOfMatchAwardMostInterruptedCageUnlocksBoolean">
+                        <Field Id="Score Value Boolean"/>
+                    </GameLink>
+                    <String String="true">
+                        <Field Id="Gated by Base"/>
+                    </String>
+                    <String String="true">
+                        <Field Id="Present as Ratio"/>
+                    </String>
+                    <String String="36">
+                        <Field Id="Award Badge Index"/>
+                    </String>
+                    <Text Text="UserData/EndOfMatchMapSpecificAward/[Override]Generic Instance_Award Name">
+                        <Field Id="Award Name"/>
+                    </Text>
+                    <Text Text="UserData/EndOfMatchMapSpecificAward/[Override]Generic Instance_Description">
+                        <Field Id="Description"/>
+                    </Text>
+                    <Text Text="UserData/EndOfMatchMapSpecificAward/[Override]Generic Instance_Tooltip Text">
+                        <Field Id="Tooltip Text"/>
+                    </Text>
+                </Instances>
+            </CUser>
+            """);
+
+        StormElement stormElement = new(new StormXElementValuePath(element1, TestHelpers.GetStormPath("some\\path")));
+
+        // act
+        stormElement.AddValue(new StormXElementValuePath(element2, TestHelpers.GetStormPath("some\\other\\path")));
+
+        // assert
+        stormElement.IsDefault.Should().BeFalse();
+    }
+
+    [TestMethod]
     public void AddValue_TooltipIdWithDefaultElement_ReturnsCorrectReplacementValue()
     {
         XElement element1 = XElement.Parse(

@@ -11,7 +11,7 @@ public class StormElement
     private readonly List<StormXElementValuePath> _originalXElements = [];
     private readonly Dictionary<string, XElement> _processingInstructionsById = [];
 
-    private bool _isDefault = true;
+    private bool _isDefault = false;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="StormElement"/> class.
