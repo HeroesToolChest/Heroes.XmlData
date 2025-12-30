@@ -8,6 +8,7 @@ internal static class StormDefaultData
             ("Effect", "CEffectDamage"),
             ("Effect", "CEffectCreateHealer"),
             ("Unit", "CUnit"),
+            ("ScoreValue", "CScoreValueCustom"),
         ];
 
     public static List<XElement> DefaultXElements =>
@@ -32,6 +33,9 @@ internal static class StormDefaultData
 <CUnit>
     <ShieldRegenRate value="0" />
 </CUnit>
+"""),
+            XElement.Parse("""
+<CScoreValueCustom default="1" />
 """),
         ];
 }
