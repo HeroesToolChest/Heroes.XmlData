@@ -778,4 +778,72 @@ public class StormElementDataTests
         data.GetElementDataAt("ImpactLocation").GetElementDataAt("Value").RawValue.Should().Be("TargetPoint");
         data.GetElementDataAt("ImpactLocation").GetElementDataAt("ProjectionDistanceScale").RawValue.Should().Be("15");
     }
+
+    [TestMethod]
+    public void ElementData_CUserInstances_ReturnsCorrectValues()
+    {
+        // arrange
+        XElement element = XElement.Parse(
+            """
+            <CUser id="EndOfMatchGeneralAward">
+              <Instances Id="Generic Instance"/>
+              <Instances Id="Experienced">
+                <Fixed Fixed="12335">
+                  <Field Id="Base"/>
+                </Fixed>
+                <GameLink GameLink="EndOfMatchAwardMostXPContributionBoolean">
+                  <Field Id="Score Value Boolean"/>
+                </GameLink>
+                <String String="01">
+                  <Field Id="Award Badge Index"/>
+                </String>
+                <String String="true">
+                  <Field Id="Present as Ratio"/>
+                </String>
+                <Text Text="UserData/EndOfMatchGeneralAward/Experienced_Award Name">
+                  <Field Id="Award Name"/>
+                </Text>
+                <Text Text="UserData/EndOfMatchGeneralAward/Experienced_Description">
+                  <Field Id="Description"/>
+                </Text>
+                <Text Text="UserData/EndOfMatchGeneralAward/Experienced_Tooltip Text">
+                  <Field Id="Tooltip Text"/>
+                </Text>
+              </Instances>
+              <Instances Id="Master of the Curse">
+                <Fixed Fixed="1498">
+                  <Field Id="Base"/>
+                </Fixed>
+                <GameLink GameLink="EndOfMatchAwardMostCurseDamageDoneBoolean">
+                  <Field Id="Score Value Boolean"/>
+                </GameLink>
+                <String String="16">
+                  <Field Id="Award Badge Index"/>
+                </String>
+                <String String="true">
+                  <Field Id="Present as Ratio"/>
+                </String>
+                <Text Text="UserData/EndOfMatchMapSpecificAward/Master of the Curse_Award Name">
+                  <Field Id="Award Name"/>
+                </Text>
+                <Text Text="UserData/EndOfMatchMapSpecificAward/Master of the Curse_Description">
+                  <Field Id="Description"/>
+                </Text>
+                <Text Text="UserData/EndOfMatchMapSpecificAward/Master of the Curse_Tooltip Text">
+                  <Field Id="Tooltip Text"/>
+                </Text>
+              </Instances>
+            </CUser>
+            """);
+
+        StormElement stormElement = new(new StormXElementValuePath(element, TestHelpers.GetStormPath("some\\path")));
+
+        // act
+        StormElementData data = new(stormElement, element);
+
+        // assert
+        data["Instances"]["1"]["String"]["0"]["String"].RawValue.Should().Be("01");
+        data["Instances"]["1"]["Text"]["0"]["Text"].RawValue.Should().Be("UserData/EndOfMatchGeneralAward/Experienced_Award Name");
+        data["Instances"]["1"]["Text"]["0"]["Field"].RawValue.Should().Be("Award Name");
+    }
 }

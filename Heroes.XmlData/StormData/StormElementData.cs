@@ -27,6 +27,8 @@ public sealed class StormElementData
     private static readonly Dictionary<string, string> _elementTypeByElementArray = new(StringComparer.OrdinalIgnoreCase)
     {
         { "Cost", "CEffectModifyUnit" },
+        { "String", "CUser" },
+        { "Text", "CUser" },
     };
 
     private string? _value;
