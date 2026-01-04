@@ -15,6 +15,7 @@ public class HeroesXmlLoader
     /// </summary>
     public const string ProductPtrName = "herot";
 
+    private static readonly Lock _lock = new();
     private static readonly JsonSerializerOptions _modsInfoFileJsonSerializerOptions = new()
     {
         PropertyNameCaseInsensitive = true,
@@ -370,14 +371,26 @@ public class HeroesXmlLoader
     /// <param name="path">The relative path of the file to check.</param>
     /// <param name="mpqPath">The relative path of the mpq file.</param>
     /// <returns><see langword="true"/> if the file exists, otherwise <see langword="false"/>. Will return <see langword="false"/> if <paramref name="mpqPath"/> was not found.</returns>
-    public bool FileExists(string? path, string? mpqPath = null) => _heroesSource.FileExists(path, mpqPath);
+    public bool FileExists(string? path, string? mpqPath = null)
+    {
+        lock (_lock)
+        {
+            return _heroesSource.FileExists(path, mpqPath);
+        }
+    }
 
     /// <summary>
     /// Determines if a file exists.
     /// </summary>
     /// <param name="stormFile">The file to check.</param>
     /// <returns><see langword="true"/> if the file exists, otherwise <see langword="false"/>.</returns>
-    public bool FileExists(StormFile stormFile) => _heroesSource.FileExists(stormFile);
+    public bool FileExists(StormFile stormFile)
+    {
+        lock (_lock)
+        {
+            return _heroesSource.FileExists(stormFile);
+        }
+    }
 
     /// <summary>
     /// Opens a file for reading.
@@ -392,7 +405,13 @@ public class HeroesXmlLoader
     /// <param name="mpqPath">The relative path of the mpq file to open.</param>
     /// <returns>Returns a <see cref="Stream"/> or else throws an exception.</returns>
     /// <exception cref="FileNotFoundException">File was not found, or <paramref name="mpqPath"/> was not found.</exception>
-    public Stream GetFile(string path, string? mpqPath = null) => _heroesSource.GetFile(path, mpqPath);
+    public Stream GetFile(string path, string? mpqPath = null)
+    {
+        lock (_lock)
+        {
+            return _heroesSource.GetFile(path, mpqPath);
+        }
+    }
 
     /// <summary>
     /// Opens a file for reading.
@@ -400,7 +419,13 @@ public class HeroesXmlLoader
     /// <param name="stormFile">The file to open.</param>
     /// <returns>Returns a <see cref="Stream"/> or else throws an exception.</returns>
     /// <exception cref="FileNotFoundException">File was not found.</exception>
-    public Stream GetFile(StormFile stormFile) => _heroesSource.GetFile(stormFile);
+    public Stream GetFile(StormFile stormFile)
+    {
+        lock (_lock)
+        {
+            return _heroesSource.GetFile(stormFile);
+        }
+    }
 
     /// <summary>
     /// Gets the total number of directories that were not found during the loading process.
