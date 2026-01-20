@@ -846,4 +846,28 @@ public class StormElementDataTests
         data["Instances"]["1"]["Text"]["0"]["Text"].RawValue.Should().Be("UserData/EndOfMatchGeneralAward/Experienced_Award Name");
         data["Instances"]["1"]["Text"]["0"]["Field"].RawValue.Should().Be("Award Name");
     }
+
+    [TestMethod]
+    public void ElementData_CEmoticonImage_ReturnsCorrectValues()
+    {
+        // arrange
+        XElement element = XElement.Parse(
+            """
+            <CEmoticon id="greymane_rofl">
+              <Image Index="5" Width="29" TextureSheet="storm_emoji_greymane_sheet" />
+              <Expression value="Rofl"/>
+            </CEmoticon>
+            """);
+
+        StormElement stormElement = new(new StormXElementValuePath(element, TestHelpers.GetStormPath("some\\path")));
+
+        // act
+        StormElementData data = new(stormElement, element);
+
+        // assert
+        data["Expression"].RawValue.Should().Be("Rofl");
+        data["Image"]["Index"].RawValue.Should().Be("5");
+        data["Image"]["Width"].RawValue.Should().Be("29");
+        data["Image"]["TextureSheet"].RawValue.Should().Be("storm_emoji_greymane_sheet");
+    }
 }

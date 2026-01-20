@@ -1,4 +1,6 @@
-﻿namespace Heroes.XmlData.StormData;
+﻿using System.Collections.Frozen;
+
+namespace Heroes.XmlData.StormData;
 
 /// <summary>
 /// Contains the data that represents an <see cref="XElement"/>.
@@ -6,7 +8,7 @@
 [DebuggerDisplay("{DebuggerDisplay,nq}")]
 public sealed class StormElementData
 {
-    private static readonly HashSet<string> _otherElementArrays = new(StringComparer.OrdinalIgnoreCase)
+    private static readonly FrozenSet<string> _otherElementArrays = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
     {
         "Buttons",
         "CardLayouts",
@@ -21,15 +23,23 @@ public sealed class StormElementData
         "Remove",
         "RolesMultiClass",
         "TooltipAppender",
-    };
+    }
+    .ToFrozenSet();
 
     // elements arrays that should only be arrays for the given element type
-    private static readonly Dictionary<string, string> _elementTypeByElementArray = new(StringComparer.OrdinalIgnoreCase)
+    private static readonly FrozenDictionary<string, string> _elementTypeByElementArray = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
     {
         { "Cost", "CEffectModifyUnit" },
         { "String", "CUser" },
         { "Text", "CUser" },
-    };
+    }
+    .ToFrozenDictionary();
+
+    private static readonly FrozenDictionary<string, string> _elementTypeByNonIndexElement = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+    {
+        { "Image", "CEmoticon" },
+    }
+    .ToFrozenDictionary();
 
     private string? _value;
     private int _currentIndex = 0;
@@ -402,7 +412,7 @@ public sealed class StormElementData
 
         foreach (XAttribute attribute in attributes)
         {
-            if (attribute.Name.LocalName.Equals("index", StringComparison.OrdinalIgnoreCase))
+            if (attribute.Name.LocalName.Equals("index", StringComparison.OrdinalIgnoreCase) && !IsElementNonIndexed(rootElement.Name.LocalName))
                 continue;
 
             if (attribute.Name.LocalName.Equals("removed", StringComparison.OrdinalIgnoreCase))
@@ -439,7 +449,7 @@ public sealed class StormElementData
 
             bool isRemovedElement = !string.IsNullOrEmpty(removedAtt) && removedAtt.Equals("1");
 
-            if (!string.IsNullOrEmpty(indexAtt))
+            if (!string.IsNullOrEmpty(indexAtt) && !IsElementNonIndexed(elementName))
             {
                 ParseElementWithIndex(element, elementName, indexAtt, isRemovedElement);
             }
@@ -514,6 +524,14 @@ public sealed class StormElementData
     private bool IsElementArrayForCurrentType(string elementName)
     {
         if (_elementTypeByElementArray.TryGetValue(elementName, out string? elementType))
+            return StormElement.ElementType.Equals(elementType, StringComparison.OrdinalIgnoreCase);
+
+        return false;
+    }
+
+    private bool IsElementNonIndexed(string elementName)
+    {
+        if (_elementTypeByNonIndexElement.TryGetValue(elementName, out string? elementType))
             return StormElement.ElementType.Equals(elementType, StringComparison.OrdinalIgnoreCase);
 
         return false;
