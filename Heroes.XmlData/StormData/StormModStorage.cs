@@ -202,7 +202,7 @@ internal sealed class StormModStorage : IStormModStorage
     {
         foreach (XElement element in elements)
         {
-            List<XAttribute> attributes = element.Attributes().ToList();
+            List<XAttribute> attributes = [.. element.Attributes()];
 
             foreach (XAttribute attribute in attributes)
             {

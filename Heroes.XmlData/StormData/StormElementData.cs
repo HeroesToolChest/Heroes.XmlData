@@ -38,6 +38,7 @@ public sealed class StormElementData
     private static readonly FrozenDictionary<string, string> _elementTypeByNonIndexElement = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
     {
         { "Image", "CEmoticon" },
+        { "RewardIcon", "CTypeDescription" },
     }
     .ToFrozenDictionary();
 
