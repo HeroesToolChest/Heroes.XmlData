@@ -51,6 +51,14 @@ internal sealed class CustomStormMod : IStormMod
             _heroesSource.StormStorage.AddConstantXElement(StormModType, constantXElement, _stormPath);
         }
 
+        foreach (string assetText in _manualModLoader.AssetTexts)
+        {
+            var asset = _heroesSource.StormStorage.GetAssetWithId(assetText, _stormPath);
+
+            if (asset is not null)
+                StormModStorage.AddAssetText(asset.Value.Id, asset.Value.AssetText);
+        }
+
         foreach (var items in _manualModLoader.ElementNamesByDataObjectType)
         {
             foreach (string elementName in items.Value)
@@ -116,14 +124,6 @@ internal sealed class CustomStormMod : IStormMod
                 StormModName = $"custom-{Name}",
                 StormModPath = DirectoryPath,
             });
-        }
-
-        foreach (string assetText in _manualModLoader.AssetTexts)
-        {
-            var asset = _heroesSource.StormStorage.GetAssetWithId(assetText, _stormPath);
-
-            if (asset is not null)
-                StormModStorage.AddAssetText(asset.Value.Id, asset.Value.AssetText);
         }
     }
 
