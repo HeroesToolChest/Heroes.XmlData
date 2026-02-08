@@ -298,7 +298,6 @@ public class HeroesXmlLoader
     /// Gets a collection of the map titles (enUS) to be used for <see cref="LoadMapMod(string)"/>.
     /// </summary>
     /// <returns>A collection of map titles.</returns>
-    /// <returns>The current <see cref="HeroesXmlLoader"/> instance.</returns>
     public IEnumerable<string> GetMapTitles()
     {
         return _heroesSource.S2MAPropertiesByTitle.Select(x => x.Key);
