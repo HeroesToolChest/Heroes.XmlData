@@ -112,12 +112,12 @@ public class HeroesXmlLoader
     /// <summary>
     /// Gets the current loaded map title.
     /// </summary>
-    public string GetLoadedMapTitle => _loadedMapTitle;
+    public string LoadedMapTitle => _loadedMapTitle;
 
     /// <summary>
     /// Gets the current set storm locale.
     /// </summary>
-    public StormLocale? GetCurrentStormLocale => HeroesData.HeroesLocalization;
+    public StormLocale? CurrentStormLocale => HeroesData.HeroesLocalization;
 
     /// <summary>
     /// Gets an instance of the <see cref="HeroesXmlLoader"/> class. The source of data will be emtpy.
@@ -219,7 +219,7 @@ public class HeroesXmlLoader
     {
         LoadBaseStormMods();
 
-        if (GetLoadedMapTitle.Equals(mapTitle, StringComparison.OrdinalIgnoreCase) is false)
+        if (LoadedMapTitle.Equals(mapTitle, StringComparison.OrdinalIgnoreCase) is false)
         {
             _loadedMapTitle = mapTitle;
             _heroesSource.LoadStormMapData(mapTitle);

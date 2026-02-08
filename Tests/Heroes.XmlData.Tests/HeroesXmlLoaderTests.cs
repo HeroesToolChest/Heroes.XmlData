@@ -75,7 +75,7 @@ public class HeroesXmlLoaderTests
         _heroesSource.Received(1).LoadDepotCache();
         _heroesSource.Received(1).LoadStormMapData(Arg.Any<string>());
         _heroesSource.DidNotReceive().LoadGamestrings(Arg.Any<StormLocale>());
-        heroesXmlLoader.GetLoadedMapTitle.Should().Be("map");
+        heroesXmlLoader.LoadedMapTitle.Should().Be("map");
     }
 
     [TestMethod]
@@ -94,7 +94,7 @@ public class HeroesXmlLoaderTests
         _heroesSource.Received(1).LoadDepotCache();
         _heroesSource.Received(1).LoadStormMapData(Arg.Any<string>());
         _heroesSource.DidNotReceive().LoadGamestrings(Arg.Any<StormLocale>());
-        heroesXmlLoader.GetLoadedMapTitle.Should().Be("map");
+        heroesXmlLoader.LoadedMapTitle.Should().Be("map");
     }
 
     [TestMethod]
@@ -113,7 +113,7 @@ public class HeroesXmlLoaderTests
         _heroesSource.Received(1).LoadDepotCache();
         _heroesSource.Received(1).LoadStormMapData(Arg.Any<string>());
         _heroesSource.DidNotReceive().LoadGamestrings(Arg.Any<StormLocale>());
-        heroesXmlLoader.GetLoadedMapTitle.Should().Be("map");
+        heroesXmlLoader.LoadedMapTitle.Should().Be("map");
     }
 
     [TestMethod]
@@ -132,7 +132,7 @@ public class HeroesXmlLoaderTests
         _heroesSource.Received(1).LoadDepotCache();
         _heroesSource.Received(2).LoadStormMapData(Arg.Any<string>());
         _heroesSource.DidNotReceive().LoadGamestrings(Arg.Any<StormLocale>());
-        heroesXmlLoader.GetLoadedMapTitle.Should().Be("OtherMap");
+        heroesXmlLoader.LoadedMapTitle.Should().Be("OtherMap");
     }
 
     [TestMethod]
@@ -165,7 +165,7 @@ public class HeroesXmlLoaderTests
 
         // assert
         _heroesSource.Received(1).LoadStormMapData(string.Empty);
-        heroesXmlLoader.GetLoadedMapTitle.Should().BeEmpty();
+        heroesXmlLoader.LoadedMapTitle.Should().BeEmpty();
     }
 
     [TestMethod]
@@ -182,7 +182,7 @@ public class HeroesXmlLoaderTests
         _heroesSource.Received(1).LoadStormData();
         _heroesSource.Received(1).LoadDepotCache();
         _heroesSource.Received(1).LoadGamestrings(StormLocale.ENUS);
-        heroesXmlLoader.GetCurrentStormLocale.Should().Be(StormLocale.ENUS);
+        heroesXmlLoader.CurrentStormLocale.Should().Be(StormLocale.ENUS);
     }
 
     [TestMethod]
@@ -200,7 +200,7 @@ public class HeroesXmlLoaderTests
         _heroesSource.Received(1).LoadStormData();
         _heroesSource.Received(1).LoadDepotCache();
         _heroesSource.Received(2).LoadGamestrings(StormLocale.ENUS);
-        heroesXmlLoader.GetCurrentStormLocale.Should().Be(StormLocale.ENUS);
+        heroesXmlLoader.CurrentStormLocale.Should().Be(StormLocale.ENUS);
     }
 
     [TestMethod]
@@ -219,7 +219,7 @@ public class HeroesXmlLoaderTests
         _heroesSource.Received(1).LoadDepotCache();
         _heroesSource.Received(1).LoadGamestrings(StormLocale.ENUS);
         _heroesSource.Received(1).LoadGamestrings(StormLocale.ITIT);
-        heroesXmlLoader.GetCurrentStormLocale.Should().Be(StormLocale.ITIT);
+        heroesXmlLoader.CurrentStormLocale.Should().Be(StormLocale.ITIT);
     }
 
     [TestMethod]
