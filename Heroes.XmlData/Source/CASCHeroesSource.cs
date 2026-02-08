@@ -58,6 +58,17 @@ internal sealed class CASCHeroesSource : HeroesSource, ICASCHeroesSource
             return GetFile(stormFile.StormPath.Path);
     }
 
+    public CASCFolder GetCASCFolder(string? directory = null)
+    {
+        if (string.IsNullOrEmpty(directory))
+            return CASCHeroesStorage.CASCFolderRoot;
+
+        if (!CASCHeroesStorage.CASCFolderRoot.TryGetLastDirectory(directory, out CASCFolder? folder))
+            throw new DirectoryNotFoundException($"Could not find folder: {directory}");
+
+        return folder;
+    }
+
     protected override IStormMod GetStormMod(string directoryPath, StormModType stormModType, IProgressReporter? progressReporter = null) => StormModFactory.CreateCASCStormModInstance(this, directoryPath, stormModType);
 
     protected override IStormMod GetMpqStormMod(string name, string directoryPath, StormModType stormModType) => StormModFactory.CreateCASCMpqStormModInstance(this, name, directoryPath, stormModType);

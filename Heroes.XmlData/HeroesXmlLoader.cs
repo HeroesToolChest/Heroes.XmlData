@@ -427,6 +427,23 @@ public class HeroesXmlLoader
     }
 
     /// <summary>
+    /// Gets the <see cref="CASCFolder"/> for the specified directory.
+    /// </summary>
+    /// <param name="directory">If <see langword="null"/> or empty, then the root folder of the CASC storage will be returned, otherwise it must be the full path from the root of the CASC storage.</param>
+    /// <returns>The <see cref="CASCFolder"/> for the specified directory.</returns>
+    /// <exception cref="InvalidOperationException"><see cref="HeroesXmlLoaderType"/> is not <see cref="HeroesXmlLoaderType.CASC"/>.</exception>
+    /// <exception cref="DirectoryNotFoundException"><paramref name="directory"/> was not found.</exception>
+    public CASCFolder GetCASCFolder(string? directory = null)
+    {
+        if (LoadedType != HeroesXmlLoaderType.CASC || _heroesSource is not ICASCHeroesSource cascHeroesSource)
+        {
+            throw new InvalidOperationException("Loaded source type is not CASC.");
+        }
+
+        return cascHeroesSource.GetCASCFolder(directory);
+    }
+
+    /// <summary>
     /// Gets the total number of directories that were not found during the loading process.
     /// </summary>
     /// <returns>The total number of not found directories.</returns>

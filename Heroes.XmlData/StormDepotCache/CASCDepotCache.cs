@@ -39,7 +39,7 @@ internal sealed class CASCDepotCache : DepotCache<ICASCHeroesSource>
                     if (!IsS2mvFile(file.Value.FullName))
                         continue;
 
-                    Stream? s2mvFile = HeroesSource.CASCHeroesStorage.CASCHandlerWrapper.OpenFile(file.Value.FullName) ?? throw new HeroesXmlDataException($"{nameof(s2mvFile)} is null");
+                    Stream s2mvFile = HeroesSource.CASCHeroesStorage.CASCHandlerWrapper.OpenFile(file.Value.FullName) ?? throw new HeroesXmlDataException($"{nameof(s2mvFile)} is null");
                     if (LoadS2mvFile(s2mvFile))
                     {
                         HeroesSource.S2MVPaths.Add(file.Value.FullName);
@@ -59,7 +59,7 @@ internal sealed class CASCDepotCache : DepotCache<ICASCHeroesSource>
                     if (!IsS2maFile(file.Value.FullName))
                         continue;
 
-                    Stream? s2maFile = HeroesSource.CASCHeroesStorage.CASCHandlerWrapper.OpenFile(file.Value.FullName) ?? throw new HeroesXmlDataException($"{nameof(s2maFile)} is null");
+                    Stream s2maFile = HeroesSource.CASCHeroesStorage.CASCHandlerWrapper.OpenFile(file.Value.FullName) ?? throw new HeroesXmlDataException($"{nameof(s2maFile)} is null");
                     if (LoadS2maFile(s2maFile))
                     {
                         HeroesSource.S2MAPaths.Add(file.Value.FullName);
