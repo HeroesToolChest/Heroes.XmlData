@@ -556,6 +556,24 @@ public class HeroesXmlLoader
     }
 
     /// <summary>
+    /// Gets a collection of the loaded S2MA file paths.
+    /// </summary>
+    /// <returns>An enumerable of S2MA file paths.</returns>
+    public IEnumerable<string> GetS2MAPaths()
+    {
+        return _heroesSource.S2MAPaths.AsReadOnly();
+    }
+
+    /// <summary>
+    /// Gets a collection of the loaded S2MV file paths.
+    /// </summary>
+    /// <returns>An enumerable of S2MV file paths.</returns>
+    public IEnumerable<string> GetS2MVPaths()
+    {
+        return _heroesSource.S2MVPaths.AsReadOnly();
+    }
+
+    /// <summary>
     /// Gets a collection of all the available asset (the images) file paths.
     /// </summary>
     /// <returns>An enumerable of <see cref="StormPath"/>s.</returns>
