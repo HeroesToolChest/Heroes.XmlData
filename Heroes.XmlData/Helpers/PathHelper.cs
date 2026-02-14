@@ -11,13 +11,9 @@ internal sealed class PathHelper
         if (filePath.IsEmpty)
             return;
 
-        bool platformIsBackslash = Path.DirectorySeparatorChar == '\\';
-
-        for (var i = 0; i < filePath.Length; i++)
+        for (int i = 0; i < filePath.Length; i++)
         {
-            if (platformIsBackslash && filePath[i] == '/')
-                filePath[i] = Path.DirectorySeparatorChar;
-            else if (!platformIsBackslash && filePath[i] == '\\')
+            if (filePath[i] is '/' or '\\')
                 filePath[i] = Path.DirectorySeparatorChar;
             else
                 filePath[i] = char.ToLowerInvariant(filePath[i]);
@@ -50,20 +46,17 @@ internal sealed class PathHelper
     /// <returns>The modified file path.</returns>
     public static string NormalizePath(ReadOnlySpan<char> filePath, string modsDirectory)
     {
-        if (filePath.IsEmpty || filePath.IsWhiteSpace())
-            return string.Empty;
+        string normalized = NormalizePath(filePath);
 
-        Span<char> buffer = stackalloc char[filePath.Length];
-        filePath.CopyTo(buffer);
+        if (normalized.Length == 0)
+            return normalized;
 
-        NormalizePath(buffer);
-
-        int indexOfMods = filePath.IndexOf(modsDirectory, StringComparison.OrdinalIgnoreCase);
+        int indexOfMods = normalized.IndexOf(modsDirectory, StringComparison.OrdinalIgnoreCase);
 
         if (indexOfMods < 0)
-            return buffer.ToString();
+            return normalized;
 
         // removing the "mods" part of the path
-        return buffer[(indexOfMods + modsDirectory.Length)..].ToString();
+        return normalized[(indexOfMods + modsDirectory.Length)..];
     }
 }
