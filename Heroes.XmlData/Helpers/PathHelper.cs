@@ -46,17 +46,20 @@ internal sealed class PathHelper
     /// <returns>The modified file path.</returns>
     public static string NormalizePath(ReadOnlySpan<char> filePath, string modsDirectory)
     {
-        string normalized = NormalizePath(filePath);
+        if (filePath.IsEmpty || filePath.IsWhiteSpace())
+            return string.Empty;
 
-        if (normalized.Length == 0)
-            return normalized;
+        Span<char> buffer = stackalloc char[filePath.Length];
+        filePath.CopyTo(buffer);
 
-        int indexOfMods = normalized.IndexOf(modsDirectory, StringComparison.OrdinalIgnoreCase);
+        NormalizePath(buffer);
+
+        int indexOfMods = filePath.IndexOf(modsDirectory, StringComparison.OrdinalIgnoreCase);
 
         if (indexOfMods < 0)
-            return normalized;
+            return buffer.ToString();
 
         // removing the "mods" part of the path
-        return normalized[(indexOfMods + modsDirectory.Length)..];
+        return buffer[(indexOfMods + modsDirectory.Length)..].ToString();
     }
 }
