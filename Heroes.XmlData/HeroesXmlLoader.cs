@@ -15,6 +15,11 @@ public class HeroesXmlLoader
     /// </summary>
     public const string ProductPtrName = "herot";
 
+    /// <summary>
+    /// The name of the hdp info file in a local mods directory.
+    /// </summary>
+    public const string ModsHdpInfoFileName = "hdp.info";
+
     private static readonly Lock _lock = new();
     private static readonly JsonSerializerOptions _modsInfoFileJsonSerializerOptions = new()
     {
@@ -130,7 +135,7 @@ public class HeroesXmlLoader
     }
 
     /// <summary>
-    /// Gets the properties from a .info file from a local mods directory.
+    /// Gets the properties from a hdp.info file from a local mods directory.
     /// </summary>
     /// <param name="rootDirectory">The root directory path, usually the mods directory.</param>
     /// <returns>The <see cref="ModsInfoFile"/> or <see langword="null"/> if file was not found.</returns>
@@ -602,7 +607,7 @@ public class HeroesXmlLoader
 
     private static ModsInfoFile? GetModsInfoFileInternal(string modsDirectoryPath)
     {
-        string infoFilePath = Path.Join(modsDirectoryPath, ".info");
+        string infoFilePath = Path.Join(modsDirectoryPath, ModsHdpInfoFileName);
 
         if (!File.Exists(infoFilePath))
             return null;

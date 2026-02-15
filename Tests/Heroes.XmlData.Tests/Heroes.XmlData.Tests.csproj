@@ -36,10 +36,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="TestFiles\modsNoVersion\" />
-  </ItemGroup>
-
-  <ItemGroup>
     <None Update="TestFiles\**">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

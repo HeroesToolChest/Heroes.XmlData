@@ -977,5 +977,7 @@ public class HeroesXmlLoaderTests
         result.Should().NotBeNull();
         result.Version.Should().Be("2.55.13.95301");
         result.IsPtr.Should().BeTrue();
+        result.HdpVersion.Should().Be("5.12.64");
+        result.ExtractedDate.Should().Be(new DateTimeOffset(2024, 6, 1, 12, 34, 56, TimeSpan.Zero));
     }
 }
