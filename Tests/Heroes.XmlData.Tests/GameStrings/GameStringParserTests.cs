@@ -100,7 +100,7 @@ public class GameStringParserTests
         string parsed = GameStringParser.ParseGameStringText(heroesData.StormStorage, description);
 
         // assert
-        parsed.Should().Be("After <c val=\"#TooltipNumbers\">0.5</c> seconds, deal <c val=\"#TooltipNumbers\">120~~0.04~~</c> damage to enemy Heroes in an area and Fear them for <c val=\"#TooltipNumbers\">2</c> seconds. While Feared, Heroes are Silenced and are forced to run away from Horrify's center.");
+        parsed.Should().Be("After <c val=\"#TooltipNumbers\">0.5</c> seconds, deal <c val=\"#TooltipNumbers\">120<c val=\"#ColorGray\">~~0.04~~</c></c> damage to enemy Heroes in an area and Fear them for <c val=\"#TooltipNumbers\">2</c> seconds. While Feared, Heroes are Silenced and are forced to run away from Horrify's center.");
     }
 
     [TestMethod]
@@ -241,7 +241,7 @@ public class GameStringParserTests
         string parsed = GameStringParser.ParseGameStringText(heroesData.StormStorage, description);
 
         // assert
-        parsed.Should().Be("Rain a small army of Demonic Grunts down on enemies, dealing <c val=\"#TooltipNumbers\">85~~0.04~~</c> damage per impact. Grunts deal <c val=\"#TooltipNumbers\">39~~0.04~~</c> damage, have <c val=\"#TooltipNumbers\">750~~0.04~~</c> Health and last up to <c val=\"#TooltipNumbers\">10</c> seconds. When Grunts die they explode, dealing <c val=\"#TooltipNumbers\">40~~0.04~~</c> damage to nearby enemies, doubled against enemy Heroes.<n/><n/>Usable while Channeling All Shall Burn.");
+        parsed.Should().Be("Rain a small army of Demonic Grunts down on enemies, dealing <c val=\"#TooltipNumbers\">85<c val=\"#ColorGray\">~~0.04~~</c></c> damage per impact. Grunts deal <c val=\"#TooltipNumbers\">39<c val=\"#ColorGray\">~~0.04~~</c></c> damage, have <c val=\"#TooltipNumbers\">750<c val=\"#ColorGray\">~~0.04~~</c></c> Health and last up to <c val=\"#TooltipNumbers\">10</c> seconds. When Grunts die they explode, dealing <c val=\"#TooltipNumbers\">40<c val=\"#ColorGray\">~~0.04~~</c></c> damage to nearby enemies, doubled against enemy Heroes.<n/><n/>Usable while Channeling All Shall Burn.");
     }
 
     [TestMethod]
@@ -533,7 +533,7 @@ public class GameStringParserTests
         string parsed = GameStringParser.ParseGameStringText(heroesData.StormStorage, description);
 
         // assert
-        parsed.Should().Be("Increase the damage of Octo-Grab by <c val=\"#TooltipNumbers\">13700~~0.04~~%</c>");
+        parsed.Should().Be("Increase the damage of Octo-Grab by <c val=\"#TooltipNumbers\">13700%<c val=\"#ColorGray\">~~0.04~~</c></c>");
     }
 
     [TestMethod]
@@ -683,7 +683,7 @@ public class GameStringParserTests
         string parsed = GameStringParser.ParseGameStringText(heroesData.StormStorage, description);
 
         // assert
-        parsed.Should().Be("Channel on an allied or destroyed Fort or Keep to replace it with Ragnaros's ultimate form, temporarily gaining new Abilities, having <c val=\"#TooltipNumbers\">3996~~0.04~~</c> Health that burns away over <c val=\"#TooltipNumbers\">18</c> seconds.<n/><n/>Ragnaros returns to his normal form upon losing all Health in Molten Core.");
+        parsed.Should().Be("Channel on an allied or destroyed Fort or Keep to replace it with Ragnaros's ultimate form, temporarily gaining new Abilities, having <c val=\"#TooltipNumbers\">3996<c val=\"#ColorGray\">~~0.04~~</c></c> Health that burns away over <c val=\"#TooltipNumbers\">18</c> seconds.<n/><n/>Ragnaros returns to his normal form upon losing all Health in Molten Core.");
     }
 
     [TestMethod]
@@ -735,7 +735,7 @@ public class GameStringParserTests
         string parsed = GameStringParser.ParseGameStringText(heroesData.StormStorage, description);
 
         // assert
-        parsed.Should().Be("Deal <c val=\"#TooltipNumbers\">159~~0.04~~</c> damage to enemies within the target area.");
+        parsed.Should().Be("Deal <c val=\"#TooltipNumbers\">159<c val=\"#ColorGray\">~~0.04~~</c></c> damage to enemies within the target area.");
     }
 
     [TestMethod]
@@ -790,7 +790,7 @@ public class GameStringParserTests
         string parsed = GameStringParser.ParseGameStringText(heroesData.StormStorage, description);
 
         // assert
-        parsed.Should().Be("Shields Tyrael for <c val=\"#TooltipNumbers\">336~~0.04~~</c> damage and nearby allied Heroes and Minions for <c val=\"#TooltipNumbers\">40%</c> as much for <c val=\"#TooltipNumbers\">4</c> seconds.");
+        parsed.Should().Be("Shields Tyrael for <c val=\"#TooltipNumbers\">336<c val=\"#ColorGray\">~~0.04~~</c></c> damage and nearby allied Heroes and Minions for <c val=\"#TooltipNumbers\">40%</c> as much for <c val=\"#TooltipNumbers\">4</c> seconds.");
     }
 
     [TestMethod]
@@ -961,7 +961,7 @@ public class GameStringParserTests
         string parsed = GameStringParser.ParseGameStringText(heroesData.StormStorage, description);
 
         // assert
-        parsed.Should().Be("Eject from the Mech, setting it to self-destruct after <c val=\"#TooltipNumbers\">4</c> seconds. Deals <c val=\"#TooltipNumbers\">400~~0.04~~</c> to <c val=\"#TooltipNumbers\">1100~~0.04~~</c> damage in a large area, depending on distance from center. Deals <c val=\"#TooltipNumbers\">50%</c> damage against Structures.</n></n><c val=\"FF8000\">Gain <c val=\"#TooltipNumbers\">1%</c> Charge for every <c val=\"#TooltipNumbers\">2</c> seconds spent Basic Attacking, and <c val=\"#TooltipNumbers\">25%</c> Charge per <c val=\"#TooltipNumbers\">100%</c> of Mech Health lost.</c>");
+        parsed.Should().Be("Eject from the Mech, setting it to self-destruct after <c val=\"#TooltipNumbers\">4</c> seconds. Deals <c val=\"#TooltipNumbers\">400<c val=\"#ColorGray\">~~0.04~~</c></c> to <c val=\"#TooltipNumbers\">1100<c val=\"#ColorGray\">~~0.04~~</c></c> damage in a large area, depending on distance from center. Deals <c val=\"#TooltipNumbers\">50%</c> damage against Structures.</n></n><c val=\"FF8000\">Gain <c val=\"#TooltipNumbers\">1%</c> Charge for every <c val=\"#TooltipNumbers\">2</c> seconds spent Basic Attacking, and <c val=\"#TooltipNumbers\">25%</c> Charge per <c val=\"#TooltipNumbers\">100%</c> of Mech Health lost.</c>");
     }
 
     [TestMethod]
@@ -1025,7 +1025,7 @@ public class GameStringParserTests
         string parsed = GameStringParser.ParseGameStringText(heroesData.StormStorage, description);
 
         // assert
-        parsed.Should().Be("Transform for <c val=\"#TooltipNumbers\">20</c> seconds, gaining <c val=\"#TooltipNumbers\">1000~~0.04~~</c> Health.");
+        parsed.Should().Be("Transform for <c val=\"#TooltipNumbers\">20</c> seconds, gaining <c val=\"#TooltipNumbers\">1000<c val=\"#ColorGray\">~~0.04~~</c></c> Health.");
     }
 
     [TestMethod]
@@ -1088,7 +1088,7 @@ public class GameStringParserTests
         string parsed = GameStringParser.ParseGameStringText(heroesData.StormStorage, description);
 
         // assert
-        parsed.Should().Be("While at or below <c val=\"#TooltipNumbers\">50</c> Brew, gain <c val=\"#TooltipNumbers\">20%</c> Movement Speed. While at or above <c val=\"#TooltipNumbers\">50</c> Brew, regenerate an additional <c val=\"#TooltipNumbers\">18~~0.04~~</c> Health per second.");
+        parsed.Should().Be("While at or below <c val=\"#TooltipNumbers\">50</c> Brew, gain <c val=\"#TooltipNumbers\">20%</c> Movement Speed. While at or above <c val=\"#TooltipNumbers\">50</c> Brew, regenerate an additional <c val=\"#TooltipNumbers\">18<c val=\"#ColorGray\">~~0.04~~</c></c> Health per second.");
     }
 
     [TestMethod]
@@ -1325,7 +1325,7 @@ public class GameStringParserTests
         string parsed = GameStringParser.ParseGameStringText(heroesData.StormStorage, description);
 
         // assert
-        parsed.Should().Be("Launch a grenade that explodes at the end of its path or upon hitting an enemy, dealing <c val=\"#TooltipNumbers\">124~~0.04~~</c> damage to nearby enemies. Grenades can ricochet off of terrain. Deals <c val=\"#TooltipNumbers\">50%</c> less damage to Structures.<n/><n/>Stores up to <c val=\"#TooltipNumbers\">4</c> charges. Frag Launcher's cooldown replenishes all charges at the same time.");
+        parsed.Should().Be("Launch a grenade that explodes at the end of its path or upon hitting an enemy, dealing <c val=\"#TooltipNumbers\">124<c val=\"#ColorGray\">~~0.04~~</c></c> damage to nearby enemies. Grenades can ricochet off of terrain. Deals <c val=\"#TooltipNumbers\">50%</c> less damage to Structures.<n/><n/>Stores up to <c val=\"#TooltipNumbers\">4</c> charges. Frag Launcher's cooldown replenishes all charges at the same time.");
     }
 
     [TestMethod]
@@ -1868,7 +1868,7 @@ public class GameStringParserTests
         string parsed = GameStringParser.ParseGameStringText(heroesData.StormStorage, description);
 
         // assert
-        parsed.Should().Be("Activate to make Arthas's next Basic Attack strike immediately and deal <c val=\"#TooltipNumbers\">99~~0.04~~</c> increased damage. Dealing damage restores <c val=\"#TooltipNumbers\">30</c> Mana.");
+        parsed.Should().Be("Activate to make Arthas's next Basic Attack strike immediately and deal <c val=\"#TooltipNumbers\">99<c val=\"#ColorGray\">~~0.04~~</c></c> increased damage. Dealing damage restores <c val=\"#TooltipNumbers\">30</c> Mana.");
     }
 
     [TestMethod]
@@ -1981,7 +1981,7 @@ public class GameStringParserTests
         string parsed = GameStringParser.ParseGameStringText(heroesData.StormStorage, description);
 
         // assert
-        parsed.Should().Be("Deal <c val=\"#TooltipNumbers\">135~~0.05~~</c> damage to enemies in the area.");
+        parsed.Should().Be("Deal <c val=\"#TooltipNumbers\">135<c val=\"#ColorGray\">~~0.05~~</c></c> damage to enemies in the area.");
     }
 
     [TestMethod]
@@ -2167,7 +2167,7 @@ public class GameStringParserTests
         string parsed = GameStringParser.ParseGameStringText(heroesData.StormStorage, description);
 
         // assert
-        parsed.Should().Be("Activate to swing the Hammer of Twilight, dealing <c val=\"#TooltipNumbers\">150~~0.045~~</c> damage, pushing enemies away, and Stunning them for <c val=\"#TooltipNumbers\">0.75</c> seconds.<n/><n/><c val=\"#AbilityPassive\">Passive:</c> Cho's Basic Attacks deal <c val=\"#TooltipNumbers\">25%</c> increased damage.");
+        parsed.Should().Be("Activate to swing the Hammer of Twilight, dealing <c val=\"#TooltipNumbers\">150<c val=\"#ColorGray\">~~0.045~~</c></c> damage, pushing enemies away, and Stunning them for <c val=\"#TooltipNumbers\">0.75</c> seconds.<n/><n/><c val=\"#AbilityPassive\">Passive:</c> Cho's Basic Attacks deal <c val=\"#TooltipNumbers\">25%</c> increased damage.");
     }
 
     [TestMethod]

@@ -76,7 +76,7 @@ public class HeroesDataTests
         GameStringText parsed = heroesData.ParseGameString(description, StormLocale.ENUS);
 
         // assert
-        parsed.RawText.Should().Be("Increase the damage of Octo-Grab by <c val=\"#TooltipNumbers\">13700%~~0.04~~</c>");
+        parsed.RawText.Should().Be("Increase the damage of Octo-Grab by <c val=\"#TooltipNumbers\">13700%</c><c val=\"#ColorGray\">~~0.04~~</c>");
     }
 
     [TestMethod]
@@ -176,6 +176,6 @@ public class HeroesDataTests
         GameStringText parsed = heroesData.ParseGameString(description, StormLocale.ENUS);
 
         // assert
-        parsed.RawText.Should().Be("Eject from the Mech, setting it to self-destruct after <c val=\"#TooltipNumbers\">4</c> seconds. Deals <c val=\"#TooltipNumbers\">400~~0.04~~</c> to <c val=\"#TooltipNumbers\">1100~~0.04~~</c> damage in a large area, depending on distance from center. Deals <c val=\"#TooltipNumbers\">50%</c> damage against Structures.<n/><n/><c val=\"FF8000\">Gain </c><c val=\"#TooltipNumbers\">1%</c><c val=\"FF8000\"> Charge for every </c><c val=\"#TooltipNumbers\">2</c><c val=\"FF8000\"> seconds spent Basic Attacking, and </c><c val=\"#TooltipNumbers\">25%</c><c val=\"FF8000\"> Charge per </c><c val=\"#TooltipNumbers\">100%</c><c val=\"FF8000\"> of Mech Health lost.</c>");
+        parsed.RawText.Should().Be("Eject from the Mech, setting it to self-destruct after <c val=\"#TooltipNumbers\">4</c> seconds. Deals <c val=\"#TooltipNumbers\">400</c><c val=\"#ColorGray\">~~0.04~~</c> to <c val=\"#TooltipNumbers\">1100</c><c val=\"#ColorGray\">~~0.04~~</c> damage in a large area, depending on distance from center. Deals <c val=\"#TooltipNumbers\">50%</c> damage against Structures.<n/><n/><c val=\"FF8000\">Gain </c><c val=\"#TooltipNumbers\">1%</c><c val=\"FF8000\"> Charge for every </c><c val=\"#TooltipNumbers\">2</c><c val=\"FF8000\"> seconds spent Basic Attacking, and </c><c val=\"#TooltipNumbers\">25%</c><c val=\"FF8000\"> Charge per </c><c val=\"#TooltipNumbers\">100%</c><c val=\"FF8000\"> of Mech Health lost.</c>");
     }
 }

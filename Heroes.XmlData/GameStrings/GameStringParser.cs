@@ -1,4 +1,5 @@
 ﻿using System.Globalization;
+using System.Runtime.InteropServices;
 using System.Text;
 using U8Xml;
 
@@ -7,6 +8,9 @@ namespace Heroes.XmlData.GameStrings;
 internal sealed class GameStringParser
 {
     public const double MaxValueSize = 999_999_999;
+
+    private const string ScalingNumbersTag = "<c val=\"#ColorGray\">";
+    private const int ScalingNumbersTagLength = 20;
 
     private readonly IStormStorage _stormStorage;
     private readonly DataRefParser _dataRefParser;
@@ -112,9 +116,10 @@ internal sealed class GameStringParser
         int currentOffset = 0;
 
         // loop through and build string
-        for (int i = 0; i < _textStack.Count; i++)
+        ReadOnlySpan<ITextSection> textStack = CollectionsMarshal.AsSpan(_textStack);
+        for (int i = 0; i < textStack.Length; i++)
         {
-            ITextSection item = _textStack[i];
+            ITextSection item = textStack[i];
 
             if (item.Type == TextSectionType.Text)
             {
@@ -136,20 +141,26 @@ internal sealed class GameStringParser
 
                 if (value.Scaling.HasValue)
                 {
-                    "~~".CopyTo(buffer[currentOffset..]);
-                    currentOffset += 2;
+                    if (textSectionValueScale.IsPercent)
+                    {
+                        "%".CopyTo(buffer[currentOffset..]);
+                        currentOffset += 1;
+                    }
+
+                    $"{ScalingNumbersTag}~~".CopyTo(buffer[currentOffset..]);
+                    currentOffset += ScalingNumbersTagLength + 2;
 
                     value.Scaling.Value.TryFormat(buffer[currentOffset..], out charsWritten, format: "G", CultureInfo.InvariantCulture);
                     currentOffset += charsWritten;
 
-                    "~~".CopyTo(buffer[currentOffset..]);
-                    currentOffset += 2;
+                    "~~</c>".CopyTo(buffer[currentOffset..]);
+                    currentOffset += 6;
                 }
             }
         }
 
         // remove any null chars at the end
-        return buffer.TrimEnd('\0').ToString();
+        return buffer[..currentOffset].ToString();
     }
 
     private void ConstructTextStack(ReadOnlySpan<char> description)
@@ -254,7 +265,15 @@ internal sealed class GameStringParser
 
         ValueScale valueScale = ParseDataTag(span);
 
-        _textStack.Add(new TextSectionValueScale(valueScale));
+        if (valueScale.Scaling.HasValue && _index < description.Length && description[_index] == '%')
+        {
+            _textStack.Add(new TextSectionValueScale(valueScale, true));
+            _index++;
+        }
+        else
+        {
+            _textStack.Add(new TextSectionValueScale(valueScale));
+        }
     }
 
     private int GetSizeOfBuffer()
@@ -269,6 +288,10 @@ internal sealed class GameStringParser
 
                 sum += textSectionValueScale.ValueScale.TotalValueDigits();
                 sum += textSectionValueScale.ValueScale.TotalScalingDigits() + 4; // +4 for ~~ ~~
+                sum += ScalingNumbersTagLength + 4; // +4 for close tag
+
+                if (textSectionValueScale.IsPercent)
+                    sum += 1; // for %
             }
             else if (current.Type == TextSectionType.Text)
             {
