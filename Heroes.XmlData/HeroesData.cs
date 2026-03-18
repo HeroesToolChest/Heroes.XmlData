@@ -200,7 +200,7 @@ public class HeroesData
     /// <param name="gameString">The gamestring to parse.</param>
     /// <param name="gameStringLocale">The localization of the <paramref name="gameString"/>. Used only for scaling text.</param>
     /// <param name="extractFontValues">
-    /// If <see langword="true"/>, then the font style and constant tags will have their val values saved in <see cref="GameStringText.FontStyleValues"/> and  <see cref="GameStringText.FontStyleConstantValues"/>.
+    /// If <see langword="true"/>, then the font style and constant tags will have their val values saved in <see cref="GameStringText.FontStyleValues"/> and  <see cref="GameStringText.FontConstantValues"/>.
     /// If not needing the output with color tags, then set to <see langword="false"/> for faster parsing performance.
     /// </param>
     /// <returns>A parsed <see cref="GameStringText"/>.</returns>
@@ -215,7 +215,7 @@ public class HeroesData
     /// <param name="stormGameString">The gamestring to parse.</param>
     /// <param name="gameStringLocale">The localization of the <paramref name="stormGameString"/>. Used only for scaling text.</param>
     /// <param name="extractFontValues">
-    /// If <see langword="true"/>, then the font style and constant tags will have their val values saved in <see cref="GameStringText.FontStyleValues"/> and  <see cref="GameStringText.FontStyleConstantValues"/>.
+    /// If <see langword="true"/>, then the font style and constant tags will have their val values saved in <see cref="GameStringText.FontStyleValues"/> and  <see cref="GameStringText.FontConstantValues"/>.
     /// If not needing the output with color tags, then set to <see langword="false"/> for faster parsing performance.
     /// </param>
     /// <returns>A parsed <see cref="GameStringText"/>.</returns>
