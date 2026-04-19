@@ -8,7 +8,7 @@
     <GenerateDocumentationFile>True</GenerateDocumentationFile>
     <Authors>Kevin Oliva</Authors>
     <Copyright>Copyright © 2024 - 2026 Kevin Oliva</Copyright>
-    <Description>Library to directly parse the Heroes of the Storm game data.</Description>
+    <Description>Library to parse the Heroes of the Storm CASC storage.</Description>
     <PackageProjectUrl>https://github.com/HeroesToolChest/Heroes.XmlData</PackageProjectUrl>
     <RepositoryUrl>https://github.com/HeroesToolChest/Heroes.XmlData</RepositoryUrl>
     <PackageReleaseNotes>https://github.com/HeroesToolChest/Heroes.XmlData/releases</PackageReleaseNotes>
