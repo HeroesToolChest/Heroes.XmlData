@@ -10,7 +10,7 @@ jobs:
     with:
       title: 'Heroes Xml Data'
       app-name: Heroes.XmlData
-      artificats-workflow: build.yml
+      artifacts-workflow: build.yml
       github-release-env: Github Release
       github-release-url: https://github.com/HeroesToolChest/Heroes.XmlData/releases
     secrets:
