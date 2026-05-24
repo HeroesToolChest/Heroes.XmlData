@@ -1,7 +1,7 @@
 ﻿namespace Heroes.XmlData.StormData;
 
 /// <summary>
-/// Represents an top level <see cref="XElement"/>.
+/// Represents a top level <see cref="XElement"/>.
 /// </summary>
 [DebuggerDisplay("{DebuggerDisplay,nq}")]
 public class StormElement
