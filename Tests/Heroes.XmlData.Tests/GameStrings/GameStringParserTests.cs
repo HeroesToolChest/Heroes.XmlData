@@ -4,7 +4,7 @@
 public class GameStringParserTests
 {
     [TestMethod]
-    public void ParseTooltipDescription_ConstElement_ParsedGameString()
+    public void ParseGameStringText_ConstElement_ParsedGameString()
     {
         // arrange
         string description = "Yrel sanctifies the ground around her, gaining <c val=\"#TooltipNumbers\"><d const=\"$YrelSacredGroundArmorBonus\" precision=\"2\"/></c> Armor until she leaves the area.";
@@ -29,7 +29,7 @@ public class GameStringParserTests
     }
 
     [TestMethod]
-    public void ParseTooltipDescription_CastIntroTimeHasDefaultValue_ParsedGameString()
+    public void ParseGameStringText_CastIntroTimeHasDefaultValue_ParsedGameString()
     {
         // arrange
         string description = "After <c val=\"#TooltipNumbers\"><d ref=\"Abil,GuldanHorrify, CastIntroTime + Effect,GuldanHorrifyAbilityStartCreatePersistent,PeriodicPeriodArray[0]\" precision=\"2\"/></c> seconds, deal <c val=\"#TooltipNumbers\"><d ref=\"Effect,GuldanHorrifyDamage,Amount\"/></c> damage to enemy Heroes in an area and Fear them for <c val=\"#TooltipNumbers\"><d ref=\"Behavior,GuldanHorrifyFearDuration,Duration\"/></c> seconds. While Feared, Heroes are Silenced and are forced to run away from Horrify's center.";
@@ -104,7 +104,7 @@ public class GameStringParserTests
     }
 
     [TestMethod]
-    public void ParseTooltipDescription_NormalGameString2_ParsedGameString()
+    public void ParseGameStringText_NormalGameString2_ParsedGameString()
     {
         // arrange
         string description = "Rain a small army of Demonic Grunts down on enemies, dealing <c val=\"#TooltipNumbers\"><d ref=\"Effect,AzmodanDemonicInvasionImpactDamage,Amount\"/></c> damage per impact. Grunts deal <c val=\"#TooltipNumbers\"><d ref=\"Effect,AzmodanDemonicInvasionDemonGruntWeaponDamage,Amount\"/></c> damage, have <c val=\"#TooltipNumbers\"><d ref=\"Unit,AzmodanDemonicInvasionDemonGrunt,LifeMax\"/></c> Health and last up to <c val=\"#TooltipNumbers\"><d ref=\"-Unit,AzmodanDemonicInvasionDemonGrunt,LifeMax/Unit,AzmodanDemonicInvasionDemonGrunt,LifeRegenRate\"/></c> seconds. When Grunts die they explode, dealing <c val=\"#TooltipNumbers\"><d ref=\"Effect,AzmodanDemonicInvasionExplodeDamage,Amount\"/></c> damage to nearby enemies, doubled against enemy Heroes.<n/><n/>Usable while Channeling All Shall Burn.";
@@ -245,7 +245,7 @@ public class GameStringParserTests
     }
 
     [TestMethod]
-    public void ParseTooltipDescription_HasParenthesisAndBrackets_ParsedGameString()
+    public void ParseGameStringText_HasParenthesisAndBrackets_ParsedGameString()
     {
         // arrange
         string description = "Toxic Nests deal <c val=\"#TooltipNumbers\"><d ref=\"(Effect,AbathurToxicNestEnvenomedNestDamage,Amount* [d ref='Behavior,AbathurToxicNestEnvenomedNest,PeriodCount' player='0'/])/Effect,ToxicNestDamage,Amount*100\"/>%</c> more damage over <c val=\"#TooltipNumbers\"><d ref=\"Behavior,AbathurToxicNestEnvenomedNest,Duration\" player=\"0\"/></c> seconds and reduce the Armor of enemy Heroes hit by <c val=\"#TooltipNumbers\"><d ref=\"-Behavior,AbathurToxicNestEnvenomedNestArmorDebuff,ArmorModification.AllArmorBonus\"/></c> for <c val=\"#TooltipNumbers\"><d ref=\"Behavior,AbathurToxicNestEnvenomedNestArmorDebuff,Duration\"/></c> seconds.";
@@ -337,7 +337,7 @@ public class GameStringParserTests
     }
 
     [TestMethod]
-    public void ParseTooltipDescription_NoScalingWithSingleDigitPercent_ParsedGameString()
+    public void ParseGameStringText_NoScalingWithSingleDigitPercent_ParsedGameString()
     {
         // arrange
         string description = "Zarya's Basic Attack deals <c val=\"bfd4fd\"><d ref=\"(Effect,ZaryaWeaponFeelTheHeatDamage,Amount/Effect,ZaryaWeaponDamage,Amount)-1*10)\" />0%</c> additional damage to enemies in melee range.";
@@ -407,7 +407,7 @@ public class GameStringParserTests
     }
 
     [TestMethod]
-    public void ParseTooltipDescription_CostHasAnArrayIndex_ParsedGameString()
+    public void ParseGameStringText_CostHasAnArrayIndex_ParsedGameString()
     {
         // arrange
         string description = "If Sand Blast travels at least <c val=\"bfd4fd\"><d ref=\"Validator,ChromieFastForwardDistanceCheck,Range/Effect,ChromieSandBlastLaunchMissile,ImpactLocation.ProjectionDistanceScale*100\"/>%</c> of its base distance and hits a Hero, its cooldown is reduced to <c val=\"bfd4fd\"><d ref=\"Effect,ChromieSandBlastFastForwardCooldownReduction,Cost[0].CooldownTimeUse\" precision=\"2\"/></c> seconds.";
@@ -455,7 +455,7 @@ public class GameStringParserTests
     }
 
     [TestMethod]
-    public void ParseTooltipDescription_NegativeValueFromDRef_ParsedGameString()
+    public void ParseGameStringText_NegativeValueFromDRef_ParsedGameString()
     {
         // arrange
         string description = "reduces its cooldown by <c val=\"#TooltipNumbers\"><d ref=\"(1-Effect,AnduinHolyWordSalvationLightOfStormwindCooldownReduction,Cost[0].CooldownTimeUse)*-1\"/></c>";
@@ -486,7 +486,7 @@ public class GameStringParserTests
     }
 
     [TestMethod]
-    public void ParseTooltipDescription_HasAScalingValuePercent_ParsedGameString()
+    public void ParseGameStringText_HasAScalingValuePercent_ParsedGameString()
     {
         // arrange
         string description = "Increase the damage of Octo-Grab by <c val=\"#TooltipNumbers\"><d ref=\"Effect,OctoGrabPokeMasteryDamage,Amount * 100\"/>%</c>";
@@ -537,7 +537,7 @@ public class GameStringParserTests
     }
 
     [TestMethod]
-    public void ParseTooltipDescription_HasConstInValues_ParsedGameString()
+    public void ParseGameStringText_HasConstInValues_ParsedGameString()
     {
         // arrange
         string description = "Globe of Annihilation deals <c val=\"#TooltipNumbers\"><d ref=\"100*Effect,AzmodanGlobeOfAnnihilationDamage,MultiplicativeModifierArray[Greed].Modifier\"player=\"0\"/>%</c> more damage to non-Heroic targets.<n/><n/><img path=\"@UI/StormTalentInTextQuestIcon\" alignment=\"uppermiddle\" color=\"B48E4C\" width=\"20\" height=\"22\"/><c val=\"#TooltipQuest\">Quest:</c> After gaining <c val=\"#TooltipNumbers\"><d ref=\"Behavior,AzmodanGlobeOfAnnihilationGreedTalentTokenCounter,Max\"/></c> Annihilation, increase the range of All Shall Burn by <c val=\"#TooltipNumbers\"><d ref=\"Effect,AzmodanGlobeOfAnnihilationGreedAllShallBurnRangeIncreaseModifyCatalog,CatalogModifications[0].Value/Abil,AzmodanAllShallBurn,Range*100\" player=\"0\"/>%</c> and Demon Warriors gain <c val=\"#TooltipNumbers\"><d ref=\"Behavior,AzmodanGlobeOfAnnihilationGreedMovementSpeed,Modification.UnifiedMoveSpeedFactor*100\"/>%</c> Attack Speed and Movement Speed.";
@@ -619,7 +619,7 @@ public class GameStringParserTests
     }
 
     [TestMethod]
-    public void ParseTooltipDescription_SpacingInDRef_ParsedGameString()
+    public void ParseGameStringText_SpacingInDRef_ParsedGameString()
     {
         // arrange
         string description = "Channel on an allied or destroyed Fort or Keep to replace it with Ragnaros's ultimate form, temporarily gaining new Abilities, having <c val=\"#TooltipNumbers\"><d ref=\"Unit,RagnarosBigRag,LifeMax\"/></c> Health that burns away over <c val=\"#TooltipNumbers\"><d ref=\"(Unit,RagnarosBigRag,LifeMax / Unit,RagnarosBigRag,LifeRegenRate) * (-1)\"/></c> seconds.<n/><n/>Ragnaros returns to his normal form upon losing all Health in Molten Core.";
@@ -687,7 +687,7 @@ public class GameStringParserTests
     }
 
     [TestMethod]
-    public void ParseTooltipDescription_DRefHasDefaultIndexerForScaling_ParsedGameString()
+    public void ParseGameStringText_DRefHasDefaultIndexerForScaling_ParsedGameString()
     {
         // arrange
         string description = "Deal <c val=\"#TooltipNumbers\"><d ref=\"Effect,MultishotDamage,AmountArray\"/></c> damage to enemies within the target area.";
@@ -739,7 +739,7 @@ public class GameStringParserTests
     }
 
     [TestMethod]
-    public void ParseTooltipDescription_IndexerLessInLevelScalingArray_ParsedGameString()
+    public void ParseGameStringText_IndexerLessInLevelScalingArray_ParsedGameString()
     {
         // arrange
         string description = "Shields Tyrael for <c val=\"#TooltipNumbers\"><d ref=\"Behavior,TyraelRighteousnessShield,DamageResponse[0].ModifyLimit[0]\"/></c> damage and nearby allied Heroes and Minions for <c val=\"#TooltipNumbers\">40%</c> as much for <c val=\"#TooltipNumbers\"><d ref=\"Behavior,TyraelRighteousnessShield,Duration[0]\"/></c> seconds.";
@@ -794,7 +794,7 @@ public class GameStringParserTests
     }
 
     [TestMethod]
-    public void ParseTooltipDescription_HasArraysWithAndWithoutIndex_ParsedGameString()
+    public void ParseGameStringText_HasArraysWithAndWithoutIndex_ParsedGameString()
     {
         // arrange
         string description = "<c val=\"#AbilityPassive\">Pilot Mode: </c>Instead of a single shot, Big Shot fires <c val=\"#TooltipNumbers\"><d ref=\"Effect,DVaBigShotPewPewPewOffsetPeriodic,PeriodCount\"/></c> shots over <c val=\"#TooltipNumbers\"><d ref=\"Effect,DVaBigShotPewPewPewOffsetPeriodic,PeriodicPeriodArray[1]+Effect,DVaBigShotPewPewPewOffsetPeriodic,PeriodicPeriodArray[2]\" precision=\"2\"/></c> seconds. Each shot deals <c val=\"#TooltipNumbers\"><d ref=\"1+Effect,DVaPilotBigShotDamage,MultiplicativeModifierArray[PewPewPew].Modifier*100\"player=\"0\"/>%</c> damage.";
@@ -866,7 +866,7 @@ public class GameStringParserTests
     }
 
     [TestMethod]
-    public void ParseTooltipDescription_ConstantsWithExpressions_ParsedGameString()
+    public void ParseGameStringText_ConstantsWithExpressions_ParsedGameString()
     {
         // arrange
         string description = "Eject from the Mech, setting it to self-destruct after <c val=\"#TooltipNumbers\"><d ref=\"Behavior,DVaMechSelfDestructMechDetonationCountdown,Duration\" player=\"0\"/></c> seconds. Deals <c val=\"#TooltipNumbers\"><d ref=\"Effect,DVaMechSelfDestructDetonationSearchDamage,Amount+Accumulator,DVaSelfDestructDistanceAccumulator,MinAccumulation\"/></c> to <c val=\"#TooltipNumbers\"><d ref=\"Effect,DVaMechSelfDestructDetonationSearchDamage,Amount\"/></c> damage in a large area, depending on distance from center. Deals <c val=\"#TooltipNumbers\"><d ref=\"Effect,DVaMechSelfDestructDetonationSearchDamage,AttributeFactor[Structure]*(-100)\"/>%</c> damage against Structures.</n></n><c val=\"FF8000\">Gain <c val=\"#TooltipNumbers\">1%</c> Charge for every <c val=\"#TooltipNumbers\">2</c> seconds spent Basic Attacking, and <c val=\"#TooltipNumbers\">25%</c> Charge per <c val=\"#TooltipNumbers\">100%</c> of Mech Health lost.</c>";
@@ -965,7 +965,7 @@ public class GameStringParserTests
     }
 
     [TestMethod]
-    public void ParseTooltipDescription_HasArrayOnLastFieldOnly_ParsedGameString()
+    public void ParseGameStringText_HasArrayOnLastFieldOnly_ParsedGameString()
     {
         // arrange
         string description = "Transform for <c val=\"#TooltipNumbers\"><d ref=\"Behavior,MuradinAvatarHealthBuff,Duration\" player=\"0\" precision=\"2\"/></c> seconds, gaining <c val=\"#TooltipNumbers\"><d ref=\"Behavior,MuradinAvatar,Modification.VitalMaxArray[0]\"/></c> Health.";
@@ -1029,7 +1029,7 @@ public class GameStringParserTests
     }
 
     [TestMethod]
-    public void ParseTooltipDescription_HasIndexedArray_ParsedGameString()
+    public void ParseGameStringText_HasIndexedArray_ParsedGameString()
     {
         // arrange
         string description = "While at or below <c val=\"#TooltipNumbers\">50</c> Brew, gain <c val=\"#TooltipNumbers\"><d ref=\"100*Behavior,ChenBrewmastersBalanceSpeedBuff,Modification.UnifiedMoveSpeedFactor\"/>%</c> Movement Speed. While at or above <c val=\"#TooltipNumbers\">50</c> Brew, regenerate an additional <c val=\"#TooltipNumbers\"><d ref=\"Behavior,ChenBrewmastersBalanceHealthRegen,Modification.VitalRegenArray[Life]\"/></c> Health per second.";
@@ -1092,7 +1092,7 @@ public class GameStringParserTests
     }
 
     [TestMethod]
-    public void ParseTooltipDescription_ElementArray_ParsedGameString()
+    public void ParseGameStringText_ElementArray_ParsedGameString()
     {
         // arrange
         string description = "Increase Hardened Carapace's Spell Armor by <c val=\"#TooltipNumbers\"><d ref=\"Talent,AnubarakNerubianArmor,AbilityModificationArray[0].Modifications[0].Value\"/></c>.";
@@ -1138,7 +1138,7 @@ public class GameStringParserTests
     }
 
     [TestMethod]
-    public void ParseTooltipDescription_ArrayIndexOf2_ParsedGameString()
+    public void ParseGameStringText_ArrayIndexOf2_ParsedGameString()
     {
         // arrange
         string description = "Increases Burrow Charge impact area by <c val=\"#TooltipNumbers\"><d ref=\"100*Talent,AnubarakMasteryEpicenterBurrowCharge,AbilityModificationArray[0].Modifications[2].Value\"player=\"0\"/>%</c> and lowers the cooldown by <c val=\"#TooltipNumbers\"><d ref=\"-Effect,AnubarakBurrowChargeEpicenterModifyCooldown,Cost[0].CooldownTimeUse\"precision=\"2\"/></c> second for each Hero hit.";
@@ -1200,7 +1200,7 @@ public class GameStringParserTests
     }
 
     [TestMethod]
-    public void ParseTooltipDescription_ValueInParentElement_ParsedGameString()
+    public void ParseGameStringText_ValueInParentElement_ParsedGameString()
     {
         // arrange
         string description = "<img path=\"@UI/StormTalentInTextQuestIcon\" alignment=\"uppermiddle\" color=\"B48E4C\" width=\"20\" height=\"22\"/><c val=\"#TooltipQuest\">Quest:</c> Gain <c val=\"#TooltipNumbers\"><d ref=\"Effect,KelThuzadMasterOfTheColdDarkModifyToken,Value\"/></c> Blight every time a Hero is Rooted by Frost Nova or hit by Chains of Kel'Thuzad.<n/><n/><img path=\"@UI/StormTalentInTextQuestIcon\" alignment=\"uppermiddle\" color=\"B48E4C\" width=\"20\" height=\"22\"/><c val=\"#TooltipQuest\">Reward:</c> After gaining <c val=\"#TooltipNumbers\"><d ref=\"Behavior,KelThuzadMasterOfTheColdDarkToken,ConditionalEvents[0].CompareValue\"/></c> Blight, gain the Glacial Spike Ability.<n/><n/><img path=\"@UI/StormTalentInTextQuestIcon\" alignment=\"uppermiddle\" color=\"B48E4C\" width=\"20\" height=\"22\"/><c val=\"#TooltipQuest\">Reward:</c> After gaining <c val=\"#TooltipNumbers\"><d ref=\"Behavior,KelThuzadMasterOfTheColdDarkToken,Max\"/></c> Blight, gain <c val=\"#TooltipNumbers\"><d ref=\"Behavior,KelThuzadMasterOfTheColdDarkSpellPower,Modification.DamageDealtFraction[Ability] * 100\"/>%</c> Spell Power.<n/><n/><c val=\"#TooltipQuest\">Blight:</c> <c val=\"#TooltipNumbers\" validator=\"True\"><d ref=\"$BehaviorStackCount:KelThuzadMasterOfTheColdDarkToken$\"/>/<d ref=\"Behavior,KelThuzadMasterOfTheColdDarkToken,Max\"/></c>";
@@ -1263,7 +1263,7 @@ public class GameStringParserTests
     }
 
     [TestMethod]
-    public void ParseTooltipDescription_DrefDoesNotHaveIndexerForArrayFields_ParsedGameString()
+    public void ParseGameStringText_DrefDoesNotHaveIndexerForArrayFields_ParsedGameString()
     {
         // arrange
         string description = "Launch a grenade that explodes at the end of its path or upon hitting an enemy, dealing <c val=\"#TooltipNumbers\"><d ref=\"Effect,JunkratFragLauncherExplosionDamage,Amount\"/></c> damage to nearby enemies. Grenades can ricochet off of terrain. Deals <c val=\"#TooltipNumbers\"><d ref=\"-Effect,JunkratFragLauncherExplosionDamage,AttributeFactor[Structure] * 100\"/>%</c> less damage to Structures.<n/><n/>Stores up to <c val=\"#TooltipNumbers\"><d ref=\"Abil,JunkratFragLauncher,Cost.Charge.CountMax\" player=\"0\"/></c> charges. Frag Launcher's cooldown replenishes all charges at the same time.";
@@ -1329,7 +1329,7 @@ public class GameStringParserTests
     }
 
     [TestMethod]
-    public void ParseTooltipDescription_ConditionalEventsIsAnArray_ParsedGameString()
+    public void ParseGameStringText_ConditionalEventsIsAnArray_ParsedGameString()
     {
         // arrange
         string description = "<img path=\"@UI/StormTalentInTextQuestIcon\" alignment=\"uppermiddle\" color=\"B48E4C\" width=\"20\" height=\"22\"/><c val=\"#TooltipQuest\">Repeatable Quest:</c> Basic Attacks against Heroes while Windfury's Movement Speed bonus is active increase Attack Damage by <c val=\"#TooltipNumbers\"><d ref=\"Accumulator,ThrallMaelstromWeaponDamageAccumulator,Scale\"precision=\"2\"/></c>.<n/><n/><img path=\"@UI/StormTalentInTextQuestIcon\" alignment=\"uppermiddle\" color=\"B48E4C\" width=\"20\" height=\"22\"/><c val=\"#TooltipQuest\">Reward:</c> After gaining <c val=\"#TooltipNumbers\"><d ref=\"Behavior,ThrallMaelstromWeaponTokenCounter,ConditionalEvents[0].CompareValue*Accumulator,ThrallMaelstromWeaponDamageAccumulator,Scale\"/></c> Attack Damage, increase the Movement Speed bonus of Windfury to <c val=\"#TooltipNumbers\"><d ref=\"100*Effect,ThrallWindfuryMaelstromWeaponTalent1stQuestCompletionModifyPlayer,EffectArray[0].Value\"/>%</c>.<n/><n/><img path=\"@UI/StormTalentInTextQuestIcon\" alignment=\"uppermiddle\" color=\"B48E4C\" width=\"20\" height=\"22\"/><c val=\"#TooltipQuest\">Reward:</c> After gaining <c val=\"#TooltipNumbers\"><d ref=\"Behavior,ThrallMaelstromWeaponTokenCounter,ConditionalEvents[1].CompareValue\"/></c> Attack Damage, Thrall permanently gains <c val=\"#TooltipNumbers\"><d ref=\"100*Behavior,ThrallWindfuryMaelstromWeapon2ndQuestCompletionMoveSpeedCarry,Modification.UnifiedMoveSpeedFactor\"/>%</c> increased Movement Speed.";
@@ -1404,7 +1404,7 @@ public class GameStringParserTests
     }
 
     [TestMethod]
-    public void ParseTooltipDescription_DRefExpressionTrailingCommandAndQuote_ParsedGameString()
+    public void ParseGameStringText_DRefExpressionTrailingCommandAndQuote_ParsedGameString()
     {
         // arrange
         string description = "Increase the Slow amount of each Twin Cleave axe by <c val=\"#TooltipNumbers\"><d ref=\"(Behavior,ZuljinTwinCleaveLacerateFirstHitSlow,Modification.UnifiedMoveSpeedFactor-Behavior,ZuljinTwinCleaveFirstHitSlow,Modification.UnifiedMoveSpeedFactor)*(-100)\" player=\"0\" precision=\"2\"/>%</c> and its duration by <c val=\"#TooltipNumbers\"><d ref=\"Behavior,ZuljinTwinCleaveLacerateFirstHitSlow,Duration-Behavior,ZuljinTwinCleaveFirstHitSlow,Duration,\"player=\"0\"precision=\"1\"/></c> seconds.";
@@ -1448,7 +1448,7 @@ public class GameStringParserTests
     }
 
     [TestMethod]
-    public void ParseTooltipDescription_LevelScalingArrayIsUsingNumericalIndexInsteadOfText_ParsedGameString()
+    public void ParseGameStringText_LevelScalingArrayIsUsingNumericalIndexInsteadOfText_ParsedGameString()
     {
         // arrange
         string description = "Probius gains permanent Shields equal to <c val=\"#TooltipNumbers\"><d ref=\"(Behavior,ProbiusShieldCapacitorPassiveShieldBuff,Modification.VitalMaxArray[Shields] / Unit,HeroProbius,LifeMax) * 100\"/>% </c>of his max Health. Shields regenerate quickly as long as he hasn't taken damage recently.";
@@ -1523,7 +1523,7 @@ public class GameStringParserTests
     }
 
     [TestMethod]
-    public void ParseTooltipDescription_ConstValuesWithNegateConstExpressions_ParsedGameString()
+    public void ParseGameStringText_ConstValuesWithNegateConstExpressions_ParsedGameString()
     {
         // arrange
         string description = "Launch a fireball, Burning enemies hit for <c val=\"#TooltipNumbers\"><d ref=\"Effect,AlexstraszaFlameBuffetDoTDamage,Amount*(1+Behavior,AlexstraszaFlameBuffetDoT,PeriodCount)\"/></c> damage over <c val=\"#TooltipNumbers\"><d ref=\"Behavior,AlexstraszaFlameBuffetDoT,Duration\" player=\"0\" precision=\"1\"/></c> seconds.<n/><n/>Hitting enemies that are already Burning deals <c val=\"#TooltipNumbers\"><d ref=\"Effect,AlexstraszaFlameBuffetImpactBonusDamage,Amount\"/></c> bonus damage upon impact, Slows them by <c val=\"#TooltipNumbers\"><d ref=\"-Behavior,AlexstraszaFlameBuffetSlow,Modification.UnifiedMoveSpeedFactor*100\" player=\"0\"/>%</c> decaying over <c val=\"#TooltipNumbers\"><d ref=\"Behavior,AlexstraszaFlameBuffetSlow,Duration\" player=\"0\" precision=\"2\"/></c> seconds, and refunds the Mana cost.<n/><n/><c val=\"#ColorViolet\">Dragonqueen: Wing Buffet</c><n/>Damage and Knockback enemies in an arc.";
@@ -1597,7 +1597,7 @@ public class GameStringParserTests
     }
 
     [TestMethod]
-    public void ParseTooltipDescription_InnerElementsWithConstValueAttributes_ParsedGameString()
+    public void ParseGameStringText_InnerElementsWithConstValueAttributes_ParsedGameString()
     {
         // arrange
         string description = "Basic Attacks with Repeater Cannon reduce Ability cooldowns by <c val=\"#TooltipNumbers\"><d ref=\"-1*Effect,FenixArsenalOverchargeModifyCooldowns,Cost[0].CooldownTimeUse\" precision=\"2\"/></c> seconds. Basic Attacks with Phase Bomb active reduce Ability cooldowns by <c val=\"#TooltipNumbers\"><d ref=\"-1*Effect,FenixArsenalOverchargeModifyCooldowns,Cost[0].CooldownTimeUse\" precision=\"2\"/></c></c> seconds per Hero hit.";
@@ -1638,7 +1638,7 @@ public class GameStringParserTests
     }
 
     [TestMethod]
-    public void ParseTooltipDescription_ArrayElementHasNoDefaultIndexer_ParsedGameString()
+    public void ParseGameStringText_ArrayElementHasNoDefaultIndexer_ParsedGameString()
     {
         // arrange
         string description = "<s val=\"StandardTooltipDetails\"><d ref=\"Abil,GuldanLifeTap,Cost.Vital[Life]\"/></s>";
@@ -1674,7 +1674,7 @@ public class GameStringParserTests
     }
 
     [TestMethod]
-    public void ParseTooltipDescription_FractionalMath_ParsedGameString()
+    public void ParseGameStringText_FractionalMath_ParsedGameString()
     {
         // arrange
         string description = "Wall Ride's Movement Speed bonus gradually increases to <c val=\"#TooltipNumbers\"><d ref=\"(Accumulator,LucioWallRideAccelerandoTokenAccumulator,MaxAccumulation/Unit,HeroLucio,Speed)+(Behavior,LucioWallRideSpeed,Modification.MoveSpeedBonus/Unit,HeroLucio,Speed)*100\" player=\"0\"/>%</c> over <c val=\"#TooltipNumbers\"><d ref=\"Behavior,LucioWallRideAccelerandoToken,Max*Behavior,LucioWallRideSpeed,Period\"/></c> seconds while Lúcio maintains its effect.";
@@ -1772,7 +1772,7 @@ public class GameStringParserTests
     }
 
     [TestMethod]
-    public void ParseTooltipDescription_WithGermanQuoteInDRef_ParsedGameString()
+    public void ParseGameStringText_WithGermanQuoteInDRef_ParsedGameString()
     {
         // arrange
         string description = "Scharfschütze fügt Gegnern in der Nähe des Einschlagorts zusätzlich <c val=\"#TooltipNumbers\"><d ref=\"100*(1+Effect,SnipeExplosiveDamage,MultiplicativeModifierArray[ExplosiveSnipe].Modifier)“/>%</c> des Schadens zu.";
@@ -1809,7 +1809,7 @@ public class GameStringParserTests
     }
 
     [TestMethod]
-    public void ParseTooltipDescription_ArthasFrostmourneHungersDamageScaling_ParsedGameString()
+    public void ParseGameStringText_ArthasFrostmourneHungersDamageScaling_ParsedGameString()
     {
         // arrange
         string description = "Activate to make Arthas's next Basic Attack strike immediately and deal <c val=\"#TooltipNumbers\"><d ref=\"Effect,ArthasFrostmourneHungersDamage,FlatModifierArray[0].Modifier \"/></c> increased damage. Dealing damage restores <c val=\"#TooltipNumbers\"><d ref=\"Effect,ArthasFrostmourneHungersCreateManaHealer,RechargeVitalRate\" player=\"0\"/></c> Mana.";
@@ -1872,7 +1872,7 @@ public class GameStringParserTests
     }
 
     [TestMethod]
-    public void ParseTooltipDescription_CrusaderDivineFortressNoIndex_ParsedGameString()
+    public void ParseGameStringText_CrusaderDivineFortressNoIndex_ParsedGameString()
     {
         // arrange
         string description = "Basic Attacks grant <c val=\"#TooltipNumbers\"><d ref=\"Behavior,CrusaderDivineFortressArmorBuff,ArmorModification.ArmorSet.ArmorMitigationTable[Basic]\"/></c> Physical Armor for <c val=\"#TooltipNumbers\"><d ref=\"Behavior,CrusaderDivineFortressArmorBuff,Duration\"Precision=\"2\"/></c> seconds, stacking up to <c val=\"#TooltipNumbers\"><d ref=\"Behavior,CrusaderDivineFortressArmorBuff,ArmorModification.ArmorSet.ArmorMitigationTable[Basic]*Behavior,CrusaderDivineFortressArmorBuff,MaxStackCount\"/></c>.<n/><n/><img path=\"@UI/StormTalentInTextQuestIcon\" alignment=\"uppermiddle\" color=\"B48E4C\" width=\"20\" height=\"22\"/><c val=\"#TooltipQuest\">Gambit:</c> Gain <c val=\"#TooltipNumbers\"><d ref=\"100*Accumulator,CrusaderDivineFortressInstantHealthAccumulator,MaxAccumulation\"/>%</c> bonus maximum Health. Every death reduces this bonus by <c val=\"#TooltipNumbers\"><d ref=\"100*Accumulator,CrusaderDivineFortressInstantHealthAccumulator,Scale\"/>%</c>.";
@@ -1934,7 +1934,7 @@ public class GameStringParserTests
     }
 
     [TestMethod]
-    public void ParseTooltipDescription_Scaling_ParsedGameString()
+    public void ParseGameStringText_Scaling_ParsedGameString()
     {
         // arrange
         string description = "Deal <c val=\"#TooltipNumbers\"><d ref=\"Effect,GallShadowflameDamage,Amount\"/></c> damage to enemies in the area.";
@@ -1985,7 +1985,7 @@ public class GameStringParserTests
     }
 
     [TestMethod]
-    public void ParseTooltipDescription_HasNumericalAndTextIndex_ParsedGameString()
+    public void ParseGameStringText_HasNumericalAndTextIndex_ParsedGameString()
     {
         // arrange
         string description = "Increase Dread's damage by <C val=\"#TooltipNumbers\"><d ref=\"Effect,OrpheaDreadLineDamage,MultiplicativeModifierArray[GrowingNightmarePassive].Modifier * 100\"/>%</c>. <n/><n/><c val=\"#TooltipQuest\">Quest:</c> Hit <C val=\"#TooltipNumbers\"><d ref=\"Behavior,OrpheaDreadGrowingNightmareMarkerBehavior,MaxStackCount\"/></c> enemy Heroes with a single cast of Dread's eruption.<n/><n/><c val=\"#TooltipQuest\">Reward:</c> Permanently increase Dread's eruption damage by <C val=\"#TooltipNumbers\"><d ref=\"100*Effect,OrpheaDreadFinalDamage,MultiplicativeModifierArray[GrowingNightmareQuestComplete].Modifier\"/>%</c> and increase the Slow amount of Dread's eruption by <C val=\"#TooltipNumbers\"><d ref=\"-100*Effect,OrpheaDreadGrowingNightmareQuestCompletionModifyPlayer,EffectArray[0].Value\"/>%</c>.";
@@ -2046,7 +2046,7 @@ public class GameStringParserTests
     }
 
     [TestMethod]
-    public void ParseTooltipDescription_CostIsAnArray_ParsedGameString()
+    public void ParseGameStringText_CostIsAnArray_ParsedGameString()
     {
         // arrange
         string description = "Reduce the Mana cost of Summon Demon Warrior from <c val=\"#TooltipNumbers\"><d ref=\"Abil,AzmodanSummonDemonWarrior,Cost.Vital[Energy]\"Player=\"0\"/></c> to <c val=\"#TooltipNumbers\"><d ref=\"Abil,AzmodanSummonDemonWarrior,Cost.Vital[Energy]+Talent,AzmodanBattleborn,AbilityModificationArray[0].Modifications[0].Value\"Player=\"0\"/></c>. Azmodan's Basic Attacks reduce the cooldown of Summon Demon Warrior by <c val=\"#TooltipNumbers\"><d ref=\"-Effect,AzmodanHeroWeaponBattlebornTalentModifyCooldown,Cost[0].CooldownTimeUse\"precision=\"2\"/></c> seconds and Demon Lieutenant by <c val=\"#TooltipNumbers\"><d ref=\"-Effect,AzmodanHeroWeaponBattlebornTalentModifyCooldown,Cost[1].CooldownTimeUse\"precision=\"1\"/></c> seconds.";
@@ -2106,7 +2106,7 @@ public class GameStringParserTests
     }
 
     [TestMethod]
-    public void ParseTooltipDescription_ArrayStartsAt1_ParsedGameString()
+    public void ParseGameStringText_ArrayStartsAt1_ParsedGameString()
     {
         // arrange
         string description = "Activate to swing the Hammer of Twilight, dealing <c val=\"#TooltipNumbers\"><d ref=\"Effect,ChoGallTwilightHammerDamage,Amount\"/></c> damage, pushing enemies away, and Stunning them for <c val=\"#TooltipNumbers\"><d ref=\"Behavior,ChoHammerOfTwilightKnockbackBehaviorStun,Duration\" precision=\"2\"/></c> seconds.<n/><n/><c val=\"#AbilityPassive\">Passive:</c> Cho's Basic Attacks deal <c val=\"#TooltipNumbers\"><d ref=\"100*Effect,ChoHeroWeaponDamage,MultiplicativeModifierArray[1].Modifier\"/>%</c> increased damage.";
@@ -2171,7 +2171,7 @@ public class GameStringParserTests
     }
 
     [TestMethod]
-    public void ParseTooltipDescription_CapitalDRef_ParsedGameString()
+    public void ParseGameStringText_CapitalDRef_ParsedGameString()
     {
         // arrange
         string description = "Deal <c val=\"#TooltipNumbers\"><d ref=\"Effect,ValeeraGarroteDamage,Amount\"/></c> damage to an enemy and an additional <c val=\"#TooltipNumbers\"><D ref=\"Behavior,ValeeraGarrote,Duration * Effect,ValeeraGarroteDoTDamage,Amount\"/></c> damage over <c val=\"#TooltipNumbers\"><d ref=\"Behavior,ValeeraGarrote,Duration\"/></c> seconds, and Silence them for <c val=\"#TooltipNumbers\"><d ref=\"Behavior,ValeeraGarroteSilence,Duration\" precision=\"2\"/></c> seconds.<n/><n/><c val=\"#GlowColorRed\">Awards 1 Combo Point.</c><n/><n/><c val=\"#ColorViolet\">Unstealth: Eviscerate<n/></c>High damage finishing move.";
@@ -2237,7 +2237,7 @@ public class GameStringParserTests
     }
 
     [TestMethod]
-    public void ParseTooltipDescription_BracketedDeadRush_ParsedGameString()
+    public void ParseGameStringText_BracketedDeadRush_ParsedGameString()
     {
         // arrange
         string description = "Zombie Wall deals <c val=\"#TooltipNumbers\"><d ref=\"Effect,WitchDoctorZombieWallWeaponDamage,MultiplicativeModifierArray[DeadRush].Modifier*100\"/>%</c> more damage. When it expires up to <c val=\"#TooltipNumbers\">5</c> remaining Zombies uproot and attack nearby enemies for <c val=\"#TooltipNumbers\"><d ref=\"Behavior,WitchDoctorZombieWallDeadRushTalentTimedLife,Duration\" player=\"0\"/></c> seconds.";
@@ -2280,7 +2280,7 @@ public class GameStringParserTests
     }
 
     [TestMethod]
-    public void ParseTooltipDescription_ModificationDamageDealtFraction_ParsedGameString()
+    public void ParseGameStringText_ModificationDamageDealtFraction_ParsedGameString()
     {
         // arrange
         string description = "Jaina gains <c val=\"#TooltipNumbers\"><d ref=\"100*Behavior,JainaArcaneIntellectSpellPower,Modification.DamageDealtFraction\"/>%</c> Spell Power.";
@@ -2349,7 +2349,7 @@ public class GameStringParserTests
     }
 
     [TestMethod]
-    public void ParseTooltipDescription_DamageResponseModifyFraction_ParsedGameString()
+    public void ParseGameStringText_DamageResponseModifyFraction_ParsedGameString()
     {
         // arrange
         string description = "<c val=\"#ColorCreamYellow\">Human</c> Basic Attacks splash for <c val=\"#TooltipNumbers\"><d ref=\"Behavior,GreymaneHuntersBlunderbussCarryBehavior,DamageResponse.ModifyFraction*100\"/>%</c> damage behind the target.";
@@ -2395,7 +2395,7 @@ public class GameStringParserTests
     }
 
     [TestMethod]
-    public void ParseTooltipDescription_SameArrayIndexOverride_ParsedGameString()
+    public void ParseGameStringText_SameArrayIndexOverride_ParsedGameString()
     {
         // arrange
         string description = "While above <c val=\"#TooltipNumbers\">40</c> Energy, Zarya's Basic Attack size is increased by <c val=\"#TooltipNumbers\"><d ref=\"(Effect,ZaryaWeaponToTheLimitSearch,AreaArray[0].RectangleWidth)-(Effect,ZaryaWeaponSplashTargetSearch,AreaArray[0].RectangleWidth)*100\"/>%</c>.";
@@ -2440,7 +2440,7 @@ public class GameStringParserTests
     }
 
     [TestMethod]
-    public void ParseTooltipDescription_KerriganRavageDrefContainsMoreThanNeeded_ParsedGameString()
+    public void ParseGameStringText_KerriganRavageDrefContainsMoreThanNeeded_ParsedGameString()
     {
         // arrange
         string description = "Minions grant <c val=\"#TooltipNumbers\"><d ref=\"Effect,KerriganRavageSharpenedBladesModifyTokenCountMinions,Value,KerriganRavageSharpenedBladesDamageAccumulator,Scale\" precision=\"1\"/></c> stack and Heroes grant <c val=\"#TooltipNumbers\"><d ref=\"Effect,KerriganRavageSharpenedBladesModifyTokenCountHeroes,Value,KerriganRavageSharpenedBladesDamageAccumulator,Scale\" precision=\"1\"/></c> stacks.";
