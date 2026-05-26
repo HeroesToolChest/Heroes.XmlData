@@ -39,10 +39,7 @@ internal sealed class CASCHeroesSource : HeroesSource, ICASCHeroesSource
         {
             stream = CASCHeroesStorage.CASCHandlerWrapper.OpenFile(GetValidatedPath(path));
 
-            if (stream is null)
-                throw new FileNotFoundException("Could not find file", path);
-
-            return stream;
+            return stream is null ? throw new FileNotFoundException("Could not find file", path) : stream;
         }
         else
         {
