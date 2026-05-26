@@ -25,7 +25,7 @@ internal sealed class FileHeroesSource : HeroesSource, IFileHeroesSource
         if (mpqPath is null)
             return _fileSystem.File.Exists(GetValidatedPath(path));
         else
-            return IsMpqFileEntryExists(GetValidatedPath(mpqPath), path);
+            return IsMpqFileEntryExists(mpqPath, path);
     }
 
     public override bool FileExists(StormFile stormFile)

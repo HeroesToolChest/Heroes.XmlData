@@ -109,6 +109,28 @@ public class FileHeroesSourceTests
     }
 
     [TestMethod]
+    [DataRow(true, "(listfile)")]
+    [DataRow(false, "file-no-exist.txt")]
+    public void FileExists_LookupFileInMpqInNonModRoot_ReturnsEntryResult(bool found, string fileToLookup)
+    {
+        // arrange
+        string rootDirectory = Path.Combine("this", "is", "non", "root", "mods");
+
+        MockFileSystem mockFileSystem = new(new Dictionary<string, MockFileData>
+        {
+            { Path.Join(rootDirectory, "test.stormmod", "base.stormdata", "depotcache", "mpq.s2ma"), new MockFileData(File.ReadAllBytes(Path.Join(TestFilesFolder, "8d554.s2ma"))) },
+        });
+        StormStorage stormStorage = new(false);
+        FileHeroesSource fileHeroesSource = new(mockFileSystem, stormStorage, _stormModFactory, _depotCacheFactory, rootDirectory, _progressReporter);
+
+        // act
+        bool result = fileHeroesSource.FileExists(fileToLookup, Path.Join("test.stormmod", "base.stormdata", "depotcache", "mpq.s2ma"));
+
+        // assert
+        result.Should().Be(found);
+    }
+
+    [TestMethod]
     [Category("StormFile")]
     [DataRow(true, "somefile.txt")]
     [DataRow(false, "file-no-exist.txt")]
