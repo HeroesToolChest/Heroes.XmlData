@@ -31,7 +31,7 @@ internal sealed class FileHeroesSource : HeroesSource, IFileHeroesSource
     public override bool FileExists(StormFile stormFile)
     {
         if (stormFile.StormPath.PathType == StormPathType.MPQ)
-            return IsMpqFileEntryExists(GetValidatedPath(stormFile.StormPath.StormModPath), stormFile.StormPath.Path);
+            return IsMpqFileEntryExists(stormFile.StormPath.StormModPath, stormFile.StormPath.Path);
         else
             return FileExists(stormFile.StormPath.Path);
     }
