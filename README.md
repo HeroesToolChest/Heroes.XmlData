@@ -6,45 +6,39 @@
 Heroes Xml Data is a .NET library that parses the Heroes of the Storm CASC storage files through the use of [CascLib](https://github.com/WoW-Tools/CascLib).
 
 ## Usage
-There are three sources of data Heroes of the Storm can be loaded from: a local Heroes of the Storm installation, online, or extracted data files.
+### Loading Storage
+There are three sources of storage Heroes of the Storm can be loaded from: a local Heroes of the Storm installation, online, or already extracted data files.
 
-Example of local installation:
+To extract the data files, use a tool such as [Heroes Data Parser](https://github.com/HeroesToolChest/HeroesDataParser), [CASCExplorer](https://github.com/WoW-Tools/CASCExplorer), or [CascView](http://www.zezula.net/en/casc/main.html).
+
+Example of loading from local installation:
 ```C#
-HttpClient httpClient = new();
-
-// get the casc configuration
-CASCConfig cascConfig = HeroesXmlLoader.GetCASCConfig("Path\\to\\Heroes of the Storm");
-
-// optional progress reporting
-Progress<ProgressInfo> progress = new(p =>
-{
-    Console.WriteLine($"Progress: {p.Percentage}% - {p.Message}");
-});
-ProgressReporter progressReporter = new(progress);
+// get the casc configuration, specifying the local storage
+CASCConfig cascConfig = HeroesXmlLoader.GetCASCConfig("Path\to\Heroes of the Storm");
 
 // load from the local installation
-HeroesXmlLoader heroesXmlLoader = HeroesXmlLoader.LoadWithCASC(cascConfig, httpClient, progressReporter: progressReporter);
+HeroesXmlLoader heroesXmlLoader = HeroesXmlLoader.LoadWithCASC(cascConfig, new HttpClient());
 ```
 
-Example of online:
+Example of loading from online:
 ```C#
 HttpClient httpClient = new();
 
-// get the casc configuration
+// get the casc configuration, specifying online storage
 CASCConfig cascConfig = HeroesXmlLoader.GetOnlineCASCConfig(httpClient, isPtr: false);
 
-// optional progress reporting
-Progress<ProgressInfo> progress = new(p =>
-{
-    Console.WriteLine($"Progress: {p.Percentage}% - {p.Message}");
-});
-ProgressReporter progressReporter = new(progress);
-
 // load from online
-HeroesXmlLoader heroesXmlLoader = HeroesXmlLoader.LoadWithCASC(cascConfig, httpClient, progressReporter: progressReporter);
+HeroesXmlLoader heroesXmlLoader = HeroesXmlLoader.LoadWithCASC(cascConfig, httpClient);
 ```
 
-Example of extracted data files:
+Example of loading from extracted data files:
+```C#
+// specify the mods root directory
+HeroesXmlLoader heroesXmlLoaderFile = HeroesXmlLoader.LoadWithFile("Path\to\mods");
+```
+
+There is also an optional `ProgressReporter` that may be passed in to the `LoadWithCASC` and `LoadWithFile` method
+
 ```C#
 // optional progress reporting
 Progress<ProgressInfo> progress = new(p =>
@@ -53,10 +47,12 @@ Progress<ProgressInfo> progress = new(p =>
 });
 ProgressReporter progressReporter = new(progress);
 
-HeroesXmlLoader heroesXmlLoaderFile = HeroesXmlLoader.LoadWithFile("Path\\to\\mods", progressReporter: progressReporter);
+// HeroesXmlLoader.LoadWithCASC(cascConfig, httpClient, progressReporter: progressReporter);
+// HeroesXmlLoader.LoadWithFile("Path\to\mods, progressReporter: progressReporter);
 ```
+
 ## Developing
-To build and compile the code, it is recommended to use the latest version of [Visual Studio 2026 or Visual Studio Code](https://visualstudio.microsoft.com/downloads/).
+To build the code, it is recommended to use the latest version of [Visual Studio 2026 or Visual Studio Code](https://visualstudio.microsoft.com/downloads/).
 
 Another option is to use the dotnet CLI tools from the latest [.NET SDK](https://dotnet.microsoft.com/download).
 
