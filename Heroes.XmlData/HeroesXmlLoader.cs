@@ -365,21 +365,23 @@ public class HeroesXmlLoader
 
     /// <summary>
     /// Determines if a file exists.
-    /// <para>
-    /// If <paramref name="mpqPath"/> is <see langword="null"/>, then <paramref name="path"/> must be a path relative to the <see cref="RootDirectory"/>.
-    /// </para>
-    /// <para>
-    /// If <paramref name="mpqPath"/> is not <see langword="null"/>, then <paramref name="path"/> must be relative to the <paramref name="mpqPath"/>.
-    /// </para>
     /// </summary>
-    /// <param name="path">The relative path of the file to check.</param>
-    /// <param name="mpqPath">The relative path of the mpq file.</param>
-    /// <returns><see langword="true"/> if the file exists, otherwise <see langword="false"/>. Will return <see langword="false"/> if <paramref name="mpqPath"/> was not found.</returns>
-    public bool FileExists(string? path, string? mpqPath = null)
+    /// <param name="path">
+    /// <para>
+    /// The file path to check.
+    /// </para>
+    /// <para>
+    /// The path should start with or be relative to the <c>mods</c> directory.
+    /// If the <see cref="LoadedType"/> is <see cref="HeroesXmlLoaderType.File"/>, then the path may also be an absolute path.
+    /// </para>
+    /// </param>
+    /// <param name="mpqEntryPath">A path to the entry within the MPQ file, only if the first parameter <paramref name="path"/> is an MPQ file.</param>
+    /// <returns><see langword="true"/> if the file exists, otherwise <see langword="false"/>.</returns>
+    public bool FileExists(string? path, string? mpqEntryPath = null)
     {
         lock (_lock)
         {
-            return _heroesSource.FileExists(path, mpqPath);
+            return _heroesSource.FileExists(path, mpqEntryPath);
         }
     }
 
@@ -398,22 +400,24 @@ public class HeroesXmlLoader
 
     /// <summary>
     /// Opens a file for reading.
-    /// <para>
-    /// If <paramref name="mpqPath"/> is <see langword="null"/>, then <paramref name="path"/> must be a path relative to the <see cref="RootDirectory"/>.
-    /// </para>
-    /// <para>
-    /// If <paramref name="mpqPath"/> is not <see langword="null"/>, then <paramref name="path"/> must be relative to the <paramref name="mpqPath"/>.
-    /// </para>
     /// </summary>
-    /// <param name="path">The relative path of the file to open.</param>
-    /// <param name="mpqPath">The relative path of the mpq file to open.</param>
+    /// <param name="path">
+    /// <para>
+    /// The file path to open.
+    /// </para>
+    /// <para>
+    /// The path should start with or be relative to the <c>mods</c> directory.
+    /// If the <see cref="LoadedType"/> is <see cref="HeroesXmlLoaderType.File"/>, then the path may also be an absolute path.
+    /// </para>
+    /// </param>
+    /// <param name="mpqEntryPath">A path to the entry within the MPQ file, only if the first parameter <paramref name="path"/> is an MPQ file.</param>
     /// <returns>Returns a <see cref="Stream"/> or else throws an exception.</returns>
-    /// <exception cref="FileNotFoundException">File was not found, or <paramref name="mpqPath"/> was not found.</exception>
-    public Stream GetFile(string path, string? mpqPath = null)
+    /// <exception cref="FileNotFoundException">Either the file was not found, or <paramref name="mpqEntryPath"/> was not found.</exception>
+    public Stream GetFile(string path, string? mpqEntryPath = null)
     {
         lock (_lock)
         {
-            return _heroesSource.GetFile(path, mpqPath);
+            return _heroesSource.GetFile(path, mpqEntryPath);
         }
     }
 

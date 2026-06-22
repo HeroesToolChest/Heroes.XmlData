@@ -90,7 +90,7 @@ public class CASCHeroesSourceTests
         _cascHeroesStorage.CASCHandlerWrapper.FileExists(Path.Join(rootDirectory, "test.stormmod", "base.stormdata", "depotcache", "mpq.s2ma")).Returns(true);
 
         // act
-        bool result = cascHeroesSource.FileExists("(listfile)", Path.Join("test.stormmod", "base.stormdata", "depotcache", mpqFile));
+        bool result = cascHeroesSource.FileExists(Path.Join("test.stormmod", "base.stormdata", "depotcache", mpqFile), "(listfile)");
 
         // assert
         result.Should().Be(found);
@@ -115,7 +115,7 @@ public class CASCHeroesSourceTests
         _cascHeroesStorage.CASCHandlerWrapper.FileExists(Path.Join(rootDirectory, "test.stormmod", "base.stormdata", "depotcache", "mpq.s2ma")).Returns(true);
 
         // act
-        bool result = cascHeroesSource.FileExists(fileToLookup, Path.Join("test.stormmod", "base.stormdata", "depotcache", "mpq.s2ma"));
+        bool result = cascHeroesSource.FileExists(Path.Join("test.stormmod", "base.stormdata", "depotcache", "mpq.s2ma"), fileToLookup);
 
         // assert
         result.Should().Be(found);
@@ -276,7 +276,7 @@ public class CASCHeroesSourceTests
         _cascHeroesStorage.CASCHandlerWrapper.FileExists(Path.Join(rootDirectory, "test.stormmod", "base.stormdata", "depotcache", "mpq.s2ma")).Returns(true);
 
         // act
-        Stream result = cascHeroesSource.GetFile("(listfile)", Path.Join("test.stormmod", "base.stormdata", "depotcache", "mpq.s2ma"));
+        Stream result = cascHeroesSource.GetFile(Path.Join("test.stormmod", "base.stormdata", "depotcache", "mpq.s2ma"), "(listfile)");
 
         // assert
         result.Should().NotBeNull();
@@ -319,7 +319,7 @@ public class CASCHeroesSourceTests
         _cascHeroesStorage.CASCHandlerWrapper.FileExists(Path.Join(rootDirectory, "test.stormmod", "base.stormdata", "depotcache", "mpq.s2ma")).Returns(false);
 
         // act
-        Action act = () => cascHeroesSource.GetFile("(listfile)", Path.Join("test.stormmod", "base.stormdata", "depotcache", "mpq.s2ma"));
+        Action act = () => cascHeroesSource.GetFile(Path.Join("test.stormmod", "base.stormdata", "depotcache", "mpq.s2ma"), "(listfile)");
 
         // assert
         act.Should().Throw<FileNotFoundException>()

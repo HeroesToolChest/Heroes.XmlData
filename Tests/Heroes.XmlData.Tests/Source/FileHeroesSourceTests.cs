@@ -22,7 +22,7 @@ public class FileHeroesSourceTests
     [TestMethod]
     [DataRow("mods", true, "somefile.txt")]
     [DataRow("mods", false, "file-no-exist.txt")]
-    [DataRow("other", false, "somefile.txt")]
+    [DataRow("other", true, "somefile.txt")]
     public void FileExists_PathLookupStartsWithInput_ReturnsResult(string inputRootDirectory, bool found, string fileToLookup)
     {
         // arrange
@@ -80,10 +80,50 @@ public class FileHeroesSourceTests
         FileHeroesSource fileHeroesSource = new(mockFileSystem, stormStorage, _stormModFactory, _depotCacheFactory, rootDirectory, _progressReporter);
 
         // act
-        bool result = fileHeroesSource.FileExists("(listfile)", Path.Join("test.stormmod", "base.stormdata", "depotcache", mpqFile));
+        bool result = fileHeroesSource.FileExists(Path.Join("test.stormmod", "base.stormdata", "depotcache", mpqFile), "(listfile)");
 
         // assert
         result.Should().Be(found);
+    }
+
+    [TestMethod]
+    public void FileExists_RelativePath_ReturnsTrue()
+    {
+        // arrange
+        string rootDirectory = Path.Join("some", "path", "mods");
+
+        MockFileSystem mockFileSystem = new(new Dictionary<string, MockFileData>
+        {
+            { Path.Join(rootDirectory, "test.stormmod", "base.stormdata", "somefile.txt"), new MockFileData("text") },
+        });
+        StormStorage stormStorage = new(false);
+        FileHeroesSource fileHeroesSource = new(mockFileSystem, stormStorage, _stormModFactory, _depotCacheFactory, rootDirectory, _progressReporter);
+
+        // act
+        bool result = fileHeroesSource.FileExists(Path.Join("test.stormmod", "base.stormdata", "somefile.txt"));
+
+        // assert
+        result.Should().Be(true);
+    }
+
+    [TestMethod]
+    public void FileExists_AbsolutePath_ReturnsTrue()
+    {
+        // arrange
+        string rootDirectory = Path.Join("some", "path", "mods");
+
+        MockFileSystem mockFileSystem = new(new Dictionary<string, MockFileData>
+        {
+            { Path.Join(rootDirectory, "test.stormmod", "base.stormdata", "somefile.txt"), new MockFileData("text") },
+        });
+        StormStorage stormStorage = new(false);
+        FileHeroesSource fileHeroesSource = new(mockFileSystem, stormStorage, _stormModFactory, _depotCacheFactory, rootDirectory, _progressReporter);
+
+        // act
+        bool result = fileHeroesSource.FileExists(Path.Join(rootDirectory, "test.stormmod", "base.stormdata", "somefile.txt"));
+
+        // assert
+        result.Should().Be(true);
     }
 
     [TestMethod]
@@ -102,7 +142,7 @@ public class FileHeroesSourceTests
         FileHeroesSource fileHeroesSource = new(mockFileSystem, stormStorage, _stormModFactory, _depotCacheFactory, rootDirectory, _progressReporter);
 
         // act
-        bool result = fileHeroesSource.FileExists(fileToLookup, Path.Join("test.stormmod", "base.stormdata", "depotcache", "mpq.s2ma"));
+        bool result = fileHeroesSource.FileExists(Path.Join("test.stormmod", "base.stormdata", "depotcache", "mpq.s2ma"), fileToLookup);
 
         // assert
         result.Should().Be(found);
@@ -124,7 +164,7 @@ public class FileHeroesSourceTests
         FileHeroesSource fileHeroesSource = new(mockFileSystem, stormStorage, _stormModFactory, _depotCacheFactory, rootDirectory, _progressReporter);
 
         // act
-        bool result = fileHeroesSource.FileExists(fileToLookup, Path.Join("test.stormmod", "base.stormdata", "depotcache", "mpq.s2ma"));
+        bool result = fileHeroesSource.FileExists(Path.Join("test.stormmod", "base.stormdata", "depotcache", "mpq.s2ma"), fileToLookup);
 
         // assert
         result.Should().Be(found);
@@ -304,7 +344,7 @@ public class FileHeroesSourceTests
         FileHeroesSource fileHeroesSource = new(mockFileSystem, stormStorage, _stormModFactory, _depotCacheFactory, rootDirectory, _progressReporter);
 
         // act
-        Stream result = fileHeroesSource.GetFile("(listfile)", Path.Join("test.stormmod", "base.stormdata", "depotcache", "mpq.s2ma"));
+        Stream result = fileHeroesSource.GetFile(Path.Join("test.stormmod", "base.stormdata", "depotcache", "mpq.s2ma"), "(listfile)");
 
         // assert
         result.Should().NotBeNull();
@@ -344,7 +384,7 @@ public class FileHeroesSourceTests
         FileHeroesSource fileHeroesSource = new(mockFileSystem, stormStorage, _stormModFactory, _depotCacheFactory, rootDirectory, _progressReporter);
 
         // act
-        Action act = () => fileHeroesSource.GetFile("(listfile)", Path.Join("test.stormmod", "base.stormdata", "depotcache", "mpq.s2ma"));
+        Action act = () => fileHeroesSource.GetFile(Path.Join("test.stormmod", "base.stormdata", "depotcache", "mpq.s2ma"), "(listfile)");
 
         // assert
         act.Should().Throw<FileNotFoundException>()

@@ -133,28 +133,12 @@ public sealed class StormElementData
     {
         get
         {
-            if (_value is not null)
-                return _value;
+            StormElementData? source = ResolveValueSource();
 
-            if (ElementDataPairs.Keys.Count == 1)
-            {
-                if (ElementDataPairs.TryGetValue("0", out StormElementData? data) && data.HasValue)
-                {
-                    return data.RawValue;
-                }
-                else
-                {
-                    StormElementData firstElementData = ElementDataPairs.First().Value;
-                    if (firstElementData.HasValue)
-                        return firstElementData.RawValue;
-                }
-            }
-            else if (ElementDataPairs.Keys.Count > 0 && ElementDataPairs.TryGetValue("Value", out StormElementData? data) && data.HasValue)
-            {
-                return data.RawValue;
-            }
+            if (source is not null && source != this)
+                return source.RawValue;
 
-            return null;
+            return _value;
         }
     }
 
@@ -166,37 +150,18 @@ public sealed class StormElementData
     {
         get
         {
-            ReadOnlySpan<char> returnValue = null;
-            bool isNull = false;
+            StormElementData? source = ResolveValueSource();
 
-            if (_value is not null)
-            {
-                returnValue = _value;
-            }
-            else if (ElementDataPairs.Keys.Count == 1)
-            {
-                if (ElementDataPairs.TryGetValue("0", out StormElementData? data) && data.HasValue)
-                {
-                    isNull = data.Value.IsNull;
-                    returnValue = data.Value.Value;
-                }
-                else
-                {
-                    StormElementData firstElementData = ElementDataPairs.First().Value;
-                    isNull = firstElementData.Value.IsNull;
-                    returnValue = firstElementData.Value.Value;
-                }
-            }
-            else if (ElementDataPairs.Keys.Count > 0 && ElementDataPairs.TryGetValue("Value", out StormElementData? data) && data.HasValue)
-            {
-                return data.Value;
-            }
+            if (source is null)
+                return new StormElementValue(this) { Value = null, IsNull = false };
 
-            return new StormElementValue(this)
-            {
-                Value = returnValue,
-                IsNull = isNull,
-            };
+            if (source == this)
+                return new StormElementValue(this) { Value = _value, IsNull = false };
+
+            if (ElementDataPairs.Count > 1)
+                return source.Value;
+
+            return new StormElementValue(this) { Value = source.Value.Value, IsNull = source.Value.IsNull };
         }
     }
 
@@ -263,13 +228,7 @@ public sealed class StormElementData
     /// <param name="index">The index value which is an element name or attribute name or value. Is case-insensitive.</param>
     /// <returns>The inner xml data as <see cref="StormElementData"/>.</returns>
     /// <exception cref="KeyNotFoundException"><paramref name="index"/> was not found.</exception>
-    public StormElementData this[string index]
-    {
-        get
-        {
-            return GetElementDataAt(index);
-        }
-    }
+    public StormElementData this[string index] => GetElementDataAt(index);
 
     /// <summary>
     /// Gets the inner xml data from the given <paramref name="index"/>.
@@ -277,19 +236,13 @@ public sealed class StormElementData
     /// <param name="index">A character span that contains the index value which is an element name or attribute name or value. Is case-insensitive.</param>
     /// <returns>The inner xml data as <see cref="StormElementData"/>.</returns>
     /// <exception cref="KeyNotFoundException"><paramref name="index"/> was not found.</exception>
-    public StormElementData this[ReadOnlySpan<char> index]
-    {
-        get
-        {
-            return GetElementDataAt(index);
-        }
-    }
+    public StormElementData this[ReadOnlySpan<char> index] => GetElementDataAt(index);
 
     /// <summary>
     /// Gets a collection of the inner data indexes.
     /// </summary>
     /// <returns>A collection of the inner data indexes.</returns>
-    public IEnumerable<string> GetElementDataIndexes()
+    public IReadOnlyCollection<string> GetElementDataIndexes()
     {
         return ElementDataPairs.Keys;
     }
@@ -298,7 +251,7 @@ public sealed class StormElementData
     /// Gets a collection of the inner data elements.
     /// </summary>
     /// <returns>A collection of <see cref="KeyValuePair"/>s representing the inner data elements.</returns>
-    public IEnumerable<KeyValuePair<string, StormElementData>> GetElementData()
+    public IReadOnlyDictionary<string, StormElementData> GetElementData()
     {
         return ElementDataPairs.AsReadOnly();
     }
@@ -338,7 +291,7 @@ public sealed class StormElementData
     /// Looks up the inner xml data from the given <paramref name="index"/>, returning a value that indicates whether such value exists.
     /// </summary>
     /// <param name="index">A character span that contains the index value which is an element name or attribute name or value. Is case-insensitive.</param>
-    /// <param name="stormElementData">The returming <see cref="StormElementData"/> if <paramref name="index"/> is found.</param>
+    /// <param name="stormElementData">The returning <see cref="StormElementData"/> if <paramref name="index"/> is found.</param>
     /// <returns><see langword="true"/> if the index is found, otherwise <see langword="false"/>.</returns>
     public bool TryGetElementDataAt(ReadOnlySpan<char> index, [NotNullWhen(true)] out StormElementData? stormElementData)
     {
@@ -349,7 +302,7 @@ public sealed class StormElementData
     /// Looks up the inner xml data from the given <paramref name="index"/>, returning a value that indicates whether such value exists.
     /// </summary>
     /// <param name="index">The index value which is an element name or attribute name or value. Is case-insensitive.</param>
-    /// <param name="stormElementData">The returming <see cref="StormElementData"/> if <paramref name="index"/> is found.</param>
+    /// <param name="stormElementData">The returning <see cref="StormElementData"/> if <paramref name="index"/> is found.</param>
     /// <returns><see langword="true"/> if the index is found, otherwise <see langword="false"/>.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="index"/> is <see langword="null"/>.</exception>
     public bool TryGetElementDataAt(string index, [NotNullWhen(true)] out StormElementData? stormElementData)
@@ -536,5 +489,29 @@ public sealed class StormElementData
             return StormElement.ElementType.Equals(elementType, StringComparison.OrdinalIgnoreCase);
 
         return false;
+    }
+
+    private StormElementData? ResolveValueSource()
+    {
+        if (_value is not null)
+            return this;
+
+        if (ElementDataPairs.Count == 1)
+        {
+            if (ElementDataPairs.TryGetValue("0", out StormElementData? indexed) && indexed.HasValue)
+                return indexed;
+
+            StormElementData first = ElementDataPairs.First().Value;
+            if (first.HasValue)
+                return first;
+        }
+        else if (ElementDataPairs.Count > 0 &&
+                 ElementDataPairs.TryGetValue("Value", out StormElementData? named) &&
+                 named.HasValue)
+        {
+            return named;
+        }
+
+        return null;
     }
 }

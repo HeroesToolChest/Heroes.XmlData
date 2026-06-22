@@ -12,15 +12,15 @@ internal sealed class CASCHeroesSource : HeroesSource, ICASCHeroesSource
 
     public ICASCHeroesStorage CASCHeroesStorage => _cascHeroesStorage;
 
-    public override bool FileExists(string? path, string? mpqPath = null)
+    public override bool FileExists(string? path, string? mpqEntryPath = null)
     {
-        if (string.IsNullOrEmpty(path))
+        if (string.IsNullOrWhiteSpace(path))
             return false;
 
-        if (mpqPath is null)
+        if (mpqEntryPath is null)
             return CASCHeroesStorage.CASCHandlerWrapper.FileExists(GetValidatedPath(path));
         else
-            return IsMpqFileEntryExists(GetValidatedPath(mpqPath), path);
+            return IsMpqFileEntryExists(GetValidatedPath(path), mpqEntryPath);
     }
 
     public override bool FileExists(StormFile stormFile)
@@ -31,11 +31,11 @@ internal sealed class CASCHeroesSource : HeroesSource, ICASCHeroesSource
             return FileExists(stormFile.StormPath.Path);
     }
 
-    public override Stream GetFile(string path, string? mpqPath = null)
+    public override Stream GetFile(string path, string? mpqEntryPath = null)
     {
         Stream? stream;
 
-        if (mpqPath is null)
+        if (mpqEntryPath is null)
         {
             stream = CASCHeroesStorage.CASCHandlerWrapper.OpenFile(GetValidatedPath(path));
 
@@ -43,7 +43,7 @@ internal sealed class CASCHeroesSource : HeroesSource, ICASCHeroesSource
         }
         else
         {
-            return GetMpqFileEntry(mpqPath, path);
+            return GetMpqFileEntry(path, mpqEntryPath);
         }
     }
 
@@ -71,4 +71,21 @@ internal sealed class CASCHeroesSource : HeroesSource, ICASCHeroesSource
     protected override IStormMod GetMpqStormMod(string name, string directoryPath, StormModType stormModType) => StormModFactory.CreateCASCMpqStormModInstance(this, name, directoryPath, stormModType);
 
     protected override IDepotCache GetDepotCache() => DepotCacheFactory.CreateCASCDepotCache(this);
+
+    protected override string GetValidatedPath(string path)
+    {
+        if (!path.StartsWith(DefaultModsDirectory))
+            path = Path.Combine(ModsBaseDirectoryPath, path);
+
+        return path;
+    }
+
+    protected override bool IsMpqFileEntryExists(string mpqPath, string entryPath)
+    {
+        if (!FileExists(mpqPath))
+            return false;
+
+        using MpqHeroesArchive mpqFile = MpqHeroesFile.Open(GetFile(mpqPath));
+        return mpqFile.FileEntryExists(entryPath);
+    }
 }

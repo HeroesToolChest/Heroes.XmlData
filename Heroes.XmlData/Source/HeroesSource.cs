@@ -241,11 +241,11 @@ internal abstract class HeroesSource : IHeroesSource
             return null;
     }
 
-    public abstract bool FileExists(string? path, string? mpqPath = null);
+    public abstract bool FileExists(string? path, string? mpqEntryPath = null);
 
     public abstract bool FileExists(StormFile stormFile);
 
-    public abstract Stream GetFile(string path, string? mpqPath = null);
+    public abstract Stream GetFile(string path, string? mpqEntryPath = null);
 
     public abstract Stream GetFile(StormFile stormFile);
 
@@ -255,35 +255,22 @@ internal abstract class HeroesSource : IHeroesSource
 
     protected abstract IDepotCache GetDepotCache();
 
-    protected string GetValidatedPath(string path)
-    {
-        if (!path.StartsWith(DefaultModsDirectory))
-            path = Path.Join(ModsBaseDirectoryPath, path);
+    protected abstract string GetValidatedPath(string path);
 
-        return path;
-    }
+    protected abstract bool IsMpqFileEntryExists(string mpqPath, string filePath);
 
-    protected bool IsMpqFileEntryExists(string mpqPath, string filePath)
-    {
-        if (!FileExists(mpqPath))
-            return false;
-
-        using MpqHeroesArchive mpqFile = MpqHeroesFile.Open(GetFile(mpqPath));
-        return mpqFile.FileEntryExists(filePath);
-    }
-
-    protected Stream GetMpqFileEntry(string mpqPath, string filePath)
+    protected Stream GetMpqFileEntry(string mpqPath, string entryPath)
     {
         if (!FileExists(mpqPath))
             throw new FileNotFoundException($"Could not find mpq file", mpqPath);
 
         using MpqHeroesArchive mpqFile = MpqHeroesFile.Open(GetFile(mpqPath));
-        if (mpqFile.TryGetEntry(filePath, out MpqHeroesArchiveEntry? mpqHeroesArchiveEntry))
+        if (mpqFile.TryGetEntry(entryPath, out MpqHeroesArchiveEntry? mpqHeroesArchiveEntry))
         {
             return mpqFile.DecompressEntry(mpqHeroesArchiveEntry.Value);
         }
 
-        throw new FileNotFoundException($"Could not find file in mpq (mpq path: {mpqPath}", filePath);
+        throw new FileNotFoundException($"Could not find entry in mpq (mpq path: {mpqPath}", entryPath);
     }
 
     private void AddStormMods()

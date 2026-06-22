@@ -602,7 +602,7 @@ public class StormElementDataTests
         StormElementData data = new(null!, element);
 
         // act
-        List<string> results = [.. data.GetElementDataIndexes()];
+        IReadOnlyCollection<string> results = data.GetElementDataIndexes();
 
         // assert
         results.Should().SatisfyRespectively(
@@ -646,7 +646,7 @@ public class StormElementDataTests
         StormElementData data = new(null!, element);
 
         // act
-        List<string> results = [.. data.GetElementDataAt("heroarray").GetElementDataIndexes()];
+        IReadOnlyCollection<string> results = data.GetElementDataAt("heroarray").GetElementDataIndexes();
 
         // assert
         results.Should().SatisfyRespectively(
@@ -678,7 +678,7 @@ public class StormElementDataTests
         StormElementData data = new(null!, element);
 
         // act
-        List<KeyValuePair<string, StormElementData>> result = [.. data.GetElementData()];
+        IReadOnlyDictionary<string, StormElementData> result = data.GetElementData();
 
         // assert
         result.Should().HaveCount(5);
@@ -705,15 +705,15 @@ public class StormElementDataTests
         StormElementData data = new(stormElement, element);
 
         // act
-        List<KeyValuePair<string, StormElementData>> result = [.. data.GetElementDataAt("CardLayouts").GetElementDataAt("0").GetElementDataAt("LayoutButtons").GetElementData()];
+        IReadOnlyDictionary<string, StormElementData> result = data.GetElementDataAt("CardLayouts").GetElementDataAt("0").GetElementDataAt("LayoutButtons").GetElementData();
 
         // assert
         result.Should().HaveCount(5);
-        result[0].Value.GetElementDataAt("Face").Value.GetString().Should().Be("Attack");
-        result[1].Value.GetElementDataAt("Face").Value.GetString().Should().Be("AcquireMove");
-        result[2].Value.GetElementDataAt("Face").Value.GetString().Should().Be("AbathurSymbiote");
-        result[3].Value.GetElementDataAt("Face").Value.GetString().Should().Be("AbathurToxicNest");
-        result[4].Value.GetElementDataAt("Face").Value.GetString().Should().Be("AbathurDeepTunnel");
+        result["1"].GetElementDataAt("Face").Value.GetString().Should().Be("Attack");
+        result["2"].GetElementDataAt("Face").Value.GetString().Should().Be("AcquireMove");
+        result["3"].GetElementDataAt("Face").Value.GetString().Should().Be("AbathurSymbiote");
+        result["4"].GetElementDataAt("Face").Value.GetString().Should().Be("AbathurToxicNest");
+        result["5"].GetElementDataAt("Face").Value.GetString().Should().Be("AbathurDeepTunnel");
     }
 
     [TestMethod]
@@ -736,17 +736,17 @@ public class StormElementDataTests
         StormElementData data = new(stormElement, element);
 
         // act
-        List<KeyValuePair<string, StormElementData>> result = [.. data.GetElementDataAt("TooltipAppender").GetElementData()];
+        IReadOnlyDictionary<string, StormElementData> result = data.GetElementDataAt("TooltipAppender").GetElementData();
 
         // assert
         result.Should().HaveCount(3);
-        result[0].Value.GetElementDataAt("Face").Value.GetString().Should().Be("SamuroDeflectionTalent");
-        result[1].Value.GetElementDataAt("Face").Value.GetString().Should().Be("SamuroPressTheAttack");
-        result[2].Value.GetElementDataAt("Face").Value.GetString().Should().Be("SamuroBlademastersPursuitTalent");
+        result["0"].GetElementDataAt("Face").Value.GetString().Should().Be("SamuroDeflectionTalent");
+        result["1"].GetElementDataAt("Face").Value.GetString().Should().Be("SamuroPressTheAttack");
+        result["2"].GetElementDataAt("Face").Value.GetString().Should().Be("SamuroBlademastersPursuitTalent");
 
-        result[0].Value.GetElementDataAt("Validator").Value.GetString().Should().Be("SamuroHasDeflectionTalent");
-        result[1].Value.GetElementDataAt("Validator").Value.GetString().Should().Be("SamuroHasPressTheAttack");
-        result[2].Value.GetElementDataAt("Validator").Value.GetString().Should().Be("SamuroHasBlademastersPursuit");
+        result["0"].GetElementDataAt("Validator").Value.GetString().Should().Be("SamuroHasDeflectionTalent");
+        result["1"].GetElementDataAt("Validator").Value.GetString().Should().Be("SamuroHasPressTheAttack");
+        result["2"].GetElementDataAt("Validator").Value.GetString().Should().Be("SamuroHasBlademastersPursuit");
     }
 
     [TestMethod]
