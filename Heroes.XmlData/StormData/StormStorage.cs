@@ -186,40 +186,32 @@ internal sealed partial class StormStorage : IStormStorage
 
     public string GetValueFromConstElement(XElement constElement)
     {
-        string? valueAttribute = constElement.Attribute("value")?.Value;
-        string? isExpressionAttribute = constElement.Attribute("evaluateAsExpression")?.Value;
+        (string? valueAttribute, bool isExpressionAttribute) = ReadConstAttributes(constElement);
 
         if (string.IsNullOrWhiteSpace(valueAttribute))
             return valueAttribute ?? string.Empty;
 
-        if (!string.IsNullOrWhiteSpace(isExpressionAttribute) && isExpressionAttribute == "1")
-        {
+        if (isExpressionAttribute)
             return HeroesPrefixNotation.Compute(this, valueAttribute).ToString();
-        }
-        else if (double.TryParse(valueAttribute, out double value))
-        {
+
+        if (double.TryParse(valueAttribute, NumberStyles.Float, CultureInfo.InvariantCulture, out double value))
             return value.ToString();
-        }
 
         return valueAttribute;
     }
 
     public double GetValueFromConstElementAsNumber(XElement constElement)
     {
-        string? valueAttribute = constElement.Attribute("value")?.Value;
-        string? isExpressionAttribute = constElement.Attribute("evaluateAsExpression")?.Value;
+        (string? valueAttribute, bool isExpressionAttribute) = ReadConstAttributes(constElement);
 
         if (string.IsNullOrWhiteSpace(valueAttribute))
             return 0;
 
-        if (!string.IsNullOrWhiteSpace(isExpressionAttribute) && isExpressionAttribute == "1")
-        {
+        if (isExpressionAttribute)
             return HeroesPrefixNotation.Compute(this, valueAttribute);
-        }
-        else if (double.TryParse(valueAttribute, out double value))
-        {
+
+        if (double.TryParse(valueAttribute, NumberStyles.Float, CultureInfo.InvariantCulture, out double value))
             return value;
-        }
 
         return 0;
     }
@@ -236,7 +228,7 @@ internal sealed partial class StormStorage : IStormStorage
                 return GetValueFromConstElement(stormXElementValuePath.Value);
             }
         }
-        else if (double.TryParse(text, out double result))
+        else if (double.TryParse(text, NumberStyles.Float, CultureInfo.InvariantCulture, out double result))
         {
             return result.ToString();
         }
@@ -256,7 +248,7 @@ internal sealed partial class StormStorage : IStormStorage
                 return GetValueFromConstElementAsNumber(stormXElementValuePath.Value);
             }
         }
-        else if (double.TryParse(text, out double result))
+        else if (double.TryParse(text, NumberStyles.Float, CultureInfo.InvariantCulture, out double result))
         {
             return result;
         }
@@ -559,6 +551,13 @@ internal sealed partial class StormStorage : IStormStorage
                 _loadedMapMods--;
             }
         }
+    }
+
+    private (string? Value, bool IsExpressionAttribute) ReadConstAttributes(XElement constElement)
+    {
+        string? value = constElement.Attribute("value")?.Value;
+        string? isExpression = constElement.Attribute("evaluateAsExpression")?.Value;
+        return (Value: value, IsExpressionAttribute: isExpression == "1");
     }
 }
 

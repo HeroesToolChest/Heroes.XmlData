@@ -93,7 +93,7 @@ internal sealed class HeroesPrefixNotation
         {
             return _stormStorage.GetValueFromConstTextAsNumber(expression);
         }
-        else if (double.TryParse(expression, out double value))
+        else if (double.TryParse(expression, NumberStyles.Float, CultureInfo.InvariantCulture, out double value))
         {
             return value;
         }

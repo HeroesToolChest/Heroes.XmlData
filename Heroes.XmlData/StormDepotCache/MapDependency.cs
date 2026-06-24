@@ -16,16 +16,14 @@ internal sealed record MapDependency
     {
         foreach (XElement valueElement in dependencies)
         {
-            yield return GetMapDependency(valueElement, modsDirectory);
+            yield return GetMapDependency(valueElement.Value, modsDirectory);
         }
     }
 
-    private static MapDependency GetMapDependency(XElement valueElement, string modsDirectory)
+    private static MapDependency GetMapDependency(ReadOnlySpan<char> value, string modsDirectory)
     {
         Span<Range> valueParts = stackalloc Range[2];
         Span<Range> bnetParts = stackalloc Range[3];
-
-        ReadOnlySpan<char> value = valueElement.Value;
 
         value.Split(valueParts, ',');
 
@@ -50,9 +48,9 @@ internal sealed record MapDependency
         return new()
         {
             BnetName = bnetSpan[bnetParts[0]][(indexOfBnetFileName + 1)..].ToString(),
-            BnetVersionMajor = int.Parse(bnetSpan[bnetParts[1]][..indexOfBnetVersion]),
-            BnetVersionMinor = int.Parse(bnetSpan[bnetParts[1]][(indexOfBnetVersion + 1)..]),
-            BnetNamespace = int.Parse(bnetSpan[bnetParts[2]]),
+            BnetVersionMajor = int.Parse(bnetSpan[bnetParts[1]][..indexOfBnetVersion], NumberStyles.Integer, CultureInfo.InvariantCulture),
+            BnetVersionMinor = int.Parse(bnetSpan[bnetParts[1]][(indexOfBnetVersion + 1)..], NumberStyles.Integer, CultureInfo.InvariantCulture),
+            BnetNamespace = int.Parse(bnetSpan[bnetParts[2]], NumberStyles.Integer, CultureInfo.InvariantCulture),
             LocalFile = PathHelper.NormalizePath(filePathSpan[(indexOfFilePath + 1)..], modsDirectory),
         };
     }

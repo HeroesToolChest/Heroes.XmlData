@@ -141,13 +141,14 @@ internal sealed class StormModStorage : IStormModStorage
 
     public void AddXmlDataFile(XDocument document, StormPath stormPath)
     {
-        if (document.Root is null)
+        XElement? root = document.Root;
+        if (root is null)
             return;
 
         if (!_addedXmlDataFilePathsList.Add(stormPath))
             return;
 
-        foreach (XElement element in document.Root.Elements())
+        foreach (XElement element in root.Elements())
         {
             if (_stormStorage.AddConstantXElement(StormModType, element, stormPath))
                 continue;
@@ -176,7 +177,7 @@ internal sealed class StormModStorage : IStormModStorage
 
         string? buildText = reader.ReadLine()?.TrimStart('B');
 
-        if (int.TryParse(buildText, out int result))
+        if (int.TryParse(buildText, NumberStyles.Integer, CultureInfo.InvariantCulture, out int result))
             BuildId = result;
     }
 
@@ -202,9 +203,7 @@ internal sealed class StormModStorage : IStormModStorage
     {
         foreach (XElement element in elements)
         {
-            List<XAttribute> attributes = [.. element.Attributes()];
-
-            foreach (XAttribute attribute in attributes)
+            foreach (XAttribute attribute in element.Attributes())
             {
                 ReadOnlySpan<char> attributeSpan = attribute.Value;
 
@@ -229,15 +228,17 @@ internal sealed class StormModStorage : IStormModStorage
         if (indexOfConst < 0)
             return;
 
-        ReadOnlySpan<char> attributeOfStartSpan = attributeSpan[indexOfConst..];
+        ReadOnlySpan<char> fromConst = attributeSpan[indexOfConst..];
 
-        int endIndexOfConst = attributeOfStartSpan.IndexOfAny(" ,.;");
-        if (endIndexOfConst < 0)
-            endIndexOfConst = attributeOfStartSpan.Length + indexOfConst;
-        else
-            endIndexOfConst += indexOfConst;
+        int endIndexOfConst = fromConst.IndexOfAny(" ,.;");
+        ReadOnlySpan<char> constSpan = endIndexOfConst < 0
+            ? fromConst
+            : fromConst[..endIndexOfConst];
 
-        element.SetAttributeValue(attribute.Name, attribute.Value.Replace(attributeSpan[indexOfConst..endIndexOfConst].ToString(), _stormStorage.GetValueFromConstTextAsText(attributeSpan[indexOfConst..endIndexOfConst])));
+        string constKey = constSpan.ToString();
+        string resolvedValue = _stormStorage.GetValueFromConstTextAsText(constSpan);
+
+        element.SetAttributeValue(attribute.Name, attribute.Value.Replace(constKey, resolvedValue));
     }
 
     private void SetAssetAttribute(XElement element, XAttribute attribute, ReadOnlySpan<char> attributeSpan)

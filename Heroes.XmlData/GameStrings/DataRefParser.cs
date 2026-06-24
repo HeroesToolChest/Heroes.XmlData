@@ -105,7 +105,7 @@ internal sealed class DataRefParser
             {
                 if (partSpanTrimmed[0] == '[')
                     dataRefParts.Add(new TextSectionValueScale(ParseBracketDRef(partSpanTrimmed)));
-                else if (double.TryParse(partSpanTrimmed, out double value))
+                else if (double.TryParse(partSpanTrimmed, NumberStyles.Float, CultureInfo.InvariantCulture, out double value))
                     dataRefParts.Add(new TextSectionValueScale(new ValueScale(value))); // hardcoded value
                 else if (partSpanTrimmed[0] == '$' && partSpanTrimmed[^1] == '$')
                     dataRefParts.Add(new TextSectionValueScale(new ValueScale(0)));
@@ -277,7 +277,7 @@ internal sealed class DataRefParser
 
     private ValueScale GetValueScale(ReadOnlySpan<char> stormElementDataValue, ReadOnlySpan<char> fullSpan, ReadOnlySpan<Range> xmlParts, ReadOnlySpan<char> fieldIndexer = default)
     {
-        if (!double.TryParse(stormElementDataValue, out double dataValue))
+        if (!double.TryParse(stormElementDataValue, NumberStyles.Float, CultureInfo.InvariantCulture, out double dataValue))
             return new ValueScale(0);
 
         StormElement? scalingStormElement = _stormStorage.GetScaleValueStormElementById(fullSpan[xmlParts[1]], fullSpan[xmlParts[0]]);

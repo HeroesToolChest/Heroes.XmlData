@@ -39,7 +39,7 @@ public readonly ref struct StormElementValue
     {
         try
         {
-            return int.Parse(Value);
+            return int.Parse(Value, NumberStyles.Integer, CultureInfo.InvariantCulture);
         }
         catch (FormatException ex)
         {
@@ -54,7 +54,7 @@ public readonly ref struct StormElementValue
     /// <returns><see langword="true"/> if the value can be converted to an <see cref="int"/>, otherwise <see langword="false"/>.</returns>
     public readonly bool TryGetInt32(out int value)
     {
-        return int.TryParse(Value, out value);
+        return int.TryParse(Value, NumberStyles.Integer, CultureInfo.InvariantCulture, out value);
     }
 
     /// <summary>
@@ -66,7 +66,7 @@ public readonly ref struct StormElementValue
     {
         try
         {
-            return double.Parse(Value);
+            return double.Parse(Value, NumberStyles.Float, CultureInfo.InvariantCulture);
         }
         catch (FormatException ex)
         {
@@ -81,7 +81,7 @@ public readonly ref struct StormElementValue
     /// <returns><see langword="true"/> if the value can be converted to an <see cref="double"/>, otherwise <see langword="false"/>.</returns>
     public readonly bool TryGetDouble(out double value)
     {
-        return double.TryParse(Value, out value);
+        return double.TryParse(Value, NumberStyles.Float, CultureInfo.InvariantCulture, out value);
     }
 
     /// <inheritdoc/>

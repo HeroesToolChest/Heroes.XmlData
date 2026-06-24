@@ -1,10 +1,18 @@
 ﻿using System.IO.Abstractions;
+using System.Xml;
 
 namespace Heroes.XmlData.StormDepotCache;
 
 internal abstract class DepotCache<T> : IDepotCache
     where T : IHeroesSource
 {
+    private static readonly XmlReaderSettings _xmlReaderSettings = new()
+    {
+        IgnoreWhitespace = true,
+        IgnoreComments = true,
+        IgnoreProcessingInstructions = true,
+    };
+
     public DepotCache(T heroesSource)
         : this(new FileSystem(), heroesSource)
     {
@@ -132,18 +140,20 @@ internal abstract class DepotCache<T> : IDepotCache
 
         string? mapId = GetMapId(mpqHeroesArchive, mapScriptEntry.Value);
 
-        XDocument document = XDocument.Load(mpqHeroesArchive.DecompressEntry(documentInfoEntry.Value));
-        XElement rootElement = document.Root!;
+        using Stream documentInfoStream = mpqHeroesArchive.DecompressEntry(documentInfoEntry.Value);
+        using XmlReader xmlReader = XmlReader.Create(documentInfoStream, _xmlReaderSettings);
 
-        IEnumerable<XElement> dependencies = rootElement.Element("Dependencies")!.Elements();
-        IEnumerable<XElement> modifiableDependencies = rootElement.Element("ModifiableDependencies")!.Elements();
+        XDocument document = XDocument.Load(xmlReader, LoadOptions.None);
+
+        IEnumerable<XElement> dependencies = document.Root?.Element("Dependencies")!.Elements() ?? [];
+        IEnumerable<XElement> modifiableDependencies = document.Root?.Element("ModifiableDependencies")!.Elements() ?? [];
 
         S2MAProperties s2maProperties = new()
         {
-            DocInfoIconFile = PathHelper.NormalizePath(rootElement.Element("Icon")?.Value),
+            DocInfoIconFile = PathHelper.NormalizePath(document.Root?.Element("Icon")?.Value),
             MapId = mapId,
-            MapDependencies = MapDependency.GetMapDependencies(dependencies, HeroesSource.DefaultModsDirectory).ToList(),
-            ModifiableDependencies = GetMapModifiableDependencies(modifiableDependencies, HeroesSource.DefaultModsDirectory).ToList(),
+            MapDependencies = [.. MapDependency.GetMapDependencies(dependencies, HeroesSource.DefaultModsDirectory)],
+            ModifiableDependencies = [.. GetMapModifiableDependencies(modifiableDependencies, HeroesSource.DefaultModsDirectory)],
         };
 
         // find the s2mv file equivalent
@@ -164,13 +174,16 @@ internal abstract class DepotCache<T> : IDepotCache
 
         while (!streamReader.EndOfStream)
         {
-            ReadOnlySpan<char> line = streamReader.ReadLine();
+            string? line = streamReader.ReadLine();
 
-            if (line.IsEmpty || line.IsWhiteSpace() || !line.Contains("mAPMapStringID", StringComparison.OrdinalIgnoreCase))
+            if (string.IsNullOrWhiteSpace(line))
                 continue;
 
             int equalsIndex = line.IndexOf('=');
             if (equalsIndex < 0)
+                continue;
+
+            if (!line.Contains("mAPMapStringID", StringComparison.OrdinalIgnoreCase))
                 continue;
 
             return line[(equalsIndex + 1)..].Trim().Trim(['"', ';']).ToString();

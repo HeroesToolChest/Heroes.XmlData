@@ -360,28 +360,35 @@ public sealed class StormElementData
 
     private void Parse(XElement rootElement)
     {
+        ParseAttributes(rootElement);
+        ParseElements(rootElement);
+        ParseProcessingInstructions(rootElement);
+    }
+
+    private void ParseAttributes(XElement rootElement)
+    {
         IEnumerable<XAttribute> attributes = rootElement.Attributes();
-        IEnumerable<XElement> elements = rootElement.Elements();
-        IEnumerable<XProcessingInstruction> processingIntructions = rootElement.Nodes().OfType<XProcessingInstruction>();
 
         foreach (XAttribute attribute in attributes)
         {
-            if (attribute.Name.LocalName.Equals("index", StringComparison.OrdinalIgnoreCase) && !IsElementNonIndexed(rootElement.Name.LocalName))
+            string localName = attribute.Name.LocalName;
+
+            if (localName.Equals("index", StringComparison.OrdinalIgnoreCase) && !IsElementNonIndexed(rootElement.Name.LocalName))
                 continue;
 
-            if (attribute.Name.LocalName.Equals("removed", StringComparison.OrdinalIgnoreCase))
+            if (localName.Equals("removed", StringComparison.OrdinalIgnoreCase))
                 continue;
 
-            if (attribute.Name.LocalName.Equals("default", StringComparison.OrdinalIgnoreCase))
+            if (localName.Equals("default", StringComparison.OrdinalIgnoreCase))
                 continue;
 
-            if (attribute.Name.LocalName.Equals("value", StringComparison.OrdinalIgnoreCase))
+            if (localName.Equals("value", StringComparison.OrdinalIgnoreCase))
             {
                 _value = attribute.Value;
                 continue;
             }
 
-            if (attribute.Name.LocalName.Equals("parent", StringComparison.OrdinalIgnoreCase) &&
+            if (localName.Equals("parent", StringComparison.OrdinalIgnoreCase) &&
                 ElementDataPairs.TryGetValue("id", out StormElementData? existingIdData) && !string.IsNullOrEmpty(existingIdData.RawValue) &&
                 existingIdData.RawValue.Equals(attribute.Value))
             {
@@ -393,15 +400,33 @@ public sealed class StormElementData
                 ElementDataPairs[attribute.Name.LocalName] = new StormElementData(this, attribute.Name.LocalName, attribute.Value);
             }
         }
+    }
+
+    private void ParseElements(XElement rootElement)
+    {
+        IEnumerable<XElement> elements = rootElement.Elements();
 
         foreach (XElement element in elements)
         {
             string elementName = element.Name.LocalName;
-            string? indexAtt = element.Attribute("index")?.Value ?? element.Attribute("Index")?.Value;
-            string? valueAtt = element.Attribute("value")?.Value ?? element.Attribute("Value")?.Value;
-            string? removedAtt = element.Attribute("removed")?.Value ?? element.Attribute("Removed")?.Value;
+            string? indexAtt = null;
+            string? valueAtt = null;
+            string? removedAtt = null;
 
-            bool isRemovedElement = !string.IsNullOrEmpty(removedAtt) && removedAtt.Equals("1");
+            // loop through and set the attributes we ca
+            foreach (XAttribute attr in element.Attributes())
+            {
+                string attributeName = attr.Name.LocalName;
+
+                if (indexAtt is null && attributeName.Equals("index", StringComparison.OrdinalIgnoreCase))
+                    indexAtt = attr.Value;
+                else if (valueAtt is null && attributeName.Equals("value", StringComparison.OrdinalIgnoreCase))
+                    valueAtt = attr.Value;
+                else if (removedAtt is null && attributeName.Equals("removed", StringComparison.OrdinalIgnoreCase))
+                    removedAtt = attr.Value;
+            }
+
+            bool isRemovedElement = removedAtt == "1";
 
             if (!string.IsNullOrEmpty(indexAtt) && !IsElementNonIndexed(elementName))
             {
@@ -434,10 +459,17 @@ public sealed class StormElementData
                 ElementDataPairs[elementName] = new StormElementData(this, elementName, valueAtt);
             }
         }
+    }
 
-        foreach (XProcessingInstruction processingInstruction in processingIntructions)
+    private void ParseProcessingInstructions(XElement rootElement)
+    {
+        foreach (XNode node in rootElement.Nodes())
         {
-            XElement piElement = XElement.Parse($"<{processingInstruction.Target} {processingInstruction.Data}/>");
+            if (node is not XProcessingInstruction pi)
+                continue;
+
+            XElement piElement = XElement.Parse($"<{pi.Target} {pi.Data}/>");
+
             string? id = piElement.Attribute("id")?.Value;
             if (string.IsNullOrEmpty(id))
                 continue;
