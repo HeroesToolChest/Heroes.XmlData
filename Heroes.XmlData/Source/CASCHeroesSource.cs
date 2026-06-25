@@ -75,7 +75,7 @@ internal sealed class CASCHeroesSource : HeroesSource, ICASCHeroesSource
     protected override string GetValidatedPath(string path)
     {
         if (!path.StartsWith(DefaultModsDirectory))
-            path = Path.Combine(ModsBaseDirectoryPath, path);
+            path = Path.Join(ModsBaseDirectoryPath, path);
 
         return path;
     }
