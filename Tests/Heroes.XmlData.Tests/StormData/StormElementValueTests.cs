@@ -75,7 +75,7 @@ public class StormElementValueTests
         StormElement stormElement = new(new StormXElementValuePath(element, TestHelpers.GetStormPath("some\\path")));
 
         // act
-        int value = stormElement.DataValues.GetElementDataAt("Value").Value.GetInt();
+        int value = stormElement.DataValues.GetElementDataAt("Value").Value.GetInt32();
 
         // assert
         value.Should().Be(5);
@@ -94,7 +94,7 @@ public class StormElementValueTests
         StormElement stormElement = new(new StormXElementValuePath(element, TestHelpers.GetStormPath("some\\path")));
 
         // act
-        Action act = () => stormElement.DataValues.GetElementDataAt("Value").Value.GetInt();
+        Action act = () => stormElement.DataValues.GetElementDataAt("Value").Value.GetInt32();
 
         // assert
         act.Should().Throw<HeroesXmlDataException>();

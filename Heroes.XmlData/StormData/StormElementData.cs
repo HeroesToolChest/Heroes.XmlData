@@ -153,7 +153,7 @@ public sealed class StormElementData
             StormElementData? source = ResolveValueSource();
 
             if (source is null)
-                return new StormElementValue(this) { Value = null, IsNull = false };
+                return new StormElementValue(this) { Value = null, IsNull = true };
 
             if (source == this)
                 return new StormElementValue(this) { Value = _value, IsNull = false };

@@ -308,7 +308,7 @@ public class StormElementDataTests
         StormElementData stormElementData = new(stormElement, xElement);
 
         // assert
-        stormElementData.GetElementDataAt("Name").Value.GetInt().Should().Be(5);
+        stormElementData.GetElementDataAt("Name").Value.GetInt32().Should().Be(5);
     }
 
     [TestMethod]

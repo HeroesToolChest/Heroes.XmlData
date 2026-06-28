@@ -27,6 +27,9 @@ public readonly ref struct StormElementValue
     /// <returns>The value as a <see cref="string"/>.</returns>
     public readonly string GetString()
     {
+        if (Value.IndexOf('#') < 0)
+            return Value.ToString();
+
         return ConstructString(ParseElementValues());
     }
 
@@ -35,7 +38,7 @@ public readonly ref struct StormElementValue
     /// </summary>
     /// <returns>The value as a <see cref="int"/>.</returns>
     /// <exception cref="HeroesXmlDataException">The value is not convertable to a <see cref="int"/>.</exception>
-    public readonly int GetInt()
+    public readonly int GetInt32()
     {
         try
         {
@@ -133,113 +136,95 @@ public readonly ref struct StormElementValue
             }
         }
 
-        if (index <= Value.Length)
-        {
-            PushNormalText(ref index, ref startingIndex, elementNameList);
-        }
+        PushNormalText(ref index, ref startingIndex, elementNameList);
 
         return elementNameList;
     }
 
     private readonly string ConstructString(List<(Range Text, bool Replace)> elementNameList)
     {
-        int bufferSize = GetBufferSize(elementNameList);
+        char[] rentedArrayPool = ArrayPool<char>.Shared.Rent(Value.Length);
 
-        int indexOfBuffer = 0;
-        Span<char> buffer = stackalloc char[bufferSize];
-
-        foreach ((Range indexOfText, bool replace) in elementNameList)
+        try
         {
-            ReadOnlySpan<char> currentValue = Value[indexOfText];
-            ReadOnlySpan<char> trimmedValue = currentValue.Trim('#');
+            int written = 0;
 
-            if (replace && _defaultStormElementData.StormElement.ProcessingInstructionsById.TryGetValue(trimmedValue, out XElement? piElement))
+            foreach ((Range indexOfText, bool replace) in elementNameList)
             {
-                string? piValue = piElement.Attribute("value")?.Value;
-                if (piValue is not null)
+                ReadOnlySpan<char> currentValue = Value[indexOfText];
+                ReadOnlySpan<char> trimmedValue = currentValue.Trim('#');
+
+                ReadOnlySpan<char> valueToCopy;
+
+                if (replace && _defaultStormElementData.StormElement.ProcessingInstructionsById.TryGetValue(trimmedValue, out XElement? piElement))
                 {
-                    piValue.CopyTo(buffer[indexOfBuffer..]);
-                    indexOfBuffer += piValue.Length;
+                    string? piValue = piElement.Attribute("value")?.Value;
+                    valueToCopy = piValue is not null ? piValue.AsSpan() : currentValue;
+                }
+                else if (replace && _defaultStormElementData.TryGetElementDataAt(trimmedValue, out StormElementData? stormElementData) && stormElementData.RawValue is not null)
+                {
+                    valueToCopy = stormElementData.RawValue.AsSpan();
                 }
                 else
                 {
-                    CopyValueToBuffer(ref indexOfBuffer, buffer, currentValue);
+                    valueToCopy = currentValue;
                 }
+
+                // check size and grow array pool if needed
+                if (written + valueToCopy.Length > rentedArrayPool.Length)
+                {
+                    int newSize = Math.Max(rentedArrayPool.Length * 2, written + valueToCopy.Length);
+                    char[] largerArrayPool = ArrayPool<char>.Shared.Rent(newSize);
+
+                    rentedArrayPool.AsSpan(0, written).CopyTo(largerArrayPool);
+
+                    ArrayPool<char>.Shared.Return(rentedArrayPool);
+
+                    rentedArrayPool = largerArrayPool;
+                }
+
+                valueToCopy.CopyTo(rentedArrayPool.AsSpan(written));
+                written += valueToCopy.Length;
             }
-            else if (replace && _defaultStormElementData.TryGetElementDataAt(trimmedValue, out StormElementData? stormElementData) && stormElementData.RawValue is not null)
-            {
-                stormElementData.RawValue.CopyTo(buffer[indexOfBuffer..]);
-                indexOfBuffer += stormElementData.RawValue.Length;
-            }
-            else
-            {
-                CopyValueToBuffer(ref indexOfBuffer, buffer, currentValue);
-            }
+
+            return new string(rentedArrayPool, 0, written);
         }
-
-        return buffer.ToString();
-
-        static void CopyValueToBuffer(ref int indexOfBuffer, Span<char> buffer, ReadOnlySpan<char> currentValue)
+        finally
         {
-            currentValue.CopyTo(buffer[indexOfBuffer..]);
-            indexOfBuffer += currentValue.Length;
+            ArrayPool<char>.Shared.Return(rentedArrayPool);
         }
     }
 
-    private readonly int GetBufferSize(List<(Range Text, bool Replace)> elementNameList)
-    {
-        int count = 0;
-        foreach ((Range indexOfText, bool replace) in elementNameList)
-        {
-            ReadOnlySpan<char> currentValue = Value[indexOfText];
-            ReadOnlySpan<char> trimmedValue = currentValue.Trim('#');
-
-            if (replace && _defaultStormElementData.StormElement.ProcessingInstructionsById.TryGetValue(trimmedValue, out XElement? piElement))
-                count += piElement.Attribute("value")?.Value.Length ?? currentValue.Length;
-            else if (replace && _defaultStormElementData.TryGetElementDataAt(trimmedValue, out StormElementData? stormElementData) && stormElementData.RawValue is not null)
-                count += stormElementData.RawValue.Length;
-            else
-                count += currentValue.Length;
-        }
-
-        return count;
-    }
-
+    // note: this method assumes that the caller has already confirmed that 'index' points at the first '#' of the opening ##.
     private readonly bool TryParseElementTag(ref int index, [NotNullWhen(true)] out Range? tag)
     {
         tag = null;
 
-        ReadOnlySpan<char> currentTextSpan = Value[index..];
-        int lengthOffset = Value.Length - currentTextSpan.Length;
+        // ##name##
+        int contentStart = index + 2;
 
-        int startElementIndex = currentTextSpan.IndexOf("##") + 1; // the second char of the ## (first batch)
-        int endElementIndex = -1; // first char of the ## (second batch)
-
-        for (int i = startElementIndex; i < currentTextSpan.Length; i++)
+        // scan for closing ##
+        int closingHash = -1;
+        for (int i = contentStart; i < Value.Length - 1; i++)
         {
-            // find next occurrence of ##
-            if (currentTextSpan[i] == '#' && i + 1 < currentTextSpan.Length && currentTextSpan[i + 1] == '#')
+            if (Value[i] == '#' && Value[i + 1] == '#')
             {
-                endElementIndex = i;
-
+                closingHash = i;
                 break;
             }
         }
 
-        if (startElementIndex > 0 && endElementIndex > 0)
+        if (closingHash < 0)
         {
-#if DEBUG
-            ReadOnlySpan<char> value = currentTextSpan[(startElementIndex + 1)..endElementIndex];
-#endif
-            tag = new Range(startElementIndex - 1 + lengthOffset, endElementIndex + 1 + lengthOffset + 1);
-
-            index += endElementIndex - startElementIndex + 3;
-
-            return true;
+            index += 2;
+            return false;
         }
 
-        index += 2;
+        // tag range spans from the first '#' of opening ## to the last '#' of closing ##
+        tag = new Range(index, closingHash + 2);
 
-        return false;
+        index = closingHash + 2;
+
+        return true;
     }
 }
