@@ -1,4 +1,5 @@
 ﻿using System.IO.Abstractions;
+using System.Text;
 using System.Xml;
 
 namespace Heroes.XmlData.StormDepotCache;
@@ -138,7 +139,7 @@ internal abstract class DepotCache<T> : IDepotCache
         if (!mpqHeroesArchive.FileEntryExists("BankList.xml") || !mpqHeroesArchive.TryGetEntry("mapscript.galaxy", out MpqHeroesArchiveEntry? mapScriptEntry) || !mpqHeroesArchive.TryGetEntry(HeroesSource.DocumentInfoFile, out MpqHeroesArchiveEntry? documentInfoEntry))
             return false;
 
-        string? mapId = GetMapId(mpqHeroesArchive, mapScriptEntry.Value);
+        string? mapId = GetMapId(mpqHeroesArchive, mapScriptEntry.Value).Result;
 
         using Stream documentInfoStream = mpqHeroesArchive.DecompressEntry(documentInfoEntry.Value);
         using XmlReader xmlReader = XmlReader.Create(documentInfoStream, _xmlReaderSettings);
@@ -168,26 +169,42 @@ internal abstract class DepotCache<T> : IDepotCache
         return true;
     }
 
-    private static string? GetMapId(MpqHeroesArchive mpqHeroesArchive, MpqHeroesArchiveEntry mapScriptEntry)
+    private static async Task<string?> GetMapId(MpqHeroesArchive mpqHeroesArchive, MpqHeroesArchiveEntry mapScriptEntry)
     {
-        using StreamReader streamReader = new(mpqHeroesArchive.DecompressEntry(mapScriptEntry));
+        using Stream stream = mpqHeroesArchive.DecompressEntry(mapScriptEntry);
 
-        while (!streamReader.EndOfStream)
+        PipeReader reader = PipeReader.Create(stream);
+
+        while (true)
         {
-            string? line = streamReader.ReadLine();
+            ReadResult result = await reader.ReadAsync();
+            ReadOnlySequence<byte> buffer = result.Buffer;
 
-            if (string.IsNullOrWhiteSpace(line))
-                continue;
+            while (TryReadLine(ref buffer, out ReadOnlySequence<byte> line))
+            {
+                SequenceReader<byte> sequenceReader = new(line);
 
-            int equalsIndex = line.IndexOf('=');
-            if (equalsIndex < 0)
-                continue;
+                if (!sequenceReader.TryReadTo(out ReadOnlySequence<byte> keyBytes, (byte)'='))
+                    continue;
 
-            if (!line.Contains("mAPMapStringID", StringComparison.OrdinalIgnoreCase))
-                continue;
+                ReadOnlySequence<byte> valueBytes = line.Slice(sequenceReader.Position);
 
-            return line[(equalsIndex + 1)..].Trim().Trim(['"', ';']).ToString();
+                string variable = Encoding.UTF8.GetString(keyBytes);
+                if (!variable.Contains("mAPMapStringID", StringComparison.OrdinalIgnoreCase))
+                    continue;
+
+                string value = Encoding.UTF8.GetString(valueBytes);
+
+                return value.Trim([' ', '"', ';']).ToString();
+            }
+
+            reader.AdvanceTo(buffer.Start, buffer.End);
+
+            if (result.IsCompleted)
+                break;
         }
+
+        await reader.CompleteAsync();
 
         return null;
     }
@@ -198,5 +215,27 @@ internal abstract class DepotCache<T> : IDepotCache
         {
             yield return PathHelper.NormalizePath(valueElement.Value, modsDirectory);
         }
+    }
+
+    private static bool TryReadLine(ref ReadOnlySequence<byte> buffer, out ReadOnlySequence<byte> line)
+    {
+        SequencePosition? position = buffer.PositionOf((byte)'\n');
+
+        if (position is null)
+        {
+            line = default;
+            return false;
+        }
+
+        line = buffer.Slice(0, position.Value);
+
+        if (!line.IsEmpty && line.Slice(line.Length - 1, 1).FirstSpan[0] == (byte)'\r')
+        {
+            line = line.Slice(0, line.Length - 1);
+        }
+
+        buffer = buffer.Slice(buffer.GetPosition(1, position.Value));
+
+        return true;
     }
 }

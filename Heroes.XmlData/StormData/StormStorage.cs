@@ -1,4 +1,5 @@
 ﻿using System.Runtime.InteropServices;
+using System.Text;
 
 namespace Heroes.XmlData.StormData;
 
@@ -127,6 +128,37 @@ internal sealed partial class StormStorage : IStormStorage
         return (id, gameStringText);
     }
 
+    public (string Id, GameStringFileText GameStringText)? GetGameStringWithId(ReadOnlySequence<byte> gamestring, StormPath stormPath)
+    {
+        if (gamestring.IsEmpty)
+            return null;
+
+        SequenceReader<byte> reader = new(gamestring);
+
+        if (reader.TryReadTo(out ReadOnlySequence<byte> keyBytes, (byte)'='))
+        {
+            if (keyBytes.Length == 0)
+                return null;
+
+            string id = Encoding.UTF8.GetString(keyBytes);
+            if (string.IsNullOrWhiteSpace(id))
+                return null;
+
+            ReadOnlySequence<byte> valueBytes = gamestring.Slice(reader.Position);
+            string gameStringText = Encoding.UTF8.GetString(valueBytes);
+
+            return (id, new GameStringFileText(gameStringText, stormPath));
+        }
+        else
+        {
+            string id = Encoding.UTF8.GetString(gamestring);
+            if (string.IsNullOrWhiteSpace(id))
+                return null;
+
+            return (id, new GameStringFileText(string.Empty, stormPath));
+        }
+    }
+
     public void AddAssetText(StormModType stormModType, string id, AssetText assetText)
     {
         StormCache currentStormCache = GetCurrentStormCache(stormModType);
@@ -149,6 +181,37 @@ internal sealed partial class StormStorage : IStormStorage
         string id = assetSpan[ranges[0]].ToString();
 
         return (id, assetText);
+    }
+
+    public (string Id, AssetText AssetText)? GetAssetWithId(ReadOnlySequence<byte> asset, StormPath stormPath)
+    {
+        if (asset.IsEmpty)
+            return null;
+
+        SequenceReader<byte> reader = new(asset);
+
+        if (reader.TryReadTo(out ReadOnlySequence<byte> keyBytes, (byte)'='))
+        {
+            if (keyBytes.Length == 0)
+                return null;
+
+            string id = Encoding.UTF8.GetString(keyBytes);
+            if (string.IsNullOrWhiteSpace(id))
+                return null;
+
+            ReadOnlySequence<byte> valueBytes = asset.Slice(reader.Position);
+            string assetText = Encoding.UTF8.GetString(valueBytes);
+
+            return (id, new AssetText(assetText, stormPath));
+        }
+        else
+        {
+            string id = Encoding.UTF8.GetString(asset);
+            if (string.IsNullOrWhiteSpace(id))
+                return null;
+
+            return (id, new AssetText(string.Empty, stormPath));
+        }
     }
 
     public void AddStormLayoutFilePath(StormModType stormModType, string relativePath, StormPath stormPath)

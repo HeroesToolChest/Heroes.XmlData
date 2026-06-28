@@ -93,50 +93,68 @@ internal sealed class StormModStorage : IStormModStorage
         _stormStorage.AddAssetText(StormModType, id, assetText);
     }
 
-    public void AddGameStringFile(Stream stream, StormPath stormPath)
+    public async Task AddGameStringFile(Stream stream, StormPath stormPath)
     {
-        using StreamReader reader = new(stream);
-
         if (!_addedGameStringFilePathsList.Add(stormPath))
             return;
 
-        while (!reader.EndOfStream)
+        PipeReader reader = PipeReader.Create(stream);
+        bool isFirstRead = true;
+
+        while (true)
         {
-            string? line = reader.ReadLine();
+            ReadResult result = await reader.ReadAsync();
+            ReadOnlySequence<byte> buffer = result.Buffer;
 
-            if (string.IsNullOrWhiteSpace(line))
-                continue;
+            StripBOM(ref isFirstRead, ref buffer);
 
-            (string Id, GameStringFileText StormStringValue)? stormStringValue = _stormStorage.GetGameStringWithId(line, stormPath);
-
-            if (stormStringValue is not null)
+            while (TryReadLine(ref buffer, result.IsCompleted, out ReadOnlySequence<byte> line))
             {
-                AddGameString(stormStringValue.Value.Id, stormStringValue.Value.StormStringValue);
+                (string Id, GameStringFileText GameStringText)? gameStringWithId = _stormStorage.GetGameStringWithId(line, stormPath);
+
+                if (gameStringWithId.HasValue)
+                    AddGameString(gameStringWithId.Value.Id, gameStringWithId.Value.GameStringText);
             }
+
+            reader.AdvanceTo(buffer.Start, buffer.End);
+
+            if (result.IsCompleted)
+                break;
         }
+
+        await reader.CompleteAsync();
     }
 
-    public void AddAssetsTextFile(Stream stream, StormPath stormPath)
+    public async Task AddAssetsTextFile(Stream stream, StormPath stormPath)
     {
-        using StreamReader reader = new(stream);
-
         if (!_addedAssetsTextFilePathsList.Add(stormPath))
             return;
 
-        while (!reader.EndOfStream)
+        PipeReader reader = PipeReader.Create(stream);
+        bool isFirstRead = true;
+
+        while (true)
         {
-            string? line = reader.ReadLine();
+            ReadResult result = await reader.ReadAsync();
+            ReadOnlySequence<byte> buffer = result.Buffer;
 
-            if (string.IsNullOrWhiteSpace(line))
-                continue;
+            StripBOM(ref isFirstRead, ref buffer);
 
-            (string Id, AssetText StormStringValue)? stormStringValue = _stormStorage.GetAssetWithId(line, stormPath);
-
-            if (stormStringValue is not null)
+            while (TryReadLine(ref buffer, result.IsCompleted, out ReadOnlySequence<byte> line))
             {
-                AddAssetText(stormStringValue.Value.Id, stormStringValue.Value.StormStringValue);
+                (string Id, AssetText AssetText)? assetWithId = _stormStorage.GetAssetWithId(line, stormPath);
+
+                if (assetWithId.HasValue)
+                    AddAssetText(assetWithId.Value.Id, assetWithId.Value.AssetText);
             }
+
+            reader.AdvanceTo(buffer.Start, buffer.End);
+
+            if (result.IsCompleted)
+                break;
         }
+
+        await reader.CompleteAsync();
     }
 
     public void AddXmlDataFile(XDocument document, StormPath stormPath)
@@ -219,6 +237,45 @@ internal sealed class StormModStorage : IStormModStorage
     public override string ToString()
     {
         return Name;
+    }
+
+    private static void StripBOM(ref bool isFirstRead, ref ReadOnlySequence<byte> buffer)
+    {
+        if (!isFirstRead)
+            return;
+
+        isFirstRead = false;
+
+        if (buffer.Length >= 3 && buffer.Slice(0, 3).FirstSpan.SequenceEqual(new byte[] { 0xEF, 0xBB, 0xBF }))
+            buffer = buffer.Slice(3);
+    }
+
+    private static bool TryReadLine(ref ReadOnlySequence<byte> buffer, bool isCompleted, out ReadOnlySequence<byte> line)
+    {
+        SequencePosition? lineEndingPosition = buffer.PositionOf((byte)'\n');
+
+        if (lineEndingPosition is not null)
+        {
+            line = buffer.Slice(0, lineEndingPosition.Value);
+            buffer = buffer.Slice(buffer.GetPosition(1, lineEndingPosition.Value));
+        }
+        else if (isCompleted && !buffer.IsEmpty)
+        {
+            // last line in the file without a trailing '\n'
+            line = buffer;
+            buffer = buffer.Slice(buffer.End);
+        }
+        else
+        {
+            line = default;
+            return false;
+        }
+
+        // remove trailing '\r'
+        if (!line.IsEmpty && line.Slice(line.Length - 1, 1).FirstSpan[0] == (byte)'\r')
+            line = line.Slice(0, line.Length - 1);
+
+        return true;
     }
 
     private void SetConstantAttribute(XElement element, XAttribute attribute, ReadOnlySpan<char> attributeSpan)

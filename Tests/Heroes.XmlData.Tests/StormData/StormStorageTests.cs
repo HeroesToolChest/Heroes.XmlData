@@ -1,4 +1,6 @@
 ﻿using Heroes.XmlData.Tests;
+using System.Buffers;
+using System.Text;
 
 namespace Heroes.XmlData.StormData.Tests;
 
@@ -3038,11 +3040,16 @@ public class StormStorageTests
 
         // act
         (string Id, GameStringFileText GameStringText)? gamestring = stormStorage.GetGameStringWithId("id=value", TestHelpers.GetStormPath("normal"));
+        (string Id, GameStringFileText GameStringText)? gamestringSequence = stormStorage.GetGameStringWithId(new ReadOnlySequence<byte>(Encoding.UTF8.GetBytes("id=value")), TestHelpers.GetStormPath("normal"));
 
         // assert
         gamestring.HasValue.Should().BeTrue();
         gamestring!.Value.Id.Should().Be("id");
         gamestring.Value.GameStringText.Value.Should().Be("value");
+
+        gamestringSequence.HasValue.Should().BeTrue();
+        gamestringSequence!.Value.Id.Should().Be("id");
+        gamestringSequence.Value.GameStringText.Value.Should().Be("value");
     }
 
     [TestMethod]
@@ -3053,11 +3060,16 @@ public class StormStorageTests
 
         // act
         (string Id, GameStringFileText GameStringText)? gamestring = stormStorage.GetGameStringWithId("idvalue", TestHelpers.GetStormPath("normal"));
+        (string Id, GameStringFileText GameStringText)? gamestringSequence = stormStorage.GetGameStringWithId(new ReadOnlySequence<byte>(Encoding.UTF8.GetBytes("idvalue")), TestHelpers.GetStormPath("normal"));
 
         // assert
         gamestring.HasValue.Should().BeTrue();
         gamestring!.Value.Id.Should().Be("idvalue");
         gamestring.Value.GameStringText.Value.Should().BeEmpty();
+
+        gamestringSequence.HasValue.Should().BeTrue();
+        gamestringSequence!.Value.Id.Should().Be("idvalue");
+        gamestringSequence.Value.GameStringText.Value.Should().BeEmpty();
     }
 
     [TestMethod]
@@ -3070,9 +3082,14 @@ public class StormStorageTests
         (string Id, GameStringFileText GameStringText)? gamestring = stormStorage.GetGameStringWithId("=value", TestHelpers.GetStormPath("normal"));
         (string Id, GameStringFileText GameStringText)? gamestringSpace = stormStorage.GetGameStringWithId(" =value", TestHelpers.GetStormPath("normal"));
 
+        (string Id, GameStringFileText GameStringText)? gamestringSequence = stormStorage.GetGameStringWithId(new ReadOnlySequence<byte>(Encoding.UTF8.GetBytes("=value")), TestHelpers.GetStormPath("normal"));
+        (string Id, GameStringFileText GameStringText)? gamestringSpaceSequence = stormStorage.GetGameStringWithId(new ReadOnlySequence<byte>(Encoding.UTF8.GetBytes(" =value")), TestHelpers.GetStormPath("normal"));
+
         // assert
         gamestring.HasValue.Should().BeFalse();
         gamestringSpace.Should().BeEquivalentTo(gamestring);
+        gamestringSequence.HasValue.Should().BeFalse();
+        gamestringSpaceSequence.Should().BeEquivalentTo(gamestringSequence);
     }
 
     [TestMethod]
@@ -3083,11 +3100,16 @@ public class StormStorageTests
 
         // act
         (string Id, GameStringFileText GameStringText)? gamestring = stormStorage.GetGameStringWithId("id=", TestHelpers.GetStormPath("normal"));
+        (string Id, GameStringFileText GameStringText)? gamestringSequence = stormStorage.GetGameStringWithId(new ReadOnlySequence<byte>(Encoding.UTF8.GetBytes("id=")), TestHelpers.GetStormPath("normal"));
 
         // assert
         gamestring.HasValue.Should().BeTrue();
         gamestring!.Value.Id.Should().Be("id");
         gamestring.Value.GameStringText.Value.Should().BeEmpty();
+
+        gamestringSequence.HasValue.Should().BeTrue();
+        gamestringSequence!.Value.Id.Should().Be("id");
+        gamestringSequence.Value.GameStringText.Value.Should().BeEmpty();
     }
 
     [TestMethod]
@@ -3098,11 +3120,16 @@ public class StormStorageTests
 
         // act
         (string Id, AssetText AssetText)? assetText = stormStorage.GetAssetWithId("id=value", TestHelpers.GetStormPath("normal"));
+        (string Id, AssetText AssetText)? assetTextSequence = stormStorage.GetAssetWithId(new ReadOnlySequence<byte>(Encoding.UTF8.GetBytes("id=value")), TestHelpers.GetStormPath("normal"));
 
         // assert
         assetText.HasValue.Should().BeTrue();
         assetText!.Value.Id.Should().Be("id");
         assetText.Value.AssetText.Value.Should().Be("value");
+
+        assetTextSequence.HasValue.Should().BeTrue();
+        assetTextSequence!.Value.Id.Should().Be("id");
+        assetTextSequence.Value.AssetText.Value.Should().Be("value");
     }
 
     [TestMethod]
@@ -3113,11 +3140,16 @@ public class StormStorageTests
 
         // act
         (string Id, AssetText AssetText)? assetText = stormStorage.GetAssetWithId("idvalue", TestHelpers.GetStormPath("normal"));
+        (string Id, AssetText AssetText)? assetTextSequence = stormStorage.GetAssetWithId(new ReadOnlySequence<byte>(Encoding.UTF8.GetBytes("idvalue")), TestHelpers.GetStormPath("normal"));
 
         // assert
         assetText.HasValue.Should().BeTrue();
         assetText!.Value.Id.Should().Be("idvalue");
         assetText.Value.AssetText.Value.Should().BeEmpty();
+
+        assetTextSequence.HasValue.Should().BeTrue();
+        assetTextSequence!.Value.Id.Should().Be("idvalue");
+        assetTextSequence.Value.AssetText.Value.Should().BeEmpty();
     }
 
     [TestMethod]
@@ -3130,9 +3162,15 @@ public class StormStorageTests
         (string Id, AssetText AssetText)? assetText = stormStorage.GetAssetWithId("=value", TestHelpers.GetStormPath("normal"));
         (string Id, AssetText AssetText)? assetTextSpace = stormStorage.GetAssetWithId(" =value", TestHelpers.GetStormPath("normal"));
 
+        (string Id, AssetText AssetText)? assetTextSequence = stormStorage.GetAssetWithId(new ReadOnlySequence<byte>(Encoding.UTF8.GetBytes("=value")), TestHelpers.GetStormPath("normal"));
+        (string Id, AssetText AssetText)? assetTextSpaceSequence = stormStorage.GetAssetWithId(new ReadOnlySequence<byte>(Encoding.UTF8.GetBytes(" =value")), TestHelpers.GetStormPath("normal"));
+
         // assert
         assetText.HasValue.Should().BeFalse();
         assetTextSpace.Should().BeEquivalentTo(assetText);
+
+        assetTextSequence.HasValue.Should().BeFalse();
+        assetTextSpaceSequence.Should().BeEquivalentTo(assetTextSequence);
     }
 
     [TestMethod]
@@ -3143,11 +3181,16 @@ public class StormStorageTests
 
         // act
         (string Id, AssetText AssetText)? assetText = stormStorage.GetAssetWithId("id=", TestHelpers.GetStormPath("normal"));
+        (string Id, AssetText AssetText)? assetTextSequence = stormStorage.GetAssetWithId(new ReadOnlySequence<byte>(Encoding.UTF8.GetBytes("id=")), TestHelpers.GetStormPath("normal"));
 
         // assert
         assetText.HasValue.Should().BeTrue();
         assetText!.Value.Id.Should().Be("id");
         assetText.Value.AssetText.Value.Should().BeEmpty();
+
+        assetTextSequence.HasValue.Should().BeTrue();
+        assetTextSequence!.Value.Id.Should().Be("id");
+        assetTextSequence.Value.AssetText.Value.Should().BeEmpty();
     }
 
     [TestMethod]

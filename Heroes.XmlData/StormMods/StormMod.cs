@@ -166,7 +166,7 @@ internal abstract class StormMod<T> : IStormMod
         if (!TryGetFile(AssetsTextFilePath, out Stream? stream))
             return;
 
-        StormModStorage.AddAssetsTextFile(stream, GetStormPath(AssetsTextFilePath));
+        StormModStorage.AddAssetsTextFile(stream, GetStormPath(AssetsTextFilePath)).GetAwaiter().GetResult();
     }
 
     /// <summary>
@@ -265,7 +265,7 @@ internal abstract class StormMod<T> : IStormMod
         if (!ValidateGameStringFile(stormLocale, out Stream? stream, out string path))
             return;
 
-        StormModStorage.AddGameStringFile(stream, GetStormPath(path));
+        StormModStorage.AddGameStringFile(stream, GetStormPath(path)).GetAwaiter().GetResult();
     }
 
     /// <summary>

@@ -123,7 +123,7 @@ public class StormModStorageTests
 
         using MemoryStream stream = new();
         using StreamWriter writer = new(stream);
-        writer.WriteLine("id1=value1");
+        writer.WriteLine("\uFEFFid1=value1");
         writer.WriteLine("id1=value2");
         writer.WriteLine("id2=value3");
         writer.WriteLine(string.Empty);
@@ -134,7 +134,7 @@ public class StormModStorageTests
         stream.Position = 0;
 
         // act
-        stormModStorage.AddGameStringFile(stream, stormPath1);
+        stormModStorage.AddGameStringFile(stream, stormPath1).GetAwaiter().GetResult();
 
         // assert
         stormModStorage.AddedGameStringFilePaths.Should().BeEquivalentTo(new[] { stormPath1 });
@@ -167,8 +167,8 @@ public class StormModStorageTests
         stream2.Position = 0;
 
         // act
-        stormModStorage.AddGameStringFile(stream1, stormPath1);
-        stormModStorage.AddGameStringFile(stream2, stormPath1);
+        stormModStorage.AddGameStringFile(stream1, stormPath1).GetAwaiter().GetResult();
+        stormModStorage.AddGameStringFile(stream2, stormPath1).GetAwaiter().GetResult();
 
         // assert
         stormModStorage.AddedGameStringFilePaths.Should().BeEquivalentTo(new[] { stormPath1 });
@@ -188,7 +188,7 @@ public class StormModStorageTests
 
         using MemoryStream stream = new();
         using StreamWriter writer = new(stream);
-        writer.WriteLine("id1=value1");
+        writer.WriteLine("\uFEFFid1=value1");
         writer.WriteLine("id1=value2");
         writer.WriteLine("id2=value3");
         writer.WriteLine(string.Empty);
@@ -199,7 +199,7 @@ public class StormModStorageTests
         stream.Position = 0;
 
         // act
-        stormModStorage.AddAssetsTextFile(stream, stormPath1);
+        stormModStorage.AddAssetsTextFile(stream, stormPath1).GetAwaiter().GetResult();
 
         // assert
         stormModStorage.AddedAssetsTextFilePaths.Should().BeEquivalentTo(new[] { stormPath1 });
@@ -232,8 +232,8 @@ public class StormModStorageTests
         stream2.Position = 0;
 
         // act
-        stormModStorage.AddAssetsTextFile(stream1, stormPath1);
-        stormModStorage.AddAssetsTextFile(stream2, stormPath1);
+        stormModStorage.AddAssetsTextFile(stream1, stormPath1).GetAwaiter().GetResult();
+        stormModStorage.AddAssetsTextFile(stream2, stormPath1).GetAwaiter().GetResult();
 
         // assert
         stormModStorage.AddedAssetsTextFilePaths.Should().BeEquivalentTo(new[] { stormPath1 });
@@ -608,7 +608,7 @@ public class StormModStorageTests
         writer.Flush();
         stream.Position = 0;
 
-        stormModStorage.AddGameStringFile(stream, stormPath1);
+        stormModStorage.AddGameStringFile(stream, stormPath1).GetAwaiter().GetResult();
 
         // act
         stormModStorage.ClearGameStrings();

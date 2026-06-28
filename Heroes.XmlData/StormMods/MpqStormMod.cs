@@ -1,6 +1,4 @@
-﻿using System.Buffers;
-
-namespace Heroes.XmlData.StormMods;
+﻿namespace Heroes.XmlData.StormMods;
 
 internal abstract class MpqStormMod<T> : StormMod<T>
     where T : IHeroesSource

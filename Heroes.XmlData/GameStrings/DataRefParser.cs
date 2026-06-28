@@ -1,6 +1,4 @@
-﻿using System.Buffers;
-
-namespace Heroes.XmlData.GameStrings;
+﻿namespace Heroes.XmlData.GameStrings;
 
 internal sealed class DataRefParser
 {

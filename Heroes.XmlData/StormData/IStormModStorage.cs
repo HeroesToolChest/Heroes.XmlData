@@ -44,7 +44,7 @@ internal interface IStormModStorage
 
     void AddBuildIdFile(Stream stream);
 
-    void AddAssetsTextFile(Stream stream, StormPath stormPath);
+    Task AddAssetsTextFile(Stream stream, StormPath stormPath);
 
     void AddDirectoryNotFound(StormPath requiredStormDirectory);
 
@@ -52,7 +52,7 @@ internal interface IStormModStorage
 
     void AddGameString(string id, GameStringFileText gameStringText);
 
-    void AddGameStringFile(Stream stream, StormPath stormPath);
+    Task AddGameStringFile(Stream stream, StormPath stormPath);
 
     void AddAssetText(string id, AssetText assetText);
 

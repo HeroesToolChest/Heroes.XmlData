@@ -24,7 +24,11 @@ internal interface IStormStorage
 
     (string Id, GameStringFileText GameStringText)? GetGameStringWithId(string gamestring, StormPath stormPath);
 
+    (string Id, GameStringFileText GameStringText)? GetGameStringWithId(ReadOnlySequence<byte> gamestring, StormPath stormPath);
+
     (string Id, AssetText AssetText)? GetAssetWithId(string asset, StormPath stormPath);
+
+    (string Id, AssetText AssetText)? GetAssetWithId(ReadOnlySequence<byte> asset, StormPath stormPath);
 
     void AddStormLayoutFilePath(StormModType stormModType, string relativePath, StormPath stormPath);
 
