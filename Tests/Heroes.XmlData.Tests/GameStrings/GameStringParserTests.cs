@@ -2491,4 +2491,33 @@ public class GameStringParserTests
         // assert
         parsed.Should().Be("Minions grant <c val=\"#TooltipNumbers\">1</c> stack and Heroes grant <c val=\"#TooltipNumbers\">5</c> stacks.");
     }
+
+    [TestMethod]
+    public void ParseGameStringText_IllidanDrefDoesNotExists_ParsedGameString()
+    {
+        // arrange
+        string description = "If Sweeping Strike hits <c val=\"#TooltipNumbers\">2</c> Heroes its damage bonus is increased from <c val=\"#TooltipNumbers\"><d ref=\"Behavior,IllidanSweepingStrikesDamageBuffNoStacking,Modification.DamageDealtFraction[Basic]*100\"/>%</c>";
+
+        HeroesXmlLoader loader = HeroesXmlLoader.LoadWithEmpty()
+            .LoadCustomMod(new ManualModLoader("custom")
+                .AddElements(new List<XElement>()
+                {
+                    XElement.Parse(
+                        """
+                        <CBehaviorBuff id="IllidanSweepingStrikesDamageBuffNoStacking">
+                          <Modification>
+                            <AttackSpeedMultiplier value="1.35" />
+                          </Modification>
+                        </CBehaviorBuff>
+                        """),
+                }));
+
+        HeroesData heroesData = loader.HeroesData;
+
+        // act
+        string parsed = GameStringParser.ParseGameStringText(heroesData.StormStorage, description);
+
+        // assert
+        parsed.Should().Be("If Sweeping Strike hits <c val=\"#TooltipNumbers\">2</c> Heroes its damage bonus is increased from <c val=\"#TooltipNumbers\">0%</c>");
+    }
 }

@@ -13,7 +13,7 @@ internal sealed class DataRefParser
         _stormStorage = stormStorage;
     }
 
-    public static StormElementData GetStormElementDataFromLastFieldPart(StormElementData currentElementData, ReadOnlySpan<char> fullPartSpan, ReadOnlySpan<Range> fieldParts)
+    public static StormElementData? GetStormElementDataFromLastFieldPart(StormElementData currentElementData, ReadOnlySpan<char> fullPartSpan, ReadOnlySpan<Range> fieldParts)
     {
         foreach (Range fieldPartRange in fieldParts)
         {
@@ -59,6 +59,11 @@ internal sealed class DataRefParser
                     {
                         currentElementData = withoutIndexerStormElementData;
                     }
+                }
+                else
+                {
+                    // doesn't exist
+                    return null;
                 }
             }
             else if (currentElementData.TryGetElementDataAt(fieldPartSpan, out StormElementData? stormElementData))
@@ -263,12 +268,12 @@ internal sealed class DataRefParser
 
         ReadOnlySpan<Range> fieldParts = xmlParts[2..];
 
-        currentElementData = GetStormElementDataFromLastFieldPart(currentElementData, fullPartSpan, fieldParts);
+        StormElementData? lastElementData = GetStormElementDataFromLastFieldPart(currentElementData, fullPartSpan, fieldParts);
+        if (lastElementData is null)
+            return new ValueScale(0);
 
-        if (currentElementData.HasValue)
-        {
-            return GetValueScale(currentElementData.RawValue, fullPartSpan, xmlParts);
-        }
+        if (lastElementData.HasValue)
+            return GetValueScale(lastElementData.RawValue, fullPartSpan, xmlParts);
 
         return new ValueScale(0);
     }
@@ -283,7 +288,9 @@ internal sealed class DataRefParser
         if (scalingStormElement is null)
             return new ValueScale(dataValue);
 
-        StormElementData stormElementData = GetStormElementDataFromLastFieldPart(scalingStormElement.DataValues, fullSpan, xmlParts[2..]);
+        StormElementData? stormElementData = GetStormElementDataFromLastFieldPart(scalingStormElement.DataValues, fullSpan, xmlParts[2..]);
+        if (stormElementData is null)
+            return new ValueScale(dataValue);
 
         // AmountArray[Quest] or FlatModifierArray[0].Modifier where Modifier is in [0]
         if ((!fieldIndexer.IsEmpty && stormElementData.TryGetElementDataAt(fieldIndexer, out StormElementData? innerIndexData)) ||

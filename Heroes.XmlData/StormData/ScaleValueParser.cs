@@ -40,13 +40,15 @@ internal static class ScaleValueParser
             return null;
 
         // check if the field exists
-        StormElementData lastData = DataRefParser.GetStormElementDataFromLastFieldPart(completeStormElement.DataValues, levelScalingEntry.Field, fieldParts);
+        StormElementData? lastElementData = DataRefParser.GetStormElementDataFromLastFieldPart(completeStormElement.DataValues, levelScalingEntry.Field, fieldParts);
+        if (lastElementData is null)
+            return null;
 
         // if it has a value, then we found the value for the scaling entry
-        if (lastData.HasValue)
+        if (lastElementData.HasValue)
         {
             // return the field from the storm element, this might be different from the given scaling entry but will be more "accurate"
-            return lastData.Field;
+            return lastElementData.Field;
         }
 
         return null;
