@@ -34,6 +34,7 @@ HeroesXmlLoader heroesXmlLoader = HeroesXmlLoader.LoadWithCASC(cascConfig, httpC
 Example of loading from extracted data files:
 ```C#
 // specify the mods root directory
+// if on linux or macos, ensure all directories and files are in lowercase characters
 HeroesXmlLoader heroesXmlLoader = HeroesXmlLoader.LoadWithFile("Path\to\mods");
 ```
 
@@ -66,7 +67,7 @@ string mpqEntry = @"enus.stormdata\localizeddata\gamestrings.txt";
 bool exists2 = heroesXmlLoader.FileExists(filePath, mpqEntry);
 Stream mpqFileStream = heroesXmlLoader.GetFile(filePath, mpqEntry);
 ```
-### HeroesXmlLoader Loading StormMods
+### Loading StormMods
 Use the `HeroesXmlLoader` instance to load the stormmods. `LoadMapMod` and `LoadGameStrings` may be called as many times as needed to switch between different maps and locales.
 
 ```C#
