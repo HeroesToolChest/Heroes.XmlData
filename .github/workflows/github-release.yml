@@ -8,7 +8,6 @@ jobs:
     permissions:
       contents: write
     with:
-      title: 'Heroes Xml Data'
       app-name: Heroes.XmlData
       artifacts-workflow: build.yml
       github-release-env: Github Release
