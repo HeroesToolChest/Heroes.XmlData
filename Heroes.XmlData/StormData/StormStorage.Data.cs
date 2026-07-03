@@ -232,8 +232,12 @@ internal sealed partial class StormStorage
 
         if (!string.IsNullOrEmpty(dataObjectType))
         {
+            Span<char> buffer = stackalloc char[dataObjectType.Length + 1];
+            buffer[0] = 'C';
+            dataObjectType.AsSpan().CopyTo(buffer[1..]);
+
             // best guess
-            return GetStormElementByElementType($"C{dataObjectType}");
+            return GetStormElementByElementType(buffer);
         }
 
         return null;
@@ -342,7 +346,7 @@ internal sealed partial class StormStorage
 
     public List<StormGameString> GetStormGameStrings()
     {
-        Dictionary<string, StormGameString> stormGameStrings = [];
+        Dictionary<string, StormGameString> stormGameStrings = new(StormCache.GameStringsById.Count + StormMapCache.GameStringsById.Count + StormCustomCache.GameStringsById.Count);
 
         foreach (var item in StormCache.GameStringsById)
         {
