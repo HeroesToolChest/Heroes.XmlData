@@ -71,7 +71,7 @@ internal sealed class FileHeroesSource : HeroesSource, IFileHeroesSource
         if (path.StartsWith(DefaultModsDirectory))
             path = string.Concat(ModsBaseDirectoryPath, path.AsSpan(DefaultModsDirectory.Length));
         else if (!path.StartsWith(ModsBaseDirectoryPath))
-            path = Path.Combine(ModsBaseDirectoryPath, path);
+            path = Path.Join(ModsBaseDirectoryPath, path);
 
         return path;
     }
