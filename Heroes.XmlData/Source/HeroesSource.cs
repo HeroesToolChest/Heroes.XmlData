@@ -265,7 +265,7 @@ internal abstract class HeroesSource : IHeroesSource
             throw new FileNotFoundException($"Could not find mpq file", mpqPath);
 
         using MpqHeroesArchive mpqFile = MpqHeroesFile.Open(GetFile(mpqPath));
-        if (mpqFile.TryGetEntry(entryPath, out MpqHeroesArchiveEntry? mpqHeroesArchiveEntry))
+        if (mpqFile.TryGetEntry(entryPath, out MpqHeroesArchiveEntry? mpqHeroesArchiveEntry, true))
         {
             return mpqFile.DecompressEntry(mpqHeroesArchiveEntry.Value);
         }

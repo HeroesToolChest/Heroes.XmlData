@@ -82,6 +82,6 @@ internal sealed class FileHeroesSource : HeroesSource, IFileHeroesSource
             return false;
 
         using MpqHeroesArchive mpqFile = MpqHeroesFile.Open(GetFile(mpqPath));
-        return mpqFile.FileEntryExists(entryPath);
+        return mpqFile.FileEntryExists(entryPath, true);
     }
 }

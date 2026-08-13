@@ -6,8 +6,6 @@ internal abstract class MpqStormMod<T> : StormMod<T>
     private static readonly char _forwardSlashChar = '/';
     private static readonly char _backSlashChar = '\\';
     private static readonly char[] _pathSeperators = string.Join(string.Empty, _forwardSlashChar, _backSlashChar).ToCharArray();
-    private static readonly SearchValues<char> _forwardSlashSeperatorSearchValue = SearchValues.Create(_forwardSlashChar.ToString());
-    private static readonly SearchValues<char> _backSlashSeperatorSearchValue = SearchValues.Create(_backSlashChar.ToString());
 
     private MpqHeroesArchive? _mpqHeroesArchive;
     private MpqFolder? _mpqFolderRoot;
@@ -223,33 +221,6 @@ internal abstract class MpqStormMod<T> : StormMod<T>
             return false;
         }
 
-        if (_mpqHeroesArchive.TryGetEntry(path, out mpqHeroesArchiveEntry))
-        {
-            return true;
-        }
-        else
-        {
-            ReadOnlySpan<char> pathSpan = path;
-            Span<char> buffer = stackalloc char[path.Length];
-
-            if (pathSpan.IndexOfAny(_backSlashSeperatorSearchValue) >= 0)
-            {
-                pathSpan.Replace(buffer, _backSlashChar, _forwardSlashChar);
-                if (_mpqHeroesArchive.TryGetEntry(buffer, out mpqHeroesArchiveEntry))
-                {
-                    return true;
-                }
-            }
-            else if (pathSpan.IndexOfAny(_forwardSlashSeperatorSearchValue) >= 0)
-            {
-                pathSpan.Replace(buffer, _forwardSlashChar, _backSlashChar);
-                if (_mpqHeroesArchive.TryGetEntry(buffer, out mpqHeroesArchiveEntry))
-                {
-                    return true;
-                }
-            }
-        }
-
-        return false;
+        return _mpqHeroesArchive.TryGetEntry(path, out mpqHeroesArchiveEntry, true);
     }
 }
