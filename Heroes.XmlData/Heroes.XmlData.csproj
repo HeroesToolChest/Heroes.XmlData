@@ -42,7 +42,7 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="TestableIO.System.IO.Abstractions.Wrappers" Version="22.1.1" />
+    <PackageReference Include="TestableIO.System.IO.Abstractions.Wrappers" Version="22.2.0" />
     <PackageReference Include="U8XmlParser" Version="1.6.1" />
   </ItemGroup>
 
