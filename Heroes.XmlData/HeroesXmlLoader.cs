@@ -161,9 +161,14 @@ public class HeroesXmlLoader
     /// <param name="httpClient">An instance of <see cref="HttpClient"/>.</param>
     /// <param name="isPtr">Set to <see langword="true"/> to download from ptr.</param>
     /// <param name="loggerOptions">Logging options for the casclib.</param>
+    /// <param name="cascLibOptions">Options for configuring the CascLib library.</param>
     /// <returns>A <see cref="CASCConfig"/> instance.</returns>
-    public static CASCConfig GetOnlineCASCConfig(HttpClient httpClient, bool isPtr = false, ILoggerOptions? loggerOptions = null)
+    public static CASCConfig GetOnlineCASCConfig(HttpClient httpClient, bool isPtr = false, ILoggerOptions? loggerOptions = null, CascLibOptions? cascLibOptions = null)
     {
+        CascLibOptions cascLibOptionsInternal = cascLibOptions ?? new CascLibOptions();
+
+        CDNCache.CachePath = cascLibOptionsInternal.CachePath;
+
         return CASCConfig.LoadOnlineStorageConfig(isPtr ? ProductPtrName : ProductName, "us", httpClient, false, loggerOptions ?? new HeroesLoggerOptions());
     }
 
@@ -186,13 +191,12 @@ public class HeroesXmlLoader
     /// <param name="cascConfig">The <see cref="CASCConfig"/> to determine on how to load data from the data files.</param>
     /// <param name="httpClient">An instance of <see cref="HttpClient"/>. Needed for both local and online.</param>
     /// <param name="progressReporter">Used to report loading progress.</param>
-    /// <param name="cascLibOptions">Options for configuring the CascLib library.</param>
     /// <returns>A <see cref="HeroesXmlLoader"/> instance.</returns>
-    public static HeroesXmlLoader LoadWithCASC(CASCConfig cascConfig, HttpClient httpClient, IProgressReporter? progressReporter = null, CascLibOptions? cascLibOptions = null)
+    public static HeroesXmlLoader LoadWithCASC(CASCConfig cascConfig, HttpClient httpClient, IProgressReporter? progressReporter = null)
     {
         ArgumentNullException.ThrowIfNull(httpClient);
 
-        return LoadAsCASCInternal(cascConfig, httpClient, cascLibOptions, progressReporter);
+        return LoadAsCASCInternal(cascConfig, httpClient, progressReporter);
     }
 
     /// <summary>
@@ -597,15 +601,8 @@ public class HeroesXmlLoader
         return new HeroesXmlLoader(heroesSource);
     }
 
-    private static HeroesXmlLoader LoadAsCASCInternal(CASCConfig cascConfig, HttpClient httpClient, CascLibOptions? cascLibOptions = null, IProgressReporter? progressReporter = null)
+    private static HeroesXmlLoader LoadAsCASCInternal(CASCConfig cascConfig, HttpClient httpClient, IProgressReporter? progressReporter = null)
     {
-        CascLibOptions cascLibOptionsInternal = cascLibOptions ?? new CascLibOptions();
-
-        CASCConfig.ThrowOnFileNotFound = true;
-        CASCConfig.ThrowOnMissingDecryptionKey = true;
-
-        CDNCache.CachePath = cascLibOptionsInternal.CachePath;
-
         CASCHandler cascHandler = CASCHandler.OpenStorage(cascConfig, httpClient: httpClient, worker: (ProgressReporter?)progressReporter);
         cascHandler.Root.LoadListFile(string.Empty, (ProgressReporter?)progressReporter);
 
