@@ -186,12 +186,13 @@ public class HeroesXmlLoader
     /// <param name="cascConfig">The <see cref="CASCConfig"/> to determine on how to load data from the data files.</param>
     /// <param name="httpClient">An instance of <see cref="HttpClient"/>. Needed for both local and online.</param>
     /// <param name="progressReporter">Used to report loading progress.</param>
+    /// <param name="cascLibOptions">Options for configuring the CascLib library.</param>
     /// <returns>A <see cref="HeroesXmlLoader"/> instance.</returns>
-    public static HeroesXmlLoader LoadWithCASC(CASCConfig cascConfig, HttpClient httpClient, IProgressReporter? progressReporter = null)
+    public static HeroesXmlLoader LoadWithCASC(CASCConfig cascConfig, HttpClient httpClient, IProgressReporter? progressReporter = null, CascLibOptions? cascLibOptions = null)
     {
         ArgumentNullException.ThrowIfNull(httpClient);
 
-        return LoadAsCASCInternal(cascConfig, httpClient, progressReporter);
+        return LoadAsCASCInternal(cascConfig, httpClient, cascLibOptions, progressReporter);
     }
 
     /// <summary>
@@ -596,10 +597,14 @@ public class HeroesXmlLoader
         return new HeroesXmlLoader(heroesSource);
     }
 
-    private static HeroesXmlLoader LoadAsCASCInternal(CASCConfig cascConfig, HttpClient httpClient, IProgressReporter? progressReporter = null)
+    private static HeroesXmlLoader LoadAsCASCInternal(CASCConfig cascConfig, HttpClient httpClient, CascLibOptions? cascLibOptions = null, IProgressReporter? progressReporter = null)
     {
+        CascLibOptions cascLibOptionsInternal = cascLibOptions ?? new CascLibOptions();
+
         CASCConfig.ThrowOnFileNotFound = true;
         CASCConfig.ThrowOnMissingDecryptionKey = true;
+
+        CDNCache.CachePath = cascLibOptionsInternal.CachePath;
 
         CASCHandler cascHandler = CASCHandler.OpenStorage(cascConfig, httpClient: httpClient, worker: (ProgressReporter?)progressReporter);
         cascHandler.Root.LoadListFile(string.Empty, (ProgressReporter?)progressReporter);
