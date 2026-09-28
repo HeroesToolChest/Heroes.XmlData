@@ -30,6 +30,10 @@ public class HeroesPrefixNotationTests
     [DataRow(82.5, "+(-(100 60) *(5 8.5))")]
     [DataRow(60, "max(-(80 20) 0)")]
     [DataRow(25, "min(+(80 20) 25)")]
+    [DataRow(5, "round(5.172)")]
+    [DataRow(5, "round(/(150 29))")]
+    [DataRow(6, "round(5.5)")]
+    [DataRow(4, "round(4.499)")]
     public void Compute_ValidNumberExpressions_ReturnsValue(double expected, string expression)
     {
         // arrange
