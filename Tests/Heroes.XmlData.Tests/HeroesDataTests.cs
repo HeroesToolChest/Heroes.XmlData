@@ -190,6 +190,91 @@ public class HeroesDataTests
     }
 
     [TestMethod]
+    [TestCategory("GameStrings")]
+    public void ParseGameString_ConstsWithRound_ParsedGameString()
+    {
+        // arrange
+        string description = "Basic Attacks against enemy Heroes afflicted by Shadow Mark grant a <c val=\"#TooltipNumbers\"><d ref=\"Behavior,XalatathMarkedResilienceShield,DamageResponse.ModifyLimit*Behavior,XalatathMarkedResilienceShield,MaxStackCount\"/></c> point Shield that rapidly decays.";
+
+        HeroesXmlLoader loader = HeroesXmlLoader.LoadWithEmpty()
+            .LoadCustomMod(new ManualModLoader("custom")
+                .AddBaseElementTypes(new List<(string, string)>()
+                {
+                    ("Behavior", "CBehaviorBuff"),
+                })
+                .AddElements(new List<XElement>()
+                {
+                    new(
+                        "CBehaviorBuff",
+                        new XAttribute("id", "XalatathMarkedResilienceShield"),
+                        new XElement(
+                            "MaxStackCount",
+                            new XAttribute("value", "$XalatathMarkedResilienceShieldStackCount")),
+                        new XElement(
+                            "DamageResponse",
+                            new XAttribute("ModifyLimit", "$XalatathMarkedResilienceShieldHealthPerStack"))),
+
+                })
+                .AddLevelScalingArrayElements(new List<XElement>()
+                {
+                    new(
+                        "LevelScalingArray",
+                        new XElement(
+                            "Modifications",
+                            new XElement(
+                                "Catalog",
+                                new XAttribute("value", "Behavior")),
+                            new XElement(
+                                "Entry",
+                                new XAttribute("value", "XalatathMarkedResilienceShield")),
+                            new XElement(
+                                "Field",
+                                new XAttribute("value", "DamageResponse.ModifyLimit")),
+                            new XElement(
+                                "Value",
+                                new XAttribute("value", "0.040000")))),
+                })
+                .AddConstantXElements(new List<XElement>()
+                {
+                    new(
+                        "const",
+                        new XAttribute("id", "$XalatathMarkedResilienceTotalShieldDuration"),
+                        new XAttribute("value", "3")),
+                    new(
+                        "const",
+                        new XAttribute("id", "$XalatathMarkedResilienceShieldFullHealthDuration"),
+                        new XAttribute("value", "1")),
+                    new(
+                        "const",
+                        new XAttribute("id", "$XalatathMarkedResilienceShieldDecayDuration"),
+                        new XAttribute("value", "-($XalatathMarkedResilienceTotalShieldDuration $XalatathMarkedResilienceShieldFullHealthDuration)"),
+                        new XAttribute("evaluateAsExpression", "1")),
+                    new(
+                        "const",
+                        new XAttribute("id", "$XalatathMarkedResilienceShieldTotalHealth"),
+                        new XAttribute("value", "160")),
+                    new(
+                        "const",
+                        new XAttribute("id", "$XalatathMarkedResilienceShieldStackCount"),
+                        new XAttribute("value", "round(/($XalatathMarkedResilienceShieldTotalHealth /($XalatathMarkedResilienceShieldDecayDuration 0.0625)))"),
+                        new XAttribute("evaluateAsExpression", "1")),
+                    new(
+                        "const",
+                        new XAttribute("id", "$XalatathMarkedResilienceShieldHealthPerStack"),
+                        new XAttribute("value", "/($XalatathMarkedResilienceShieldTotalHealth $XalatathMarkedResilienceShieldStackCount)"),
+                        new XAttribute("evaluateAsExpression", "1")),
+                }));
+
+        HeroesData heroesData = loader.HeroesData;
+
+        // act
+        GameStringText parsed = heroesData.ParseGameString(description, StormLocale.ENUS);
+
+        // assert
+        parsed.RawText.Should().Be("Basic Attacks against enemy Heroes afflicted by Shadow Mark grant a <c val=\"#TooltipNumbers\">160</c><c val=\"#ColorGray\">~~0.04~~</c> point Shield that rapidly decays.");
+    }
+
+    [TestMethod]
     public void Build_HasBuildId_ReturnsBuildId()
     {
         // arrange
@@ -461,14 +546,5 @@ public class HeroesDataTests
 
         // assert
         result.Should().BeNull();
-    }
-
-    private static StormElement CreateStormElement(string elementType, string? id = null)
-    {
-        XElement xElement = id is not null
-            ? new XElement(elementType, new XAttribute("id", id))
-            : new XElement(elementType);
-
-        return new StormElement(new StormXElementValuePath(xElement, TestHelpers.GetStormPath("test")));
     }
 }
