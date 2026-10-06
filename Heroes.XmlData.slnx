@@ -3,9 +3,13 @@
     <File Path=".editorconfig" />
   </Folder>
   <Folder Name="/Tests/">
+    <Project Path="Tests/Heroes.StormData.Tests/Heroes.StormData.Tests.csproj" />
     <Project Path="Tests/Heroes.XmlData.Tests/Heroes.XmlData.Tests.csproj" />
   </Folder>
   <Project Path="CascLib/CascLib/CascLib.csproj" />
+  <Project Path="Heroes.StormData.Console/Heroes.StormData.Console.csproj" Id="61937e86-4d59-4776-9148-34b3265ba1eb" />
+  <Project Path="Heroes.StormData/Heroes.StormData.csproj" />
   <Project Path="Heroes.XmlData.Benchmarks/Heroes.XmlData.Benchmarks.csproj" />
+  <Project Path="Heroes.XmlData.Console/Heroes.XmlData.Console.csproj" />
   <Project Path="Heroes.XmlData/Heroes.XmlData.csproj" />
 </Solution>

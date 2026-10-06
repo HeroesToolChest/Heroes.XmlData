@@ -1,0 +1,13 @@
+﻿global using CASCLib;
+global using Heroes.LocaleText;
+global using Heroes.StormData.Cache;
+global using Heroes.StormData.CASC;
+global using Heroes.StormData.Extensions;
+global using Heroes.StormData.Source;
+global using Heroes.StormData.StormMods;
+global using Heroes.StormData.StormMods.Mpq;
+global using Heroes.StormData.Xml;
+global using System.Buffers;
+global using System.Diagnostics.CodeAnalysis;
+global using System.IO.Abstractions;
+global using System.Xml;

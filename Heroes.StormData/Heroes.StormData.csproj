@@ -1,0 +1,56 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+	  <ImplicitUsings>enable</ImplicitUsings>
+	  <Nullable>enable</Nullable>
+	  <Version>2.0.0-alpha.1</Version>
+	  <GenerateDocumentationFile>True</GenerateDocumentationFile>
+	  <Authors>Kevin Oliva</Authors>
+	  <Copyright>Copyright © 2026 - Kevin Oliva</Copyright>
+	  <Description></Description>
+	  <PackageProjectUrl>https://github.com/HeroesToolChest/Heroes.StormLoader</PackageProjectUrl>
+	  <RepositoryUrl>https://github.com/HeroesToolChest/Heroes.StormLoader</RepositoryUrl>
+	  <PackageReleaseNotes>https://github.com/HeroesToolChest/Heroes.StormLoader/releases</PackageReleaseNotes>
+	  <PackageTags>hots heroes-of-the-storm HeroesOfTheStorm blizzard xmldata casc</PackageTags>
+	  <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
+	  <ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
+	  <IncludeSymbols>true</IncludeSymbols>
+	  <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+	  <PackageReadmeFile>README.md</PackageReadmeFile>
+	  <PackageLicenseFile>LICENSE</PackageLicenseFile>
+	  <EnforceCodeStyleInBuild>True</EnforceCodeStyleInBuild>
+	  <TargetsForTfmSpecificBuildOutput>$(TargetsForTfmSpecificBuildOutput);CopyProjectReferencesToPackage</TargetsForTfmSpecificBuildOutput>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Heroes.LocaleText" Version="1.0.1" />
+    <PackageReference Include="Heroes.MpqTool" Version="1.4.0" />
+    <PackageReference Include="MimeKitLite" Version="4.17.0" />
+    <PackageReference Include="StyleCop.Analyzers" Version="1.2.0-beta.556">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="TestableIO.System.IO.Abstractions.Wrappers" Version="22.2.0" />
+    <PackageReference Include="U8XmlParser" Version="1.6.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\CascLib\CascLib\CascLib.csproj" PrivateAssets="all" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Heroes.StormData.Tests" />
+    <InternalsVisibleTo Include="Heroes.StormData.Console" />
+    <InternalsVisibleTo Include="HeroesDataParser" />
+    <InternalsVisibleTo Include="HeroesDataParser.Tests" />
+    <InternalsVisibleTo Include="DynamicProxyGenAssembly2" />
+  </ItemGroup>
+  
+  <Target Name="CopyProjectReferencesToPackage" DependsOnTargets="BuildOnlySettings;ResolveReferences">
+    <ItemGroup>
+      <BuildOutputInPackage Include="@(ReferenceCopyLocalPaths-&gt;WithMetadataValue('ReferenceSourceTarget', 'ProjectReference')-&gt;WithMetadataValue('PrivateAssets', 'All'))" />
+    </ItemGroup>
+  </Target>
+
+</Project>
