@@ -1,33 +1,32 @@
-﻿using System.Diagnostics;
-
-namespace Heroes.StormData.Xml;
+﻿namespace Heroes.StormData.Xml;
 
 /// <summary>
 /// Represents a top level XML element.
 /// </summary>
 [DebuggerDisplay("{DebuggerDisplay,nq}")]
-public sealed class StormXmlElement
+public class StormXmlElement
 {
     private readonly List<StormFile> _stormFiles = [];
-    private readonly StormXmlProperty _stormXmlProperties;
+    private readonly StormXmlMember _stormXmlMembers;
 
-    internal StormXmlElement(StormXmlProperty stormXmlProperty, StormFile stormFile)
+    internal StormXmlElement(StormXmlMember stormXmlMember, StormFile stormFile)
     {
-        _stormXmlProperties = stormXmlProperty;
+        _stormXmlMembers = stormXmlMember;
         _stormFiles.Add(stormFile);
 
-        Initialize(stormXmlProperty);
+        Initialize(stormXmlMember);
+        InitializeAttributes(stormXmlMember);
     }
 
     /// <summary>
-    /// Gets the properties of the XML element.
+    /// Gets the members of the XML element.
     /// </summary>
-    public StormXmlProperty Data => _stormXmlProperties;
+    public StormXmlMember Members => _stormXmlMembers;
 
     /// <summary>
     /// Gets the value of the <c>id</c> attribute.
     /// </summary>
-    public string? Id { get; private set; }
+    public virtual string? Id { get; private set; }
 
     /// <summary>
     /// Gets the value of the <c>parent</c> attribute.
@@ -35,23 +34,24 @@ public sealed class StormXmlElement
     public string? Parent { get; private set; }
 
     /// <summary>
-    /// Gets a value indicating whether the <c>default</c> attribute is set to "1".
+    /// Gets a value indicating whether the <c>default</c> attribute is set to <c>1</c>.
     /// </summary>
     public bool IsDefault { get; private set; }
 
     /// <summary>
     /// Gets the name of the XML element.
     /// </summary>
-    public string ElementName { get; private set; }
+    public string ElementName { get; private protected set; }
 
     /// <summary>
     /// Gets the type of the XML element.
     /// </summary>
-    public StormXmlElementType ElementType { get; private set; }
+    public StormXmlElementType ElementType { get; private protected set; }
+
     /// <summary>
-    /// Gets a list of <see cref="StormFile"/>s that this element exists in.
+    /// Gets a list of <see cref="StormFile"/>s that the element exists in.
     /// <para>
-    /// The list will contain more than one item if this element has been merged from multiple <see cref="StormXmlElement"/>s.
+    /// The list will contain more than one item if the element has been merged from multiple <see cref="StormXmlElement"/>s.
     /// </para>
     /// </summary>
     public IReadOnlyList<StormFile> StormFiles => _stormFiles.AsReadOnly();
@@ -64,30 +64,8 @@ public sealed class StormXmlElement
             string id = string.IsNullOrWhiteSpace(Id) ? string.Empty : $", Id = \"{Id}\"";
             string parent = string.IsNullOrWhiteSpace(Parent) ? string.Empty : $", Parent = \"{Parent}\"";
 
-            return $"{{{ElementName}{id}{parent}, Elements = {_stormXmlProperties.Count}}}";
+            return $"{{{ElementName}{id}{parent}, Elements = {_stormXmlMembers.Count}}}";
         }
-    }
-
-    ///// <summary>
-    ///// Creates a <see cref="StormXmlElement"/> from an <see cref="XmlReader"/>.
-    ///// </summary>
-    ///// <param name="reader">The <see cref="XmlReader"/> to read from.</param>
-    ///// <returns>A <see cref="StormXmlElement"/> instance.</returns>
-    //internal static StormXmlElement Create(XmlReader reader, StormAttributeVariables stormAttributeVariables)
-    //{
-    //    reader.MoveToContent();
-    //    return new StormXmlElement(Parse(reader, stormAttributeVariables));
-    //}
-
-    /// <summary>
-    /// Creates a <see cref="StormXmlElement"/> from a <see cref="StormXmlProperty"/>.
-    /// </summary>
-    /// <param name="rootStormXmlProperty">The root <see cref="StormXmlProperty"/> to create the element from.</param>
-    /// <param name="stormFile">The <see cref="StormFile"/> associated with the element.</param>
-    /// <returns>A <see cref="StormXmlElement"/> instance.</returns>
-    internal static StormXmlElement Create(StormXmlProperty rootStormXmlProperty, StormFile stormFile)
-    {
-        return new StormXmlElement(rootStormXmlProperty, stormFile);
     }
 
     /// <summary>
@@ -99,102 +77,32 @@ public sealed class StormXmlElement
         if (ReferenceEquals(this, other))
             return;
 
-        _stormXmlProperties.Merge(other._stormXmlProperties);
+        _stormXmlMembers.Merge(other._stormXmlMembers);
         _stormFiles.AddRange(other._stormFiles);
 
-        Initialize(other._stormXmlProperties);
+        Initialize(other._stormXmlMembers);
+        InitializeAttributes(other._stormXmlMembers);
     }
 
     [MemberNotNull(nameof(ElementName))]
-    private void Initialize(StormXmlProperty stormXmlProperty)
+    private protected virtual void Initialize(StormXmlMember stormXmlProperty)
     {
-        if (stormXmlProperty.Name.Equals("const", StringComparison.Ordinal))
-        {
-            ElementName = stormXmlProperty.Name;
-            ElementType = StormXmlElementType.Const;
-        }
+        ElementName = stormXmlProperty.Name[1..];
+
+        if (stormXmlProperty.Name.StartsWith('C'))
+            ElementType = StormXmlElementType.Class;
+        else if (stormXmlProperty.Name.StartsWith('S'))
+            ElementType = StormXmlElementType.Struct;
+        else if (stormXmlProperty.Name.StartsWith('E'))
+            ElementType = StormXmlElementType.Enum;
         else
-        {
-            ElementName = stormXmlProperty.Name[1..];
-
-            if (stormXmlProperty.Name.StartsWith('C'))
-                ElementType = StormXmlElementType.Class;
-            else if (stormXmlProperty.Name.StartsWith('S'))
-                ElementType = StormXmlElementType.Struct;
-            else if (stormXmlProperty.Name.StartsWith('E'))
-                ElementType = StormXmlElementType.Enum;
-            else
-                ElementType = StormXmlElementType.Unknown;
-        }
-
-        Id = stormXmlProperty.TryGetProperty("id", out StormXmlArray? idProperty) ? idProperty.Value : null;
-        Parent = stormXmlProperty.TryGetProperty("parent", out StormXmlArray? parentProperty) ? parentProperty.Value : null;
-        IsDefault = stormXmlProperty.TryGetProperty("default", out StormXmlArray? defaultProperty) && defaultProperty.Value is not null && defaultProperty.Value == "1";
+            ElementType = StormXmlElementType.Unknown;
     }
 
-    //private static StormXmlProperty Parse(XmlReader reader, StormAttributeVariables stormAttributeVariables)
-    //{
-    //    string elementName = reader.LocalName;
-    //    bool isArray = false;
-
-    //    StormXmlProperty stormXmlProperty = new(elementName);
-
-    //    if (elementName.EndsWith("array", StringComparison.OrdinalIgnoreCase) || StormXmlConstants.ElementArrays.Contains(elementName))
-    //        isArray = true;
-
-    //    // for self-closing tags like <Element ... />
-    //    bool isEmptyElement = reader.IsEmptyElement;
-
-    //    if (reader.MoveToFirstAttribute())
-    //    {
-    //        do
-    //        {
-    //            string name = reader.LocalName;
-    //            string value = reader.Value;
-
-    //            if (name.Equals(StormXmlConstants.IdAttributeName, StringComparison.Ordinal))
-    //            {
-
-    //            }
-    //            else if (!isArray && name.Equals(StormXmlConstants.IndexAttributeName, StringComparison.OrdinalIgnoreCase))
-    //            {
-    //                isArray = true;
-    //            }
-
-    //            stormXmlProperty.Add(name, value);
-    //        }
-    //        while (reader.MoveToNextAttribute());
-
-    //        reader.MoveToElement(); // back to the element node
-    //    }
-
-    //    stormXmlProperty.IsArray = isArray;
-
-    //    if (isEmptyElement)
-    //    {
-    //        reader.Read(); // consume <Element ... />, done
-    //        return stormXmlProperty;
-    //    }
-
-    //    reader.Read(); // consume the start tag <Element ...>
-
-    //    while (!reader.EOF && reader.NodeType != XmlNodeType.EndElement)
-    //    {
-    //        if (reader.NodeType == XmlNodeType.Element)
-    //        {
-    //            // Peek the child's index attribute without moving the reader
-    //            string? indexValue = reader.GetAttribute(StormXmlConstants.IndexAttributeName);
-
-    //            stormXmlProperty.Add(Parse(reader, stormAttributeVariables), indexValue);
-    //        }
-    //        else
-    //        {
-    //            reader.Read();
-    //        }
-    //    }
-
-    //    reader.Read(); // consume the end tag </Element>
-
-    //    return stormXmlProperty;
-    //}
+    private void InitializeAttributes(StormXmlMember stormXmlProperty)
+    {
+        Id = stormXmlProperty.TryGetMember("id", out StormXmlArray? idProperty) ? idProperty.Value : null;
+        Parent = stormXmlProperty.TryGetMember("parent", out StormXmlArray? parentProperty) ? parentProperty.Value : null;
+        IsDefault = stormXmlProperty.TryGetMember("default", out StormXmlArray? defaultProperty) && defaultProperty.Value is not null && defaultProperty.Value == "1";
+    }
 }

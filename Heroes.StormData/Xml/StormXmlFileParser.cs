@@ -1,4 +1,4 @@
-﻿using System.Diagnostics;
+﻿using Heroes.StormData.StormMath;
 
 namespace Heroes.StormData.Xml;
 
@@ -6,13 +6,11 @@ internal class StormXmlFileParser
 {
     private static readonly SearchValues<char> _constantVariableSearch = SearchValues.Create(" ,.;");
 
-    private readonly ElementCache _elementCache;
-    //private readonly StormAttributeVariables _stormAttributeVariables;
+    private readonly LayeredDataStorage _layeredDataStorage;
 
-    public StormXmlFileParser(ElementCache elementCache)
+    public StormXmlFileParser(LayeredDataStorage layeredDataStorage)
     {
-        _elementCache = elementCache;
-       // _stormAttributeVariables = stormAttributeVariables;
+        _layeredDataStorage = layeredDataStorage;
     }
 
     /// <summary>
@@ -34,21 +32,21 @@ internal class StormXmlFileParser
                 continue;
             }
 
-            yield return StormXmlElement.Create(ParseElement(reader), stormFile);
+            StormXmlMember stormXmlProperty = ParseElement(reader);
 
-            //if (reader.LocalName.Equals(StormXmlConstants.ConstElementName, StringComparison.Ordinal))
-            //    ParseConstants(reader);
-            //else
-            //    ParseElement(reader);
+            if (stormXmlProperty.Name.Equals(StormXmlConstants.ConstElementName, StringComparison.Ordinal))
+                yield return new StormXmlConstElement(stormXmlProperty, stormFile);
+            else
+                yield return new StormXmlElement(stormXmlProperty, stormFile);
         }
     }
 
-    private StormXmlProperty ParseElement(XmlReader reader)
+    private StormXmlMember ParseElement(XmlReader reader)
     {
         string elementName = reader.LocalName;
         bool isArray = false;
 
-        StormXmlProperty stormXmlProperty = new(elementName);
+        StormXmlMember stormXmlProperty = new(elementName);
 
         if (elementName.EndsWith("array", StringComparison.OrdinalIgnoreCase) || StormXmlConstants.ElementArrays.Contains(elementName))
             isArray = true;
@@ -119,14 +117,104 @@ internal class StormXmlFileParser
 
     private string ComputeConstantValue(string value, int indexOfConstant)
     {
-        ReadOnlySpan<char> startOfConstant = value.AsSpan(indexOfConstant);
+        // should be a non-const element
+        if (indexOfConstant == 0)
+        {
+            if (_layeredDataStorage.TryGetFirstStormXmlConstElementById(value, out StormXmlConstElement? stormXmlConstElement))
+            {
+                return "";
+            }
+        }
 
-        int endIndexOfConst = startOfConstant.IndexOfAny(_constantVariableSearch);
+        return StormPrefixNotation.Compute(_layeredDataStorage, value).ToString();
 
-        ReadOnlySpan<char> constant = endIndexOfConst < 0
-            ? startOfConstant
-            : startOfConstant[..endIndexOfConst];
+        // here it should be a const element so we need to find the constant in the value
+        //ReadOnlySpan<char> startOfConstant = value.AsSpan(indexOfConstant);
 
-        return "";
+        //int endIndexOfConst = startOfConstant.IndexOfAny(_constantVariableSearch);
+
+        //ReadOnlySpan<char> constant = endIndexOfConst < 0
+        //    ? startOfConstant
+        //    : startOfConstant[..endIndexOfConst];
+
+        //if (constant.IsEmpty)
+        //    return string.Empty;
+
+
+
+
+        //if (constant[0] == '$')
+        //{
+        //    if (_layeredDataStorage.TryGetFirstStormXmlConstElementById(constant, out StormXmlConstElement? stormXmlConstElement))
+        //    {
+        //        //stormXmlConstElement
+        //    }
+        //}
+        //else if (double.TryParse(constant, NumberStyles.Float, CultureInfo.InvariantCulture, out double result))
+        //{
+        //    return result.ToString();
+        //}
+
+        //return constant.ToString();
+        //return _stormStorage.GetValueFromConstTextAsText(constant);
+
+
+
+        //if (text.IsEmpty)
+        //    return string.Empty;
+
+        //if (text[0] == '$')
+        //{
+        //    if (TryGetFirstConstantXElementById(text, out StormXElementValuePath? stormXElementValuePath))
+        //    {
+        //        return GetValueFromConstElement(stormXElementValuePath.Value);
+        //    }
+        //}
+        //else if (double.TryParse(text, NumberStyles.Float, CultureInfo.InvariantCulture, out double result))
+        //{
+        //    return result.ToString();
+        //}
+
+        //return text.ToString();
+
+
+
+        //public string GetValueFromConstElement(XElement constElement)
+        //{
+        //    (string? valueAttribute, bool isExpressionAttribute) = ReadConstAttributes(constElement);
+
+        //    if (string.IsNullOrWhiteSpace(valueAttribute))
+        //        return valueAttribute ?? string.Empty;
+
+        //    if (isExpressionAttribute)
+        //        return HeroesPrefixNotation.Compute(this, valueAttribute).ToString();
+
+        //    if (double.TryParse(valueAttribute, NumberStyles.Float, CultureInfo.InvariantCulture, out double value))
+        //        return value.ToString();
+
+        //    return valueAttribute;
+        //}
+
+
+
+    //public double GetValueFromConstTextAsNumber(ReadOnlySpan<char> text)
+    //{
+    //    if (text.IsEmpty)
+    //        return 0;
+
+    //    if (text[0] == '$')
+    //    {
+    //        if (TryGetFirstConstantXElementById(text, out StormXElementValuePath? stormXElementValuePath))
+    //        {
+    //            return GetValueFromConstElementAsNumber(stormXElementValuePath.Value);
+    //        }
+    //    }
+    //    else if (double.TryParse(text, NumberStyles.Float, CultureInfo.InvariantCulture, out double result))
+    //    {
+    //        return result;
+    //    }
+
+    //    return 0;
+    //}
     }
 }

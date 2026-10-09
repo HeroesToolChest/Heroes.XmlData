@@ -1,22 +1,22 @@
 ﻿namespace Heroes.StormData.Xml;
 
 /// <summary>
-/// Represents an array of properties for an element. Can be indexed by name or by numerical index.
+/// Represents an array of members for an element. Can be indexed by name or by numerical index.
 /// </summary>
 public sealed class StormXmlArray
 {
     // the properties in the array
-    private readonly List<StormXmlProperty> _stormXmlProperties = [];
+    private readonly List<StormXmlMember> _stormXmlMembers = [];
 
-    // some properties in the array can be indexed by name
-    private readonly Dictionary<string, int> _indexByPropertyName = new(StringComparer.Ordinal);
-    private readonly Dictionary<string, int>.AlternateLookup<ReadOnlySpan<char>> _indexByPropertyNameAltLookup;
+    // some members in the array can be indexed by name
+    private readonly Dictionary<string, int> _indexByMemberName = new(StringComparer.Ordinal);
+    private readonly Dictionary<string, int>.AlternateLookup<ReadOnlySpan<char>> _indexByMemberNameAltLookup;
 
     private readonly bool _isArray;
 
     internal StormXmlArray(bool isArray)
     {
-        _indexByPropertyNameAltLookup = _indexByPropertyName.GetAlternateLookup<ReadOnlySpan<char>>();
+        _indexByMemberNameAltLookup = _indexByMemberName.GetAlternateLookup<ReadOnlySpan<char>>();
 
         _isArray = isArray;
     }
@@ -24,15 +24,20 @@ public sealed class StormXmlArray
     public StormXmlValue? Value { get; internal set; }
 
     /// <summary>
-    /// Gets a lookup for properties by index.
+    /// Gets the raw value of the underlying member, if it exists.
+    /// </summary>
+    public string? RawValue => Value?.RawValue;
+
+    /// <summary>
+    /// Gets a lookup for members by index.
     /// </summary>
     public IndexLookup ByIndex => new(this);
 
     /// <summary>
-    /// Gets a lookup for properties by name.
-    /// This lookup is only valid when this instance represents a single property rather than an array.
+    /// Gets a lookup for members by name.
+    /// This lookup is only valid when this instance represents a single member rather than an array.
     /// </summary>
-    public PropertyLookup ByProperty => new(this);
+    public MemberLookup ByMember => new(this);
 
     ///// <summary>
     ///// Gets the number of items in the array.
@@ -40,190 +45,190 @@ public sealed class StormXmlArray
     //public int Count => _items.Count;
 
     /// <summary>
-    /// Gets the property with the specified name of the single underlying property.
-    /// This lookup is only valid when this instance represents a single property rather than an array.
+    /// Gets the member with the specified name of the single underlying member.
+    /// This lookup is only valid when this instance represents a single member rather than an array.
     /// </summary>
-    /// <param name="name">The name of the property.</param>
-    /// <returns>The property with the specified name.</returns>
-    /// <exception cref="KeyNotFoundException">Thrown if this instance represents an array, or if the property was not found.</exception>
+    /// <param name="name">The name of the member.</param>
+    /// <returns>The member with the specified name.</returns>
+    /// <exception cref="KeyNotFoundException">Thrown if this instance represents an array, or if the member was not found.</exception>
     /// <exception cref="ArgumentNullException">Thrown if <paramref name="name"/> is <see langword="null"/>.</exception>
-    public StormXmlArray GetProperty(string name)
+    public StormXmlArray GetMember(string name)
     {
-        if (TryGetProperty(name, out StormXmlArray? property))
-            return property;
+        if (TryGetMember(name, out StormXmlArray? member))
+            return member;
 
-        throw new KeyNotFoundException($"The property '{name}' was not found.");
+        throw new KeyNotFoundException($"The member '{name}' was not found.");
     }
 
     /// <summary>
-    /// Gets the property with the specified name of the single underlying property.
-    /// This lookup is only valid when this instance represents a single property rather than an array.
+    /// Gets the member with the specified name of the single underlying member.
+    /// This lookup is only valid when this instance represents a single member rather than an array.
     /// </summary>
-    /// <param name="name">The name of the property.</param>
-    /// <returns>The property with the specified name.</returns>
-    /// <exception cref="KeyNotFoundException">Thrown if this instance represents an array, or if the property was not found.</exception>
-    public StormXmlArray GetProperty(ReadOnlySpan<char> name)
+    /// <param name="name">The name of the member.</param>
+    /// <returns>The member with the specified name.</returns>
+    /// <exception cref="KeyNotFoundException">Thrown if this instance represents an array, or if the member was not found.</exception>
+    public StormXmlArray GetMember(ReadOnlySpan<char> name)
     {
-        if (TryGetProperty(name, out StormXmlArray? property))
-            return property;
+        if (TryGetMember(name, out StormXmlArray? member))
+            return member;
 
-        throw new KeyNotFoundException($"The property '{name}' was not found.");
+        throw new KeyNotFoundException($"The member '{name}' was not found.");
     }
 
     /// <summary>
-    /// Tries to get the property with the specified name of the single underlying property.
-    /// This lookup is only valid when this instance represents a single property rather than an array.
+    /// Tries to get the member with the specified name of the single underlying member.
+    /// This lookup is only valid when this instance represents a single member rather than an array.
     /// </summary>
-    /// <param name="name">The name of the property.</param>
-    /// <param name="property">When this method returns, contains the property with the specified name, if found; otherwise, <see langword="null"/>.</param>
-    /// <returns><see langword="true"/> if the property was found; otherwise, <see langword="false"/>.</returns>
+    /// <param name="name">The name of the member.</param>
+    /// <param name="member">When this method returns, contains the member with the specified name, if found; otherwise, <see langword="null"/>.</param>
+    /// <returns><see langword="true"/> if the member was found; otherwise, <see langword="false"/>.</returns>
     /// <exception cref="ArgumentNullException">Thrown if <paramref name="name"/> is <see langword="null"/>.</exception>
-    public bool TryGetProperty(string name, [NotNullWhen(true)] out StormXmlArray? property)
+    public bool TryGetMember(string name, [NotNullWhen(true)] out StormXmlArray? member)
     {
         ArgumentNullException.ThrowIfNull(name);
 
-        return TryGetProperty(name.AsSpan(), out property);
+        return TryGetMember(name.AsSpan(), out member);
     }
 
     /// <summary>
-    /// Tries to get the property with the specified name of the single underlying property.
-    /// This lookup is only valid when this instance represents a single property rather than an array.
+    /// Tries to get the member with the specified name of the single underlying member.
+    /// This lookup is only valid when this instance represents a single member rather than an array.
     /// </summary>
-    /// <param name="name">The name of the property.</param>
-    /// <param name="property">When this method returns, contains the property with the specified name, if found; otherwise, <see langword="null"/>.</param>
-    /// <returns><see langword="true"/> if the property was found; otherwise, <see langword="false"/>.</returns>
-    public bool TryGetProperty(ReadOnlySpan<char> name, [NotNullWhen(true)] out StormXmlArray? property)
+    /// <param name="name">The name of the member.</param>
+    /// <param name="member">When this method returns, contains the member with the specified name, if found; otherwise, <see langword="null"/>.</param>
+    /// <returns><see langword="true"/> if the member was found; otherwise, <see langword="false"/>.</returns>
+    public bool TryGetMember(ReadOnlySpan<char> name, [NotNullWhen(true)] out StormXmlArray? member)
     {
         if (!_isArray)
         {
-            if (_stormXmlProperties[0].TryGetProperty(name, out property))
+            if (_stormXmlMembers[0].TryGetMember(name, out member))
             {
                 return true;
             }
         }
 
-        property = null;
+        member = null;
         return false;
     }
 
     /// <summary>
-    /// Gets the property at the specified index by numerical index.
+    /// Gets the member at the specified index by numerical index.
     /// </summary>
-    /// <param name="index">The numerical index of the property.</param>
-    /// <returns>The property at the specified index.</returns>
+    /// <param name="index">The numerical index of the member.</param>
+    /// <returns>The member at the specified index.</returns>
     /// <exception cref="KeyNotFoundException">Thrown if this instance does not represent an array, or if the index was not found.</exception>
-    public StormXmlProperty GetByIndex(int index)
+    public StormXmlMember GetByIndex(int index)
     {
-        if (TryGetByIndex(index, out StormXmlProperty? property))
-            return property;
+        if (TryGetByIndex(index, out StormXmlMember? member))
+            return member;
 
         throw new KeyNotFoundException($"The index '{index}' was not found.");
     }
 
     /// <summary>
-    /// Gets the property at the specified index by name.
+    /// Gets the member at the specified index by name.
     /// </summary>
     /// <param name="name">The name of the index.</param>
-    /// <returns>The property at the specified index.</returns>
+    /// <returns>The member at the specified index.</returns>
     /// <exception cref="KeyNotFoundException">Thrown if this instance does not represent an array, or if the index was not found.</exception>
     /// <exception cref="ArgumentNullException">Thrown if <paramref name="name"/> is <see langword="null"/>.</exception>
-    public StormXmlProperty GetByIndex(string name)
+    public StormXmlMember GetByIndex(string name)
     {
-        if (TryGetByIndex(name, out StormXmlProperty? property))
-            return property;
+        if (TryGetByIndex(name, out StormXmlMember? member))
+            return member;
 
         throw new KeyNotFoundException($"The index '{name}' was not found.");
     }
 
     /// <summary>
-    /// Gets the property at the specified index by name.
+    /// Gets the member at the specified index by name.
     /// </summary>
     /// <param name="name">The name of the index.</param>
-    /// <returns>The property at the specified index.</returns>
+    /// <returns>The member at the specified index.</returns>
     /// <exception cref="KeyNotFoundException">Thrown if this instance does not represent an array, or if the index was not found.</exception>
-    public StormXmlProperty GetByIndex(ReadOnlySpan<char> name)
+    public StormXmlMember GetByIndex(ReadOnlySpan<char> name)
     {
-        if (TryGetByIndex(name, out StormXmlProperty? property))
-            return property;
+        if (TryGetByIndex(name, out StormXmlMember? member))
+            return member;
 
         throw new KeyNotFoundException($"The index '{name}' was not found.");
     }
 
     /// <summary>
-    /// Tries to get the property at the specified index by numerical index.
+    /// Tries to get the member at the specified index by numerical index.
     /// </summary>
-    /// <param name="index">The numerical index of the property.</param>
-    /// <param name="property">When this method returns, contains the property at the specified index, if found; otherwise, <see langword="null"/>.</param>
-    /// <returns><see langword="true"/> if the property was found; otherwise, <see langword="false"/>.</returns>
-    public bool TryGetByIndex(int index, [NotNullWhen(true)] out StormXmlProperty? property)
+    /// <param name="index">The numerical index of the member.</param>
+    /// <param name="member">When this method returns, contains the member at the specified index, if found; otherwise, <see langword="null"/>.</param>
+    /// <returns><see langword="true"/> if the member was found; otherwise, <see langword="false"/>.</returns>
+    public bool TryGetByIndex(int index, [NotNullWhen(true)] out StormXmlMember? member)
     {
         if (_isArray)
         {
-            if (index >= 0 && index < _stormXmlProperties.Count)
+            if (index >= 0 && index < _stormXmlMembers.Count)
             {
-                property = _stormXmlProperties[index];
+                member = _stormXmlMembers[index];
                 return true;
             }
         }
 
-        property = null;
+        member = null;
         return false;
     }
 
     /// <summary>
-    /// Tries to get the property at the specified index by name.
+    /// Tries to get the member at the specified index by name.
     /// </summary>
     /// <param name="name">The name of the index.</param>
-    /// <param name="property">When this method returns, contains the property at the specified index, if found; otherwise, <see langword="null"/>.</param>
-    /// <returns><see langword="true"/> if the property was found; otherwise, <see langword="false"/>.</returns>
+    /// <param name="member">When this method returns, contains the member at the specified index, if found; otherwise, <see langword="null"/>.</param>
+    /// <returns><see langword="true"/> if the member was found; otherwise, <see langword="false"/>.</returns>
     /// <exception cref="ArgumentNullException">Thrown if <paramref name="name"/> is <see langword="null"/>.</exception>
-    public bool TryGetByIndex(string name, [NotNullWhen(true)] out StormXmlProperty? property)
+    public bool TryGetByIndex(string name, [NotNullWhen(true)] out StormXmlMember? member)
     {
         ArgumentNullException.ThrowIfNull(name);
 
-        return TryGetByIndex(name.AsSpan(), out property);
+        return TryGetByIndex(name.AsSpan(), out member);
     }
 
     /// <summary>
-    /// Tries to get the property at the specified index by name.
+    /// Tries to get the member at the specified index by name.
     /// </summary>
     /// <param name="name">The name of the index.</param>
-    /// <param name="property">When this method returns, contains the property at the specified index, if found; otherwise, <see langword="null"/>.</param>
-    /// <returns><see langword="true"/> if the property was found; otherwise, <see langword="false"/>.</returns>
-    public bool TryGetByIndex(ReadOnlySpan<char> name, [NotNullWhen(true)] out StormXmlProperty? property)
+    /// <param name="member">When this method returns, contains the member at the specified index, if found; otherwise, <see langword="null"/>.</param>
+    /// <returns><see langword="true"/> if the member was found; otherwise, <see langword="false"/>.</returns>
+    public bool TryGetByIndex(ReadOnlySpan<char> name, [NotNullWhen(true)] out StormXmlMember? member)
     {
         if (_isArray)
         {
             if (int.TryParse(name, out int numericalIndex))
             {
-                if (numericalIndex >= 0 && numericalIndex < _stormXmlProperties.Count)
+                if (numericalIndex >= 0 && numericalIndex < _stormXmlMembers.Count)
                 {
-                    property = _stormXmlProperties[numericalIndex];
+                    member = _stormXmlMembers[numericalIndex];
                     return true;
                 }
             }
-            else if (_indexByPropertyNameAltLookup.TryGetValue(name, out int index))
+            else if (_indexByMemberNameAltLookup.TryGetValue(name, out int index))
             {
-                property = _stormXmlProperties[index];
+                member = _stormXmlMembers[index];
                 return true;
             }
         }
 
-        property = null;
+        member = null;
         return false;
     }
 
     /// <summary>
     /// Determines whether the specified numerical index exists in the array.
     /// </summary>
-    /// <param name="index">The numerical index of the property.</param>
+    /// <param name="index">The numerical index of the member.</param>
     /// <returns><see langword="true"/> if the index exists; otherwise, <see langword="false"/>.</returns>
     public bool ContainsIndex(int index)
     {
         if (!_isArray)
             return false;
 
-        return index >= 0 && index < _stormXmlProperties.Count;
+        return index >= 0 && index < _stormXmlMembers.Count;
     }
 
     /// <summary>
@@ -251,48 +256,48 @@ public sealed class StormXmlArray
 
         if (int.TryParse(name, out int numericalIndex))
         {
-            return numericalIndex >= 0 && numericalIndex < _stormXmlProperties.Count;
+            return numericalIndex >= 0 && numericalIndex < _stormXmlMembers.Count;
         }
 
-        return _indexByPropertyNameAltLookup.ContainsKey(name);
+        return _indexByMemberNameAltLookup.ContainsKey(name);
     }
 
     // TODO: rename to SetValue
-    internal void AddProperty(string value)
+    internal void AddMember(string value)
     {
         Value = new StormXmlValue(value);
     }
 
-    internal void AddProperty(StormXmlProperty property)
+    internal void AddMember(StormXmlMember member)
     {
-        //if (property.IsArray)
-            _stormXmlProperties.Add(property);
+        //if (member.IsArray)
+            _stormXmlMembers.Add(member);
 
     }
 
-    internal void SetPropertyByIndex(int index, StormXmlProperty property)
+    internal void SetMemberByIndex(int index, StormXmlMember member)
     {
-        while (_stormXmlProperties.Count < index)
+        while (_stormXmlMembers.Count < index)
         {
-            _stormXmlProperties.Add(new StormXmlProperty(property.Name));
+            _stormXmlMembers.Add(new StormXmlMember(member.Name));
         }
 
-        if (_stormXmlProperties.Count == index)
-            _stormXmlProperties.Add(property);
+        if (_stormXmlMembers.Count == index)
+            _stormXmlMembers.Add(member);
         else
-            _stormXmlProperties[index] = property;
+            _stormXmlMembers[index] = member;
     }
 
-    internal void SetPropertyByNamedIndex(string name, StormXmlProperty property)
+    internal void SetMemberByNamedIndex(string name, StormXmlMember member)
     {
-        if (_indexByPropertyName.TryGetValue(name, out int i))
+        if (_indexByMemberName.TryGetValue(name, out int i))
         {
-            _stormXmlProperties[i] = property;
+            _stormXmlMembers[i] = member;
         }
         else
         {
-            _indexByPropertyName[name] = _stormXmlProperties.Count;
-            _stormXmlProperties.Add(property);
+            _indexByMemberName[name] = _stormXmlMembers.Count;
+            _stormXmlMembers.Add(member);
         }
     }
 
@@ -304,98 +309,98 @@ public sealed class StormXmlArray
         if (other.Value is not null)
             Value = other.Value;
 
-        if (other._stormXmlProperties.Count < 1)
+        if (other._stormXmlMembers.Count < 1)
             return;
 
         // the named indexes are stored as name -> position, so invert them to resolve a position back to its name
         Dictionary<int, string>? namedIndexesByPosition = null;
 
-        if (other._indexByPropertyName.Count > 0)
+        if (other._indexByMemberName.Count > 0)
         {
-            namedIndexesByPosition = new Dictionary<int, string>(other._indexByPropertyName.Count);
+            namedIndexesByPosition = new Dictionary<int, string>(other._indexByMemberName.Count);
 
-            foreach ((string namedIndex, int position) in other._indexByPropertyName)
+            foreach ((string namedIndex, int position) in other._indexByMemberName)
             {
                 namedIndexesByPosition[position] = namedIndex;
             }
         }
 
-        for (int i = 0; i < other._stormXmlProperties.Count; i++)
+        for (int i = 0; i < other._stormXmlMembers.Count; i++)
         {
-            StormXmlProperty? otherProperty = other._stormXmlProperties[i];
+            StormXmlMember? otherMember = other._stormXmlMembers[i];
 
             if (namedIndexesByPosition is not null && namedIndexesByPosition.TryGetValue(i, out string? namedIndex))
-                MergePropertyByNamedIndex(namedIndex, otherProperty);
+                MergeMemberByNamedIndex(namedIndex, otherMember);
             else
-                MergePropertyByIndex(i, otherProperty);
+                MergeMemberByIndex(i, otherMember);
         }
     }
 
-    private void MergePropertyByIndex(int index, StormXmlProperty otherProperty)
+    private void MergeMemberByIndex(int index, StormXmlMember otherMember)
     {
-        if (index < _stormXmlProperties.Count && _stormXmlProperties[index] is StormXmlProperty existingProperty)
-            existingProperty.Merge(otherProperty);
+        if (index < _stormXmlMembers.Count && _stormXmlMembers[index] is StormXmlMember existingMember)
+            existingMember.Merge(otherMember);
         else
-            SetPropertyByIndex(index, otherProperty);
+            SetMemberByIndex(index, otherMember);
     }
 
-    private void MergePropertyByNamedIndex(string namedIndex, StormXmlProperty otherProperty)
+    private void MergeMemberByNamedIndex(string namedIndex, StormXmlMember otherMember)
     {
-        if (_indexByPropertyName.TryGetValue(namedIndex, out int index) && _stormXmlProperties[index] is StormXmlProperty existingProperty)
-            existingProperty.Merge(otherProperty);
+        if (_indexByMemberName.TryGetValue(namedIndex, out int index) && _stormXmlMembers[index] is StormXmlMember existingMember)
+            existingMember.Merge(otherMember);
         else
-            SetPropertyByNamedIndex(namedIndex, otherProperty);
+            SetMemberByNamedIndex(namedIndex, otherMember);
     }
 
     /// <summary>
-    /// Provides a lookup for properties by index.
+    /// Provides a lookup for members by index.
     /// </summary>
-    /// <param name="owner">The <see cref="StormXmlArray"/> instance that owns the properties.</param>
+    /// <param name="owner">The <see cref="StormXmlArray"/> instance that owns the members.</param>
     public readonly struct IndexLookup(StormXmlArray owner)
     {
         /// <summary>
-        /// Gets the property at the specified index by name.
+        /// Gets the member at the specified index by name.
         /// </summary>
         /// <param name="name">The name of the index.</param>
-        /// <returns>The property at the specified index.</returns>
+        /// <returns>The member at the specified index.</returns>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="name"/> is <see langword="null"/>.</exception>
-        public StormXmlProperty this[string name] => owner.GetByIndex(name);
+        public StormXmlMember this[string name] => owner.GetByIndex(name);
 
         /// <summary>
-        /// Gets the property at the specified index by name.
+        /// Gets the member at the specified index by name.
         /// </summary>
         /// <param name="name">The name of the index.</param>
-        /// <returns>The property at the specified index.</returns>
-        public StormXmlProperty this[ReadOnlySpan<char> name] => owner.GetByIndex(name);
+        /// <returns>The member at the specified index.</returns>
+        public StormXmlMember this[ReadOnlySpan<char> name] => owner.GetByIndex(name);
 
         /// <summary>
-        /// Gets the property at the specified index by numerical index.
+        /// Gets the member at the specified index by numerical index.
         /// </summary>
-        /// <param name="index">The numerical index of the property.</param>
-        /// <returns>The property at the specified index.</returns>
-        public StormXmlProperty this[int index] => owner.GetByIndex(index);
+        /// <param name="index">The numerical index of the member.</param>
+        /// <returns>The member at the specified index.</returns>
+        public StormXmlMember this[int index] => owner.GetByIndex(index);
     }
 
     /// <summary>
-    /// Provides a lookup for properties by name.
+    /// Provides a lookup for members by name.
     /// </summary>
-    /// <param name="owner">The <see cref="StormXmlArray"/> instance that owns the properties.</param>
-    public readonly struct PropertyLookup(StormXmlArray owner)
+    /// <param name="owner">The <see cref="StormXmlArray"/> instance that owns the members.</param>
+    public readonly struct MemberLookup(StormXmlArray owner)
     {
         /// <summary>
-        /// Gets the property with the specified name of the single underlying element.
-        /// This lookup is only valid when this instance represents a single property rather than an array.
+        /// Gets the member with the specified name of the single underlying element.
+        /// This lookup is only valid when this instance represents a single member rather than an array.
         /// </summary>
-        /// <param name="name">The name of the property.</param>
-        /// <returns>The property with the specified name.</returns>
-        public StormXmlArray this[string name] => owner.GetProperty(name);
+        /// <param name="name">The name of the member.</param>
+        /// <returns>The member with the specified name.</returns>
+        public StormXmlArray this[string name] => owner.GetMember(name);
 
         /// <summary>
-        /// Gets the property with the specified name of the single underlying element.
-        /// This lookup is only valid when this instance represents a single property rather than an array.
+        /// Gets the member with the specified name of the single underlying element.
+        /// This lookup is only valid when this instance represents a single member rather than an array.
         /// </summary>
-        /// <param name="name">The name of the property.</param>
-        /// <returns>The property with the specified name.</returns>
-        public StormXmlArray this[ReadOnlySpan<char> name] => owner.GetProperty(name);
+        /// <param name="name">The name of the member.</param>
+        /// <returns>The member with the specified name.</returns>
+        public StormXmlArray this[ReadOnlySpan<char> name] => owner.GetMember(name);
     }
 }

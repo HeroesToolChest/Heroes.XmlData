@@ -1,7 +1,12 @@
 ﻿namespace Heroes.StormData.Cache;
 
-internal class ElementCache
+internal partial class ElementCache
 {
+    /// <summary>
+    /// Gets a dictionary of <see cref="StormXmlConstElement"/>s by their <c>id</c> attribute.
+    /// </summary>
+    public Dictionary<string, StormXmlConstElement> StormXmlConstElementById { get; } = new(StringComparer.Ordinal);
+
     /// <summary>
     /// Gets a dictionary of class element names (without type letter declaration) (e.g. <c>EffectDamage</c>) by catalog name (e.g. <c>Effect</c>).
     /// </summary>
@@ -20,5 +25,5 @@ internal class ElementCache
     /// <summary>
     /// Gets a dictionary of <see cref="StormXmlElement"/>s by their <c>id</c> attribute by their catalog name (e.g. <c>Effect</c>).
     /// </summary>
-    public Dictionary<string, Dictionary<string, StormXmlElement>.AlternateLookup<ReadOnlySpan<char>>> StormXmlElementsByCatalog { get; } = new(StringComparer.OrdinalIgnoreCase);
+    public Dictionary<string, Dictionary<string, StormXmlElement>.AlternateLookup<ReadOnlySpan<char>>> StormXmlElementsByCatalog { get; } = new(StringComparer.Ordinal);
 }

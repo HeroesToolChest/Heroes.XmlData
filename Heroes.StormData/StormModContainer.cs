@@ -16,8 +16,8 @@ public class StormModContainer
         SourceContainer = sourceContainer;
         StormModType = stormModType;
 
-        _dataStorage = SourceContainer.Storage.GetDataStorage(StormModType);
-        _xmlParser = new StormXmlFileParser(_dataStorage.ElementCache);
+        _dataStorage = SourceContainer.LayeredDataStorage.GetDataStorage(StormModType);
+        _xmlParser = new StormXmlFileParser(SourceContainer.LayeredDataStorage);
     }
 
     private SourceContainer SourceContainer { get; }
@@ -32,7 +32,10 @@ public class StormModContainer
 
         foreach (StormXmlElement element in elements)
         {
-            SourceContainer.AddElement(element, _dataStorage);
+            if (element.ElementType == StormXmlElementType.Const)
+                _dataStorage.AddConstElement((StormXmlConstElement)element);
+            else
+                _dataStorage.AddElement(element);
         }
 
     }
@@ -42,5 +45,4 @@ public class StormModContainer
         _notFoundFilesList.Add(stormFile);
        // _stormStorage.AddFileNotFound(StormModType, stormFile);
     }
-
 }
