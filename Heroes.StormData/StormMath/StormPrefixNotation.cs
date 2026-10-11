@@ -93,7 +93,7 @@ internal sealed class StormPrefixNotation
         {
             if (_layeredDataStorage.TryGetFirstStormXmlConstElementById(expression, out StormXmlConstElement? stormXmlConstElement))
             {
-                return double.Parse(stormXmlConstElement.Members.Value.Value.RawValue, CultureInfo.InvariantCulture);
+                return double.Parse(stormXmlConstElement.Value, CultureInfo.InvariantCulture);
             }
             else
             {
@@ -109,6 +109,12 @@ internal sealed class StormPrefixNotation
             ReadOnlySpan<char> valueToBeNegatedSpan = expression[7..^1];  // removed negate( and )
 
             return Evaluate(valueToBeNegatedSpan) * -1;
+        }
+        else if (expression.StartsWith("round", StringComparison.OrdinalIgnoreCase))
+        {
+            ReadOnlySpan<char> valueToBeRoundedSpan = expression[6..^1];  // removed round( and )
+
+            return Math.Round(Evaluate(valueToBeRoundedSpan));
         }
         else if (expression.StartsWith("max", StringComparison.OrdinalIgnoreCase))
         {

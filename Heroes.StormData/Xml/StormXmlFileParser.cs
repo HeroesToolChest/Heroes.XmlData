@@ -32,21 +32,22 @@ internal class StormXmlFileParser
                 continue;
             }
 
-            StormXmlMember stormXmlProperty = ParseElement(reader);
+            StormXmlMember stormXmlMember = ParseElement(reader);
 
-            if (stormXmlProperty.Name.Equals(StormXmlConstants.ConstElementName, StringComparison.Ordinal))
-                yield return new StormXmlConstElement(stormXmlProperty, stormFile);
+            if (stormXmlMember.Name.Equals(StormXmlConstants.ConstElementName, StringComparison.Ordinal))
+                yield return new StormXmlConstElement(stormXmlMember, stormFile);
             else
-                yield return new StormXmlElement(stormXmlProperty, stormFile);
+                yield return new StormXmlElement(stormXmlMember, stormFile);
         }
     }
 
-    private StormXmlMember ParseElement(XmlReader reader)
+    private StormXmlMember ParseElement(XmlReader reader, StormXmlMember? rootMember = null)
     {
         string elementName = reader.LocalName;
         bool isArray = false;
 
-        StormXmlMember stormXmlProperty = new(elementName);
+        StormXmlMember stormXmlMember = new(elementName);
+        rootMember ??= stormXmlMember;
 
         if (elementName.EndsWith("array", StringComparison.OrdinalIgnoreCase) || StormXmlConstants.ElementArrays.Contains(elementName))
             isArray = true;
@@ -73,11 +74,11 @@ internal class StormXmlFileParser
                 }
                 else if (!isIdAttribute && value.IndexOf('$') is int indexOfConstant && indexOfConstant >= 0)
                 {
-                    stormXmlProperty.Add(name, ComputeConstantValue(value, indexOfConstant));
+                    stormXmlMember.Add(name, ComputeConstantValue(value, indexOfConstant), rootMember);
                 }
                 else
                 {
-                    stormXmlProperty.Add(name, value);
+                    stormXmlMember.Add(name, value, rootMember);
                 }
             }
             while (reader.MoveToNextAttribute());
@@ -85,12 +86,12 @@ internal class StormXmlFileParser
             reader.MoveToElement(); // back to the element node
         }
 
-        stormXmlProperty.IsArray = isArray;
+        stormXmlMember.IsArray = isArray;
 
         if (isEmptyElement)
         {
             reader.Read(); // consume <Element ... />, done
-            return stormXmlProperty;
+            return stormXmlMember;
         }
 
         reader.Read(); // consume the start tag <Element ...>
@@ -102,7 +103,7 @@ internal class StormXmlFileParser
                 // Peek the child's index attribute without moving the reader
                 string? indexValue = reader.GetAttribute(StormXmlConstants.IndexAttributeName);
 
-                stormXmlProperty.Add(ParseElement(reader), indexValue);
+                stormXmlMember.Add(ParseElement(reader, rootMember), indexValue);
             }
             else
             {
@@ -112,7 +113,7 @@ internal class StormXmlFileParser
 
         reader.Read(); // consume the end tag </Element>
 
-        return stormXmlProperty;
+        return stormXmlMember;
     }
 
     private string ComputeConstantValue(string value, int indexOfConstant)

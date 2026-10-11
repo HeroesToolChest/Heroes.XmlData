@@ -22,14 +22,11 @@ public sealed class StormXmlMember
     /// </summary>
     public string Name { get; private set; }
 
-    public StormXmlValue? Value { get; private set; }
+    public StormXmlValue Value { get; private set; }
 
     /// <summary>
-    /// Gets the raw value of the underlying member, if it exists.
+    /// Gets a value indicating whether the member is in an array.
     /// </summary>
-    public string? RawValue => Value?.RawValue;
-
-    // TODO: set to private set;
     public bool IsArray { get; internal set; }
 
     /// <summary>
@@ -156,7 +153,8 @@ public sealed class StormXmlMember
     /// </summary>
     /// <param name="name">The name of the member to add.</param>
     /// <param name="value">The value of the member to add.</param>
-    internal void Add(string name, string value)
+    /// <param name="rootMember">The root member of the XML hierarchy.</param>
+    internal void Add(string name, string value, StormXmlMember rootMember)
     {
         ref StormXmlArray? currentArray = ref CollectionsMarshal.GetValueRefOrAddDefault(_membersByName, name, out bool arrayExists);
 
@@ -165,9 +163,9 @@ public sealed class StormXmlMember
             currentArray = new StormXmlArray(false);
         }
 
-        currentArray.AddMember(value);
+        currentArray.SetValue(value, rootMember);
 
-        if (name == StormXmlConstants.ValueAttributeName)
+        if (name.Equals(StormXmlConstants.ValueAttributeName, StringComparison.Ordinal))
         {
             Value = currentArray.Value;
         }
@@ -178,7 +176,7 @@ public sealed class StormXmlMember
         if (ReferenceEquals(this, other))
             return;
 
-        if (other.Value is not null)
+        if (other.Value.HasValue)
             Value = other.Value;
 
         Name = other.Name;

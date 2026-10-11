@@ -6,8 +6,8 @@
 [DebuggerDisplay("{DebuggerDisplay,nq}")]
 public sealed class StormXmlConstElement : StormXmlElement
 {
-    internal StormXmlConstElement(StormXmlMember stormXmlProperty, StormFile stormFile)
-        : base(stormXmlProperty, stormFile)
+    internal StormXmlConstElement(StormXmlMember stormXmlMember, StormFile stormFile)
+        : base(stormXmlMember, stormFile)
     {
     }
 
@@ -15,9 +15,12 @@ public sealed class StormXmlConstElement : StormXmlElement
     public override string Id => base.Id!;
 
     /// <summary>
-    /// Gets the raw value of the <c>value</c> attribute.
+    /// Gets the value of the <c>value</c> attribute.
+    /// <para>
+    /// Any constant will have been evaluated and replaced with the actual value, unless the constant could not be evaluated.
+    /// </para>
     /// </summary>
-    public string RawValue => Members["value"].RawValue ?? string.Empty;
+    public string Value => Members["value"].Value.RawValue ?? string.Empty;
 
     /// <summary>
     /// Gets a value indicating whether the <c>evaluateAsExpression</c> attribute is set to <c>1</c>.
@@ -35,10 +38,44 @@ public sealed class StormXmlConstElement : StormXmlElement
         }
     }
 
-    private protected override void Initialize(StormXmlMember stormXmlProperty)
+    /// <summary>
+    /// Gets the value of the <c>value</c> attribute as a <see cref="double"/>.
+    /// </summary>
+    /// <returns>The value of the <c>value</c> attribute as a <see cref="double"/>.</returns>
+    /// <exception cref="HeroesStormDataException">Thrown when the value cannot be converted to a <see cref="double"/>.</exception>
+    public double GetValueAsDouble()
     {
-        ElementName = stormXmlProperty.Name;
+        try
+        {
+            return double.Parse(Value, NumberStyles.Float, CultureInfo.InvariantCulture);
+        }
+        catch (FormatException ex)
+        {
+            throw new HeroesStormDataException($"Could not convert value '{Value}' to a double.", ex);
+        }
+    }
+
+    /// <summary>
+    /// Gets the value of the <c>value</c> attribute as an <see cref="int"/>.
+    /// </summary>
+    /// <returns>The value of the <c>value</c> attribute as an <see cref="int"/>.</returns>
+    /// <exception cref="HeroesStormDataException">Thrown when the value cannot be converted to an <see cref="int"/>.</exception>
+    public int GetValueAsInt32()
+    {
+        try
+        {
+            return int.Parse(Value, NumberStyles.Integer, CultureInfo.InvariantCulture);
+        }
+        catch (FormatException ex)
+        {
+            throw new HeroesStormDataException($"Could not convert value '{Value}' to an int32.", ex);
+        }
+    }
+
+    private protected override void Initialize(StormXmlMember stormXmlMember)
+    {
+        ElementName = stormXmlMember.Name;
         ElementType = StormXmlElementType.Const;
-        EvaluateAsExpression = stormXmlProperty.TryGetMember("evaluateAsExpression", out StormXmlArray? evaluateAsExpressionProperty) && evaluateAsExpressionProperty.Value == "1";
+        EvaluateAsExpression = stormXmlMember.TryGetMember("evaluateAsExpression", out StormXmlArray? evaluateAsExpressionProperty) && evaluateAsExpressionProperty.Value == "1";
     }
 }

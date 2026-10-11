@@ -85,24 +85,24 @@ public class StormXmlElement
     }
 
     [MemberNotNull(nameof(ElementName))]
-    private protected virtual void Initialize(StormXmlMember stormXmlProperty)
+    private protected virtual void Initialize(StormXmlMember stormXmlMember)
     {
-        ElementName = stormXmlProperty.Name[1..];
+        ElementName = stormXmlMember.Name[1..];
 
-        if (stormXmlProperty.Name.StartsWith('C'))
+        if (stormXmlMember.Name.StartsWith('C'))
             ElementType = StormXmlElementType.Class;
-        else if (stormXmlProperty.Name.StartsWith('S'))
+        else if (stormXmlMember.Name.StartsWith('S'))
             ElementType = StormXmlElementType.Struct;
-        else if (stormXmlProperty.Name.StartsWith('E'))
+        else if (stormXmlMember.Name.StartsWith('E'))
             ElementType = StormXmlElementType.Enum;
         else
             ElementType = StormXmlElementType.Unknown;
     }
 
-    private void InitializeAttributes(StormXmlMember stormXmlProperty)
+    private void InitializeAttributes(StormXmlMember stormXmlMember)
     {
-        Id = stormXmlProperty.TryGetMember("id", out StormXmlArray? idProperty) ? idProperty.Value : null;
-        Parent = stormXmlProperty.TryGetMember("parent", out StormXmlArray? parentProperty) ? parentProperty.Value : null;
-        IsDefault = stormXmlProperty.TryGetMember("default", out StormXmlArray? defaultProperty) && defaultProperty.Value is not null && defaultProperty.Value == "1";
+        Id = stormXmlMember.TryGetMember("id", out StormXmlArray? idProperty) ? idProperty.Value : null;
+        Parent = stormXmlMember.TryGetMember("parent", out StormXmlArray? parentProperty) ? parentProperty.Value : null;
+        IsDefault = stormXmlMember.TryGetMember("default", out StormXmlArray? defaultProperty) && defaultProperty.Value.HasValue && defaultProperty.Value == "1";
     }
 }

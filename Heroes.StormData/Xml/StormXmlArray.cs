@@ -12,21 +12,19 @@ public sealed class StormXmlArray
     private readonly Dictionary<string, int> _indexByMemberName = new(StringComparer.Ordinal);
     private readonly Dictionary<string, int>.AlternateLookup<ReadOnlySpan<char>> _indexByMemberNameAltLookup;
 
-    private readonly bool _isArray;
-
     internal StormXmlArray(bool isArray)
     {
         _indexByMemberNameAltLookup = _indexByMemberName.GetAlternateLookup<ReadOnlySpan<char>>();
 
-        _isArray = isArray;
+        IsArray = isArray;
     }
 
-    public StormXmlValue? Value { get; internal set; }
+    public StormXmlValue Value { get; internal set; }
 
     /// <summary>
-    /// Gets the raw value of the underlying member, if it exists.
+    /// Gets a value indicating whether this instance represents an array of members.
     /// </summary>
-    public string? RawValue => Value?.RawValue;
+    public bool IsArray { get; }
 
     /// <summary>
     /// Gets a lookup for members by index.
@@ -38,11 +36,6 @@ public sealed class StormXmlArray
     /// This lookup is only valid when this instance represents a single member rather than an array.
     /// </summary>
     public MemberLookup ByMember => new(this);
-
-    ///// <summary>
-    ///// Gets the number of items in the array.
-    ///// </summary>
-    //public int Count => _items.Count;
 
     /// <summary>
     /// Gets the member with the specified name of the single underlying member.
@@ -99,7 +92,7 @@ public sealed class StormXmlArray
     /// <returns><see langword="true"/> if the member was found; otherwise, <see langword="false"/>.</returns>
     public bool TryGetMember(ReadOnlySpan<char> name, [NotNullWhen(true)] out StormXmlArray? member)
     {
-        if (!_isArray)
+        if (!IsArray)
         {
             if (_stormXmlMembers[0].TryGetMember(name, out member))
             {
@@ -162,7 +155,7 @@ public sealed class StormXmlArray
     /// <returns><see langword="true"/> if the member was found; otherwise, <see langword="false"/>.</returns>
     public bool TryGetByIndex(int index, [NotNullWhen(true)] out StormXmlMember? member)
     {
-        if (_isArray)
+        if (IsArray)
         {
             if (index >= 0 && index < _stormXmlMembers.Count)
             {
@@ -197,7 +190,7 @@ public sealed class StormXmlArray
     /// <returns><see langword="true"/> if the member was found; otherwise, <see langword="false"/>.</returns>
     public bool TryGetByIndex(ReadOnlySpan<char> name, [NotNullWhen(true)] out StormXmlMember? member)
     {
-        if (_isArray)
+        if (IsArray)
         {
             if (int.TryParse(name, out int numericalIndex))
             {
@@ -225,7 +218,7 @@ public sealed class StormXmlArray
     /// <returns><see langword="true"/> if the index exists; otherwise, <see langword="false"/>.</returns>
     public bool ContainsIndex(int index)
     {
-        if (!_isArray)
+        if (!IsArray)
             return false;
 
         return index >= 0 && index < _stormXmlMembers.Count;
@@ -251,7 +244,7 @@ public sealed class StormXmlArray
     /// <returns><see langword="true"/> if the index exists; otherwise, <see langword="false"/>.</returns>
     public bool ContainsIndex(ReadOnlySpan<char> name)
     {
-        if (!_isArray)
+        if (!IsArray)
             return false;
 
         if (int.TryParse(name, out int numericalIndex))
@@ -262,17 +255,14 @@ public sealed class StormXmlArray
         return _indexByMemberNameAltLookup.ContainsKey(name);
     }
 
-    // TODO: rename to SetValue
-    internal void AddMember(string value)
+    internal void SetValue(string value, StormXmlMember rootMember)
     {
-        Value = new StormXmlValue(value);
+        Value = new StormXmlValue(value, rootMember);
     }
 
     internal void AddMember(StormXmlMember member)
     {
-        //if (member.IsArray)
-            _stormXmlMembers.Add(member);
-
+        _stormXmlMembers.Add(member);
     }
 
     internal void SetMemberByIndex(int index, StormXmlMember member)
@@ -306,7 +296,7 @@ public sealed class StormXmlArray
         if (ReferenceEquals(this, other))
             return;
 
-        if (other.Value is not null)
+        if (other.Value.HasValue)
             Value = other.Value;
 
         if (other._stormXmlMembers.Count < 1)

@@ -1,12 +1,8 @@
-﻿namespace Heroes.StormData.Tests.Xml;
+﻿namespace Heroes.StormData.Xml.Tests;
 
 [TestClass]
 public class StormXmlFileParserTests
 {
-    public StormXmlFileParserTests()
-    {
-    }
-
     [TestMethod]
     public void Parse_GeneralElements_ReturnsItems()
     {
@@ -80,11 +76,12 @@ public class StormXmlFileParserTests
         constElement.ElementType.Should().Be(StormXmlElementType.Const);
         constElement.Id.Should().Be("$XalatathLife");
         constElement.EvaluateAsExpression.Should().BeFalse();
-        constElement.Members.RawValue.Should().Be("1330");
+        constElement.Value.Should().Be("1330");
+        constElement.GetValueAsInt32().Should().Be(1330);
     }
 
     [TestMethod]
-    public void Parse_ConstWithExpression_ShouldReturnConstElement()
+    public void Parse_ConstWithExpression_ShouldReturnEvaluatedConstElement()
     {
         // arrange
         LayeredDataStorage layeredDataStorage = new();
@@ -113,7 +110,8 @@ public class StormXmlFileParserTests
         constElement.ElementType.Should().Be(StormXmlElementType.Const);
         constElement.Id.Should().Be("$XalatathDarkHeartRitualSecondaryLinkDamage");
         constElement.EvaluateAsExpression.Should().BeTrue();
-        constElement.Members.RawValue.Should().Be("17.5");
+        constElement.Value.Should().Be("17.5");
+        constElement.GetValueAsDouble().Should().Be(17.5);
     }
 
     [TestMethod]
