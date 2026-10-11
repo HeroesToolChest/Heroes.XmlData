@@ -1,6 +1,6 @@
 ﻿namespace Heroes.StormData.Cache;
 
-internal partial class ElementCache
+internal sealed partial class ElementCache
 {
     /// <summary>
     /// Gets a dictionary of <see cref="StormXmlConstElement"/>s by their <c>id</c> attribute.

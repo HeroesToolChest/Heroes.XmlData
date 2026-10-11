@@ -5,7 +5,7 @@ namespace Heroes.StormData.Cache;
 /// <summary>
 /// Represents a container for an individual data storage (e.g., base, map, or custom data).
 /// </summary>
-internal class DataStorage
+internal sealed class DataStorage
 {
     public ElementCache ElementCache { get; } = new();
 

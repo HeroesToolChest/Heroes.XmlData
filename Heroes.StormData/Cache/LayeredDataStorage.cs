@@ -3,7 +3,7 @@
 /// <summary>
 /// Represents a storage container for different types of data storage, including base, map, and custom data storage.
 /// </summary>
-internal class LayeredDataStorage
+internal sealed class LayeredDataStorage
 {
     private readonly DataStorage _baseDataStorage;
     private readonly DataStorage _mapDataStorage;

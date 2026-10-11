@@ -1,8 +1,6 @@
-﻿using Heroes.StormData.StormMath;
+﻿namespace Heroes.StormData.Xml;
 
-namespace Heroes.StormData.Xml;
-
-internal class StormXmlFileParser
+internal sealed class StormXmlFileParser
 {
     private static readonly SearchValues<char> _constantVariableSearch = SearchValues.Create(" ,.;");
 

@@ -1,7 +1,7 @@
 ﻿namespace Heroes.StormData.StormMath.Tests;
 
 [TestClass]
-public class MathHelpersTests
+public sealed class MathHelpersTests
 {
     [TestMethod]
     [DataRow(0, 1)]

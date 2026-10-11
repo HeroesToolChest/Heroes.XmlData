@@ -1,6 +1,6 @@
 ﻿namespace Heroes.StormData.Cache;
 
-internal partial class ElementCache
+internal sealed partial class ElementCache
 {
     public ElementCache()
     {

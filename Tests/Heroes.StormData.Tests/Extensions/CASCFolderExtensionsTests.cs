@@ -3,7 +3,7 @@
 namespace Heroes.StormData.Extensions.Tests;
 
 [TestClass]
-public class CASCFolderExtensionsTests
+public sealed class CASCFolderExtensionsTests
 {
     [TestMethod]
     public void TryGetLastDirectory_GetLastDirectoryFromGivenPath_ReturnsCASCFolder()

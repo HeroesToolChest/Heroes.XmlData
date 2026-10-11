@@ -2,7 +2,7 @@
 
 namespace Heroes.StormData.Xml;
 
-internal class StormXmlConstants
+internal sealed class StormXmlConstants
 {
     public const string IdAttributeName = "id";
     public const string IndexAttributeName = "index";

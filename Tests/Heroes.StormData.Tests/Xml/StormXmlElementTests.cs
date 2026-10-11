@@ -1,7 +1,7 @@
 ﻿namespace Heroes.StormData.Xml.Tests;
 
 [TestClass]
-public class StormXmlElementTests
+public sealed class StormXmlElementTests
 {
     [TestMethod]
     public void Members_AttributeAndElementSame_SameMemberAccess()

@@ -4,7 +4,7 @@ using System.Data;
 namespace Heroes.StormData.StormMath.Tests;
 
 [TestClass]
-public class StormPrefixNotationTests
+public sealed class StormPrefixNotationTests
 {
     [TestMethod]
     [DataRow(4, "4")]

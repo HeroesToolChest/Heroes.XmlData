@@ -1,7 +1,7 @@
 ﻿namespace Heroes.StormData.Xml.Tests;
 
 [TestClass]
-public class StormXmlFileParserTests
+public sealed class StormXmlFileParserTests
 {
     [TestMethod]
     public void Parse_GeneralElements_ReturnsItems()

@@ -1,7 +1,7 @@
 ﻿namespace Heroes.StormData.Xml.Tests;
 
 [TestClass]
-public class StormXmlConstElementTests
+public sealed class StormXmlConstElementTests
 {
     [TestMethod]
     public void Value_ValidValue_ReturnsCorrectString()

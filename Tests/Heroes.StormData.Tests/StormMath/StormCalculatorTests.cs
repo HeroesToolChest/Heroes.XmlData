@@ -4,7 +4,7 @@ using System.Data;
 namespace Heroes.StormData.StormMath.Tests;
 
 [TestClass]
-public class StormCalculatorTests
+public sealed class StormCalculatorTests
 {
     [TestMethod]
     [DataRow(100, "(12 + 6.000000) * (0.1875 + 0.062500) - (12 * 0.1875) / (12 * 0.1875) * 100")]
