@@ -4,6 +4,7 @@ global using Heroes.StormData.Cache;
 global using Heroes.StormData.CASC;
 global using Heroes.StormData.Extensions;
 global using Heroes.StormData.Source;
+global using Heroes.StormData.StormMath;
 global using Heroes.StormData.StormMods;
 global using Heroes.StormData.StormMods.Mpq;
 global using Heroes.StormData.Xml;
