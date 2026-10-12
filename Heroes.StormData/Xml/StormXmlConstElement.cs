@@ -12,7 +12,16 @@ public sealed class StormXmlConstElement : StormXmlElement
     }
 
     /// <inheritdoc/>
-    public override string Id => base.Id!;
+    public override string Id
+    {
+        get
+        {
+            if (base.Id is null)
+                throw new HeroesStormDataException($"The 'id' attribute is required for const elements. Element '{ElementName}' in file '{StormFiles[0].StormModPath}' does not have an 'id' attribute.");
+
+            return base.Id;
+        }
+    }
 
     /// <summary>
     /// Gets the value of the <c>value</c> attribute.
@@ -32,7 +41,7 @@ public sealed class StormXmlConstElement : StormXmlElement
     {
         get
         {
-            string parent = string.IsNullOrWhiteSpace(Parent) ? string.Empty : $", Parent = \"{Parent}\"";
+            string parent = HasParent ? $", Parent = \"{Parent}\"" : string.Empty;
 
             return $"{{{ElementName}, Id = \"{Id}\"{parent}, IsEvaluateAsExpression = {EvaluateAsExpression}}}";
         }
@@ -75,6 +84,8 @@ public sealed class StormXmlConstElement : StormXmlElement
     private protected override void Initialize(StormXmlMember stormXmlMember)
     {
         ElementName = stormXmlMember.Name;
+        ElementNameWithDeclaration = ElementName;
+
         ElementType = StormXmlElementType.Const;
         EvaluateAsExpression = stormXmlMember.TryGetMember("evaluateAsExpression", out StormXmlArray? evaluateAsExpressionProperty) && evaluateAsExpressionProperty.Value == "1";
     }

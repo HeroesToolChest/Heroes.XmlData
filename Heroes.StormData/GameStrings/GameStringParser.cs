@@ -17,6 +17,4 @@ internal sealed class GameStringParser
         textParser.ConstructTextStack(textStack);
         return textParser.BuildDescription(textStack);
     }
-
-
 }

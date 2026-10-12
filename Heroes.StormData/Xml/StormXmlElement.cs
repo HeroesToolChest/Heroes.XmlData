@@ -39,14 +39,31 @@ public class StormXmlElement
     public bool IsDefault { get; private set; }
 
     /// <summary>
-    /// Gets the name of the XML element.
+    /// Gets the name of the XML element (no type letter declaration).
     /// </summary>
     public string ElementName { get; private protected set; }
+
+    /// <summary>
+    /// Gets the name of the XML element (with type letter declaration, if available).
+    /// </summary>
+    public string ElementNameWithDeclaration { get; private protected set; }
 
     /// <summary>
     /// Gets the type of the XML element.
     /// </summary>
     public StormXmlElementType ElementType { get; private protected set; }
+
+    /// <summary>
+    /// Gets a value indicating whether the XML element has an <c>id</c> attribute.
+    /// </summary>
+    [MemberNotNullWhen(true, nameof(Id))]
+    public bool HasId { get; private set; }
+
+    /// <summary>
+    /// Gets a value indicating whether the XML element has a <c>parent</c> attribute.
+    /// </summary>
+    [MemberNotNullWhen(true, nameof(Parent))]
+    public bool HasParent { get; private set; }
 
     /// <summary>
     /// Gets a list of <see cref="StormFile"/>s that the element exists in.
@@ -61,8 +78,8 @@ public class StormXmlElement
     {
         get
         {
-            string id = string.IsNullOrWhiteSpace(Id) ? string.Empty : $", Id = \"{Id}\"";
-            string parent = string.IsNullOrWhiteSpace(Parent) ? string.Empty : $", Parent = \"{Parent}\"";
+            string id = HasId ? $", Id = \"{Id}\"" : string.Empty;
+            string parent = HasParent ? $", Parent = \"{Parent}\"" : string.Empty;
 
             return $"{{{ElementName}{id}{parent}, Elements = {_stormXmlMembers.Count}}}";
         }
@@ -85,9 +102,11 @@ public class StormXmlElement
     }
 
     [MemberNotNull(nameof(ElementName))]
+    [MemberNotNull(nameof(ElementNameWithDeclaration))]
     private protected virtual void Initialize(StormXmlMember stormXmlMember)
     {
         ElementName = stormXmlMember.Name[1..];
+        ElementNameWithDeclaration = stormXmlMember.Name;
 
         if (stormXmlMember.Name.StartsWith('C'))
             ElementType = StormXmlElementType.Class;
@@ -104,5 +123,8 @@ public class StormXmlElement
         Id = stormXmlMember.TryGetMember("id", out StormXmlArray? idProperty) ? idProperty.Value : null;
         Parent = stormXmlMember.TryGetMember("parent", out StormXmlArray? parentProperty) ? parentProperty.Value : null;
         IsDefault = stormXmlMember.TryGetMember("default", out StormXmlArray? defaultProperty) && defaultProperty.Value.HasValue && defaultProperty.Value == "1";
+
+        HasId = !string.IsNullOrWhiteSpace(Id);
+        HasParent = !string.IsNullOrWhiteSpace(Parent);
     }
 }

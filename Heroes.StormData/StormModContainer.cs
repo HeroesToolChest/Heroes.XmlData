@@ -1,4 +1,7 @@
-﻿namespace Heroes.StormData;
+﻿using System.Reflection.Metadata;
+using System.Runtime.InteropServices;
+
+namespace Heroes.StormData;
 
 /// <summary>
 /// Represents a container for a specific <c>stormmod</c> and its associated files and elements.
@@ -6,7 +9,7 @@
 public class StormModContainer
 {
     private readonly StormXmlFileParser _xmlParser;
-    private readonly DataStorage _dataStorage;
+    private readonly DataStorage _specificDataStorage;
 
     private readonly List<StormFile> _notFoundFilesList = [];
     private readonly List<StormFile> _loadedXmlFilesList = [];
@@ -16,8 +19,8 @@ public class StormModContainer
         SourceContainer = sourceContainer;
         StormModType = stormModType;
 
-        _dataStorage = SourceContainer.LayeredDataStorage.GetDataStorage(StormModType);
-        _xmlParser = new StormXmlFileParser(SourceContainer.LayeredDataStorage);
+        _specificDataStorage = SourceContainer.LayeredDataStorage.GetDataStorage(StormModType);
+        _xmlParser = SourceContainer.StormXmlFileParser;
     }
 
     private SourceContainer SourceContainer { get; }
@@ -33,9 +36,9 @@ public class StormModContainer
         foreach (StormXmlElement element in elements)
         {
             if (element.ElementType == StormXmlElementType.Const)
-                _dataStorage.AddConstElement((StormXmlConstElement)element);
+                _specificDataStorage.AddConstElement((StormXmlConstElement)element);
             else
-                _dataStorage.AddElement(element);
+                AddElement(element);
         }
 
     }
@@ -44,5 +47,49 @@ public class StormModContainer
     {
         _notFoundFilesList.Add(stormFile);
        // _stormStorage.AddFileNotFound(StormModType, stormFile);
+    }
+
+    private static string? GetCatalogNameFromFileName(StormXmlElement element)
+    {
+        string fileName = Path.GetFileName(element.StormFiles[0].StormModPath);
+
+        int index = fileName.LastIndexOf("data.xml", StringComparison.OrdinalIgnoreCase);
+        if (index > 1)
+        {
+            return fileName[..index];
+        }
+
+        return null;
+    }
+
+    private void AddElement(StormXmlElement element)
+    {
+        if (element.ElementType != StormXmlElementType.Class)
+            return;
+
+        string? catalogName = GetCatalogNameFromFileName(element);
+
+        // base class catalog name check
+        if (!string.IsNullOrWhiteSpace(catalogName) && element.ElementName.AsSpan(1).StartsWith(catalogName, StringComparison.OrdinalIgnoreCase))
+        {
+            _specificDataStorage.AddBaseClassCatalogName(element, catalogName);
+        }
+
+        // element with no id check
+        if (string.IsNullOrEmpty(element.Id))
+        {
+            _specificDataStorage.AddElementWithNoId(element);
+            return;
+        }
+
+        if (!SourceContainer.LayeredDataStorage.TryGetFirstCatalogNameByElementName(element.ElementName, out string? existingCatalogName))
+        {
+            // TODO: more lookup
+            existingCatalogName = string.Empty;
+        }
+
+        _specificDataStorage.AddElementWithId(element, existingCatalogName);
+        
+        // TODO: unitname attribute stuff
     }
 }

@@ -1,16 +1,26 @@
-﻿using System.Runtime.InteropServices;
-
-namespace Heroes.StormData;
+﻿namespace Heroes.StormData;
 
 /// <summary>
 /// Holds the data across all the <c>stormmods</c>.
 /// </summary>
 internal class SourceContainer
 {
+    public SourceContainer()
+    {
+        LayeredDataStorage = new LayeredDataStorage();
+        StormXmlFileParser = new StormXmlFileParser(LayeredDataStorage);
+    }
+
     /// <summary>
     /// Gets the storage for the base, map, and custom data.
     /// </summary>
-    public LayeredDataStorage LayeredDataStorage { get; } = new();
+    public LayeredDataStorage LayeredDataStorage { get; }
+
+    /// <summary>
+    /// Gets the parser used to parse the XML files.
+    /// </summary>
+    public StormXmlFileParser StormXmlFileParser { get; }
+
 
     //public void AddElement(StormXmlElement element, DataStorage dataStorage)
     //{

@@ -4,6 +4,248 @@
 public sealed class StormXmlElementTests
 {
     [TestMethod]
+    public void Id_HasId_ReturnsValue()
+    {
+        // arrange
+        StormXmlElement element = XmlReaderHelper.GetStormXmlElement(
+            """
+            <CAbil id="TestId" default="1" />
+            """);
+
+        // act
+        string? result = element.Id;
+
+        // assert
+        result.Should().Be("TestId");
+    }
+
+    [TestMethod]
+    public void Id_NoId_ReturnsValue()
+    {
+        // arrange
+        StormXmlElement element = XmlReaderHelper.GetStormXmlElement(
+            """
+            <CAbil default="1" />
+            """);
+
+        // act
+        string? result = element.Id;
+
+        // assert
+        result.Should().BeNull();
+    }
+
+    [TestMethod]
+    public void HasId_HasId_ReturnsTrue()
+    {
+        // arrange
+        StormXmlElement element = XmlReaderHelper.GetStormXmlElement(
+            """
+            <CAbil id="TestId" default="1" />
+            """);
+
+        // act
+        bool result = element.HasId;
+
+        // assert
+        result.Should().BeTrue();
+    }
+
+    [TestMethod]
+    public void HasId_NoId_ReturnsFalse()
+    {
+        // arrange
+        StormXmlElement element = XmlReaderHelper.GetStormXmlElement(
+            """
+            <CAbil default="1" />
+            """);
+
+        // act
+        bool result = element.HasId;
+
+        // assert
+        result.Should().BeFalse();
+    }
+
+    [TestMethod]
+    public void Parent_NoParent_ReturnsValue()
+    {
+        // arrange
+        StormXmlElement element = XmlReaderHelper.GetStormXmlElement(
+            """
+            <CAbil default="1" />
+            """);
+
+        // act
+        string? result = element.Parent;
+
+        // assert
+        result.Should().BeNull();
+    }
+
+    [TestMethod]
+    public void HasParent_NoParent_ReturnsFalse()
+    {
+        // arrange
+        StormXmlElement element = XmlReaderHelper.GetStormXmlElement(
+            """
+            <CAbil default="1" />
+            """);
+
+        // act
+        bool result = element.HasParent;
+
+        // assert
+        result.Should().BeFalse();
+    }
+
+    [TestMethod]
+    public void HasParent_HasParent_ReturnsTrue()
+    {
+        // arrange
+        StormXmlElement element = XmlReaderHelper.GetStormXmlElement(
+            """
+            <CAbil id="TestId" parent="TestParent" default="1" />
+            """); 
+
+        // act  
+        bool result = element.HasParent;
+
+        // assert
+        result.Should().BeTrue();
+    }
+
+    [TestMethod]
+    public void Parent_HasParent_ReturnsValue()
+    {
+        // arrange
+        StormXmlElement element = XmlReaderHelper.GetStormXmlElement(
+            """
+            <CAbil id="TestId" parent="TestParent" default="1" />
+            """);
+
+        // act
+        string? result = element.Parent;
+
+        // assert
+        result.Should().Be("TestParent");
+    }
+
+    [TestMethod]
+    public void IsDefault_HasDefault1_ReturnsTrue()
+    {
+        // arrange
+        StormXmlElement element = XmlReaderHelper.GetStormXmlElement(
+            """
+            <CAbil id="TestId" parent="TestParent" default="1" />
+            """);
+
+        // act
+        bool result = element.IsDefault;
+
+        // assert
+        result.Should().BeTrue();
+    }
+
+    [TestMethod]
+    public void IsDefault_HasDefault0_ReturnsFalse()
+    {
+        // arrange
+        StormXmlElement element = XmlReaderHelper.GetStormXmlElement(
+            """
+            <CAbil id="TestId" parent="TestParent" default="0" />
+            """);
+
+        // act
+        bool result = element.IsDefault;
+
+        // assert
+        result.Should().BeFalse();
+    }
+
+    [TestMethod]
+    public void IsDefault_HasNoDefault_ReturnsFalse()
+    {
+        // arrange
+        StormXmlElement element = XmlReaderHelper.GetStormXmlElement(
+            """
+            <CAbil id="TestId" parent="TestParent" />
+
+            """);
+
+        // act
+        bool result = element.IsDefault;
+
+        // assert
+        result.Should().BeFalse();
+    }
+
+    [TestMethod]
+    public void ElementType_ValidType_ReturnsType()
+    {
+        // arrange
+        StormXmlElement element = XmlReaderHelper.GetStormXmlElement(
+            """
+            <CAbil id="TestId" parent="TestParent" />
+
+            """);
+
+        // act
+        StormXmlElementType result = element.ElementType;
+
+        // assert
+        result.Should().Be(StormXmlElementType.Class);
+    }
+
+    [TestMethod]
+    public void ElementName_ValidValue_ReturnsCorrectString()
+    {
+        // arrange
+        StormXmlElement element = XmlReaderHelper.GetStormXmlElement(
+            """
+            <CAbil default="1" />
+            """);
+
+        // act
+        string result = element.ElementName;
+
+        // assert
+        result.Should().Be("Abil");
+    }
+
+    [TestMethod]
+    public void ElementNameWithDeclaration_ValidValue_ReturnsCorrectString()
+    {
+        // arrange
+        StormXmlElement element = XmlReaderHelper.GetStormXmlElement(
+            """
+            <CAbil default="1" />
+            """);
+
+        // act
+        string result = element.ElementNameWithDeclaration;
+
+        // assert
+        result.Should().Be("CAbil");
+    }
+
+    [TestMethod]
+    public void StormFiles_ValidValue_ReturnsCorrectList()
+    {
+        // arrange
+        StormXmlElement element = XmlReaderHelper.GetStormXmlElement(
+            """
+            <CAbil default="1" />
+            """);
+
+        // act
+        IReadOnlyList<StormFile> result = element.StormFiles;
+
+        // assert
+        result.Should().ContainSingle();
+    }
+
+    [TestMethod]
     public void Members_AttributeAndElementSame_SameMemberAccess()
     {
         // arrange

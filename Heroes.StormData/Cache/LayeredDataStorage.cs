@@ -57,4 +57,19 @@ internal sealed class LayeredDataStorage
 
         return false;
     }
+
+    public bool TryGetFirstCatalogNameByElementName(ReadOnlySpan<char> elementName, [NotNullWhen(true)] out string? catalogName)
+    {
+        // custom cache always first
+        if (_customElementCache.CatalogByClassElementAltLookup.TryGetValue(elementName, out catalogName))
+            return true;
+
+        if (_mapElementCache.CatalogByClassElementAltLookup.TryGetValue(elementName, out catalogName))
+            return true;
+
+        if (_baseElementCache.CatalogByClassElementAltLookup.TryGetValue(elementName, out catalogName))
+            return true;
+
+        return false;
+    }
 }

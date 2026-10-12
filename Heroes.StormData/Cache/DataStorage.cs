@@ -9,59 +9,24 @@ internal sealed class DataStorage
 {
     public ElementCache ElementCache { get; } = new();
 
-    public void AddElement(StormXmlElement element)
-    {
-        if (element.ElementType != StormXmlElementType.Class)
-            return;
-
-        string? elementType = GetElementTypeFromFileName(element);
-
-        if (!string.IsNullOrWhiteSpace(elementType) && element.ElementName.AsSpan(1).StartsWith(elementType, StringComparison.OrdinalIgnoreCase))
-        {
-            AddBaseClassElementType(element, elementType);
-        }
-
-        if (string.IsNullOrEmpty(element.Id))
-        {
-            AddElementWithNoId(element);
-            return;
-        }
-    }
-
     public void AddConstElement(StormXmlConstElement element)
     {
-        if (element.ElementType != StormXmlElementType.Const)
-            return;
-
         ElementCache.StormXmlConstElementById.TryAdd(element.Id, element);
     }
 
-    private static string? GetElementTypeFromFileName(StormXmlElement element)
+    public void AddBaseClassCatalogName(StormXmlElement element, string catalogName)
     {
-        string fileName = Path.GetFileName(element.StormFiles[0].StormModPath);
+        ref HashSet<string>? elementNames = ref CollectionsMarshal.GetValueRefOrAddDefault(ElementCache.ClassElementsByCatalog, catalogName, out bool exists);
 
-        int index = fileName.LastIndexOf("data.xml", StringComparison.OrdinalIgnoreCase);
-        if (index > 1)
-        {
-            return fileName[..index];
-        }
+        if (!exists || elementNames is null)
+            elementNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
-        return null;
+        elementNames.Add(element.ElementName);
+
+        ElementCache.CatalogByClassElement.TryAdd(element.ElementName, catalogName);
     }
 
-    private void AddBaseClassElementType(StormXmlElement element, string elementType)
-    {
-        ref HashSet<string>? catalogNames = ref CollectionsMarshal.GetValueRefOrAddDefault(ElementCache.ClassElementsByCatalog, element.ElementName, out bool exists);
-
-        if (!exists || catalogNames is null)
-            catalogNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-
-        catalogNames.Add(elementType);
-
-        ElementCache.CatalogByClassElement.TryAdd(element.ElementName, elementType);
-    }
-
-    private void AddElementWithNoId(StormXmlElement element)
+    public void AddElementWithNoId(StormXmlElement element)
     {
         ref StormXmlElement? stormXmlElement = ref CollectionsMarshal.GetValueRefOrAddDefault(ElementCache.StormXmlElementByClassElement, element.ElementName, out bool exists);
 
@@ -69,5 +34,29 @@ internal sealed class DataStorage
             stormXmlElement = element;
         else
             stormXmlElement.Merge(element);
+    }
+
+    public void AddElementWithId(StormXmlElement element, string catalogName)
+    {
+        ref var stormXmlElementById = ref CollectionsMarshal.GetValueRefOrAddDefault(ElementCache.StormXmlElementsByCatalog, catalogName, out bool exists);
+
+        if (!exists)
+        {
+            // case-sensitive for ids
+            stormXmlElementById = new Dictionary<string, StormXmlElement>(StringComparer.Ordinal)
+            {
+                { element.Id!, element },
+            }
+            .GetAlternateLookup<ReadOnlySpan<char>>();
+        }
+        else
+        {
+            ref var stormXmlElement = ref CollectionsMarshal.GetValueRefOrAddDefault(stormXmlElementById, element.Id, out bool stormXmlElementExists);
+
+            if (!stormXmlElementExists || stormXmlElement is null)
+                stormXmlElement = element;
+            else
+                stormXmlElement.Merge(element);
+        }
     }
 }

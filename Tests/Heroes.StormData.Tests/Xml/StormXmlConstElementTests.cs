@@ -4,6 +4,38 @@
 public sealed class StormXmlConstElementTests
 {
     [TestMethod]
+    public void ElementName_ValidValue_ReturnsCorrectString()
+    {
+        // arrange
+        StormXmlConstElement constElement = XmlReaderHelper.GetStormXmlConstElement(
+            """
+            <const id="$TestConst" value="1777" />
+            """);
+
+        // act
+        string result = constElement.ElementName;
+
+        // assert
+        result.Should().Be("const");
+    }
+
+    [TestMethod]
+    public void ElementNameWithDeclaration_ValidValue_ReturnsCorrectString()
+    {
+        // arrange
+        StormXmlConstElement constElement = XmlReaderHelper.GetStormXmlConstElement(
+            """
+            <const id="$TestConst" value="1777" />
+            """);
+
+        // act
+        string result = constElement.ElementNameWithDeclaration;
+
+        // assert
+        result.Should().Be("const");
+    }
+
+    [TestMethod]
     public void Value_ValidValue_ReturnsCorrectString()
     {
         // arrange
@@ -115,5 +147,21 @@ public sealed class StormXmlConstElementTests
         // assert
         act.Should().Throw<HeroesStormDataException>()
             .WithMessage("Could not convert value 'NotAnInt' to an int32.");
+    }
+
+    [TestMethod]
+    public void ElementType_ValidType_ReturnsType()
+    {
+        // arrange
+        StormXmlConstElement constElement = XmlReaderHelper.GetStormXmlConstElement(
+            """
+            <const id="$TestConst" value="17" />
+            """);
+
+        // act
+        StormXmlElementType result = constElement.ElementType;
+
+        // assert
+        result.Should().Be(StormXmlElementType.Const);
     }
 }
