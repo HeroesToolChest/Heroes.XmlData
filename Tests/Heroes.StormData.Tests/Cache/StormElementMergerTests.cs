@@ -71,6 +71,86 @@ public class StormElementMergerTests
     }
 
     [TestMethod]
+    public void GetMerged_OnlyParentElement_ReturnsStormXmlElement()
+    {
+        // arrange
+        LayeredDataStorage layeredDataStorage = new();
+
+        DataStorage dataStorage = layeredDataStorage.GetDataStorage(StormModType.Custom);
+        dataStorage.ElementCache.CatalogByClassElement.Add("EffectModifyTokenCount", "Effect");
+
+        Dictionary<string, StormXmlElement> newStormXmlElementById = new(StringComparer.Ordinal)
+        {
+            {
+                "BaseEffectModifyTokenCount",
+                XmlReaderHelper.GetStormXmlElement(
+                    """
+                    <CEffectModifyTokenCount default="1" id="BaseEffectModifyTokenCount">
+                      <Value value="1" />
+                    </CEffectModifyTokenCount>
+                    """,
+                    layeredDataStorage)
+            },
+            {
+                "KelThuzadMasterOfTheColdDarkModifyToken",
+                XmlReaderHelper.GetStormXmlElement(
+                    """
+                    <CEffectModifyTokenCount id="KelThuzadMasterOfTheColdDarkModifyToken" parent="BaseEffectModifyTokenCount">
+                      <ValidatorArray value="TargetIsHero" />
+                    </CEffectModifyTokenCount>
+                    """,
+                    layeredDataStorage)
+            },
+        };
+        dataStorage.ElementCache.StormXmlElementsByCatalog.Add("Effect", newStormXmlElementById.GetAlternateLookup<ReadOnlySpan<char>>());
+
+        StormElementMerger stormElementMerger = new(layeredDataStorage);
+
+        // act
+        StormXmlElement? result = stormElementMerger.GetMerged("KelThuzadMasterOfTheColdDarkModifyToken", "Effect");
+
+        // assert
+        result.Should().NotBeNull();
+        result.ElementName.Should().Be("EffectModifyTokenCount");
+        result.StormFiles.Should().HaveCount(2);
+    }
+
+    [TestMethod]
+    public void GetMerged_HasParentIdButNotFound_ReturnsStormXmlElement()
+    {
+        // arrange
+        LayeredDataStorage layeredDataStorage = new();
+
+        DataStorage dataStorage = layeredDataStorage.GetDataStorage(StormModType.Custom);
+        dataStorage.ElementCache.CatalogByClassElement.Add("EffectModifyTokenCount", "Effect");
+
+        Dictionary<string, StormXmlElement> newStormXmlElementById = new(StringComparer.Ordinal)
+        {
+            {
+                "KelThuzadMasterOfTheColdDarkModifyToken",
+                XmlReaderHelper.GetStormXmlElement(
+                    """
+                    <CEffectModifyTokenCount id="KelThuzadMasterOfTheColdDarkModifyToken" parent="BaseEffectModifyTokenCount">
+                      <ValidatorArray value="TargetIsHero" />
+                    </CEffectModifyTokenCount>
+                    """,
+                    layeredDataStorage)
+            },
+        };
+        dataStorage.ElementCache.StormXmlElementsByCatalog.Add("Effect", newStormXmlElementById.GetAlternateLookup<ReadOnlySpan<char>>());
+
+        StormElementMerger stormElementMerger = new(layeredDataStorage);
+
+        // act
+        StormXmlElement? result = stormElementMerger.GetMerged("KelThuzadMasterOfTheColdDarkModifyToken", "Effect");
+
+        // assert
+        result.Should().NotBeNull();
+        result.ElementName.Should().Be("EffectModifyTokenCount");
+        result.StormFiles.Should().ContainSingle();
+    }
+
+    [TestMethod]
     public void GetMerged_BaseElementSameAsElementNoId_ShouldNotHaveDuplicate()
     {
         // arrange
@@ -322,5 +402,7 @@ public class StormElementMergerTests
         result.Members["HyperlinkId"].Value.GetString().Should().Be("AbathurVoiceLine01");
         result.Members["Hero"].Value.GetString().Should().Be("Abathur");
         result.Members["TileTexture"].Value.GetString().Should().Be("Assets\\Textures\\Storm_UI_Voice_Abathur.dds");
+        result.Members["ReleaseDate"].ByMember["Month"].Value.GetInt32().Should().Be(1);
+        result.Members["Description"].Value.GetString().Should().Be("VoiceLine/Description/Abathur_VoiceLine01Common");
     }
 }
