@@ -171,13 +171,15 @@ public sealed class StormXmlMember
         }
     }
 
-    internal void Merge(StormXmlMember other)
+    internal void Merge(StormXmlMember other, StormXmlMember? rootMember = null)
     {
         if (ReferenceEquals(this, other))
             return;
 
+        rootMember ??= this;
+
         if (other.Value.HasValue)
-            Value = other.Value;
+            Value = new StormXmlValue(other.Value.RawValue, rootMember);
 
         Name = other.Name;
 
@@ -186,9 +188,42 @@ public sealed class StormXmlMember
             ref StormXmlArray? currentArray = ref CollectionsMarshal.GetValueRefOrAddDefault(_membersByName, name, out bool arrayExists);
 
             if (!arrayExists || currentArray is null)
-                currentArray = otherArray;
+                currentArray = otherArray.Clone(rootMember);
             else
-                currentArray.Merge(otherArray);
+                currentArray.Merge(otherArray, rootMember);
         }
+    }
+
+    internal StormXmlMember Clone(StormXmlMember? rootMember = null)
+    {
+        StormXmlMember clone = new(Name)
+        {
+            IsArray = IsArray,
+        };
+
+        rootMember ??= clone;
+
+        foreach ((string name, StormXmlArray stormXmlArray) in _membersByName)
+            clone._membersByName[name] = stormXmlArray.Clone(rootMember);
+
+        if (Value.HasValue)
+            clone.Value = new StormXmlValue(Value.RawValue, rootMember);
+
+        return clone;
+    }
+
+    /// <summary>
+    /// Removes the member with the specified name, if it exists.
+    /// </summary>
+    /// <param name="name">The name of the member to remove.</param>
+    /// <returns><see langword="true"/> if the member was removed; otherwise, <see langword="false"/>.</returns>
+    internal bool Remove(string name)
+    {
+        bool removed = _membersByName.Remove(name);
+
+        if (removed && name.Equals(StormXmlConstants.ValueAttributeName, StringComparison.Ordinal))
+            Value = default;
+
+        return removed;
     }
 }

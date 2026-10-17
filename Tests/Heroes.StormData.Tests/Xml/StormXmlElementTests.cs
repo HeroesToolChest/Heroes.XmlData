@@ -106,9 +106,9 @@ public sealed class StormXmlElementTests
         StormXmlElement element = XmlReaderHelper.GetStormXmlElement(
             """
             <CAbil id="TestId" parent="TestParent" default="1" />
-            """); 
+            """);
 
-        // act  
+        // act
         bool result = element.HasParent;
 
         // assert
@@ -532,5 +532,64 @@ public sealed class StormXmlElementTests
         baseElement.Members["Cost"].Value.GetString().Should().BeEmpty();
         baseElement.Members["Cost"].ByMember["Cooldown"].ByMember["Link"].Value.RawValue.Should().Be("Weapon/##id##");
         baseElement.Members["Cost"].ByMember["Cooldown"].ByMember["Link"].Value.GetString().Should().Be("Weapon/TracerHeroWeapon");
+    }
+
+    [TestMethod]
+    public void Merge_ElementWithTheSameValueForIdAndParent_MembersAreMerged()
+    {
+        // arrange
+        StormXmlElement element = XmlReaderHelper.GetStormXmlElement(
+            """
+            <CLootChest default="1" id="LootChestChristmas2018Common" parent="LootChestChristmas2018Parent">
+              <Other value="10" />
+              <MaxRerolls value="2" />
+            </CLootChest>
+            """);
+
+        StormXmlElement mergingElement = XmlReaderHelper.GetStormXmlElement(
+            """
+            <CLootChest id="LootChestChristmas2018Common" parent="LootChestChristmas2018Common">
+              <MaxRerolls value="3" />
+            </CLootChest>
+            """);
+
+        // act
+        element.Merge(mergingElement);
+
+        // assert
+        element.ElementName.Should().Be("LootChest");
+        element.Id.Should().Be("LootChestChristmas2018Common");
+        element.Parent.Should().Be("LootChestChristmas2018Parent");
+        element.Members["id"].Value.RawValue.Should().Be("LootChestChristmas2018Common");
+        element.Members["parent"].Value.RawValue.Should().Be("LootChestChristmas2018Parent");
+    }
+
+    [TestMethod]
+    public void Merge_ElementWithTheSameValueForIdAndParentAndNoPreviousParent_ParentMemberIsNotAdded()
+    {
+        // arrange
+        StormXmlElement element = XmlReaderHelper.GetStormXmlElement(
+            """
+        <CLootChest default="1" id="LootChestChristmas2018Common">
+          <MaxRerolls value="2" />
+        </CLootChest>
+        """);
+
+        StormXmlElement mergingElement = XmlReaderHelper.GetStormXmlElement(
+            """
+        <CLootChest id="LootChestChristmas2018Common" parent="LootChestChristmas2018Common">
+          <MaxRerolls value="3" />
+        </CLootChest>
+        """);
+
+        // act
+        element.Merge(mergingElement);
+
+        // assert
+        element.Id.Should().Be("LootChestChristmas2018Common");
+        element.Parent.Should().BeNull();
+        element.HasParent.Should().BeFalse();
+        element.Members.ContainsMember("parent").Should().BeFalse();
+        element.Members["MaxRerolls"].Value.RawValue.Should().Be("3");
     }
 }

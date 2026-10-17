@@ -15,7 +15,10 @@ public readonly struct StormXmlValue
     }
 
     /// <summary>
-    /// Gets a value indicating whether a value was set. <see langword="false"/> for <c>default</c>.
+    /// Gets a value indicating whether a value was set.
+    /// <para>
+    /// In terms of the XML, this corresponds to the <c>value</c> attribute (case-sensitive).
+    /// </para>
     /// </summary>
     public bool HasValue => _rawValue is not null;
 
@@ -170,10 +173,12 @@ public readonly struct StormXmlValue
             // ##name##
             if (RawValue[index] == '#' && index + 1 < RawValue.Length && RawValue[index + 1] == '#')
             {
-                PushNormalText(ref index, ref startingIndex, rawValueTextList);
+                int tagStart = index;
 
                 if (TryParseElementTag(ref index, out Range? tag))
                 {
+                    PushNormalText(ref tagStart, ref startingIndex, rawValueTextList);
+
                     rawValueTextList.Add((tag.Value, true));
 
                     startingIndex = index;

@@ -11,6 +11,12 @@ public sealed class StormXmlConstElement : StormXmlElement
     {
     }
 
+    private StormXmlConstElement(StormXmlConstElement other)
+        : base(other)
+    {
+        EvaluateAsExpression = other.EvaluateAsExpression;
+    }
+
     /// <inheritdoc/>
     public override string Id
     {
@@ -80,6 +86,8 @@ public sealed class StormXmlConstElement : StormXmlElement
             throw new HeroesStormDataException($"Could not convert value '{Value}' to an int32.", ex);
         }
     }
+
+    internal override StormXmlElement Clone() => new StormXmlConstElement(this);
 
     private protected override void Initialize(StormXmlMember stormXmlMember)
     {

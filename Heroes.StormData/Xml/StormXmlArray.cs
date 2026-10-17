@@ -291,13 +291,13 @@ public sealed class StormXmlArray
         }
     }
 
-    internal void Merge(StormXmlArray other)
+    internal void Merge(StormXmlArray other, StormXmlMember rootMember)
     {
         if (ReferenceEquals(this, other))
             return;
 
         if (other.Value.HasValue)
-            Value = other.Value;
+            Value = new StormXmlValue(other.Value.RawValue, rootMember);
 
         if (other._stormXmlMembers.Count < 1)
             return;
@@ -317,29 +317,45 @@ public sealed class StormXmlArray
 
         for (int i = 0; i < other._stormXmlMembers.Count; i++)
         {
-            StormXmlMember? otherMember = other._stormXmlMembers[i];
+            StormXmlMember otherMember = other._stormXmlMembers[i];
 
             if (namedIndexesByPosition is not null && namedIndexesByPosition.TryGetValue(i, out string? namedIndex))
-                MergeMemberByNamedIndex(namedIndex, otherMember);
+                MergeMemberByNamedIndex(namedIndex, otherMember, rootMember);
             else
-                MergeMemberByIndex(i, otherMember);
+                MergeMemberByIndex(i, otherMember, rootMember);
         }
     }
 
-    private void MergeMemberByIndex(int index, StormXmlMember otherMember)
+    internal StormXmlArray Clone(StormXmlMember rootMember)
     {
-        if (index < _stormXmlMembers.Count && _stormXmlMembers[index] is StormXmlMember existingMember)
-            existingMember.Merge(otherMember);
-        else
-            SetMemberByIndex(index, otherMember);
+        StormXmlArray clone = new(IsArray);
+
+        if (Value.HasValue)
+            clone.Value = new StormXmlValue(Value.RawValue, rootMember);
+
+        foreach ((string namedIndex, int position) in _indexByMemberName)
+            clone._indexByMemberName[namedIndex] = position;
+
+        foreach (StormXmlMember stormXmlMember in _stormXmlMembers)
+            clone._stormXmlMembers.Add(stormXmlMember.Clone(rootMember));
+
+        return clone;
     }
 
-    private void MergeMemberByNamedIndex(string namedIndex, StormXmlMember otherMember)
+    private void MergeMemberByIndex(int index, StormXmlMember otherMember, StormXmlMember rootMember)
+    {
+        if (index < _stormXmlMembers.Count && _stormXmlMembers[index] is StormXmlMember existingMember)
+            existingMember.Merge(otherMember, rootMember);
+        else
+            SetMemberByIndex(index, otherMember.Clone(rootMember));
+    }
+
+    private void MergeMemberByNamedIndex(string namedIndex, StormXmlMember otherMember, StormXmlMember rootMember)
     {
         if (_indexByMemberName.TryGetValue(namedIndex, out int index) && _stormXmlMembers[index] is StormXmlMember existingMember)
-            existingMember.Merge(otherMember);
+            existingMember.Merge(otherMember, rootMember);
         else
-            SetMemberByNamedIndex(namedIndex, otherMember);
+            SetMemberByNamedIndex(namedIndex, otherMember.Clone(rootMember));
     }
 
     /// <summary>

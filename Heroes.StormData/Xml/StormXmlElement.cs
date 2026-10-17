@@ -8,6 +8,7 @@ public class StormXmlElement
 {
     private readonly List<StormFile> _stormFiles = [];
     private readonly StormXmlMember _stormXmlMembers;
+    private string? _id;
 
     internal StormXmlElement(StormXmlMember stormXmlMember, StormFile stormFile)
     {
@@ -18,6 +19,21 @@ public class StormXmlElement
         InitializeAttributes(stormXmlMember);
     }
 
+    private protected StormXmlElement(StormXmlElement other)
+    {
+        _stormXmlMembers = other._stormXmlMembers.Clone();
+        _stormFiles = [.. other._stormFiles];
+
+        _id = other._id;
+        Parent = other.Parent;
+        IsDefault = other.IsDefault;
+        HasId = other.HasId;
+        HasParent = other.HasParent;
+        ElementName = other.ElementName;
+        ElementNameWithDeclaration = other.ElementNameWithDeclaration;
+        ElementType = other.ElementType;
+    }
+
     /// <summary>
     /// Gets the members of the XML element.
     /// </summary>
@@ -26,7 +42,7 @@ public class StormXmlElement
     /// <summary>
     /// Gets the value of the <c>id</c> attribute.
     /// </summary>
-    public virtual string? Id { get; private set; }
+    public virtual string? Id => _id;
 
     /// <summary>
     /// Gets the value of the <c>parent</c> attribute.
@@ -81,7 +97,7 @@ public class StormXmlElement
             string id = HasId ? $", Id = \"{Id}\"" : string.Empty;
             string parent = HasParent ? $", Parent = \"{Parent}\"" : string.Empty;
 
-            return $"{{{ElementName}{id}{parent}, Elements = {_stormXmlMembers.Count}}}";
+            return $"{{{ElementName}{id}{parent}, Members = {_stormXmlMembers.Count}}}";
         }
     }
 
@@ -94,12 +110,33 @@ public class StormXmlElement
         if (ReferenceEquals(this, other))
             return;
 
+        string? previousParent = Parent;
+
         _stormXmlMembers.Merge(other._stormXmlMembers);
         _stormFiles.AddRange(other._stormFiles);
 
         Initialize(other._stormXmlMembers);
         InitializeAttributes(other._stormXmlMembers);
+
+        // If the merging element's parent equals its own id (case-sensitive),
+        // it is a self-referential parent and should be ignored; preserve the current element's parent.
+        if (other.HasParent && other.HasId && string.Equals(other.Parent, other.Id, StringComparison.Ordinal))
+        {
+            Parent = previousParent;
+            HasParent = !string.IsNullOrWhiteSpace(Parent);
+
+            if (previousParent is not null)
+                _stormXmlMembers.Add(StormXmlConstants.ParentAttributeName, previousParent, _stormXmlMembers);
+            else
+                _stormXmlMembers.Remove(StormXmlConstants.ParentAttributeName);
+        }
     }
+
+    /// <summary>
+    /// Creates a deep copy of the current StormXmlElement.
+    /// </summary>
+    /// <returns>A new <see cref="StormXmlElement"/> instance that is a copy of the current element.</returns>
+    internal virtual StormXmlElement Clone() => new(this);
 
     [MemberNotNull(nameof(ElementName))]
     [MemberNotNull(nameof(ElementNameWithDeclaration))]
@@ -120,9 +157,9 @@ public class StormXmlElement
 
     private void InitializeAttributes(StormXmlMember stormXmlMember)
     {
-        Id = stormXmlMember.TryGetMember("id", out StormXmlArray? idProperty) ? idProperty.Value : null;
-        Parent = stormXmlMember.TryGetMember("parent", out StormXmlArray? parentProperty) ? parentProperty.Value : null;
-        IsDefault = stormXmlMember.TryGetMember("default", out StormXmlArray? defaultProperty) && defaultProperty.Value.HasValue && defaultProperty.Value == "1";
+        _id = stormXmlMember.TryGetMember(StormXmlConstants.IdAttributeName, out StormXmlArray? idProperty) ? idProperty.Value : null;
+        Parent = stormXmlMember.TryGetMember(StormXmlConstants.ParentAttributeName, out StormXmlArray? parentProperty) ? parentProperty.Value : null;
+        IsDefault = stormXmlMember.TryGetMember(StormXmlConstants.DefaultAttributeName, out StormXmlArray? defaultProperty) && defaultProperty.Value.HasValue && defaultProperty.Value == "1";
 
         HasId = !string.IsNullOrWhiteSpace(Id);
         HasParent = !string.IsNullOrWhiteSpace(Parent);

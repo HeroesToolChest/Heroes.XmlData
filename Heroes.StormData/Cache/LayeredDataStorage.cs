@@ -58,6 +58,12 @@ internal sealed class LayeredDataStorage
         return false;
     }
 
+    /// <summary>
+    /// Tries to retrieve the first catalog name associated with a given class element name from the data storages.
+    /// </summary>
+    /// <param name="elementName">The name of the class element (without type letter declaration) (e.g. <c>EffectDamage</c>).</param>
+    /// <param name="catalogName">When this method returns, contains the catalog name (e.g. <c>Effect</c>) associated with the specified class element name, if found; otherwise, <see langword="null"/>.</param>
+    /// <returns><see langword="true"/> if the catalog name was found; otherwise, <see langword="false"/>.</returns>
     public bool TryGetFirstCatalogNameByElementName(ReadOnlySpan<char> elementName, [NotNullWhen(true)] out string? catalogName)
     {
         // custom cache always first
@@ -71,5 +77,83 @@ internal sealed class LayeredDataStorage
             return true;
 
         return false;
+    }
+
+    /// <summary>
+    /// Retrieves a <see cref="StormXmlElement"/> by its class element name (without type letter declaration) from the data storages.
+    /// </summary>
+    /// <param name="elementName">The name of the class element (without type letter declaration) (e.g. <c>EffectDamage</c>).</param>
+    /// <returns>The <see cref="StormXmlElement"/> if found; otherwise, <see langword="null"/>.</returns>
+    public StormXmlElement? GetStormXmlElementByClassElement(ReadOnlySpan<char> elementName)
+    {
+        StormXmlElement? stormXmlElement = null;
+        bool isCopy = false;
+
+        // base cache first
+        MergeInto(ref stormXmlElement, ref isCopy, FindStormXmlElementByElementName(_baseElementCache, elementName));
+        MergeInto(ref stormXmlElement, ref isCopy, FindStormXmlElementByElementName(_mapElementCache, elementName));
+        MergeInto(ref stormXmlElement, ref isCopy, FindStormXmlElementByElementName(_customElementCache, elementName));
+
+        return stormXmlElement;
+    }
+
+    /// <summary>
+    /// Retrieves a <see cref="StormXmlElement"/> by its <c>id</c> from the specified catalog name from the data storages.
+    /// </summary>
+    /// <param name="id">The <c>id</c> of the <see cref="StormXmlElement"/>.</param>
+    /// <param name="catalogName">The catalog name of the <see cref="StormXmlElement"/>.</param>
+    /// <returns>The <see cref="StormXmlElement"/> if found; otherwise, <see langword="null"/>.</returns>
+    public StormXmlElement? GetStormXmlElementById(ReadOnlySpan<char> id, ReadOnlySpan<char> catalogName)
+    {
+        StormXmlElement? stormXmlElement = null;
+        bool isCopy = false;
+
+        // base cache first
+        MergeInto(ref stormXmlElement, ref isCopy, FindStormXmlElementById(_baseElementCache, id, catalogName));
+        MergeInto(ref stormXmlElement, ref isCopy, FindStormXmlElementById(_mapElementCache, id, catalogName));
+        MergeInto(ref stormXmlElement, ref isCopy, FindStormXmlElementById(_customElementCache, id, catalogName));
+
+        return stormXmlElement;
+    }
+
+    private static StormXmlElement? FindStormXmlElementByElementName(ElementCache elementCache, ReadOnlySpan<char> elementName)
+    {
+        if (elementCache.StormXmlElementByClassElementAltLookup.TryGetValue(elementName, out StormXmlElement? stormXmlElement))
+            return stormXmlElement;
+
+        return null;
+    }
+
+    private static StormXmlElement? FindStormXmlElementById(ElementCache elementCache, ReadOnlySpan<char> id, ReadOnlySpan<char> catalogName)
+    {
+        if (elementCache.StormXmlElementsByCatalogAltLookup.TryGetValue(catalogName, out var stormXmlElementById) &&
+            stormXmlElementById.TryGetValue(id, out StormXmlElement? stormXmlElement))
+        {
+            return stormXmlElement;
+        }
+
+        return null;
+    }
+
+    private static void MergeInto(ref StormXmlElement? stormXmlElement, ref bool isCopy, StormXmlElement? layerElement)
+    {
+        if (layerElement is null)
+            return;
+
+        // first layer found: keep the cached instance for now, it is only copied if another layer has to be merged into it
+        if (stormXmlElement is null)
+        {
+            stormXmlElement = layerElement;
+            return;
+        }
+
+        if (!isCopy)
+        {
+            // need to merge, so clone the first layer to avoid modifying the cached instance
+            stormXmlElement = stormXmlElement.Clone();
+            isCopy = true;
+        }
+
+        stormXmlElement.Merge(layerElement);
     }
 }

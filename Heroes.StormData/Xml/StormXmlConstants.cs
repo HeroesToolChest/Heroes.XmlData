@@ -5,6 +5,8 @@ namespace Heroes.StormData.Xml;
 internal sealed class StormXmlConstants
 {
     public const string IdAttributeName = "id";
+    public const string ParentAttributeName = "parent";
+    public const string DefaultAttributeName = "default";
     public const string IndexAttributeName = "index";
     public const string ValueAttributeName = "value";
     public const string ConstElementName = "const";
