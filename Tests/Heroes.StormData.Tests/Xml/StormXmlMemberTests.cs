@@ -1175,6 +1175,334 @@ public sealed class StormXmlMemberTests
         member.GetMember("Link").Value.RawValue.Should().Be("a");
     }
 
+    [TestMethod]
+    public void AddToken_NewToken_AddsMemberNamedAfterTokenId()
+    {
+        // arrange
+        StormXmlMember member = new("CHero");
+
+        // act
+        member.AddToken(new StormXmlToken("heroid", "CHeroLink", "Jaina"));
+
+        // assert
+        member.Count.Should().Be(1);
+        member.ContainsMember("heroid").Should().BeTrue();
+        member.GetMember("heroid").Value.HasValue.Should().BeTrue();
+        member.GetMember("heroid").Value.RawValue.Should().Be("Jaina");
+        member.GetMember("heroid").IsArray.Should().BeFalse();
+    }
+
+    [TestMethod]
+    public void AddToken_NewToken_DoesNotSetMemberValue()
+    {
+        // arrange
+        StormXmlMember member = new("CHero");
+
+        // act
+        member.AddToken(new StormXmlToken("heroid", "CHeroLink", "Jaina"));
+
+        // assert
+        member.Value.HasValue.Should().BeFalse();
+    }
+
+    [TestMethod]
+    public void AddToken_EmptyValue_AddsMemberWithEmptyValue()
+    {
+        // arrange
+        StormXmlMember member = new("CHero");
+
+        // act
+        member.AddToken(new StormXmlToken("heroid", string.Empty, string.Empty));
+
+        // assert
+        member.ContainsMember("heroid").Should().BeTrue();
+        member.GetMember("heroid").Value.HasValue.Should().BeTrue();
+        member.GetMember("heroid").Value.RawValue.Should().BeEmpty();
+    }
+
+    [TestMethod]
+    public void AddToken_DifferentIds_CountsEachToken()
+    {
+        // arrange
+        StormXmlMember member = new("CHero");
+
+        // act
+        member.AddToken(new StormXmlToken("heroid", "CHeroLink", "Jaina"));
+        member.AddToken(new StormXmlToken("talentid", "CTalentLink", "Frostbolt"));
+
+        // assert
+        member.Count.Should().Be(2);
+        member.GetMember("heroid").Value.RawValue.Should().Be("Jaina");
+        member.GetMember("talentid").Value.RawValue.Should().Be("Frostbolt");
+    }
+
+    [TestMethod]
+    public void AddToken_SameIdTwice_OverwritesValueAndKeepsCount()
+    {
+        // arrange
+        StormXmlMember member = new("CHero");
+        member.AddToken(new StormXmlToken("heroid", "CHeroLink", "Jaina"));
+
+        // act
+        member.AddToken(new StormXmlToken("heroid", "CHeroLink", "Thrall"));
+
+        // assert
+        member.Count.Should().Be(1);
+        member.GetMember("heroid").Value.RawValue.Should().Be("Thrall");
+    }
+
+    [TestMethod]
+    public void AddToken_IdsAreCaseSensitive()
+    {
+        // arrange
+        StormXmlMember member = new("CHero");
+
+        // act
+        member.AddToken(new StormXmlToken("heroid", "CHeroLink", "lower"));
+        member.AddToken(new StormXmlToken("HeroId", "CHeroLink", "mixed"));
+
+        // assert
+        member.Count.Should().Be(2);
+        member.GetMember("heroid").Value.RawValue.Should().Be("lower");
+        member.GetMember("HeroId").Value.RawValue.Should().Be("mixed");
+    }
+
+    [TestMethod]
+    public void AddToken_ExistingAttributeWithSameName_OverwritesAttributeValue()
+    {
+        // arrange
+        StormXmlMember member = CreateMember("CHero", ("heroid", "FromAttribute"));
+
+        // act
+        member.AddToken(new StormXmlToken("heroid", "CHeroLink", "FromToken"));
+
+        // assert
+        member.Count.Should().Be(1);
+        member.GetMember("heroid").Value.RawValue.Should().Be("FromToken");
+    }
+
+    [TestMethod]
+    public void AddToken_TokenMember_CanBeFoundBySpan()
+    {
+        // arrange
+        StormXmlMember member = new("CHero");
+        member.AddToken(new StormXmlToken("heroid", "CHeroLink", "Jaina"));
+
+        // act
+        bool found = member.TryGetMember("heroid".AsSpan(), out StormXmlArray? result);
+
+        // assert
+        found.Should().BeTrue();
+        result.Should().NotBeNull();
+        result.Value.RawValue.Should().Be("Jaina");
+    }
+
+    [TestMethod]
+    public void AddToken_ValueDefinedBeforeToken_ResolvesTokenInGetString()
+    {
+        // arrange
+        StormXmlMember member = new("Name");
+        member.Add("value", "Abil/Name/##heroid##", member);
+
+        // act
+        member.AddToken(new StormXmlToken("heroid", "CHeroLink", "Jaina"));
+
+        // assert
+        member.Value.RawValue.Should().Be("Abil/Name/##heroid##");
+        member.Value.GetString().Should().Be("Abil/Name/Jaina");
+    }
+
+    [TestMethod]
+    public void AddToken_ChildMemberValueWithRootToken_ResolvesAgainstRoot()
+    {
+        // arrange
+        StormXmlMember root = new("CHero");
+        root.AddToken(new StormXmlToken("heroid", "CHeroLink", "Jaina"));
+
+        StormXmlMember child = new("Name");
+        child.Add("value", "Abil/Name/##heroid##", root);
+
+        // act
+        string result = child.Value.GetString();
+
+        // assert
+        result.Should().Be("Abil/Name/Jaina");
+    }
+
+    [TestMethod]
+    public void AddToken_SameIdTwice_ValueResolvesToLatestToken()
+    {
+        // arrange
+        StormXmlMember member = new("Name");
+        member.Add("value", "##heroid##", member);
+        member.AddToken(new StormXmlToken("heroid", "CHeroLink", "Jaina"));
+
+        // act
+        member.AddToken(new StormXmlToken("heroid", "CHeroLink", "Thrall"));
+
+        // assert
+        member.Value.GetString().Should().Be("Thrall");
+    }
+
+    [TestMethod]
+    [TestCategory("AddToken")]
+    public void AddToken_ThenClone_CloneContainsTokenMember()
+    {
+        // arrange
+        StormXmlMember member = new("CHero");
+        member.AddToken(new StormXmlToken("heroid", "CHeroLink", "Jaina"));
+
+        // act
+        StormXmlMember clone = member.Clone();
+
+        // assert
+        clone.ContainsMember("heroid").Should().BeTrue();
+        clone.GetMember("heroid").Should().NotBeSameAs(member.GetMember("heroid"));
+        clone.GetMember("heroid").Value.RawValue.Should().Be("Jaina");
+    }
+
+    [TestMethod]
+    [TestCategory("AddToken")]
+    public void AddToken_OnCloneAfterClone_DoesNotAffectOriginal()
+    {
+        // arrange
+        StormXmlMember member = new("Name");
+        member.Add("value", "##heroid##", member);
+        member.AddToken(new StormXmlToken("heroid", "CHeroLink", "Jaina"));
+
+        StormXmlMember clone = member.Clone();
+
+        // act
+        clone.AddToken(new StormXmlToken("heroid", "CHeroLink", "Thrall"));
+
+        // assert
+        member.Value.GetString().Should().Be("Jaina");
+        clone.Value.GetString().Should().Be("Thrall");
+    }
+
+    [TestMethod]
+    public void AddToken_OtherHasToken_MergeAddsTokenMember()
+    {
+        // arrange
+        StormXmlMember member = CreateMember("CHero", ("A", "1"));
+
+        StormXmlMember other = new("CHero");
+        other.AddToken(new StormXmlToken("heroid", "CHeroLink", "Jaina"));
+
+        // act
+        member.Merge(other);
+
+        // assert
+        member.Count.Should().Be(2);
+        member.GetMember("heroid").Value.RawValue.Should().Be("Jaina");
+    }
+
+    [TestMethod]
+    public void AddToken_OtherHasSameTokenId_MergeOverwritesTokenValue()
+    {
+        // arrange
+        StormXmlMember member = new("CHero");
+        member.AddToken(new StormXmlToken("heroid", "CHeroLink", "Jaina"));
+
+        StormXmlMember other = new("CHero");
+        other.AddToken(new StormXmlToken("heroid", "CHeroLink", "Thrall"));
+
+        // act
+        member.Merge(other);
+
+        // assert
+        member.Count.Should().Be(1);
+        member.GetMember("heroid").Value.RawValue.Should().Be("Thrall");
+    }
+
+    [TestMethod]
+    public void AddToken_OnlyMergedMemberHasToken_ValueResolvesAgainstMergedMember()
+    {
+        // arrange
+        StormXmlMember member = new("Name");
+        member.Add("value", "Abil/Name/##heroid##", member);
+
+        StormXmlMember other = new("Name");
+        other.AddToken(new StormXmlToken("heroid", "CHeroLink", "Jaina"));
+
+        // act
+        member.Merge(other);
+
+        // assert
+        member.Value.GetString().Should().Be("Abil/Name/Jaina");
+    }
+
+    [TestMethod]
+    [DataRow("id")]
+    [DataRow("parent")]
+    [DataRow("default")]
+    [DataRow("value")]
+    public void AddToken_ReservedId_IsIgnored(string id)
+    {
+        // arrange
+        StormXmlMember member = new("CHero");
+
+        // act
+        member.AddToken(new StormXmlToken(id, "CHeroLink", "Jaina"));
+
+        // assert
+        member.Count.Should().Be(0);
+        member.ContainsMember(id).Should().BeFalse();
+        member.Value.HasValue.Should().BeFalse();
+    }
+
+    [TestMethod]
+    [DataRow("id")]
+    [DataRow("parent")]
+    [DataRow("default")]
+    [DataRow("value")]
+    public void AddToken_ReservedId_DoesNotOverwriteExistingAttribute(string id)
+    {
+        // arrange
+        StormXmlMember member = CreateMember("Element", (id, "original"));
+
+        // act
+        member.AddToken(new StormXmlToken(id, "CHeroLink", "Jaina"));
+
+        // assert
+        member.Count.Should().Be(1);
+        member.GetMember(id).Value.RawValue.Should().Be("original");
+    }
+
+    [TestMethod]
+    public void AddToken_IdIsValue_KeepsExistingMemberValue()
+    {
+        // arrange
+        StormXmlMember member = CreateMember("Element", ("value", "1330"));
+
+        // act
+        member.AddToken(new StormXmlToken("value", "CHeroLink", "Jaina"));
+
+        // assert
+        member.Value.RawValue.Should().Be("1330");
+        member.GetMember("value").Value.RawValue.Should().Be("1330");
+    }
+
+    [TestMethod]
+    [DataRow("Id")]
+    [DataRow("Parent")]
+    [DataRow("Default")]
+    [DataRow("Value")]
+    [DataRow("VALUE")]
+    public void AddToken_ReservedIdDifferentCase_IsAdded(string id)
+    {
+        // arrange
+        StormXmlMember member = new("CHero");
+
+        // act
+        member.AddToken(new StormXmlToken(id, "CHeroLink", "Jaina"));
+
+        // assert
+        member.Count.Should().Be(1);
+        member.GetMember(id).Value.RawValue.Should().Be("Jaina");
+        member.Value.HasValue.Should().BeFalse();
+    }
+
     // creates a member with the given attributes, using itself as the root for token replacement
     private static StormXmlMember CreateMember(string name, params (string Name, string Value)[] attributes)
     {

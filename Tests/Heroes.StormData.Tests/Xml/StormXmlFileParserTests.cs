@@ -438,6 +438,32 @@ public sealed class StormXmlFileParserTests
         element.Members["AbilityModificationArray"].ByIndex["0"]["Modifications"].ByIndex["2"]["Value"].Value.ToString().Should().Be("0.600000");
     }
 
+    [TestMethod]
+    public void Parse_HasProcessingInstructions_ShouldReturnValues()
+    {
+        // arrange
+        StormXmlFileParser stormXmlFileParser = new(new LayeredDataStorage());
+
+        using XmlReader reader = XmlReaderHelper.CreateXmlReader(
+            """
+            <CVoiceLine default="1" id="StormVoiceLineCommonBase">
+              <?token id="heroid" type="CHeroLink" value="Bogus"?>
+              <Hero value="##heroid##" />
+              <TileTexture value="Assets\Textures\Storm_UI_Voice_##heroid##.dds" />
+            </CVoiceLine>
+            """);
+
+        // act
+        List<StormXmlElement> result = [.. stormXmlFileParser.Parse(reader, StormFileHelper.CreateStormFile())];
+
+        // assert
+        StormXmlElement element = result[0];
+        element.Id.Should().Be("StormVoiceLineCommonBase");
+        element.IsDefault.Should().BeTrue();
+
+        element.Members["heroid"].Value.GetString().Should().Be("Bogus");
+    }
+
     //[TestMethod]
     //public void Parse_NonIdChildIntoBase_ShouldMergeProperties()
     //{

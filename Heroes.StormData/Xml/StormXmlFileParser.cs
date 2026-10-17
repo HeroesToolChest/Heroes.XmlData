@@ -39,6 +39,59 @@ internal sealed class StormXmlFileParser
         }
     }
 
+    private static void ParseTokenInstruction(ReadOnlySpan<char> content, StormXmlMember rootMember)
+    {
+        string? id = null;
+        string? type = null;
+        string? value = null;
+
+        while (TryReadPseudoAttribute(ref content, out ReadOnlySpan<char> name, out string attributeValue))
+        {
+            if (name.SequenceEqual(StormXmlConstants.IdAttributeName))
+                id = attributeValue;
+            else if (name.SequenceEqual(StormXmlConstants.TokenTypeAttributeName))
+                type = attributeValue;
+            else if (name.SequenceEqual(StormXmlConstants.ValueAttributeName))
+                value = attributeValue;
+        }
+
+        rootMember.AddToken(new StormXmlToken(id ?? string.Empty, type ?? string.Empty, value ?? string.Empty));
+    }
+
+    // Reads the next name="value" pair and advances 'text' past it.
+    private static bool TryReadPseudoAttribute(ref ReadOnlySpan<char> text, out ReadOnlySpan<char> name, out string value)
+    {
+        name = default;
+        value = string.Empty;
+
+        text = text.TrimStart();
+
+        int equalsIndex = text.IndexOf('=');
+
+        if (equalsIndex < 0)
+            return false;
+
+        ReadOnlySpan<char> remainingText = text[(equalsIndex + 1)..].TrimStart();
+
+        if (remainingText.IsEmpty || (remainingText[0] != '"'))
+            return false;
+
+        char quote = remainingText[0];
+
+        remainingText = remainingText[1..];
+
+        int closingIndex = remainingText.IndexOf(quote);
+
+        if (closingIndex < 0)
+            return false;
+
+        name = text[..equalsIndex].Trim();
+        text = remainingText[(closingIndex + 1)..];
+        value = remainingText[..closingIndex].ToString();
+
+        return true;
+    }
+
     private StormXmlMember ParseElement(XmlReader reader, StormXmlMember? rootMember = null)
     {
         string elementName = reader.LocalName;
@@ -102,6 +155,13 @@ internal sealed class StormXmlFileParser
                 string? indexValue = reader.GetAttribute(StormXmlConstants.IndexAttributeName);
 
                 stormXmlMember.Add(ParseElement(reader, rootMember), indexValue);
+            }
+            else if (reader.NodeType == XmlNodeType.ProcessingInstruction && reader.Name.Equals(StormXmlConstants.TokenInstructionName, StringComparison.Ordinal))
+            {
+                // <?token id="heroid" type="CHeroLink" value="Bogus"?>
+                ParseTokenInstruction(reader.Value, rootMember);
+
+                reader.Read();
             }
             else
             {

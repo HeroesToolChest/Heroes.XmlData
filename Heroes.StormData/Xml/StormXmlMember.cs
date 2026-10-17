@@ -9,6 +9,7 @@ public sealed class StormXmlMember
 {
     private readonly Dictionary<string, StormXmlArray> _membersByName = new(StringComparer.Ordinal);
     private readonly Dictionary<string, StormXmlArray>.AlternateLookup<ReadOnlySpan<char>> _membersByNameAltLookup;
+    private Dictionary<string, StormXmlToken> _tokens = new(StringComparer.Ordinal);
 
     internal StormXmlMember(string name)
     {
@@ -171,6 +172,16 @@ public sealed class StormXmlMember
         }
     }
 
+    internal void AddToken(StormXmlToken token)
+    {
+        if (StormXmlConstants.ReservedTokenIds.Contains(token.Id))
+            return;
+
+        _tokens[token.Id] = token;
+
+        Add(token.Id, token.Value, this);
+    }
+
     internal void Merge(StormXmlMember other, StormXmlMember? rootMember = null)
     {
         if (ReferenceEquals(this, other))
@@ -192,6 +203,11 @@ public sealed class StormXmlMember
             else
                 currentArray.Merge(otherArray, rootMember);
         }
+
+        foreach ((string id, StormXmlToken token) in other._tokens)
+        {
+            _tokens[id] = token;
+        }
     }
 
     internal StormXmlMember Clone(StormXmlMember? rootMember = null)
@@ -208,6 +224,8 @@ public sealed class StormXmlMember
 
         if (Value.HasValue)
             clone.Value = new StormXmlValue(Value.RawValue, rootMember);
+
+        clone._tokens = new Dictionary<string, StormXmlToken>(_tokens, StringComparer.Ordinal);
 
         return clone;
     }

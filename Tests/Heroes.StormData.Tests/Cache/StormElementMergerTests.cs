@@ -199,4 +199,128 @@ public class StormElementMergerTests
         result.Members["MaxRerolls"].Value.GetInt32().Should().Be(3);
         result.Members["EventName"].Value.GetString().Should().Be("Toys18");
     }
+
+    [TestMethod]
+    public void GetMerged_HasProcessingInstructions_ShouldReturnCorrectValues()
+    {
+        // arrange
+        LayeredDataStorage layeredDataStorage = new();
+
+        DataStorage dataStorage = layeredDataStorage.GetDataStorage(StormModType.Custom);
+        dataStorage.ElementCache.CatalogByClassElement.Add("ActorRange", "ActorRange");
+
+        Dictionary<string, StormXmlElement> newStormXmlElementById = new(StringComparer.Ordinal)
+        {
+            {
+                "RangeAbil",
+                XmlReaderHelper.GetStormXmlElement(
+                    """
+                    <CActorRange default="1" id="RangeAbil">
+                      <?token id="abil" type="CAbilLink"?>
+                      <Abil Link="##abil##" />
+                      <On Terms="Abil.##abil##.TargetOn" Send="Create" />
+                      <On Terms="Abil.##abil##.TargetOff" Send="Destroy" />
+                      <On Terms="Abil.##abil##.ButtonHoverOn" Send="Create" />
+                      <On Terms="Abil.##abil##.ButtonHoverOff" Send="Destroy" />
+                      <Flags index="SuppressSaveLoad" value="1" />
+                    </CActorRange>
+                    """,
+                    layeredDataStorage)
+            },
+        };
+        dataStorage.ElementCache.StormXmlElementsByCatalog.Add("ActorRange", newStormXmlElementById.GetAlternateLookup<ReadOnlySpan<char>>());
+
+        StormElementMerger stormElementMerger = new(layeredDataStorage);
+
+        // act
+        StormXmlElement? result = stormElementMerger.GetMerged("RangeAbil", "ActorRange");
+
+        // assert
+        result.Should().NotBeNull();
+        result.ElementName.Should().Be("ActorRange");
+        result.Members["Abil"].ByMember["Link"].Value.GetString().Should().BeEmpty();
+        result.Members["On"].ByIndex["0"]["Terms"].Value.GetString().Should().Be("Abil..TargetOn");
+    }
+
+    [TestMethod]
+    public void GetMerged_HasProcessingInstructionsWithReplacement_ShouldReturnCorrectValues()
+    {
+        // arrange
+        LayeredDataStorage layeredDataStorage = new();
+
+        DataStorage dataStorage = layeredDataStorage.GetDataStorage(StormModType.Custom);
+        dataStorage.ElementCache.CatalogByClassElement.Add("VoiceLine", "VoiceLine");
+
+        dataStorage.ElementCache.StormXmlElementByClassElement.Add("VoiceLine", XmlReaderHelper.GetStormXmlElement(
+            """
+            <CVoiceLine default="1">
+              <Name value="VoiceLine/Name/##id##" />
+              <SortName value="VoiceLine/SortName/##id##" />
+              <Description value="VoiceLine/Description/##id##" />
+              <ReleaseDate>
+                <Month value="1" />
+                <Day value="1" />
+                <Year value="2014" />
+              </ReleaseDate>
+              <AttributeId value="TODO" />
+              <ProductId value="11089" />
+              <LootChestRewardCutsceneFile value="Cutscenes/UI_LootChest_Reward_BG.StormCutscene" />
+              <TileCutsceneFile value="Cutscenes/UI_LootChest_Reward_BG.StormCutscene" />
+            </CVoiceLine>
+            """,
+            layeredDataStorage));
+
+        Dictionary<string, StormXmlElement> newStormXmlElementById = new(StringComparer.Ordinal)
+        {
+            {
+                "StormVoiceLineCommonBase",
+                XmlReaderHelper.GetStormXmlElement(
+                    """
+                    <CVoiceLine default="1" id="StormVoiceLineCommonBase">
+                      <?token id="heroid" type="CHeroLink" value="Bogus"?>
+                      <Hero value="##heroid##" />
+                      <TileTexture value="Assets\Textures\Storm_UI_Voice_##heroid##.dds" />
+                    </CVoiceLine>
+                    """,
+                    layeredDataStorage)
+            },
+            {
+                "StormVoiceLine01Common",
+                XmlReaderHelper.GetStormXmlElement(
+                    """
+                    <CVoiceLine default="1" id="StormVoiceLine01Common" parent="StormVoiceLineCommonBase">
+                      <Flags index="FreePlay" value="1" />
+                      <HyperlinkId value="##heroid##VoiceLine01" />
+                      <ProductId value="0" />
+                    </CVoiceLine>
+                    """,
+                    layeredDataStorage)
+            },
+            {
+                "Abathur_VoiceLine01Common",
+                XmlReaderHelper.GetStormXmlElement(
+                    """
+                    <CVoiceLine default="1" id="Abathur_VoiceLine01Common" parent="StormVoiceLine01Common">
+                      <?token id="heroid" type="CHeroLink" value="Abathur"?>
+                      <AttributeId value="AB01" />
+                      <Sound value="AbathurHero_VoiceLineOne" />
+                    </CVoiceLine>
+                    """,
+                    layeredDataStorage)
+            },
+        };
+        dataStorage.ElementCache.StormXmlElementsByCatalog.Add("VoiceLine", newStormXmlElementById.GetAlternateLookup<ReadOnlySpan<char>>());
+
+        StormElementMerger stormElementMerger = new(layeredDataStorage);
+
+        // act
+        StormXmlElement? result = stormElementMerger.GetMerged("Abathur_VoiceLine01Common", "VoiceLine");
+
+        // assert
+        result.Should().NotBeNull();
+        result.ElementName.Should().Be("VoiceLine");
+        result.Members["HyperlinkId"].Value.GetString().Should().Be("AbathurVoiceLine01");
+        result.Members["Hero"].Value.GetString().Should().Be("Abathur");
+        result.Members["TileTexture"].Value.GetString().Should().Be("Assets\\Textures\\Storm_UI_Voice_Abathur.dds");
+    }
 }
