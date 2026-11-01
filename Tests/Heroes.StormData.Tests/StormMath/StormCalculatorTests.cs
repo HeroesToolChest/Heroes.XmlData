@@ -79,4 +79,26 @@ public sealed class StormCalculatorTests
         // assert
         act.Should().Throw<SyntaxErrorException>();
     }
+
+    [TestMethod]
+    public void Compute_CurrentCultureUsesCommaDecimalSeparator_ParsesWithInvariantCulture()
+    {
+        // arrange
+        CultureInfo originalCulture = CultureInfo.CurrentCulture;
+
+        try
+        {
+            CultureInfo.CurrentCulture = new CultureInfo("de-DE");
+
+            // act
+            double result = StormCalculator.Compute("1.5*2");
+
+            // assert
+            result.Should().Be(3);
+        }
+        finally
+        {
+            CultureInfo.CurrentCulture = originalCulture;
+        }
+    }
 }

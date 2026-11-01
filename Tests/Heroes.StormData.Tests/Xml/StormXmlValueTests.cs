@@ -1,6 +1,4 @@
-﻿using System.Globalization;
-
-namespace Heroes.StormData.Xml.Tests;
+﻿namespace Heroes.StormData.Xml.Tests;
 
 [TestClass]
 public sealed class StormXmlValueTests

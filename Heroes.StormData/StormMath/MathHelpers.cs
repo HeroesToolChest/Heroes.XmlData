@@ -3,51 +3,76 @@
 internal static class MathHelpers
 {
     /// <summary>
-    /// Gets the count of digits in a number. Includes the fractional, decimal, and negative sign.
+    /// The format numbers are written in, in gamestrings and in math expressions. It is fixed-point, so never exponent notation,
+    /// with up to 6 decimal places (<see cref="StormCalculator.MaxFractionalDigits"/>) and trailing zeros dropped.
+    /// Rounding to 6 decimal places also drops floating-point noise.
+    /// </summary>
+    public const string NumberFormat = "0.######";
+
+    // the longest number that can be written: a negative sign, 6 whole digits (ValueScale.MaxValueSize),
+    // a decimal point and 6 decimal places, e.g. -999998.123456
+    private const int MaxNumberLength = 14;
+
+    /// <summary>
+    /// Gets the number of characters <see cref="WriteNumber"/> writes for <paramref name="number"/>.
+    /// Includes the negative sign, decimal point, and fractional digits.
     /// </summary>
     /// <param name="number">The number to evaluate.</param>
-    /// <returns>The number of digits.</returns>
+    /// <returns>The number of characters, at most 14.</returns>
     public static int GetCountOfDigits(double number)
     {
-        if (number == 0)
-            return 1;
+        number = Normalize(number);
 
-        int count = 0;
-
-        if (double.IsNegative(number))
+        // fast path for whole numbers, the most common case
+        if (double.IsInteger(number))
         {
-            count++;
-            number = number * -1;
+            uint magnitude = (uint)Math.Abs(number);
+            int count = 1;
+
+            while (magnitude >= 10)
+            {
+                magnitude /= 10;
+                count++;
+            }
+
+            if (number < 0)
+                count++; // negative sign
+
+            return count;
         }
 
-        // should technically be a long, but we shouldn't be getting that large a number anyway
-        int integerPart = (int)number;
+        // measure by writing it, so the count always matches WriteNumber
+        Span<char> buffer = stackalloc char[MaxNumberLength];
+        int length = 0;
 
-        do
-        {
-            count++;
-            integerPart /= 10;
-        }
-        while (integerPart > 0);
+        WriteNumber(number, buffer, ref length);
 
-        double fractionPart = number - (int)number;
-        if (fractionPart > 0)
-            count++; // count decimal point
+        return length;
+    }
 
-        int maxPrecision = StormCalculator.MaxFractionalDigits;
+    /// <summary>
+    /// Writes <paramref name="number"/> in <see cref="NumberFormat"/> into <paramref name="destination"/> at <paramref name="offset"/>,
+    /// then moves <paramref name="offset"/> past it. Numbers beyond <see cref="ValueScale.MaxValueSize"/>, either sign, are written as that limit,
+    /// and numbers are rounded to 6 decimal places.
+    /// </summary>
+    /// <param name="number">The number to write.</param>
+    /// <param name="destination">The buffer to write into.</param>
+    /// <param name="offset">The position in <paramref name="destination"/> to write at.</param>
+    /// <exception cref="ArgumentException"><paramref name="destination"/> doesn't have room for the number.</exception>
+    public static void WriteNumber(double number, Span<char> destination, ref int offset)
+    {
+        if (!Normalize(number).TryFormat(destination[offset..], out int charsWritten, NumberFormat, CultureInfo.InvariantCulture))
+            throw new ArgumentException("The destination is too small to hold the number.", nameof(destination));
 
-        while (fractionPart > 0 && maxPrecision-- > 0)
-        {
-            fractionPart *= 10;
-            int digit = (int)fractionPart;
-            count++;
+        offset += charsWritten;
+    }
 
-            fractionPart -= digit;
+    // a tiny negative number rounds to -0, which is turned into 0 so it isn't written as "-0"
+    private static double Normalize(double number)
+    {
+        double clamped = Math.Clamp(number, -ValueScale.MaxValueSize, ValueScale.MaxValueSize);
+        double rounded = Math.Round(clamped, StormCalculator.MaxFractionalDigits, StormCalculator.MaxFractionalMidpointRoundingMode);
 
-            if (fractionPart < 1e-6)
-                break;
-        }
-
-        return count;
+        return rounded == 0 ? 0 : rounded;
     }
 }

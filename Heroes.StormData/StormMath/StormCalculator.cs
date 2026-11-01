@@ -223,7 +223,7 @@ public sealed class StormCalculator
             }
         }
 
-        _values.Push(double.Parse(tokens[beginning..i]));
+        _values.Push(double.Parse(tokens[beginning..i], NumberStyles.Float, CultureInfo.InvariantCulture));
 
         i--;
     }

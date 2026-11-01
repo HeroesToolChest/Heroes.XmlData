@@ -70,8 +70,7 @@ internal ref struct TextParser
             {
                 ValueScale value = item.ValueScale;
 
-                value.Value.TryFormat(buffer[currentOffset..], out int charsWritten);
-                currentOffset += charsWritten;
+                MathHelpers.WriteNumber(value.Value, buffer, ref currentOffset);
 
                 if (value.Scaling.HasValue)
                 {
@@ -84,8 +83,7 @@ internal ref struct TextParser
                     $"{ScalingNumbersTag}~~".CopyTo(buffer[currentOffset..]);
                     currentOffset += ScalingNumbersTagLength + 2;
 
-                    value.Scaling.Value.TryFormat(buffer[currentOffset..], out charsWritten);
-                    currentOffset += charsWritten;
+                    MathHelpers.WriteNumber(value.Scaling.Value, buffer, ref currentOffset);
 
                     "~~</c>".CopyTo(buffer[currentOffset..]);
                     currentOffset += 6;
