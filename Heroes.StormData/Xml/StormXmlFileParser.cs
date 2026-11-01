@@ -154,7 +154,7 @@ internal sealed class StormXmlFileParser
                 // Peek the child's index attribute without moving the reader
                 string? indexValue = reader.GetAttribute(StormXmlConstants.IndexAttributeName);
 
-                stormXmlMember.Add(ParseElement(reader, rootMember), indexValue);
+                stormXmlMember.Add(ParseElement(reader, rootMember), indexValue, rootMember);
             }
             else if (reader.NodeType == XmlNodeType.ProcessingInstruction && reader.Name.Equals(StormXmlConstants.TokenInstructionName, StringComparison.Ordinal))
             {

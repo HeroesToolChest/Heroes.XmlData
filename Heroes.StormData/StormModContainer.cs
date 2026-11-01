@@ -1,7 +1,4 @@
-﻿using System.Reflection.Metadata;
-using System.Runtime.InteropServices;
-
-namespace Heroes.StormData;
+﻿namespace Heroes.StormData;
 
 /// <summary>
 /// Represents a container for a specific <c>stormmod</c> and its associated files and elements.
@@ -90,6 +87,8 @@ public class StormModContainer
 
         _specificDataStorage.AddElementWithId(element, existingCatalogName);
         
+
+
         // TODO: unitname attribute stuff
     }
 }

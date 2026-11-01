@@ -19,6 +19,13 @@ public sealed class StormXmlArray
         IsArray = isArray;
     }
 
+    /// <summary>
+    /// Gets the value of this member, or an empty value (<see cref="StormXmlValue.HasValue"/> is <see langword="false"/>) if there is none.
+    /// <para>
+    /// For an attribute, this is the attribute's value. For a single element, this is its <c>value</c> attribute. If the element appears more than once, the last one with a <c>value</c> attribute wins.
+    /// An array has no value of its own; get each member's value through <see cref="ByIndex"/> instead.
+    /// </para>
+    /// </summary>
     public StormXmlValue Value { get; internal set; }
 
     /// <summary>
@@ -92,7 +99,8 @@ public sealed class StormXmlArray
     /// <returns><see langword="true"/> if the member was found; otherwise, <see langword="false"/>.</returns>
     public bool TryGetMember(ReadOnlySpan<char> name, [NotNullWhen(true)] out StormXmlArray? member)
     {
-        if (!IsArray)
+        // a single entry made from an attribute has a value but no members
+        if (!IsArray && _stormXmlMembers.Count > 0)
         {
             if (_stormXmlMembers[0].TryGetMember(name, out member))
             {
@@ -255,14 +263,39 @@ public sealed class StormXmlArray
         return _indexByMemberNameAltLookup.ContainsKey(name);
     }
 
+    /// <summary>
+    /// Gets all the indexes of the array in positional order. A named index is returned as its name; otherwise, the numerical index is returned as a string.
+    /// Each returned index can be passed to <see cref="ByIndex"/> or <see cref="GetByIndex(string)"/>.
+    /// </summary>
+    /// <returns>The indexes of the array, or an empty list if this instance does not represent an array.</returns>
+    public IReadOnlyList<string> GetIndexes()
+    {
+        if (!IsArray || _stormXmlMembers.Count < 1)
+            return [];
+
+        string[] indexes = new string[_stormXmlMembers.Count];
+
+        foreach ((string namedIndex, int position) in _indexByMemberName)
+            indexes[position] = namedIndex;
+
+        for (int i = 0; i < indexes.Length; i++)
+            indexes[i] ??= i.ToString(CultureInfo.InvariantCulture);
+
+        return indexes;
+    }
+
     internal void SetValue(string value, StormXmlMember rootMember)
     {
         Value = new StormXmlValue(value, rootMember);
     }
 
-    internal void AddMember(StormXmlMember member)
+    internal void AddMember(StormXmlMember member, StormXmlMember rootMember)
     {
-        _stormXmlMembers.Add(member);
+        // a single entry only holds one member, so a repeated element merges over the earlier one
+        if (!IsArray && _stormXmlMembers.Count > 0)
+            _stormXmlMembers[0].Merge(member, rootMember);
+        else
+            _stormXmlMembers.Add(member);
     }
 
     internal void SetMemberByIndex(int index, StormXmlMember member)

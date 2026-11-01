@@ -464,6 +464,38 @@ public sealed class StormXmlFileParserTests
         element.Members["heroid"].Value.GetString().Should().Be("Bogus");
     }
 
+    [TestMethod]
+    public void Parse_RepeatedNonArrayElement_MergesOverEarlierElement()
+    {
+        // arrange
+        StormXmlFileParser stormXmlFileParser = new(new LayeredDataStorage());
+
+        using XmlReader reader = XmlReaderHelper.CreateXmlReader(
+            """
+            <CAbilEffectTarget id="TestAbil">
+              <?token id="amount" type="CFixed" value="2"?>
+              <Cost>
+                <Charge Link="TestCharge" />
+                <Amount value="1" />
+              </Cost>
+              <Cost>
+                <Amount value="##amount##" />
+              </Cost>
+            </CAbilEffectTarget>
+            """);
+
+        // act
+        List<StormXmlElement> result = [.. stormXmlFileParser.Parse(reader, StormFileHelper.CreateStormFile())];
+
+        // assert
+        StormXmlArray cost = result[0].Members["Cost"];
+
+        cost.IsArray.Should().BeFalse();
+        cost.ByMember["Charge"].ByMember["Link"].Value.RawValue.Should().Be("TestCharge");
+        cost.ByMember["Amount"].Value.RawValue.Should().Be("##amount##");
+        cost.ByMember["Amount"].Value.GetString().Should().Be("2");
+    }
+
     //[TestMethod]
     //public void Parse_NonIdChildIntoBase_ShouldMergeProperties()
     //{

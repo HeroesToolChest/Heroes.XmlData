@@ -23,6 +23,9 @@ public sealed class StormXmlMember
     /// </summary>
     public string Name { get; private set; }
 
+    /// <summary>
+    /// Gets the value of the member's <c>value</c> attribute, or an empty value (<see cref="StormXmlValue.HasValue"/> is <see langword="false"/>) if it has none.
+    /// </summary>
     public StormXmlValue Value { get; private set; }
 
     /// <summary>
@@ -127,7 +130,8 @@ public sealed class StormXmlMember
     /// </summary>
     /// <param name="member">The member to add.</param>
     /// <param name="index">The index of the member if it is part of an array; can be a numerical index or a named index.</param>
-    internal void Add(StormXmlMember member, string? index = null)
+    /// <param name="rootMember">The root member of the XML hierarchy, used when a repeated non-array member is merged over the earlier one. Defaults to this member.</param>
+    internal void Add(StormXmlMember member, string? index = null, StormXmlMember? rootMember = null)
     {
         ref StormXmlArray? currentArray = ref CollectionsMarshal.GetValueRefOrAddDefault(_membersByName, member.Name, out bool arrayExists);
 
@@ -142,7 +146,7 @@ public sealed class StormXmlMember
         }
 
         if (index is null)
-            currentArray.AddMember(member);
+            currentArray.AddMember(member, rootMember ?? this);
         else if (int.TryParse(index, out int numericalIndex))
             currentArray.SetMemberByIndex(numericalIndex, member);
         else
