@@ -17,51 +17,56 @@ public readonly struct StormXmlValue
     /// <summary>
     /// Gets a value indicating whether a value was set.
     /// <para>
-    /// In terms of the XML, this corresponds to the <c>value</c> attribute (case-sensitive).
+    /// An attribute set to an empty string, such as <c>Link=""</c>, still has a value.
+    /// Use this to tell it apart from a missing value, since <see cref="RawValue"/> is empty for both.
     /// </para>
     /// </summary>
     public bool HasValue => _rawValue is not null;
 
     /// <summary>
-    /// Gets the raw value, or an empty string if there is no value.
+    /// Gets the value before token replacement, or an empty string if there is no value.
     /// <para>
-    /// This will contain the token replacement <c>##[name]##</c> if it exists.
+    /// <c>##name##</c> tokens are kept as written. <c>$</c> constant expressions have already been evaluated.
     /// </para>
     /// </summary>
     public string RawValue => _rawValue ?? string.Empty;
 
     /// <summary>
-    /// Implicitly converts a <see cref="StormXmlValue"/> to a <see cref="string"/> by returning the raw value.
+    /// Implicitly converts a <see cref="StormXmlValue"/> to a <see cref="string"/> by returning <see cref="RawValue"/>.
+    /// Tokens are not replaced; use <see cref="GetString"/> for that.
     /// </summary>
     /// <param name="stormValue">The <see cref="StormXmlValue"/> to convert.</param>
     public static implicit operator string(StormXmlValue stormValue) => stormValue.RawValue;
 
     /// <summary>
-    /// Determines whether two <see cref="StormXmlValue"/> instances are equal by comparing their raw values.
+    /// Determines whether two <see cref="StormXmlValue"/> instances have the same raw value (ordinal, case-sensitive).
+    /// A missing value is only equal to another missing value, not to an empty one. Token replacement is not applied.
     /// </summary>
     /// <param name="left">The first <see cref="StormXmlValue"/> to compare.</param>
     /// <param name="right">The second <see cref="StormXmlValue"/> to compare.</param>
-    /// <returns><see langword="true"/> if the raw values of both instances are equal; otherwise, <see langword="false"/>.</returns>
+    /// <returns><see langword="true"/> if both instances have the same raw value; otherwise, <see langword="false"/>.</returns>
     public static bool operator ==(StormXmlValue left, StormXmlValue right)
     {
         return left.Equals(right);
     }
 
     /// <summary>
-    /// Determines whether two <see cref="StormXmlValue"/> instances are not equal by comparing their raw values.
+    /// Determines whether two <see cref="StormXmlValue"/> instances have different raw values (ordinal, case-sensitive).
+    /// A missing value is not equal to an empty one. Token replacement is not applied.
     /// </summary>
     /// <param name="left">The first <see cref="StormXmlValue"/> to compare.</param>
     /// <param name="right">The second <see cref="StormXmlValue"/> to compare.</param>
-    /// <returns><see langword="true"/> if the raw values of both instances are not equal; otherwise, <see langword="false"/>.</returns>
+    /// <returns><see langword="true"/> if the instances have different raw values; otherwise, <see langword="false"/>.</returns>
     public static bool operator !=(StormXmlValue left, StormXmlValue right)
     {
         return !(left == right);
     }
 
     /// <summary>
-    /// Gets the value as a <see cref="string"/>, replacing any token replacements <c>##[name]##</c> with their corresponding values.
+    /// Gets the value with each <c>##name##</c> replaced by the value of the root element's member with that name,
+    /// such as a <c>&lt;?token?&gt;</c> or the <c>id</c> attribute. A <c>##name##</c> with no match is left as written.
     /// </summary>
-    /// <returns>The value as a <see cref="string"/> with token replacements applied.</returns>
+    /// <returns>The value with tokens replaced, or an empty string if there is no value.</returns>
     public string GetString()
     {
         int indexOfHash = RawValue.IndexOf('#');
@@ -74,6 +79,9 @@ public readonly struct StormXmlValue
 
     /// <summary>
     /// Gets the value as a <see cref="double"/>.
+    /// <para>
+    /// This parses <see cref="RawValue"/>.
+    /// </para>
     /// </summary>
     /// <returns>The value as a <see cref="double"/>.</returns>
     /// <exception cref="HeroesStormDataException">Thrown when the value cannot be converted to a <see cref="double"/>.</exception>
@@ -90,34 +98,43 @@ public readonly struct StormXmlValue
     }
 
     /// <summary>
-    /// Tries to get the value as a <see cref="double"/>. Returns <see langword="true"/> if the conversion was successful, otherwise <see langword="false"/>.
+    /// Tries to get the value as a <see cref="double"/>.
+    /// <para>
+    /// This parses <see cref="RawValue"/>.
+    /// </para>
     /// </summary>
     /// <param name="value">When this method returns, contains the value as a <see cref="double"/> if the conversion succeeded, otherwise <c>0</c>.</param>
     /// <returns><see langword="true"/> if the value can be converted to a <see cref="double"/>, otherwise <see langword="false"/>.</returns>
-    public readonly bool TryGetDouble(out double value)
+    public bool TryGetDouble(out double value)
     {
         return double.TryParse(RawValue, NumberStyles.Float, CultureInfo.InvariantCulture, out value);
     }
 
     /// <summary>
     /// Gets the value as an <see cref="int"/>.
+    /// <para>
+    /// This parses <see cref="RawValue"/>.
+    /// </para>
     /// </summary>
     /// <returns>The value as an <see cref="int"/>.</returns>
-    /// <exception cref="HeroesStormDataException">Thrown when the value cannot be converted to an <see cref="int"/>.</exception>
+    /// <exception cref="HeroesStormDataException">Thrown when the value cannot be converted to an <see cref="int"/>, or is outside the range of an <see cref="int"/>.</exception>
     public int GetInt32()
     {
         try
         {
             return int.Parse(RawValue, NumberStyles.Integer, CultureInfo.InvariantCulture);
         }
-        catch (FormatException ex)
+        catch (Exception ex) when (ex is FormatException or OverflowException)
         {
             throw new HeroesStormDataException($"Could not convert value '{RawValue}' to an int32.", ex);
         }
     }
 
     /// <summary>
-    /// Tries to get the value as an <see cref="int"/>. Returns <see langword="true"/> if the conversion was successful, otherwise <see langword="false"/>.
+    /// Tries to get the value as an <see cref="int"/>.
+    /// <para>
+    /// This parses <see cref="RawValue"/>; tokens are not replaced first.
+    /// </para>
     /// </summary>
     /// <param name="value">When this method returns, contains the value as an <see cref="int"/> if the conversion succeeded, otherwise <c>0</c>.</param>
     /// <returns><see langword="true"/> if the value can be converted to an <see cref="int"/>, otherwise <see langword="false"/>.</returns>
@@ -128,8 +145,9 @@ public readonly struct StormXmlValue
 
     /// <summary>
     /// Determines whether this instance is equal to another object.
-    /// When <paramref name="obj"/> is a <see cref="string"/>, it is compared against <see cref="RawValue"/>.
-    /// When <paramref name="obj"/> is a <see cref="StormXmlValue"/>, field equality is used.
+    /// When <paramref name="obj"/> is a <see cref="string"/>, it is compared against <see cref="RawValue"/>, so a missing value equals <see cref="string.Empty"/>.
+    /// When <paramref name="obj"/> is a <see cref="StormXmlValue"/>, the raw values are compared and a missing value is not equal to an empty one.
+    /// Comparisons are ordinal and case-sensitive.
     /// </summary>
     /// <param name="obj">The object to compare with the current instance.</param>
     /// <returns><see langword="true"/> if equal; otherwise, <see langword="false"/>.</returns>
@@ -148,9 +166,9 @@ public readonly struct StormXmlValue
     public override int GetHashCode() => RawValue.GetHashCode(StringComparison.Ordinal);
 
     /// <summary>
-    /// Calls <see cref="GetString"/> to get the value as a <see cref="string"/> with token replacements applied.
+    /// Gets the value with tokens replaced. Same as <see cref="GetString"/>.
     /// </summary>
-    /// <returns>The value as a <see cref="string"/> with token replacements applied.</returns>
+    /// <returns>The value with tokens replaced, or an empty string if there is no value.</returns>
     public override string ToString() => GetString();
 
     private static void PushNormalText(ref int index, ref int startingIndex, List<(Range Text, bool Replace)> rawValueTextList)

@@ -559,6 +559,23 @@ public sealed class StormXmlValueTests
     }
 
     [TestMethod]
+    [DataRow("2147483648")]
+    [DataRow("-2147483649")]
+    public void GetInt32_OutOfRange_ThrowsHeroesStormDataException(string raw)
+    {
+        // arrange
+        StormXmlValue value = CreateStormXmlValue(raw);
+
+        // act
+        Func<int> act = value.GetInt32;
+
+        // assert
+        act.Should().Throw<HeroesStormDataException>()
+            .Where(ex => ex.Message.Contains(raw))
+            .WithInnerException<OverflowException>();
+    }
+
+    [TestMethod]
     public void GetInt32_DefaultStruct_ThrowsHeroesStormDataException()
     {
         // arrange
