@@ -2,22 +2,13 @@
 
 namespace Heroes.StormData.StormMath;
 
-internal sealed class StormPrefixNotation
+internal static class StormPrefixNotation
 {
-    private readonly LayeredDataStorage _layeredDataStorage;
-
-    private StormPrefixNotation(LayeredDataStorage layeredDataStorage)
-    {
-        _layeredDataStorage = layeredDataStorage;
-    }
-
     public static double Compute(LayeredDataStorage layeredDataStorage, ReadOnlySpan<char> expression)
     {
-        StormPrefixNotation heroesPrefixNotation = new(layeredDataStorage);
-
         try
         {
-            return Math.Round(heroesPrefixNotation.Evaluate(expression), StormCalculator.MaxFractionalDigits, StormCalculator.MaxFractionalMidpointRoundingMode);
+            return Math.Round(Evaluate(layeredDataStorage, expression), StormCalculator.MaxFractionalDigits, StormCalculator.MaxFractionalMidpointRoundingMode);
         }
         catch (Exception ex)
         {
@@ -25,82 +16,26 @@ internal sealed class StormPrefixNotation
         }
     }
 
-    private static ReadOnlySpan<char> GetExpression(ReadOnlySpan<char> expression)
-    {
-        int startIndex = expression.IndexOf('(');
-
-        if (startIndex == -1)
-            return expression;
-
-        int parenthesis = 1;
-
-        for (int i = startIndex + 1; i < expression.Length; i++)
-        {
-            if (expression[i] == '(')
-            {
-                parenthesis++;
-            }
-            else if (expression[i] == ')')
-            {
-                parenthesis--;
-
-                if (parenthesis == 0)
-                {
-                    return expression.Slice(startIndex + 1, i - startIndex - 1);
-                }
-            }
-        }
-
-        return expression;
-    }
-
-    private static int GetSplitIndex(ReadOnlySpan<char> expression)
-    {
-        int parenthesis = 0;
-
-        for (int i = 0; i < expression.Length; i++)
-        {
-            if (expression[i] == '(')
-            {
-                parenthesis++;
-            }
-            else if (expression[i] == ')')
-            {
-                parenthesis--;
-            }
-            else if (parenthesis == 0 && expression[i] == ' ')
-            {
-                return i;
-            }
-        }
-
-        return 0;
-    }
-
-    private double Evaluate(ReadOnlySpan<char> expression)
+    private static double Evaluate(LayeredDataStorage layeredDataStorage, ReadOnlySpan<char> expression)
     {
         char firstChar = expression[0];
 
         if (StormCalculator.IsOperator(firstChar) && expression.Length > 1 && expression[1] == '(')
         {
-            char op = firstChar;
+            GetParameters(layeredDataStorage, expression, 1, out double firstParam, out double secondParam);
 
-            GetOperatorParameters(expression, out double firstParam, out double secondParam);
-
-            return StormCalculator.ApplyOperator(op, secondParam, firstParam);
+            return StormCalculator.ApplyOperator(firstChar, secondParam, firstParam);
         }
         else if (firstChar == '$')
         {
-            if (_layeredDataStorage.TryGetFirstStormXmlConstElementById(expression, out StormXmlConstElement? stormXmlConstElement))
-            {
-                return double.Parse(stormXmlConstElement.Value, CultureInfo.InvariantCulture);
-            }
+            if (layeredDataStorage.TryGetFirstStormXmlConstElementById(expression, out StormXmlConstElement? stormXmlConstElement))
+                return ParseConstValue(stormXmlConstElement.Value);
             else
-            {
                 return 0;
-            }
         }
-        else if (double.TryParse(expression, NumberStyles.Float, CultureInfo.InvariantCulture, out double value))
+
+        // plain decimals take the fast path, functions are checked before the slower double.TryParse, which is left for other number forms
+        if (StormCalculator.TryParseExactDecimal(expression, out double value))
         {
             return value;
         }
@@ -108,36 +43,83 @@ internal sealed class StormPrefixNotation
         {
             ReadOnlySpan<char> valueToBeNegatedSpan = expression[7..^1];  // removed negate( and )
 
-            return Evaluate(valueToBeNegatedSpan) * -1;
+            return Evaluate(layeredDataStorage, valueToBeNegatedSpan) * -1;
         }
         else if (expression.StartsWith("round", StringComparison.OrdinalIgnoreCase))
         {
             ReadOnlySpan<char> valueToBeRoundedSpan = expression[6..^1];  // removed round( and )
 
-            return Math.Round(Evaluate(valueToBeRoundedSpan));
+            return Math.Round(Evaluate(layeredDataStorage, valueToBeRoundedSpan));
         }
         else if (expression.StartsWith("max", StringComparison.OrdinalIgnoreCase))
         {
-            GetOperatorParameters(expression, out double firstParam, out double secondParam);
+            GetParameters(layeredDataStorage, expression, expression.IndexOf('('), out double firstParam, out double secondParam);
 
             return Math.Max(firstParam, secondParam);
         }
         else if (expression.StartsWith("min", StringComparison.OrdinalIgnoreCase))
         {
-            GetOperatorParameters(expression, out double firstParam, out double secondParam);
+            GetParameters(layeredDataStorage, expression, expression.IndexOf('('), out double firstParam, out double secondParam);
 
             return Math.Min(firstParam, secondParam);
+        }
+        else if (double.TryParse(expression, NumberStyles.Float, CultureInfo.InvariantCulture, out value)) // other number forms, e.g. 1e5
+        {
+            return value;
         }
 
         return 0;
     }
 
-    private void GetOperatorParameters(ReadOnlySpan<char> expression, out double firstParam, out double secondParam)
+    // Splits the two space separated parameters inside the parentheses that open at openIndex, e.g. +(*(2 3) 4) into *(2 3) and 4.
+    // Finds the split and the closing parenthesis in a single pass.
+    private static void GetParameters(LayeredDataStorage layeredDataStorage, ReadOnlySpan<char> expression, int openIndex, out double firstParam, out double secondParam)
     {
-        ReadOnlySpan<char> currentExpression = GetExpression(expression);
-        int indexSplit = GetSplitIndex(currentExpression);
+        if (openIndex < 0)
+            throw new FormatException("Missing an opening parenthesis.");
 
-        firstParam = Evaluate(currentExpression[..indexSplit]);
-        secondParam = Evaluate(currentExpression[(indexSplit + 1)..]);
+        int splitIndex = -1;
+        int parenthesis = 0;
+
+        for (int i = openIndex + 1; i < expression.Length; i++)
+        {
+            char token = expression[i];
+
+            if (token == '(')
+            {
+                parenthesis++;
+            }
+            else if (token == ')')
+            {
+                if (parenthesis == 0)
+                {
+                    // the first parameter can't be empty
+                    if (splitIndex <= openIndex + 1)
+                        throw new FormatException("Expected two parameters separated by a space.");
+
+                    firstParam = Evaluate(layeredDataStorage, expression[(openIndex + 1)..splitIndex]);
+                    secondParam = Evaluate(layeredDataStorage, expression[(splitIndex + 1)..i]);
+
+                    return;
+                }
+
+                parenthesis--;
+            }
+            else if (token == ' ' && parenthesis == 0 && splitIndex < 0)
+            {
+                splitIndex = i;
+            }
+        }
+
+        throw new FormatException("Missing a closing parenthesis.");
+    }
+
+    // same result as double.Parse(value, CultureInfo.InvariantCulture), with plain decimals taking the fast path
+    private static double ParseConstValue(string value)
+    {
+        if (StormCalculator.TryParseExactDecimal(value, out double result))
+            return result;
+
+        return double.Parse(value, CultureInfo.InvariantCulture);
     }
 }

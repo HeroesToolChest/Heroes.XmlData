@@ -111,7 +111,7 @@ public static class StormCalculator
     // Fast path for plain decimals like -12.375, the only kind of number in an expression.
     // A number up to MaxNumberLength characters has at most 14 digits, which fit exactly in a double, as does every power of ten
     // it can be divided by, and division is rounded correctly, so dividing one by the other gives the same result as double.Parse.
-    private static bool TryParseExactDecimal(ReadOnlySpan<char> number, out double value)
+    internal static bool TryParseExactDecimal(ReadOnlySpan<char> number, out double value)
     {
         value = 0;
 
