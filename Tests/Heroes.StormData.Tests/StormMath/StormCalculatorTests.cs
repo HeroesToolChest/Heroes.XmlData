@@ -81,6 +81,66 @@ public sealed class StormCalculatorTests
     }
 
     [TestMethod]
+    public void Compute_ExpressionLongerThanStackBuffer_ReturnsValue()
+    {
+        // arrange
+        string sum = string.Join('+', Enumerable.Repeat("1.5", 200));
+        string nested = $"{new string('(', 200)}2{new string(')', 200)}*(-3)";
+
+        // act
+        double sumResult = StormCalculator.Compute(sum);
+        double nestedResult = StormCalculator.Compute(nested);
+
+        // assert
+        sumResult.Should().Be(300);
+        nestedResult.Should().Be(-6);
+    }
+
+    [TestMethod]
+    [DataRow("0")]
+    [DataRow("-0")]
+    [DataRow(".5")]
+    [DataRow("5.")]
+    [DataRow("-5.")]
+    [DataRow("6.000000")]
+    [DataRow("0.1")]
+    [DataRow("0.1875")]
+    [DataRow("-0.15")]
+    [DataRow("999998.123456")]
+    [DataRow("-999998.123456")]
+    [DataRow(".1234567890123")]
+    [DataRow("123456789012345")]
+    [DataRow("1234567890123456")]
+    [DataRow("0.0000000000000001")]
+    [DataRow("00000000000000000000.5")]
+    public void ParseNumber_Numbers_MatchesDoubleParse(string number)
+    {
+        // arrange
+        double expected = double.Parse(number, NumberStyles.Float, CultureInfo.InvariantCulture);
+
+        // act
+        double result = StormCalculator.ParseNumber(number);
+
+        // assert
+        BitConverter.DoubleToInt64Bits(result).Should().Be(BitConverter.DoubleToInt64Bits(expected));
+    }
+
+    [TestMethod]
+    [DataRow(".")]
+    [DataRow("-")]
+    [DataRow("")]
+    [DataRow("1.2.3")]
+    public void ParseNumber_NotANumber_ThrowsFormatException(string number)
+    {
+        // arrange
+        // act
+        Action act = () => StormCalculator.ParseNumber(number);
+
+        // assert
+        act.Should().Throw<FormatException>();
+    }
+
+    [TestMethod]
     public void Compute_CurrentCultureUsesCommaDecimalSeparator_ParsesWithInvariantCulture()
     {
         // arrange

@@ -9,10 +9,6 @@ internal static class MathHelpers
     /// </summary>
     public const string NumberFormat = "0.######";
 
-    // the longest number that can be written: a negative sign, 6 whole digits (ValueScale.MaxValueSize),
-    // a decimal point and 6 decimal places, e.g. -999998.123456
-    private const int MaxNumberLength = 14;
-
     /// <summary>
     /// Gets the number of characters <see cref="WriteNumber"/> writes for <paramref name="number"/>.
     /// Includes the negative sign, decimal point, and fractional digits.
@@ -42,7 +38,7 @@ internal static class MathHelpers
         }
 
         // measure by writing it, so the count always matches WriteNumber
-        Span<char> buffer = stackalloc char[MaxNumberLength];
+        Span<char> buffer = stackalloc char[StormCalculator.MaxNumberLength];
         int length = 0;
 
         WriteNumber(number, buffer, ref length);
