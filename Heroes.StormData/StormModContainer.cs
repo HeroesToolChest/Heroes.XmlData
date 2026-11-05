@@ -43,7 +43,7 @@ public class StormModContainer
     internal void AddFileNotFound(StormFile stormFile)
     {
         _notFoundFilesList.Add(stormFile);
-       // _stormStorage.AddFileNotFound(StormModType, stormFile);
+        // _stormStorage.AddFileNotFound(StormModType, stormFile);
     }
 
     private static string? GetCatalogNameFromFileName(StormXmlElement element)
@@ -79,6 +79,9 @@ public class StormModContainer
             return;
         }
 
+        if (element.Members.TryGetMember("LevelScalingArray", out StormXmlArray? levelScalingArray))
+            _specificDataStorage.AddLevelScalingElementValue(levelScalingArray);
+
         if (!SourceContainer.LayeredDataStorage.TryGetFirstCatalogNameByElementName(element.ElementName, out string? existingCatalogName))
         {
             // TODO: more lookup
@@ -86,7 +89,7 @@ public class StormModContainer
         }
 
         _specificDataStorage.AddElementWithId(element, existingCatalogName);
-        
+
 
 
         // TODO: unitname attribute stuff

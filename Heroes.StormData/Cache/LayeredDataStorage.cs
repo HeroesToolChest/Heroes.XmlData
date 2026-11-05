@@ -1,7 +1,11 @@
-﻿namespace Heroes.StormData.Cache;
+﻿using System.Runtime.InteropServices;
+
+namespace Heroes.StormData.Cache;
 
 /// <summary>
 /// Represents a storage container for different types of data storage, including base, map, and custom data storage.
+/// <para>The <c>TryGetFirst</c> methods get a reference to the first data storage.</para>
+/// <para>The <c>Get</c> merges from all the data storages (if it can).</para>
 /// </summary>
 internal sealed class LayeredDataStorage
 {
@@ -40,12 +44,12 @@ internal sealed class LayeredDataStorage
     /// <summary>
     /// Tries to retrieve the first <c>const</c> XML element by its <c>id</c> from the data storages.
     /// </summary>
-    /// <param name="id">The <c>id</c> of the <c>const</c> XML element to retrieve.</param>
+    /// <param name="id">The <c>id</c> of the <c>const</c> XML element to retrieve. This is case-sensitive.</param>
     /// <param name="stormXmlConstElement">When this method returns, contains the <c>const</c> XML element associated with the specified <c>id</c>, if found; otherwise, <see langword="null"/>.</param>
     /// <returns><see langword="true"/> if the <c>const</c> XML element was found; otherwise, <see langword="false"/>.</returns>
     public bool TryGetFirstStormXmlConstElementById(ReadOnlySpan<char> id, [NotNullWhen(true)] out StormXmlConstElement? stormXmlConstElement)
     {
-        // custom cache always first
+        // custom first
         if (_customElementCache.StormXmlConstElementByIdAltLookup.TryGetValue(id, out stormXmlConstElement))
             return true;
 
@@ -61,12 +65,12 @@ internal sealed class LayeredDataStorage
     /// <summary>
     /// Tries to retrieve the first catalog name associated with a given class element name from the data storages.
     /// </summary>
-    /// <param name="elementName">The name of the class element (without type letter declaration) (e.g. <c>EffectDamage</c>).</param>
+    /// <param name="elementName">The name of the class element (without type letter declaration) (e.g. <c>EffectDamage</c>). This is case-insensitive.</param>
     /// <param name="catalogName">When this method returns, contains the catalog name (e.g. <c>Effect</c>) associated with the specified class element name, if found; otherwise, <see langword="null"/>.</param>
     /// <returns><see langword="true"/> if the catalog name was found; otherwise, <see langword="false"/>.</returns>
     public bool TryGetFirstCatalogNameByElementName(ReadOnlySpan<char> elementName, [NotNullWhen(true)] out string? catalogName)
     {
-        // custom cache always first
+        // custom first
         if (_customElementCache.CatalogByClassElementAltLookup.TryGetValue(elementName, out catalogName))
             return true;
 
@@ -82,14 +86,14 @@ internal sealed class LayeredDataStorage
     /// <summary>
     /// Retrieves a <see cref="StormXmlElement"/> by its class element name (without type letter declaration) from the data storages.
     /// </summary>
-    /// <param name="elementName">The name of the class element (without type letter declaration) (e.g. <c>EffectDamage</c>).</param>
+    /// <param name="elementName">The name of the class element (without type letter declaration) (e.g. <c>EffectDamage</c>). This is case-insensitive.</param>
     /// <returns>The <see cref="StormXmlElement"/> if found; otherwise, <see langword="null"/>.</returns>
     public StormXmlElement? GetStormXmlElementByClassElement(ReadOnlySpan<char> elementName)
     {
         StormXmlElement? stormXmlElement = null;
         bool isCopy = false;
 
-        // base cache first
+        // base first
         MergeInto(ref stormXmlElement, ref isCopy, FindStormXmlElementByElementName(_baseElementCache, elementName));
         MergeInto(ref stormXmlElement, ref isCopy, FindStormXmlElementByElementName(_mapElementCache, elementName));
         MergeInto(ref stormXmlElement, ref isCopy, FindStormXmlElementByElementName(_customElementCache, elementName));
@@ -100,20 +104,42 @@ internal sealed class LayeredDataStorage
     /// <summary>
     /// Retrieves a <see cref="StormXmlElement"/> by its <c>id</c> from the specified catalog name from the data storages.
     /// </summary>
-    /// <param name="id">The <c>id</c> of the <see cref="StormXmlElement"/>.</param>
-    /// <param name="catalogName">The catalog name of the <see cref="StormXmlElement"/>.</param>
+    /// <param name="id">The <c>id</c> of the <see cref="StormXmlElement"/>. This is case-sensitive.</param>
+    /// <param name="catalogName">The catalog name of the <see cref="StormXmlElement"/>. This is case-insensitive.</param>
     /// <returns>The <see cref="StormXmlElement"/> if found; otherwise, <see langword="null"/>.</returns>
     public StormXmlElement? GetStormXmlElementById(ReadOnlySpan<char> id, ReadOnlySpan<char> catalogName)
     {
         StormXmlElement? stormXmlElement = null;
         bool isCopy = false;
 
-        // base cache first
+        // base first
         MergeInto(ref stormXmlElement, ref isCopy, FindStormXmlElementById(_baseElementCache, id, catalogName));
         MergeInto(ref stormXmlElement, ref isCopy, FindStormXmlElementById(_mapElementCache, id, catalogName));
         MergeInto(ref stormXmlElement, ref isCopy, FindStormXmlElementById(_customElementCache, id, catalogName));
 
         return stormXmlElement;
+    }
+
+    /// <summary>
+    /// Retrieves the <c>LevelScalingArray</c> modification <c>Field</c> and <c>Value</c> list by its <c>id</c> (the <c>Entry</c>) from the specified catalog name, merged from the data storages.
+    /// <para>
+    /// The lists are merged by <c>Field</c> (case-sensitive): a higher data storage replaces the <c>Value</c> of a matching <c>Field</c> and adds any new <c>Field</c>.
+    /// </para>
+    /// </summary>
+    /// <param name="id">The <c>id</c> (the <c>Entry</c> value) of the modification. This is case-sensitive.</param>
+    /// <param name="catalogName">The catalog name (the <c>Catalog</c> value) of the modification. This is case-insensitive.</param>
+    /// <returns>The read-only list of <see cref="LevelScalingFieldValue"/> if found; otherwise, <see langword="null"/>.</returns>
+    public IReadOnlyList<LevelScalingFieldValue>? GetScalingFieldValuesById(ReadOnlySpan<char> id, ReadOnlySpan<char> catalogName)
+    {
+        List<LevelScalingFieldValue>? scalingFieldValues = null;
+        bool isCopy = false;
+
+        // base first
+        MergeScalingFieldValuesInto(ref scalingFieldValues, ref isCopy, FindScalingFieldValuesById(_baseElementCache, id, catalogName));
+        MergeScalingFieldValuesInto(ref scalingFieldValues, ref isCopy, FindScalingFieldValuesById(_mapElementCache, id, catalogName));
+        MergeScalingFieldValuesInto(ref scalingFieldValues, ref isCopy, FindScalingFieldValuesById(_customElementCache, id, catalogName));
+
+        return scalingFieldValues;
     }
 
     private static StormXmlElement? FindStormXmlElementByElementName(ElementCache elementCache, ReadOnlySpan<char> elementName)
@@ -130,6 +156,17 @@ internal sealed class LayeredDataStorage
             stormXmlElementById.TryGetValue(id, out StormXmlElement? stormXmlElement))
         {
             return stormXmlElement;
+        }
+
+        return null;
+    }
+
+    private static List<LevelScalingFieldValue>? FindScalingFieldValuesById(ElementCache elementCache, ReadOnlySpan<char> id, ReadOnlySpan<char> catalogName)
+    {
+        if (elementCache.ScalingFieldValueByIdByCatalogAltLookup.TryGetValue(catalogName, out var scalingFieldValueById) &&
+            scalingFieldValueById.TryGetValue(id, out List<LevelScalingFieldValue>? scalingFieldValues))
+        {
+            return scalingFieldValues;
         }
 
         return null;
@@ -155,5 +192,30 @@ internal sealed class LayeredDataStorage
         }
 
         stormXmlElement.Merge(layerElement);
+    }
+
+    private static void MergeScalingFieldValuesInto(ref List<LevelScalingFieldValue>? scalingFieldValues, ref bool isCopy, List<LevelScalingFieldValue>? layerScalingFieldValues)
+    {
+        if (layerScalingFieldValues is null)
+            return;
+
+        // first layer found: keep the cached list for now, it is only copied if another layer has to be merged into it
+        if (scalingFieldValues is null)
+        {
+            scalingFieldValues = layerScalingFieldValues;
+            return;
+        }
+
+        if (!isCopy)
+        {
+            // need to merge, so copy the first layer to avoid modifying the cached list
+            scalingFieldValues = [.. scalingFieldValues];
+            isCopy = true;
+        }
+
+        foreach (LevelScalingFieldValue layerScalingFieldValue in CollectionsMarshal.AsSpan(layerScalingFieldValues))
+        {
+            DataStorage.AddOrReplaceScalingFieldValue(scalingFieldValues, layerScalingFieldValue);
+        }
     }
 }

@@ -10,7 +10,8 @@ internal sealed partial class ElementCache
         StormXmlConstElementByIdAltLookup = StormXmlConstElementById.GetAlternateLookup<ReadOnlySpan<char>>();
         CatalogByClassElementAltLookup = CatalogByClassElement.GetAlternateLookup<ReadOnlySpan<char>>();
         StormXmlElementByClassElementAltLookup = StormXmlElementByClassElement.GetAlternateLookup<ReadOnlySpan<char>>();
-        StormXmlElementsByCatalogAltLookup = StormXmlElementsByCatalog.GetAlternateLookup<ReadOnlySpan<char>>();
+        StormXmlElementsByCatalogAltLookup = StormXmlElementsByIdByCatalog.GetAlternateLookup<ReadOnlySpan<char>>();
+        ScalingFieldValueByIdByCatalogAltLookup = ScalingFieldValueByIdByCatalog.GetAlternateLookup<ReadOnlySpan<char>>();
     }
 
     /// <summary>
@@ -47,4 +48,15 @@ internal sealed partial class ElementCache
     /// </para>
     /// </summary>
     public Dictionary<string, Dictionary<string, StormXmlElement>.AlternateLookup<ReadOnlySpan<char>>>.AlternateLookup<ReadOnlySpan<char>> StormXmlElementsByCatalogAltLookup { get; }
+
+    /// <summary>
+    /// Gets a dictionary of <c>LevelScalingArray</c> <c>Field</c> and <c>Value</c>s by their id attribute (<c>Entry</c>) by their catalog name (e.g <c>Effect</c>).
+    /// <para>
+    /// The dictionary key is case-insensitive.
+    /// </para>
+    /// <para>
+    /// The inner dictionary key should be case-sensitive.
+    /// </para>
+    /// </summary>
+    public Dictionary<string, Dictionary<string, List<LevelScalingFieldValue>>.AlternateLookup<ReadOnlySpan<char>>>.AlternateLookup<ReadOnlySpan<char>> ScalingFieldValueByIdByCatalogAltLookup { get; }
 }

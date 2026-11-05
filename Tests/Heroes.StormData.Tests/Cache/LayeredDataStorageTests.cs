@@ -1086,6 +1086,284 @@ internal sealed class LayeredDataStorageTests
         mapElement.Members["Cooldown"].Value.RawValue.Should().Be("5");
     }
 
+    [TestMethod]
+    [DataRow(StormModType.Base)]
+    [DataRow(StormModType.Map)]
+    [DataRow(StormModType.Custom)]
+    public void GetScalingFieldValuesById_InSingleLayer_ReturnsCachedList(StormModType stormModType)
+    {
+        // arrange
+        LayeredDataStorage layeredDataStorage = new();
+        List<LevelScalingFieldValue> expected = AddScalingFieldValues(layeredDataStorage, stormModType, "Unit", "HeroAbathur", new LevelScalingFieldValue("LifeMax", "0.04"), new LevelScalingFieldValue("LifeRegenRate", "0.03"));
+
+        // act
+        IReadOnlyList<LevelScalingFieldValue>? result = layeredDataStorage.GetScalingFieldValuesById("HeroAbathur", "Unit");
+
+        // assert - nothing to merge, so the cached list is returned without a copy
+        result.Should().BeSameAs(expected);
+        result.Should().Equal(new LevelScalingFieldValue("LifeMax", "0.04"), new LevelScalingFieldValue("LifeRegenRate", "0.03"));
+    }
+
+    [TestMethod]
+    public void GetScalingFieldValuesById_NoLayersPopulated_ReturnsNull()
+    {
+        // arrange
+        LayeredDataStorage layeredDataStorage = new();
+
+        // act
+        IReadOnlyList<LevelScalingFieldValue>? result = layeredDataStorage.GetScalingFieldValuesById("HeroAbathur", "Unit");
+
+        // assert
+        result.Should().BeNull();
+    }
+
+    [TestMethod]
+    public void GetScalingFieldValuesById_IdNotInAnyLayer_ReturnsNull()
+    {
+        // arrange
+        LayeredDataStorage layeredDataStorage = new();
+        AddScalingFieldValues(layeredDataStorage, StormModType.Base, "Unit", "HeroAbathur", new LevelScalingFieldValue("LifeMax", "0.04"));
+        AddScalingFieldValues(layeredDataStorage, StormModType.Map, "Unit", "HeroAlarak", new LevelScalingFieldValue("LifeMax", "0.04"));
+        AddScalingFieldValues(layeredDataStorage, StormModType.Custom, "Unit", "HeroAlexstrasza", new LevelScalingFieldValue("LifeMax", "0.04"));
+
+        // act
+        IReadOnlyList<LevelScalingFieldValue>? result = layeredDataStorage.GetScalingFieldValuesById("DoesNotExist", "Unit");
+
+        // assert
+        result.Should().BeNull();
+    }
+
+    [TestMethod]
+    public void GetScalingFieldValuesById_CatalogNotInAnyLayer_ReturnsNull()
+    {
+        // arrange
+        LayeredDataStorage layeredDataStorage = new();
+        AddScalingFieldValues(layeredDataStorage, StormModType.Base, "Unit", "HeroAbathur", new LevelScalingFieldValue("LifeMax", "0.04"));
+
+        // act
+        IReadOnlyList<LevelScalingFieldValue>? result = layeredDataStorage.GetScalingFieldValuesById("HeroAbathur", "Effect");
+
+        // assert
+        result.Should().BeNull();
+    }
+
+    [TestMethod]
+    public void GetScalingFieldValuesById_SameIdInDifferentCatalog_ReturnsNull()
+    {
+        // arrange - the id exists in the Behavior catalog only, so an Effect lookup must not find it
+        LayeredDataStorage layeredDataStorage = new();
+        AddScalingFieldValues(layeredDataStorage, StormModType.Base, "Behavior", "AlexstraszaDragonqueenHealthIncrease", new LevelScalingFieldValue("Modification.VitalMaxArray[0]", "0.04"));
+
+        // act
+        IReadOnlyList<LevelScalingFieldValue>? result = layeredDataStorage.GetScalingFieldValuesById("AlexstraszaDragonqueenHealthIncrease", "Effect");
+
+        // assert
+        result.Should().BeNull();
+    }
+
+    [TestMethod]
+    public void GetScalingFieldValuesById_IdWithDifferentCasing_ReturnsNull()
+    {
+        // arrange - ids are stored with StringComparer.Ordinal, so lookups are case-sensitive
+        LayeredDataStorage layeredDataStorage = new();
+        AddScalingFieldValues(layeredDataStorage, StormModType.Base, "Unit", "HeroAbathur", new LevelScalingFieldValue("LifeMax", "0.04"));
+
+        // act
+        IReadOnlyList<LevelScalingFieldValue>? result = layeredDataStorage.GetScalingFieldValuesById("HEROABATHUR", "Unit");
+
+        // assert
+        result.Should().BeNull();
+    }
+
+    [TestMethod]
+    public void GetScalingFieldValuesById_CatalogNameWithDifferentCasing_ReturnsList()
+    {
+        // arrange - catalog names are stored with StringComparer.OrdinalIgnoreCase, so lookups are case-insensitive
+        LayeredDataStorage layeredDataStorage = new();
+        List<LevelScalingFieldValue> expected = AddScalingFieldValues(layeredDataStorage, StormModType.Base, "Unit", "HeroAbathur", new LevelScalingFieldValue("LifeMax", "0.04"));
+
+        // act
+        IReadOnlyList<LevelScalingFieldValue>? result = layeredDataStorage.GetScalingFieldValuesById("HeroAbathur", "UNIT");
+
+        // assert
+        result.Should().BeSameAs(expected);
+    }
+
+    [TestMethod]
+    public void GetScalingFieldValuesById_IdAndCatalogNameAsSpanSlices_ReturnsList()
+    {
+        // arrange
+        LayeredDataStorage layeredDataStorage = new();
+        List<LevelScalingFieldValue> expected = AddScalingFieldValues(layeredDataStorage, StormModType.Map, "Unit", "HeroAbathur", new LevelScalingFieldValue("LifeMax", "0.04"));
+
+        ReadOnlySpan<char> id = "xxHeroAbathuryy".AsSpan(2, 11);
+        ReadOnlySpan<char> catalogName = "xxUnityy".AsSpan(2, 4);
+
+        // act
+        IReadOnlyList<LevelScalingFieldValue>? result = layeredDataStorage.GetScalingFieldValuesById(id, catalogName);
+
+        // assert
+        result.Should().BeSameAs(expected);
+    }
+
+    [TestMethod]
+    public void GetScalingFieldValuesById_OtherLayersHaveCatalogButNotId_ReturnsCachedList()
+    {
+        // arrange - the map and custom layers have the catalog, but not the id, so there is nothing to merge
+        LayeredDataStorage layeredDataStorage = new();
+        List<LevelScalingFieldValue> expected = AddScalingFieldValues(layeredDataStorage, StormModType.Base, "Unit", "HeroAbathur", new LevelScalingFieldValue("LifeMax", "0.04"));
+        AddScalingFieldValues(layeredDataStorage, StormModType.Map, "Unit", "HeroAlarak", new LevelScalingFieldValue("LifeMax", "0.05"));
+        AddScalingFieldValues(layeredDataStorage, StormModType.Custom, "Unit", "HeroAlexstrasza", new LevelScalingFieldValue("LifeMax", "0.06"));
+
+        // act
+        IReadOnlyList<LevelScalingFieldValue>? result = layeredDataStorage.GetScalingFieldValuesById("HeroAbathur", "Unit");
+
+        // assert
+        result.Should().BeSameAs(expected);
+    }
+
+    [TestMethod]
+    public void GetScalingFieldValuesById_SameFieldInBaseAndMap_MapReplacesValue()
+    {
+        // arrange
+        LayeredDataStorage layeredDataStorage = new();
+        AddScalingFieldValues(layeredDataStorage, StormModType.Base, "Unit", "HeroAbathur", new LevelScalingFieldValue("LifeMax", "0.04"));
+        AddScalingFieldValues(layeredDataStorage, StormModType.Map, "Unit", "HeroAbathur", new LevelScalingFieldValue("LifeMax", "0.05"));
+
+        // act
+        IReadOnlyList<LevelScalingFieldValue>? result = layeredDataStorage.GetScalingFieldValuesById("HeroAbathur", "Unit");
+
+        // assert
+        result.Should().Equal(new LevelScalingFieldValue("LifeMax", "0.05"));
+    }
+
+    [TestMethod]
+    public void GetScalingFieldValuesById_SameFieldInBaseAndCustom_CustomReplacesValue()
+    {
+        // arrange
+        LayeredDataStorage layeredDataStorage = new();
+        AddScalingFieldValues(layeredDataStorage, StormModType.Base, "Unit", "HeroAbathur", new LevelScalingFieldValue("LifeMax", "0.04"));
+        AddScalingFieldValues(layeredDataStorage, StormModType.Custom, "Unit", "HeroAbathur", new LevelScalingFieldValue("LifeMax", "0.06"));
+
+        // act
+        IReadOnlyList<LevelScalingFieldValue>? result = layeredDataStorage.GetScalingFieldValuesById("HeroAbathur", "Unit");
+
+        // assert
+        result.Should().Equal(new LevelScalingFieldValue("LifeMax", "0.06"));
+    }
+
+    [TestMethod]
+    public void GetScalingFieldValuesById_SameFieldInMapAndCustom_CustomReplacesValue()
+    {
+        // arrange
+        LayeredDataStorage layeredDataStorage = new();
+        AddScalingFieldValues(layeredDataStorage, StormModType.Map, "Unit", "HeroAbathur", new LevelScalingFieldValue("LifeMax", "0.05"));
+        AddScalingFieldValues(layeredDataStorage, StormModType.Custom, "Unit", "HeroAbathur", new LevelScalingFieldValue("LifeMax", "0.06"));
+
+        // act
+        IReadOnlyList<LevelScalingFieldValue>? result = layeredDataStorage.GetScalingFieldValuesById("HeroAbathur", "Unit");
+
+        // assert
+        result.Should().Equal(new LevelScalingFieldValue("LifeMax", "0.06"));
+    }
+
+    [TestMethod]
+    public void GetScalingFieldValuesById_DifferentFieldsInBaseAndCustom_KeepsBaseFieldsAndAddsCustomFields()
+    {
+        // arrange - a higher layer must not hide the base fields of the same entry
+        LayeredDataStorage layeredDataStorage = new();
+        AddScalingFieldValues(layeredDataStorage, StormModType.Base, "Unit", "HeroAbathur", new LevelScalingFieldValue("LifeMax", "0.04"), new LevelScalingFieldValue("LifeRegenRate", "0.03"));
+        AddScalingFieldValues(layeredDataStorage, StormModType.Custom, "Unit", "HeroAbathur", new LevelScalingFieldValue("ShieldsMax", "0.02"));
+
+        // act
+        IReadOnlyList<LevelScalingFieldValue>? result = layeredDataStorage.GetScalingFieldValuesById("HeroAbathur", "Unit");
+
+        // assert - base fields first, then the new fields
+        result.Should().Equal(
+            new LevelScalingFieldValue("LifeMax", "0.04"),
+            new LevelScalingFieldValue("LifeRegenRate", "0.03"),
+            new LevelScalingFieldValue("ShieldsMax", "0.02"));
+    }
+
+    [TestMethod]
+    public void GetScalingFieldValuesById_AllLayers_PrecedenceIsBaseThenMapThenCustom()
+    {
+        // arrange
+        LayeredDataStorage layeredDataStorage = new();
+        AddScalingFieldValues(layeredDataStorage, StormModType.Base, "Unit", "HeroAbathur", new LevelScalingFieldValue("LifeMax", "base"), new LevelScalingFieldValue("LifeRegenRate", "base"), new LevelScalingFieldValue("ShieldsMax", "base"));
+        AddScalingFieldValues(layeredDataStorage, StormModType.Map, "Unit", "HeroAbathur", new LevelScalingFieldValue("LifeMax", "map"), new LevelScalingFieldValue("LifeRegenRate", "map"), new LevelScalingFieldValue("EnergyMax", "map"));
+        AddScalingFieldValues(layeredDataStorage, StormModType.Custom, "Unit", "HeroAbathur", new LevelScalingFieldValue("LifeMax", "custom"), new LevelScalingFieldValue("EnergyRegenRate", "custom"));
+
+        // act
+        IReadOnlyList<LevelScalingFieldValue>? result = layeredDataStorage.GetScalingFieldValuesById("HeroAbathur", "Unit");
+
+        // assert - replaced fields keep their position, new fields are added in layer order
+        result.Should().Equal(
+            new LevelScalingFieldValue("LifeMax", "custom"),
+            new LevelScalingFieldValue("LifeRegenRate", "map"),
+            new LevelScalingFieldValue("ShieldsMax", "base"),
+            new LevelScalingFieldValue("EnergyMax", "map"),
+            new LevelScalingFieldValue("EnergyRegenRate", "custom"));
+    }
+
+    [TestMethod]
+    public void GetScalingFieldValuesById_FieldsDifferingOnlyByCase_AreNotMerged()
+    {
+        // arrange - the Field comparison is case-sensitive
+        LayeredDataStorage layeredDataStorage = new();
+        AddScalingFieldValues(layeredDataStorage, StormModType.Base, "Unit", "HeroAbathur", new LevelScalingFieldValue("LifeMax", "0.04"));
+        AddScalingFieldValues(layeredDataStorage, StormModType.Custom, "Unit", "HeroAbathur", new LevelScalingFieldValue("LIFEMAX", "0.06"));
+
+        // act
+        IReadOnlyList<LevelScalingFieldValue>? result = layeredDataStorage.GetScalingFieldValuesById("HeroAbathur", "Unit");
+
+        // assert
+        result.Should().Equal(
+            new LevelScalingFieldValue("LifeMax", "0.04"),
+            new LevelScalingFieldValue("LIFEMAX", "0.06"));
+    }
+
+    [TestMethod]
+    public void GetScalingFieldValuesById_MultipleLayers_ReturnsCopyAndDoesNotModifyCachedLists()
+    {
+        // arrange
+        LayeredDataStorage layeredDataStorage = new();
+        List<LevelScalingFieldValue> baseValues = AddScalingFieldValues(layeredDataStorage, StormModType.Base, "Unit", "HeroAbathur", new LevelScalingFieldValue("LifeMax", "0.04"));
+        List<LevelScalingFieldValue> mapValues = AddScalingFieldValues(layeredDataStorage, StormModType.Map, "Unit", "HeroAbathur", new LevelScalingFieldValue("LifeRegenRate", "0.03"));
+        List<LevelScalingFieldValue> customValues = AddScalingFieldValues(layeredDataStorage, StormModType.Custom, "Unit", "HeroAbathur", new LevelScalingFieldValue("LifeMax", "0.06"));
+
+        // act
+        IReadOnlyList<LevelScalingFieldValue>? result = layeredDataStorage.GetScalingFieldValuesById("HeroAbathur", "Unit");
+
+        // assert
+        result.Should().NotBeNull();
+        result.Should().NotBeSameAs(baseValues);
+        result.Should().NotBeSameAs(mapValues);
+        result.Should().NotBeSameAs(customValues);
+
+        baseValues.Should().Equal(new LevelScalingFieldValue("LifeMax", "0.04"));
+        mapValues.Should().Equal(new LevelScalingFieldValue("LifeRegenRate", "0.03"));
+        customValues.Should().Equal(new LevelScalingFieldValue("LifeMax", "0.06"));
+    }
+
+    [TestMethod]
+    public void GetScalingFieldValuesById_CalledRepeatedly_ReturnsNewListAndDoesNotAccumulate()
+    {
+        // arrange
+        LayeredDataStorage layeredDataStorage = new();
+        AddScalingFieldValues(layeredDataStorage, StormModType.Base, "Unit", "HeroAbathur", new LevelScalingFieldValue("LifeMax", "0.04"));
+        AddScalingFieldValues(layeredDataStorage, StormModType.Custom, "Unit", "HeroAbathur", new LevelScalingFieldValue("LifeRegenRate", "0.03"));
+
+        // act
+        IReadOnlyList<LevelScalingFieldValue>? first = layeredDataStorage.GetScalingFieldValuesById("HeroAbathur", "Unit");
+        IReadOnlyList<LevelScalingFieldValue>? second = layeredDataStorage.GetScalingFieldValuesById("HeroAbathur", "Unit");
+
+        // assert
+        second.Should().NotBeSameAs(first);
+        first.Should().HaveCount(2);
+        second.Should().Equal(first);
+    }
+
     // parses the xml into an element with no id and adds it to the data storage of the given layer
     private static StormXmlElement AddStormXmlElement(LayeredDataStorage layeredDataStorage, StormModType stormModType, string xml)
     {
@@ -1114,13 +1392,31 @@ internal sealed class LayeredDataStorageTests
     {
         ElementCache elementCache = layeredDataStorage.GetDataStorage(stormModType).ElementCache;
 
-        if (!elementCache.StormXmlElementsByCatalog.TryGetValue(catalogName, out Dictionary<string, StormXmlElement>.AlternateLookup<ReadOnlySpan<char>> elementsById))
+        if (!elementCache.StormXmlElementsByIdByCatalog.TryGetValue(catalogName, out Dictionary<string, StormXmlElement>.AlternateLookup<ReadOnlySpan<char>> elementsById))
         {
             // inner dictionary keys are case-sensitive
             elementsById = new Dictionary<string, StormXmlElement>(StringComparer.Ordinal).GetAlternateLookup<ReadOnlySpan<char>>();
-            elementCache.StormXmlElementsByCatalog.Add(catalogName, elementsById);
+            elementCache.StormXmlElementsByIdByCatalog.Add(catalogName, elementsById);
         }
 
         elementsById.Dictionary.Add(id, element);
+    }
+
+    // adds the scaling field values directly to the cache of the given layer, and returns the cached list
+    private static List<LevelScalingFieldValue> AddScalingFieldValues(LayeredDataStorage layeredDataStorage, StormModType stormModType, string catalogName, string id, params LevelScalingFieldValue[] scalingFieldValues)
+    {
+        ElementCache elementCache = layeredDataStorage.GetDataStorage(stormModType).ElementCache;
+
+        if (!elementCache.ScalingFieldValueByIdByCatalog.TryGetValue(catalogName, out Dictionary<string, List<LevelScalingFieldValue>>.AlternateLookup<ReadOnlySpan<char>> scalingFieldValuesById))
+        {
+            // inner dictionary keys are case-sensitive
+            scalingFieldValuesById = new Dictionary<string, List<LevelScalingFieldValue>>(StringComparer.Ordinal).GetAlternateLookup<ReadOnlySpan<char>>();
+            elementCache.ScalingFieldValueByIdByCatalog.Add(catalogName, scalingFieldValuesById);
+        }
+
+        List<LevelScalingFieldValue> cachedScalingFieldValues = [.. scalingFieldValues];
+        scalingFieldValuesById.Dictionary.Add(id, cachedScalingFieldValues);
+
+        return cachedScalingFieldValues;
     }
 }

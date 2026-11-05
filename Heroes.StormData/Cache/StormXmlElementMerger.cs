@@ -1,10 +1,10 @@
 ﻿namespace Heroes.StormData.Cache;
 
-internal class StormElementMerger
+internal class StormXmlElementMerger
 {
     private readonly LayeredDataStorage _layeredDataStorage;
 
-    public StormElementMerger(LayeredDataStorage layeredDataStorage)
+    public StormXmlElementMerger(LayeredDataStorage layeredDataStorage)
     {
         _layeredDataStorage = layeredDataStorage;
     }

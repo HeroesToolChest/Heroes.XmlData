@@ -181,11 +181,11 @@ internal sealed class StormXmlFileParser
         {
             if (_layeredDataStorage.TryGetFirstStormXmlConstElementById(value, out StormXmlConstElement? stormXmlConstElement))
             {
-                return "";
+                return stormXmlConstElement.Value;
             }
         }
 
-        return StormPrefixNotation.Compute(_layeredDataStorage, value).ToString();
+        return StormPrefixNotation.Compute(_layeredDataStorage, value).ToString(CultureInfo.InvariantCulture);
 
         // here it should be a const element so we need to find the constant in the value
         //ReadOnlySpan<char> startOfConstant = value.AsSpan(indexOfConstant);
@@ -256,24 +256,24 @@ internal sealed class StormXmlFileParser
 
 
 
-    //public double GetValueFromConstTextAsNumber(ReadOnlySpan<char> text)
-    //{
-    //    if (text.IsEmpty)
-    //        return 0;
+        //public double GetValueFromConstTextAsNumber(ReadOnlySpan<char> text)
+        //{
+        //    if (text.IsEmpty)
+        //        return 0;
 
-    //    if (text[0] == '$')
-    //    {
-    //        if (TryGetFirstConstantXElementById(text, out StormXElementValuePath? stormXElementValuePath))
-    //        {
-    //            return GetValueFromConstElementAsNumber(stormXElementValuePath.Value);
-    //        }
-    //    }
-    //    else if (double.TryParse(text, NumberStyles.Float, CultureInfo.InvariantCulture, out double result))
-    //    {
-    //        return result;
-    //    }
+        //    if (text[0] == '$')
+        //    {
+        //        if (TryGetFirstConstantXElementById(text, out StormXElementValuePath? stormXElementValuePath))
+        //        {
+        //            return GetValueFromConstElementAsNumber(stormXElementValuePath.Value);
+        //        }
+        //    }
+        //    else if (double.TryParse(text, NumberStyles.Float, CultureInfo.InvariantCulture, out double result))
+        //    {
+        //        return result;
+        //    }
 
-    //    return 0;
-    //}
+        //    return 0;
+        //}
     }
 }

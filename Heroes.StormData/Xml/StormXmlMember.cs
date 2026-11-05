@@ -41,7 +41,7 @@ public sealed class StormXmlMember
     /// <summary>
     /// Gets the member with the specified name.
     /// </summary>
-    /// <param name="name">The name of the member to get.</param>
+    /// <param name="name">The name of the member to get. The name is case-sensitive.</param>
     /// <returns>The member with the specified name.</returns>
     /// <exception cref="ArgumentNullException">Thrown if <paramref name="name"/> is <see langword="null"/>.</exception>
     public StormXmlArray this[string name] => GetMember(name);
@@ -49,14 +49,14 @@ public sealed class StormXmlMember
     /// <summary>
     /// Gets the member with the specified name.
     /// </summary>
-    /// <param name="name">The name of the member to get.</param>
+    /// <param name="name">The name of the member to get. The name is case-sensitive.</param>
     /// <returns>The member with the specified name.</returns>
     public StormXmlArray this[ReadOnlySpan<char> name] => GetMember(name);
 
     /// <summary>
     /// Gets the member with the specified name.
     /// </summary>
-    /// <param name="name">The name of the member to get.</param>
+    /// <param name="name">The name of the member to get. The name is case-sensitive.</param>
     /// <returns>The member with the specified name.</returns>
     /// <exception cref="KeyNotFoundException">Thrown if the member with the specified name does not exist.</exception>
     public StormXmlArray GetMember(string name)
@@ -70,7 +70,7 @@ public sealed class StormXmlMember
     /// <summary>
     /// Gets the member with the specified name.
     /// </summary>
-    /// <param name="name">The name of the member to get.</param>
+    /// <param name="name">The name of the member to get. The name is case-sensitive.</param>
     /// <returns>The member with the specified name.</returns>
     /// <exception cref="KeyNotFoundException">Thrown if the member with the specified name does not exist.</exception>
     public StormXmlArray GetMember(ReadOnlySpan<char> name)
@@ -84,7 +84,7 @@ public sealed class StormXmlMember
     /// <summary>
     /// Tries to get the member with the specified name, returning a value indicating whether the member exists.
     /// </summary>
-    /// <param name="name">The name of the member to get.</param>
+    /// <param name="name">The name of the member to get. The name is case-sensitive.</param>
     /// <param name="property">When this method returns, contains the member with the specified name, if it exists; otherwise, <see langword="null"/>.</param>
     /// <returns><see langword="true"/> if the member with the specified name exists; otherwise, <see langword="false"/>.</returns>
     /// <exception cref="ArgumentNullException">Thrown if <paramref name="name"/> is <see langword="null"/>.</exception>
@@ -96,7 +96,7 @@ public sealed class StormXmlMember
     /// <summary>
     /// Tries to get the member with the specified name, returning a value indicating whether the member exists.
     /// </summary>
-    /// <param name="name">The name of the member to get.</param>
+    /// <param name="name">The name of the member to get. The name is case-sensitive.</param>
     /// <param name="property">When this method returns, contains the member with the specified name, if it exists; otherwise, <see langword="null"/>.</param>
     /// <returns><see langword="true"/> if the member with the specified name exists; otherwise, <see langword="false"/>.</returns>
     public bool TryGetMember(ReadOnlySpan<char> name, [NotNullWhen(true)] out StormXmlArray? property)
@@ -107,7 +107,7 @@ public sealed class StormXmlMember
     /// <summary>
     /// Determines whether the member with the specified name exists.
     /// </summary>
-    /// <param name="name">The name of the member to check.</param>
+    /// <param name="name">The name of the member to check. The name is case-sensitive.</param>
     /// <returns><see langword="true"/> if the member with the specified name exists; otherwise, <see langword="false"/>.</returns>
     /// <exception cref="ArgumentNullException">Thrown if <paramref name="name"/> is <see langword="null"/>.</exception>
     public bool ContainsMember(string name)
@@ -118,7 +118,7 @@ public sealed class StormXmlMember
     /// <summary>
     /// Determines whether the member with the specified name exists.
     /// </summary>
-    /// <param name="name">The name of the member to check.</param>
+    /// <param name="name">The name of the member to check. The name is case-sensitive.</param>
     /// <returns><see langword="true"/> if the member with the specified name exists; otherwise, <see langword="false"/>.</returns>
     public bool ContainsMember(ReadOnlySpan<char> name)
     {

@@ -1,7 +1,7 @@
 ﻿namespace Heroes.StormData.Cache.Tests;
 
 [TestClass]
-public class StormElementMergerTests
+public class StormXmlElementMergerTests
 {
     [TestMethod]
     public void GetMerged_NoElements_ReturnsNull()
@@ -9,10 +9,10 @@ public class StormElementMergerTests
         // arrange
         LayeredDataStorage layeredDataStorage = new();
 
-        StormElementMerger stormElementMerger = new(layeredDataStorage);
+        StormXmlElementMerger stormXmlElementMerger = new(layeredDataStorage);
 
         // act
-        StormXmlElement? result = stormElementMerger.GetMerged("ZagaraInfestApplyBuffBehavior", "Effect");
+        StormXmlElement? result = stormXmlElementMerger.GetMerged("ZagaraInfestApplyBuffBehavior", "Effect");
 
         // assert
         result.Should().BeNull();
@@ -56,12 +56,12 @@ public class StormElementMergerTests
                     layeredDataStorage)
             },
         };
-        dataStorage.ElementCache.StormXmlElementsByCatalog.Add("Effect", newStormXmlElementById.GetAlternateLookup<ReadOnlySpan<char>>());
+        dataStorage.ElementCache.StormXmlElementsByIdByCatalog.Add("Effect", newStormXmlElementById.GetAlternateLookup<ReadOnlySpan<char>>());
 
-        StormElementMerger stormElementMerger = new(layeredDataStorage);
+        StormXmlElementMerger stormXmlElementMerger = new(layeredDataStorage);
 
         // act
-        StormXmlElement? result = stormElementMerger.GetMerged("ZagaraInfestApplyBuffBehavior", "Effect");
+        StormXmlElement? result = stormXmlElementMerger.GetMerged("ZagaraInfestApplyBuffBehavior", "Effect");
 
         // assert
         result.Should().NotBeNull();
@@ -102,12 +102,12 @@ public class StormElementMergerTests
                     layeredDataStorage)
             },
         };
-        dataStorage.ElementCache.StormXmlElementsByCatalog.Add("Effect", newStormXmlElementById.GetAlternateLookup<ReadOnlySpan<char>>());
+        dataStorage.ElementCache.StormXmlElementsByIdByCatalog.Add("Effect", newStormXmlElementById.GetAlternateLookup<ReadOnlySpan<char>>());
 
-        StormElementMerger stormElementMerger = new(layeredDataStorage);
+        StormXmlElementMerger stormXmlElementMerger = new(layeredDataStorage);
 
         // act
-        StormXmlElement? result = stormElementMerger.GetMerged("KelThuzadMasterOfTheColdDarkModifyToken", "Effect");
+        StormXmlElement? result = stormXmlElementMerger.GetMerged("KelThuzadMasterOfTheColdDarkModifyToken", "Effect");
 
         // assert
         result.Should().NotBeNull();
@@ -137,12 +137,12 @@ public class StormElementMergerTests
                     layeredDataStorage)
             },
         };
-        dataStorage.ElementCache.StormXmlElementsByCatalog.Add("Effect", newStormXmlElementById.GetAlternateLookup<ReadOnlySpan<char>>());
+        dataStorage.ElementCache.StormXmlElementsByIdByCatalog.Add("Effect", newStormXmlElementById.GetAlternateLookup<ReadOnlySpan<char>>());
 
-        StormElementMerger stormElementMerger = new(layeredDataStorage);
+        StormXmlElementMerger stormXmlElementMerger = new(layeredDataStorage);
 
         // act
-        StormXmlElement? result = stormElementMerger.GetMerged("KelThuzadMasterOfTheColdDarkModifyToken", "Effect");
+        StormXmlElement? result = stormXmlElementMerger.GetMerged("KelThuzadMasterOfTheColdDarkModifyToken", "Effect");
 
         // assert
         result.Should().NotBeNull();
@@ -190,12 +190,12 @@ public class StormElementMergerTests
                     layeredDataStorage)
             },
         };
-        dataStorage.ElementCache.StormXmlElementsByCatalog.Add("Unit", newStormXmlElementById.GetAlternateLookup<ReadOnlySpan<char>>());
+        dataStorage.ElementCache.StormXmlElementsByIdByCatalog.Add("Unit", newStormXmlElementById.GetAlternateLookup<ReadOnlySpan<char>>());
 
-        StormElementMerger stormElementMerger = new(layeredDataStorage);
+        StormXmlElementMerger stormXmlElementMerger = new(layeredDataStorage);
 
         // act
-        StormXmlElement? result = stormElementMerger.GetMerged("StormBasicHeroicUnit", "Unit");
+        StormXmlElement? result = stormXmlElementMerger.GetMerged("StormBasicHeroicUnit", "Unit");
 
         // assert
         result.Should().NotBeNull();
@@ -260,12 +260,12 @@ public class StormElementMergerTests
                 "LootChestChristmas2018Common", baseElement
             },
         };
-        dataStorage.ElementCache.StormXmlElementsByCatalog.Add("LootChest", newStormXmlElementById.GetAlternateLookup<ReadOnlySpan<char>>());
+        dataStorage.ElementCache.StormXmlElementsByIdByCatalog.Add("LootChest", newStormXmlElementById.GetAlternateLookup<ReadOnlySpan<char>>());
 
-        StormElementMerger stormElementMerger = new(layeredDataStorage);
+        StormXmlElementMerger stormXmlElementMerger = new(layeredDataStorage);
 
         // act
-        StormXmlElement? result = stormElementMerger.GetMerged("LootChestChristmas2018Common", "LootChest");
+        StormXmlElement? result = stormXmlElementMerger.GetMerged("LootChestChristmas2018Common", "LootChest");
 
         // assert
         result.Should().NotBeNull();
@@ -308,12 +308,12 @@ public class StormElementMergerTests
                     layeredDataStorage)
             },
         };
-        dataStorage.ElementCache.StormXmlElementsByCatalog.Add("ActorRange", newStormXmlElementById.GetAlternateLookup<ReadOnlySpan<char>>());
+        dataStorage.ElementCache.StormXmlElementsByIdByCatalog.Add("ActorRange", newStormXmlElementById.GetAlternateLookup<ReadOnlySpan<char>>());
 
-        StormElementMerger stormElementMerger = new(layeredDataStorage);
+        StormXmlElementMerger stormXmlElementMerger = new(layeredDataStorage);
 
         // act
-        StormXmlElement? result = stormElementMerger.GetMerged("RangeAbil", "ActorRange");
+        StormXmlElement? result = stormXmlElementMerger.GetMerged("RangeAbil", "ActorRange");
 
         // assert
         result.Should().NotBeNull();
@@ -389,12 +389,12 @@ public class StormElementMergerTests
                     layeredDataStorage)
             },
         };
-        dataStorage.ElementCache.StormXmlElementsByCatalog.Add("VoiceLine", newStormXmlElementById.GetAlternateLookup<ReadOnlySpan<char>>());
+        dataStorage.ElementCache.StormXmlElementsByIdByCatalog.Add("VoiceLine", newStormXmlElementById.GetAlternateLookup<ReadOnlySpan<char>>());
 
-        StormElementMerger stormElementMerger = new(layeredDataStorage);
+        StormXmlElementMerger stormXmlElementMerger = new(layeredDataStorage);
 
         // act
-        StormXmlElement? result = stormElementMerger.GetMerged("Abathur_VoiceLine01Common", "VoiceLine");
+        StormXmlElement? result = stormXmlElementMerger.GetMerged("Abathur_VoiceLine01Common", "VoiceLine");
 
         // assert
         result.Should().NotBeNull();

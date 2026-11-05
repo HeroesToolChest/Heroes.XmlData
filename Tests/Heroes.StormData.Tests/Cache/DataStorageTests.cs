@@ -415,8 +415,8 @@ public class DataStorageTests
         dataStorage.AddElementWithId(element, catalogName);
 
         // assert
-        dataStorage.ElementCache.StormXmlElementsByCatalog.Should().ContainSingle();
-        dataStorage.ElementCache.StormXmlElementsByCatalog.Should().ContainKey(catalogName);
+        dataStorage.ElementCache.StormXmlElementsByIdByCatalog.Should().ContainSingle();
+        dataStorage.ElementCache.StormXmlElementsByIdByCatalog.Should().ContainKey(catalogName);
 
         Dictionary<string, StormXmlElement> catalog = GetCatalogLookup(dataStorage, catalogName).Dictionary;
 
@@ -460,7 +460,7 @@ public class DataStorageTests
         dataStorage.AddElementWithId(third, catalogName);
 
         // assert
-        dataStorage.ElementCache.StormXmlElementsByCatalog.Should().ContainSingle();
+        dataStorage.ElementCache.StormXmlElementsByIdByCatalog.Should().ContainSingle();
 
         Dictionary<string, StormXmlElement> catalog = GetCatalogLookup(dataStorage, catalogName).Dictionary;
 
@@ -553,7 +553,7 @@ public class DataStorageTests
         dataStorage.AddElementWithId(abilElement, "Abil");
 
         // assert
-        dataStorage.ElementCache.StormXmlElementsByCatalog.Should().HaveCount(3);
+        dataStorage.ElementCache.StormXmlElementsByIdByCatalog.Should().HaveCount(3);
 
         GetCatalogLookup(dataStorage, "Effect").Dictionary["Shared"].Should().BeSameAs(effectElement);
         GetCatalogLookup(dataStorage, "Behavior").Dictionary["Shared"].Should().BeSameAs(behaviorElement);
@@ -574,8 +574,8 @@ public class DataStorageTests
         dataStorage.AddElementWithId(upperElement, "EFFECT");
 
         // assert - the first casing of the catalog name is kept as the key
-        dataStorage.ElementCache.StormXmlElementsByCatalog.Should().ContainSingle();
-        dataStorage.ElementCache.StormXmlElementsByCatalog.Keys.Should().ContainSingle().Which.Should().Be("effect");
+        dataStorage.ElementCache.StormXmlElementsByIdByCatalog.Should().ContainSingle();
+        dataStorage.ElementCache.StormXmlElementsByIdByCatalog.Keys.Should().ContainSingle().Which.Should().Be("effect");
 
         Dictionary<string, StormXmlElement> catalog = GetCatalogLookup(dataStorage, "Effect").Dictionary;
 
@@ -598,13 +598,401 @@ public class DataStorageTests
         dataStorage.AddElementWithId(secondElement, "EFFECT");
 
         // assert - same catalog and same id, so the second element is merged into the first
-        dataStorage.ElementCache.StormXmlElementsByCatalog.Should().ContainSingle();
+        dataStorage.ElementCache.StormXmlElementsByIdByCatalog.Should().ContainSingle();
 
         Dictionary<string, StormXmlElement> catalog = GetCatalogLookup(dataStorage, "Effect").Dictionary;
 
         catalog.Should().ContainSingle();
         catalog["MyDamage"].Should().BeSameAs(firstElement);
         catalog["MyDamage"].Should().NotBeSameAs(secondElement);
+    }
+
+    [TestMethod]
+    public void AddLevelScalingElementValue_SingleModification_AddsFieldValueByCatalogAndEntry()
+    {
+        // arrange
+        StormXmlArray levelScalingArray = CreateLevelScalingArray("""
+            <LevelScalingArray Ability="AlexstraszaGiftOfLife">
+              <Modifications>
+                <Catalog value="Behavior" />
+                <Entry value="AlexstraszaDragonqueenHealthIncrease" />
+                <Field value="Modification.VitalMaxArray[0]" />
+                <Value value="0.040000" />
+                <AffectedByOverdrive value="1" />
+              </Modifications>
+            </LevelScalingArray>
+            """);
+
+        DataStorage dataStorage = new();
+
+        // act
+        dataStorage.AddLevelScalingElementValue(levelScalingArray);
+
+        // assert - only Catalog, Entry, Field and Value are used, AffectedByOverdrive is ignored
+        dataStorage.ElementCache.ScalingFieldValueByIdByCatalog.Should().ContainSingle();
+        GetScalingFieldValuesById(dataStorage, "Behavior").Should().ContainSingle();
+        GetScalingFieldValues(dataStorage, "Behavior", "AlexstraszaDragonqueenHealthIncrease").Should().Equal(
+            new LevelScalingFieldValue("Modification.VitalMaxArray[0]", "0.040000"));
+    }
+
+    [TestMethod]
+    public void AddLevelScalingElementValue_MultipleModifications_AddsAllValues()
+    {
+        // arrange
+        StormXmlArray levelScalingArray = CreateLevelScalingArray($"""
+            <LevelScalingArray Ability="AbathurSymbiote">
+              {CreateModificationsXml("Effect", "AbathurSymbioteStabDamage", "Amount", "0.04")}
+              {CreateModificationsXml("Effect", "AbathurSymbioteSpikeBurstDamage", "Amount", "0.045")}
+              {CreateModificationsXml("Behavior", "AbathurSymbioteCarapaceShield", "DamageResponse.ModifyLimit", "0.05")}
+            </LevelScalingArray>
+            """);
+
+        DataStorage dataStorage = new();
+
+        // act
+        dataStorage.AddLevelScalingElementValue(levelScalingArray);
+
+        // assert
+        dataStorage.ElementCache.ScalingFieldValueByIdByCatalog.Should().HaveCount(2);
+        GetScalingFieldValuesById(dataStorage, "Effect").Should().HaveCount(2);
+        GetScalingFieldValuesById(dataStorage, "Behavior").Should().ContainSingle();
+        GetScalingFieldValues(dataStorage, "Effect", "AbathurSymbioteStabDamage").Should().Equal(new LevelScalingFieldValue("Amount", "0.04"));
+        GetScalingFieldValues(dataStorage, "Effect", "AbathurSymbioteSpikeBurstDamage").Should().Equal(new LevelScalingFieldValue("Amount", "0.045"));
+        GetScalingFieldValues(dataStorage, "Behavior", "AbathurSymbioteCarapaceShield").Should().Equal(new LevelScalingFieldValue("DamageResponse.ModifyLimit", "0.05"));
+    }
+
+    [TestMethod]
+    public void AddLevelScalingElementValue_MultipleLevelScalingEntries_AddsValuesFromEachEntry()
+    {
+        // arrange
+        StormXmlArray levelScalingArray = CreateLevelScalingArray($"""
+            <LevelScalingArray Ability="AbathurSymbiote">
+              {CreateModificationsXml("Effect", "AbathurSymbioteStabDamage", "Amount", "0.04")}
+            </LevelScalingArray>
+            <LevelScalingArray Ability="AbathurToxicNest">
+              {CreateModificationsXml("Effect", "AbathurToxicNestDamage", "Amount", "0.045")}
+            </LevelScalingArray>
+            """);
+
+        DataStorage dataStorage = new();
+
+        // act
+        dataStorage.AddLevelScalingElementValue(levelScalingArray);
+
+        // assert
+        GetScalingFieldValuesById(dataStorage, "Effect").Should().HaveCount(2);
+        GetScalingFieldValues(dataStorage, "Effect", "AbathurSymbioteStabDamage").Should().Equal(new LevelScalingFieldValue("Amount", "0.04"));
+        GetScalingFieldValues(dataStorage, "Effect", "AbathurToxicNestDamage").Should().Equal(new LevelScalingFieldValue("Amount", "0.045"));
+    }
+
+    [TestMethod]
+    public void AddLevelScalingElementValue_IndexedEntries_AddsValuesFromEachEntry()
+    {
+        // arrange - a named index on LevelScalingArray and numerical indexes on Modifications
+        StormXmlArray levelScalingArray = CreateLevelScalingArray("""
+            <LevelScalingArray index="AbathurSymbiote">
+              <Modifications index="0">
+                <Catalog value="Effect" />
+                <Entry value="AbathurSymbioteStabDamage" />
+                <Field value="Amount" />
+                <Value value="0.04" />
+              </Modifications>
+              <Modifications index="1">
+                <Catalog value="Effect" />
+                <Entry value="AbathurSymbioteSpikeBurstDamage" />
+                <Field value="Amount" />
+                <Value value="0.045" />
+              </Modifications>
+            </LevelScalingArray>
+            """);
+
+        DataStorage dataStorage = new();
+
+        // act
+        dataStorage.AddLevelScalingElementValue(levelScalingArray);
+
+        // assert
+        GetScalingFieldValuesById(dataStorage, "Effect").Should().HaveCount(2);
+        GetScalingFieldValues(dataStorage, "Effect", "AbathurSymbioteStabDamage").Should().Equal(new LevelScalingFieldValue("Amount", "0.04"));
+        GetScalingFieldValues(dataStorage, "Effect", "AbathurSymbioteSpikeBurstDamage").Should().Equal(new LevelScalingFieldValue("Amount", "0.045"));
+    }
+
+    [TestMethod]
+    public void AddLevelScalingElementValue_SameFieldInSameArray_ReplacesValue()
+    {
+        // arrange
+        StormXmlArray levelScalingArray = CreateLevelScalingArray($"""
+            <LevelScalingArray Ability="AbathurSymbiote">
+              {CreateModificationsXml("Effect", "AbathurSymbioteStabDamage", "Amount", "0.04")}
+              {CreateModificationsXml("Effect", "AbathurSymbioteStabDamage", "Amount", "0.05")}
+            </LevelScalingArray>
+            """);
+
+        DataStorage dataStorage = new();
+
+        // act
+        dataStorage.AddLevelScalingElementValue(levelScalingArray);
+
+        // assert
+        GetScalingFieldValues(dataStorage, "Effect", "AbathurSymbioteStabDamage").Should().Equal(new LevelScalingFieldValue("Amount", "0.05"));
+    }
+
+    [TestMethod]
+    public void AddLevelScalingElementValue_SameFieldAcrossCalls_ReplacesValue()
+    {
+        // arrange
+        StormXmlArray firstLevelScalingArray = CreateLevelScalingArray($"""
+            <LevelScalingArray Ability="AbathurSymbiote">
+              {CreateModificationsXml("Effect", "AbathurSymbioteStabDamage", "Amount", "0.04")}
+            </LevelScalingArray>
+            """);
+
+        StormXmlArray secondLevelScalingArray = CreateLevelScalingArray($"""
+            <LevelScalingArray Ability="AbathurSymbiote">
+              {CreateModificationsXml("Effect", "AbathurSymbioteStabDamage", "Amount", "0.05")}
+            </LevelScalingArray>
+            """);
+
+        DataStorage dataStorage = new();
+
+        // act
+        dataStorage.AddLevelScalingElementValue(firstLevelScalingArray);
+        dataStorage.AddLevelScalingElementValue(secondLevelScalingArray);
+
+        // assert
+        GetScalingFieldValues(dataStorage, "Effect", "AbathurSymbioteStabDamage").Should().Equal(new LevelScalingFieldValue("Amount", "0.05"));
+    }
+
+    [TestMethod]
+    public void AddLevelScalingElementValue_SameFieldReplaced_KeepsOrderOfOtherFields()
+    {
+        // arrange - the replaced field keeps its position in the list
+        StormXmlArray levelScalingArray = CreateLevelScalingArray($"""
+            <LevelScalingArray Ability="HeroAbathur">
+              {CreateModificationsXml("Unit", "HeroAbathur", "LifeMax", "0.04")}
+              {CreateModificationsXml("Unit", "HeroAbathur", "LifeRegenRate", "0.03")}
+              {CreateModificationsXml("Unit", "HeroAbathur", "LifeMax", "0.05")}
+            </LevelScalingArray>
+            """);
+
+        DataStorage dataStorage = new();
+
+        // act
+        dataStorage.AddLevelScalingElementValue(levelScalingArray);
+
+        // assert
+        GetScalingFieldValues(dataStorage, "Unit", "HeroAbathur").Should().Equal(
+            new LevelScalingFieldValue("LifeMax", "0.05"),
+            new LevelScalingFieldValue("LifeRegenRate", "0.03"));
+    }
+
+    [TestMethod]
+    public void AddLevelScalingElementValue_SameEntryDifferentFields_AddsSeparateValues()
+    {
+        // arrange
+        StormXmlArray levelScalingArray = CreateLevelScalingArray($"""
+            <LevelScalingArray Ability="AlexstraszaGiftOfLife">
+              {CreateModificationsXml("Behavior", "AlexstraszaDragonqueenHealthIncrease", "Modification.VitalMaxArray[0]", "0.04")}
+              {CreateModificationsXml("Behavior", "AlexstraszaDragonqueenHealthIncrease", "Modification.VitalRegenArray[0]", "0.03")}
+              {CreateModificationsXml("Effect", "AlexstraszaDragonqueenHealthIncrease", "Modification.VitalMaxArray[0]", "0.02")}
+            </LevelScalingArray>
+            """);
+
+        DataStorage dataStorage = new();
+
+        // act
+        dataStorage.AddLevelScalingElementValue(levelScalingArray);
+
+        // assert - each field of an entry is kept, and the same entry in another catalog is separate
+        GetScalingFieldValues(dataStorage, "Behavior", "AlexstraszaDragonqueenHealthIncrease").Should().Equal(
+            new LevelScalingFieldValue("Modification.VitalMaxArray[0]", "0.04"),
+            new LevelScalingFieldValue("Modification.VitalRegenArray[0]", "0.03"));
+        GetScalingFieldValues(dataStorage, "Effect", "AlexstraszaDragonqueenHealthIncrease").Should().Equal(
+            new LevelScalingFieldValue("Modification.VitalMaxArray[0]", "0.02"));
+    }
+
+    [TestMethod]
+    public void AddLevelScalingElementValue_CatalogsDifferingOnlyByCase_AddsToSameCatalog()
+    {
+        // arrange - catalog names are stored with StringComparer.OrdinalIgnoreCase
+        StormXmlArray levelScalingArray = CreateLevelScalingArray($"""
+            <LevelScalingArray Ability="AbathurSymbiote">
+              {CreateModificationsXml("Effect", "AbathurSymbioteStabDamage", "Amount", "0.04")}
+              {CreateModificationsXml("EFFECT", "AbathurSymbioteSpikeBurstDamage", "Amount", "0.045")}
+            </LevelScalingArray>
+            """);
+
+        DataStorage dataStorage = new();
+
+        // act
+        dataStorage.AddLevelScalingElementValue(levelScalingArray);
+
+        // assert
+        dataStorage.ElementCache.ScalingFieldValueByIdByCatalog.Should().ContainSingle();
+        GetScalingFieldValuesById(dataStorage, "effect").Should().HaveCount(2);
+    }
+
+    [TestMethod]
+    public void AddLevelScalingElementValue_EntriesDifferingOnlyByCase_AddsSeparateEntries()
+    {
+        // arrange - entry ids are stored with StringComparer.Ordinal
+        StormXmlArray levelScalingArray = CreateLevelScalingArray($"""
+            <LevelScalingArray Ability="AbathurSymbiote">
+              {CreateModificationsXml("Effect", "AbathurSymbioteStabDamage", "Amount", "0.04")}
+              {CreateModificationsXml("Effect", "ABATHURSYMBIOTESTABDAMAGE", "Amount", "0.05")}
+            </LevelScalingArray>
+            """);
+
+        DataStorage dataStorage = new();
+
+        // act
+        dataStorage.AddLevelScalingElementValue(levelScalingArray);
+
+        // assert
+        Dictionary<string, List<LevelScalingFieldValue>> scalingFieldValuesById = GetScalingFieldValuesById(dataStorage, "Effect");
+
+        scalingFieldValuesById.Should().HaveCount(2);
+        scalingFieldValuesById["AbathurSymbioteStabDamage"].Should().Equal(new LevelScalingFieldValue("Amount", "0.04"));
+        scalingFieldValuesById["ABATHURSYMBIOTESTABDAMAGE"].Should().Equal(new LevelScalingFieldValue("Amount", "0.05"));
+        scalingFieldValuesById.Should().NotContainKey("abathursymbiotestabdamage");
+    }
+
+    [TestMethod]
+    public void AddLevelScalingElementValue_FieldsDifferingOnlyByCase_AddsSeparateValues()
+    {
+        // arrange - the Field comparison is case-sensitive, so these are not replaced
+        StormXmlArray levelScalingArray = CreateLevelScalingArray($"""
+            <LevelScalingArray Ability="AbathurSymbiote">
+              {CreateModificationsXml("Effect", "AbathurSymbioteStabDamage", "Amount", "0.04")}
+              {CreateModificationsXml("Effect", "AbathurSymbioteStabDamage", "AMOUNT", "0.05")}
+            </LevelScalingArray>
+            """);
+
+        DataStorage dataStorage = new();
+
+        // act
+        dataStorage.AddLevelScalingElementValue(levelScalingArray);
+
+        // assert
+        GetScalingFieldValues(dataStorage, "Effect", "AbathurSymbioteStabDamage").Should().Equal(
+            new LevelScalingFieldValue("Amount", "0.04"),
+            new LevelScalingFieldValue("AMOUNT", "0.05"));
+    }
+
+    [TestMethod]
+    [DataRow("Catalog")]
+    [DataRow("Entry")]
+    [DataRow("Field")]
+    [DataRow("Value")]
+    public void AddLevelScalingElementValue_ModificationMissingMember_SkipsOnlyThatModification(string missingMember)
+    {
+        // arrange
+        StormXmlArray levelScalingArray = CreateLevelScalingArray($"""
+            <LevelScalingArray Ability="AbathurSymbiote">
+              {CreateModificationsXml("Effect", "IncompleteEntry", "Amount", "0.04", missingMember)}
+              {CreateModificationsXml("Effect", "AbathurSymbioteStabDamage", "Amount", "0.05")}
+            </LevelScalingArray>
+            """);
+
+        DataStorage dataStorage = new();
+
+        // act
+        dataStorage.AddLevelScalingElementValue(levelScalingArray);
+
+        // assert
+        Dictionary<string, List<LevelScalingFieldValue>> scalingFieldValuesById = GetScalingFieldValuesById(dataStorage, "Effect");
+
+        scalingFieldValuesById.Should().ContainSingle();
+        scalingFieldValuesById["AbathurSymbioteStabDamage"].Should().Equal(new LevelScalingFieldValue("Amount", "0.05"));
+    }
+
+    [TestMethod]
+    [DataRow("Catalog")]
+    [DataRow("Entry")]
+    [DataRow("Field")]
+    [DataRow("Value")]
+    public void AddLevelScalingElementValue_ModificationMemberWithNoValueAttribute_SkipsOnlyThatModification(string memberWithNoValue)
+    {
+        // arrange - e.g. <Catalog /> instead of <Catalog value="Effect" />
+        StormXmlArray levelScalingArray = CreateLevelScalingArray($"""
+            <LevelScalingArray Ability="AbathurSymbiote">
+              {CreateModificationsXml("Effect", "IncompleteEntry", "Amount", "0.04", memberWithNoValue: memberWithNoValue)}
+              {CreateModificationsXml("Effect", "AbathurSymbioteStabDamage", "Amount", "0.05")}
+            </LevelScalingArray>
+            """);
+
+        DataStorage dataStorage = new();
+
+        // act
+        dataStorage.AddLevelScalingElementValue(levelScalingArray);
+
+        // assert
+        Dictionary<string, List<LevelScalingFieldValue>> scalingFieldValuesById = GetScalingFieldValuesById(dataStorage, "Effect");
+
+        scalingFieldValuesById.Should().ContainSingle();
+        scalingFieldValuesById["AbathurSymbioteStabDamage"].Should().Equal(new LevelScalingFieldValue("Amount", "0.05"));
+    }
+
+    [TestMethod]
+    public void AddLevelScalingElementValue_ModificationWithEmptyValueAttribute_AddsEmptyValue()
+    {
+        // arrange - value="" is an attribute that is present but empty, so it is not skipped
+        StormXmlArray levelScalingArray = CreateLevelScalingArray($"""
+            <LevelScalingArray Ability="AbathurSymbiote">
+              {CreateModificationsXml("Effect", "AbathurSymbioteStabDamage", "Amount", string.Empty)}
+            </LevelScalingArray>
+            """);
+
+        DataStorage dataStorage = new();
+
+        // act
+        dataStorage.AddLevelScalingElementValue(levelScalingArray);
+
+        // assert
+        GetScalingFieldValues(dataStorage, "Effect", "AbathurSymbioteStabDamage").Should().Equal(new LevelScalingFieldValue("Amount", string.Empty));
+    }
+
+    [TestMethod]
+    public void AddLevelScalingElementValue_EntryWithNoModifications_SkipsOnlyThatEntry()
+    {
+        // arrange
+        StormXmlArray levelScalingArray = CreateLevelScalingArray($"""
+            <LevelScalingArray Ability="AbathurSymbiote" />
+            <LevelScalingArray Ability="AbathurToxicNest">
+              {CreateModificationsXml("Effect", "AbathurToxicNestDamage", "Amount", "0.045")}
+            </LevelScalingArray>
+            """);
+
+        DataStorage dataStorage = new();
+
+        // act
+        dataStorage.AddLevelScalingElementValue(levelScalingArray);
+
+        // assert
+        Dictionary<string, List<LevelScalingFieldValue>> scalingFieldValuesById = GetScalingFieldValuesById(dataStorage, "Effect");
+
+        scalingFieldValuesById.Should().ContainSingle();
+        scalingFieldValuesById["AbathurToxicNestDamage"].Should().Equal(new LevelScalingFieldValue("Amount", "0.045"));
+    }
+
+    [TestMethod]
+    public void AddLevelScalingElementValue_NoModificationsInAnyEntry_AddsNothing()
+    {
+        // arrange
+        StormXmlArray levelScalingArray = CreateLevelScalingArray("""
+            <LevelScalingArray Ability="AbathurSymbiote" />
+            <LevelScalingArray Ability="AbathurToxicNest">
+              <SomethingElse value="1" />
+            </LevelScalingArray>
+            """);
+
+        DataStorage dataStorage = new();
+
+        // act
+        dataStorage.AddLevelScalingElementValue(levelScalingArray);
+
+        // assert
+        dataStorage.ElementCache.ScalingFieldValueByIdByCatalog.Should().BeEmpty();
     }
 
     private static StormXmlConstElement CreateStormXmlConstElement(string id, string value = "1")
@@ -624,6 +1012,34 @@ public class DataStorageTests
 
     private static Dictionary<string, StormXmlElement>.AlternateLookup<ReadOnlySpan<char>> GetCatalogLookup(DataStorage dataStorage, string catalogName)
     {
-        return dataStorage.ElementCache.StormXmlElementsByCatalog[catalogName];
+        return dataStorage.ElementCache.StormXmlElementsByIdByCatalog[catalogName];
+    }
+
+    private static Dictionary<string, List<LevelScalingFieldValue>> GetScalingFieldValuesById(DataStorage dataStorage, string catalogName)
+    {
+        return dataStorage.ElementCache.ScalingFieldValueByIdByCatalog[catalogName].Dictionary;
+    }
+
+    private static List<LevelScalingFieldValue> GetScalingFieldValues(DataStorage dataStorage, string catalogName, string id)
+    {
+        return GetScalingFieldValuesById(dataStorage, catalogName)[id];
+    }
+
+    private static StormXmlArray CreateLevelScalingArray(string levelScalingArrayXml)
+    {
+        StormXmlElement element = XmlReaderHelper.GetStormXmlElement($"""<CHero id="Test">{levelScalingArrayXml}</CHero>""");
+
+        return element.Members.GetMember("LevelScalingArray");
+    }
+
+    private static string CreateModificationsXml(string catalog, string entry, string field, string value, string? excludedMember = null, string? memberWithNoValue = null)
+    {
+        (string Name, string Value)[] members = [("Catalog", catalog), ("Entry", entry), ("Field", field), ("Value", value)];
+
+        string membersXml = string.Concat(members
+            .Where(x => x.Name != excludedMember)
+            .Select(x => x.Name == memberWithNoValue ? $"<{x.Name} />" : $"""<{x.Name} value="{x.Value}" />"""));
+
+        return $"<Modifications>{membersXml}</Modifications>";
     }
 }

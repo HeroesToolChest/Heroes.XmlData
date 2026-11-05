@@ -46,5 +46,16 @@ internal sealed partial class ElementCache
     /// The inner dictionary key should be case-sensitive.
     /// </para>
     /// </summary>
-    public Dictionary<string, Dictionary<string, StormXmlElement>.AlternateLookup<ReadOnlySpan<char>>> StormXmlElementsByCatalog { get; } = new(StringComparer.OrdinalIgnoreCase);
+    public Dictionary<string, Dictionary<string, StormXmlElement>.AlternateLookup<ReadOnlySpan<char>>> StormXmlElementsByIdByCatalog { get; } = new(StringComparer.OrdinalIgnoreCase);
+
+    /// <summary>
+    /// Gets a dictionary of <c>LevelScalingArray</c> <c>Field</c> and <c>Value</c>s by their id attribute (<c>Entry</c>) by their catalog name (e.g <c>Effect</c>).
+    /// <para>
+    /// The dictionary key is case-insensitive.
+    /// </para>
+    /// <para>
+    /// The inner dictionary key should be case-sensitive.
+    /// </para>
+    /// </summary>
+    public Dictionary<string, Dictionary<string, List<LevelScalingFieldValue>>.AlternateLookup<ReadOnlySpan<char>>> ScalingFieldValueByIdByCatalog { get; } = new(StringComparer.OrdinalIgnoreCase);
 }
