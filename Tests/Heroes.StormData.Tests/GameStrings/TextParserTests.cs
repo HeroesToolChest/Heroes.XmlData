@@ -90,7 +90,7 @@ public sealed class TextParserTests
 
     private static string BuildDescription(List<TextSectionItem> textStack)
     {
-        TextParser textParser = new(new DataTagParser(new LayeredDataStorage()), Text);
+        TextParser textParser = new(new DataTagParser(new LayeredDataStorage()), Text, CultureInfo.InvariantCulture);
 
         return textParser.BuildDescription(textStack);
     }

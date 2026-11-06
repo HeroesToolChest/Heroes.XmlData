@@ -10,13 +10,18 @@ internal ref struct TextParser
     private readonly DataTagParser _dataTagParser;
     private readonly ReadOnlySpan<char> _text;
 
+    // the gamestring locale's format, used for the values shown in the text.
+    // scaling (~~x~~) is always invariant, since Heroes.LocaleText parses it back as invariant
+    private readonly NumberFormatInfo _numberFormat;
+
     private int _startingIndex;
     private int _index;
 
-    public TextParser(DataTagParser dataTagParser, ReadOnlySpan<char> text)
+    public TextParser(DataTagParser dataTagParser, ReadOnlySpan<char> text, IFormatProvider formatProvider)
     {
         _dataTagParser = dataTagParser;
         _text = text;
+        _numberFormat = NumberFormatInfo.GetInstance(formatProvider);
     }
 
     public void ConstructTextStack(List<TextSectionItem> textStack)
@@ -70,7 +75,7 @@ internal ref struct TextParser
             {
                 ValueScale value = item.ValueScale;
 
-                MathHelpers.WriteNumber(value.Value, buffer, ref currentOffset);
+                MathHelpers.WriteNumber(value.Value, buffer, ref currentOffset, _numberFormat);
 
                 if (value.Scaling.HasValue)
                 {
@@ -83,6 +88,7 @@ internal ref struct TextParser
                     $"{ScalingNumbersTag}~~".CopyTo(buffer[currentOffset..]);
                     currentOffset += ScalingNumbersTagLength + 2;
 
+                    // invariant on purpose, see _numberFormat
                     MathHelpers.WriteNumber(value.Scaling.Value, buffer, ref currentOffset);
 
                     "~~</c>".CopyTo(buffer[currentOffset..]);
@@ -95,7 +101,7 @@ internal ref struct TextParser
         return buffer[..currentOffset].ToString();
     }
 
-    private static int GetSizeOfBuffer(List<TextSectionItem> textStack)
+    private readonly int GetSizeOfBuffer(List<TextSectionItem> textStack)
     {
         int sum = 0;
 
@@ -103,7 +109,7 @@ internal ref struct TextParser
         {
             if (current.Type == TextSectionType.Value)
             {
-                sum += current.ValueScale.TotalValueDigits();
+                sum += current.ValueScale.TotalValueDigits(_numberFormat);
                 sum += current.ValueScale.TotalScalingDigits() + 4; // +4 for ~~ ~~
                 sum += ScalingNumbersTagLength + 4; // +4 for close tag
 

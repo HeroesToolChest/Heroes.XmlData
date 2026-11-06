@@ -9,9 +9,15 @@ internal sealed class GameStringParser
         _dataTagParser = new DataTagParser(layeredDataStorage);
     }
 
-    public string ParseText(ReadOnlySpan<char> text)
+    /// <summary>
+    /// Parses the data tags in <paramref name="text"/>, writing their numbers in the format of <paramref name="stormLocale"/>.
+    /// </summary>
+    /// <param name="text">The gamestring text.</param>
+    /// <param name="stormLocale">The locale of the gamestring.</param>
+    /// <returns>The parsed text.</returns>
+    public string ParseText(ReadOnlySpan<char> text, StormLocale stormLocale)
     {
-        TextParser textParser = new(_dataTagParser, text);
+        TextParser textParser = new(_dataTagParser, text, StormLocaleCulture.GetCultureInfo(stormLocale));
         List<TextSectionItem> textStack = [];
 
         textParser.ConstructTextStack(textStack);

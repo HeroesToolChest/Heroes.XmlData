@@ -59,7 +59,7 @@ public sealed class MathHelpersTests
         List<double> numbers = [.. Enumerable.Range(0, 100_000).Select(_ => (random.NextDouble() - 0.5) * Math.Pow(10, random.Next(-20, 21)))];
 
         // act
-        List<int> counts = [.. numbers.Select(MathHelpers.GetCountOfDigits)];
+        List<int> counts = [.. numbers.Select(number => MathHelpers.GetCountOfDigits(number))];
 
         // assert
         counts.Should().OnlyContain(x => x <= 14);
@@ -125,5 +125,48 @@ public sealed class MathHelpersTests
 
         // assert
         act.Should().Throw<ArgumentException>();
+    }
+
+    [TestMethod]
+    [DataRow("de-DE", -1.5, "-1,5")]
+    [DataRow("fr-FR", 2.25, "2,25")]
+    [DataRow("en-US", -1.5, "-1.5")]
+    [DataRow("de-DE", 120, "120")]
+    public void WriteNumber_HasFormatProvider_WritesInCultureAndCountMatches(string cultureName, double number, string expected)
+    {
+        // arrange
+        CultureInfo culture = CultureInfo.GetCultureInfo(cultureName);
+        char[] buffer = new char[32];
+        int offset = 0;
+
+        // act
+        MathHelpers.WriteNumber(number, buffer, ref offset, culture);
+        int count = MathHelpers.GetCountOfDigits(number, culture);
+
+        // assert
+        new string(buffer, 0, offset).Should().Be(expected);
+        count.Should().Be(expected.Length);
+    }
+
+    [TestMethod]
+    [DataRow(-5, "--5")]
+    [DataRow(-999998.123456, "--999998,,123456")]
+    public void WriteNumber_FormatProviderHasMultiCharSigns_CountMatches(double number, string expected)
+    {
+        // arrange
+        CultureInfo culture = (CultureInfo)CultureInfo.InvariantCulture.Clone();
+        culture.NumberFormat.NegativeSign = "--";
+        culture.NumberFormat.NumberDecimalSeparator = ",,";
+
+        char[] buffer = new char[32];
+        int offset = 0;
+
+        // act
+        MathHelpers.WriteNumber(number, buffer, ref offset, culture);
+        int count = MathHelpers.GetCountOfDigits(number, culture);
+
+        // assert
+        new string(buffer, 0, offset).Should().Be(expected);
+        count.Should().Be(expected.Length);
     }
 }

@@ -31,10 +31,11 @@ internal readonly struct ValueScale
     /// <summary>
     /// Gets the total number of digits of <see cref="Value"/>. Includes the negative sign and fractional digits.
     /// </summary>
+    /// <param name="formatProvider">The culture the value is written in. Defaults to <see cref="CultureInfo.InvariantCulture"/>.</param>
     /// <returns>The total number of digits.</returns>
-    public int TotalValueDigits()
+    public int TotalValueDigits(IFormatProvider? formatProvider = null)
     {
-        return MathHelpers.GetCountOfDigits(Value);
+        return MathHelpers.GetCountOfDigits(Value, formatProvider);
     }
 
     /// <summary>
