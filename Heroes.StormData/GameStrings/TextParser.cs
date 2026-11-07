@@ -10,8 +10,7 @@ internal ref struct TextParser
     private readonly DataTagParser _dataTagParser;
     private readonly ReadOnlySpan<char> _text;
 
-    // the gamestring locale's format, used for the values shown in the text.
-    // scaling (~~x~~) is always invariant, since Heroes.LocaleText parses it back as invariant
+    // the gamestring locale's format, used for the values and the scaling (~~x~~) written in the text
     private readonly NumberFormatInfo _numberFormat;
 
     private int _startingIndex;
@@ -88,8 +87,7 @@ internal ref struct TextParser
                     $"{ScalingNumbersTag}~~".CopyTo(buffer[currentOffset..]);
                     currentOffset += ScalingNumbersTagLength + 2;
 
-                    // invariant on purpose, see _numberFormat
-                    MathHelpers.WriteNumber(value.Scaling.Value, buffer, ref currentOffset);
+                    MathHelpers.WriteNumber(value.Scaling.Value, buffer, ref currentOffset, _numberFormat);
 
                     "~~</c>".CopyTo(buffer[currentOffset..]);
                     currentOffset += 6;
@@ -110,7 +108,7 @@ internal ref struct TextParser
             if (current.Type == TextSectionType.Value)
             {
                 sum += current.ValueScale.TotalValueDigits(_numberFormat);
-                sum += current.ValueScale.TotalScalingDigits() + 4; // +4 for ~~ ~~
+                sum += current.ValueScale.TotalScalingDigits(_numberFormat) + 4; // +4 for ~~ ~~
                 sum += ScalingNumbersTagLength + 4; // +4 for close tag
 
                 if (current.IsPercent)
