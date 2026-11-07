@@ -32,6 +32,15 @@ internal sealed class StormXmlConstants
     }
     .ToFrozenSet();
 
+    // elements that are arrays only inside a specific root element type, e.g. Cost is an array in CEffectModifyUnit but not in CAbil elements
+    public static readonly FrozenDictionary<string, string> ElementArraysByRootElementType = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+    {
+        { "Cost", "CEffectModifyUnit" },
+        { "String", "CUser" },
+        { "Text", "CUser" },
+    }
+    .ToFrozenDictionary(StringComparer.OrdinalIgnoreCase);
+
     // attribute names that StormXmlMember reads back from its members; a token with one of these ids would overwrite the real attribute
     public static readonly FrozenSet<string> ReservedTokenIds = new HashSet<string>(StringComparer.Ordinal)
     {

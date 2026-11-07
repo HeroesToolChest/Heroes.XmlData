@@ -9,6 +9,8 @@ internal class SourceContainer
     {
         LayeredDataStorage = new LayeredDataStorage();
         StormXmlFileParser = new StormXmlFileParser(LayeredDataStorage);
+
+        AddDefaults();
     }
 
     /// <summary>
@@ -21,6 +23,13 @@ internal class SourceContainer
     /// </summary>
     public StormXmlFileParser StormXmlFileParser { get; }
 
+    private void AddDefaults()
+    {
+        using XmlReader reader = XmlReader.Create(new StringReader(StormDefaultData.DefaultXml));
+
+        foreach (StormXmlElement element in StormXmlFileParser.Parse(reader, StormDefaultData.StormFile))
+            LayeredDataStorage.GetDataStorage(StormModType.Base).AddElementWithNoId(element);
+    }
 
     //public void AddElement(StormXmlElement element, DataStorage dataStorage)
     //{

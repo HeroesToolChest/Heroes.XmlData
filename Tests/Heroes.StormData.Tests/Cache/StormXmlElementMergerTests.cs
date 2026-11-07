@@ -405,4 +405,98 @@ public class StormXmlElementMergerTests
         result.Members["ReleaseDate"].ByMember["Month"].Value.GetInt32().Should().Be(1);
         result.Members["Description"].Value.GetString().Should().Be("VoiceLine/Description/Abathur_VoiceLine01Common");
     }
+
+    [TestMethod]
+    public void GetMerged_ChildMergedIntoParent_DoesNotModifyStoredParent()
+    {
+        // arrange
+        LayeredDataStorage layeredDataStorage = new();
+
+        DataStorage dataStorage = layeredDataStorage.GetDataStorage(StormModType.Custom);
+        dataStorage.AddElementWithId(
+            XmlReaderHelper.GetStormXmlElement(
+                """
+                <CEffectEnumArea id="ParentSearch">
+                  <AreaArray>
+                    <RectangleWidth value="1" />
+                  </AreaArray>
+                </CEffectEnumArea>
+                """),
+            "Effect");
+        dataStorage.AddElementWithId(
+            XmlReaderHelper.GetStormXmlElement(
+                """
+                <CEffectEnumArea id="ChildSearch" parent="ParentSearch">
+                  <AreaArray index="0">
+                    <RectangleWidth value="1.35" />
+                  </AreaArray>
+                </CEffectEnumArea>
+                """),
+            "Effect");
+
+        StormXmlElementMerger stormXmlElementMerger = new(layeredDataStorage);
+
+        // act
+        StormXmlElement? child = stormXmlElementMerger.GetMerged("ChildSearch", "Effect");
+        StormXmlElement? parent = stormXmlElementMerger.GetMerged("ParentSearch", "Effect");
+
+        // assert
+        child.Should().NotBeNull();
+        parent.Should().NotBeNull();
+        child.Members["AreaArray"].ByIndex[0]["RectangleWidth"].Value.GetString().Should().Be("1.35");
+        parent.Members["AreaArray"].ByIndex[0]["RectangleWidth"].Value.GetString().Should().Be("1");
+    }
+
+    [TestMethod]
+    public void GetMerged_ParentInMultipleLayers_DoesNotModifyStoredLayerElements()
+    {
+        // arrange
+        LayeredDataStorage layeredDataStorage = new();
+
+        StormXmlElement baseParent = XmlReaderHelper.GetStormXmlElement(
+            """
+            <CEffectEnumArea id="ParentSearch">
+              <AreaArray>
+                <RectangleWidth value="1" />
+                <RectangleHeight value="6" />
+              </AreaArray>
+            </CEffectEnumArea>
+            """);
+        StormXmlElement customParent = XmlReaderHelper.GetStormXmlElement(
+            """
+            <CEffectEnumArea id="ParentSearch">
+              <AreaArray index="0">
+                <RectangleHeight value="7" />
+              </AreaArray>
+            </CEffectEnumArea>
+            """);
+
+        layeredDataStorage.GetDataStorage(StormModType.Base).AddElementWithId(baseParent, "Effect");
+        layeredDataStorage.GetDataStorage(StormModType.Custom).AddElementWithId(customParent, "Effect");
+        layeredDataStorage.GetDataStorage(StormModType.Custom).AddElementWithId(
+            XmlReaderHelper.GetStormXmlElement(
+                """
+                <CEffectEnumArea id="ChildSearch" parent="ParentSearch">
+                  <AreaArray index="0">
+                    <RectangleWidth value="1.35" />
+                  </AreaArray>
+                </CEffectEnumArea>
+                """),
+            "Effect");
+
+        StormXmlElementMerger stormXmlElementMerger = new(layeredDataStorage);
+
+        // act
+        StormXmlElement? child = stormXmlElementMerger.GetMerged("ChildSearch", "Effect");
+
+        // assert
+        child.Should().NotBeNull();
+        child.Members["AreaArray"].ByIndex[0]["RectangleWidth"].Value.GetString().Should().Be("1.35");
+        child.Members["AreaArray"].ByIndex[0]["RectangleHeight"].Value.GetString().Should().Be("7");
+
+        baseParent.Members["AreaArray"].ByIndex[0]["RectangleWidth"].Value.GetString().Should().Be("1");
+        baseParent.Members["AreaArray"].ByIndex[0]["RectangleHeight"].Value.GetString().Should().Be("6");
+        customParent.Members["AreaArray"].ByIndex[0].ContainsMember("RectangleWidth").Should().BeFalse();
+        customParent.Members["AreaArray"].ByIndex[0]["RectangleHeight"].Value.GetString().Should().Be("7");
+    }
 }

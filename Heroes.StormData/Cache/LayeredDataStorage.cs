@@ -17,6 +17,9 @@ internal sealed class LayeredDataStorage
     private readonly ElementCache _mapElementCache;
     private readonly ElementCache _customElementCache;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="LayeredDataStorage"/> class.
+    /// </summary>
     public LayeredDataStorage()
     {
         _baseDataStorage = new DataStorage();
@@ -85,13 +88,30 @@ internal sealed class LayeredDataStorage
 
     /// <summary>
     /// Retrieves a <see cref="StormXmlElement"/> by its class element name (without type letter declaration) from the data storages.
+    /// <para>
+    /// The returned element can be the stored instance, so it must not be modified.
+    /// </para>
     /// </summary>
     /// <param name="elementName">The name of the class element (without type letter declaration) (e.g. <c>EffectDamage</c>). This is case-insensitive.</param>
     /// <returns>The <see cref="StormXmlElement"/> if found; otherwise, <see langword="null"/>.</returns>
     public StormXmlElement? GetStormXmlElementByClassElement(ReadOnlySpan<char> elementName)
     {
+        return GetStormXmlElementByClassElement(elementName, out _);
+    }
+
+    /// <summary>
+    /// Retrieves a <see cref="StormXmlElement"/> by its class element name (without type letter declaration) from the data storages.
+    /// </summary>
+    /// <param name="elementName">The name of the class element (without type letter declaration) (e.g. <c>EffectDamage</c>). This is case-insensitive.</param>
+    /// <param name="isCopy">
+    /// When this method returns, <see langword="true"/> if the returned element is a new copy (more than one data storage had it, so they were merged), which the caller can modify;
+    /// <see langword="false"/> if it is the stored instance, which must not be modified.
+    /// </param>
+    /// <returns>The <see cref="StormXmlElement"/> if found; otherwise, <see langword="null"/>.</returns>
+    public StormXmlElement? GetStormXmlElementByClassElement(ReadOnlySpan<char> elementName, out bool isCopy)
+    {
         StormXmlElement? stormXmlElement = null;
-        bool isCopy = false;
+        isCopy = false;
 
         // base first
         MergeInto(ref stormXmlElement, ref isCopy, FindStormXmlElementByElementName(_baseElementCache, elementName));
@@ -103,14 +123,32 @@ internal sealed class LayeredDataStorage
 
     /// <summary>
     /// Retrieves a <see cref="StormXmlElement"/> by its <c>id</c> from the specified catalog name from the data storages.
+    /// <para>
+    /// The returned element can be the stored instance, so it must not be modified.
+    /// </para>
     /// </summary>
     /// <param name="id">The <c>id</c> of the <see cref="StormXmlElement"/>. This is case-sensitive.</param>
     /// <param name="catalogName">The catalog name of the <see cref="StormXmlElement"/>. This is case-insensitive.</param>
     /// <returns>The <see cref="StormXmlElement"/> if found; otherwise, <see langword="null"/>.</returns>
     public StormXmlElement? GetStormXmlElementById(ReadOnlySpan<char> id, ReadOnlySpan<char> catalogName)
     {
+        return GetStormXmlElementById(id, catalogName, out _);
+    }
+
+    /// <summary>
+    /// Retrieves a <see cref="StormXmlElement"/> by its <c>id</c> from the specified catalog name from the data storages.
+    /// </summary>
+    /// <param name="id">The <c>id</c> of the <see cref="StormXmlElement"/>. This is case-sensitive.</param>
+    /// <param name="catalogName">The catalog name of the <see cref="StormXmlElement"/>. This is case-insensitive.</param>
+    /// <param name="isCopy">
+    /// When this method returns, <see langword="true"/> if the returned element is a new copy (more than one data storage had it, so they were merged), which the caller can modify;
+    /// <see langword="false"/> if it is the stored instance, which must not be modified.
+    /// </param>
+    /// <returns>The <see cref="StormXmlElement"/> if found; otherwise, <see langword="null"/>.</returns>
+    public StormXmlElement? GetStormXmlElementById(ReadOnlySpan<char> id, ReadOnlySpan<char> catalogName, out bool isCopy)
+    {
         StormXmlElement? stormXmlElement = null;
-        bool isCopy = false;
+        isCopy = false;
 
         // base first
         MergeInto(ref stormXmlElement, ref isCopy, FindStormXmlElementById(_baseElementCache, id, catalogName));

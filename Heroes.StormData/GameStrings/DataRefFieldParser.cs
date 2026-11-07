@@ -2,6 +2,13 @@
 
 internal static class DataRefFieldParser
 {
+    // the names of the game's enums used as named indexes, in ordinal order.
+    // a numerical index into an array that uses these names is the ordinal, e.g. VitalMaxArray[1] is VitalMaxArray[Shields]
+    private static readonly string[][] _namedIndexEnums =
+    [
+        ["Life", "Shields", "Energy"],
+    ];
+
     // Abil,GuldanHorrify,CastIntroTime
     // Effect,GuldanHorrifyAbilityStartCreatePersistent,PeriodicPeriodArray[0]
     public static FieldNode ParseField(StormXmlElement stormXmlElement, ReadOnlySpan<char> field)
@@ -42,11 +49,9 @@ internal static class DataRefFieldParser
             ReadOnlySpan<char> name = fieldSegment[..indexOfStartBracket]; // the part without the indexer, e.g. PeriodicPeriodArray
             ReadOnlySpan<char> index = fieldSegment[(indexOfStartBracket + 1)..^1]; // the value of the index, e.g. 0
 
-            //if (current.TryGetMember(name, out StormXmlArray? array) && array.TryGetByIndex(index, out StormXmlMember? member))
-            //    return new FieldNode(member);
             if (currentNode.TryGetMember(name, out StormXmlArray? nameArray))
             {
-                if (nameArray.IsArray && nameArray.TryGetByIndex(index, out StormXmlMember? member))
+                if (nameArray.IsArray && TryGetByIndex(nameArray, index, out StormXmlMember? member))
                 {
                     return new FieldNode(member);
                 }
@@ -56,54 +61,50 @@ internal static class DataRefFieldParser
                 }
             }
 
-
             return default;
         }
 
         if (!currentNode.TryGetMember(fieldSegment, out StormXmlArray? stormXmlArray))
             return default;
 
-        // array with no indexer, e.g. AmountArray: use it only if it has a single entry
+        // array with no indexer, e.g. AmountArray: use the first entry
         if (stormXmlArray.IsArray)
         {
-            if (!stormXmlArray.ContainsIndex(1) && stormXmlArray.TryGetByIndex(0, out StormXmlMember? only))
-                return new FieldNode(only);
+            if (stormXmlArray.TryGetByIndex(0, out StormXmlMember? first))
+                return new FieldNode(first);
 
             return default;
         }
 
         return new FieldNode(stormXmlArray);
-        //   ReadOnlySpan<char> fieldPartIndexValue = fieldPart.Slice(indexOfStartBracket + 1, fieldPart.Length - indexOfStartBracket - 2);
-        //   bool numericalIndex = int.TryParse(fieldPartIndexValue, out int indexAsNumber);
+    }
 
-        //    // the part without the indexer, e.g. PeriodicPeriodArray
-        //    ReadOnlySpan<char> fieldPartSpanWithoutIndexer = fieldPart[..indexOfStartBracket];
+    private static bool TryGetByIndex(StormXmlArray array, ReadOnlySpan<char> index, [NotNullWhen(true)] out StormXmlMember? member)
+    {
+        // the position of a named index in the xml is not its ordinal, so map the number to the enum name instead
+        if (int.TryParse(index, NumberStyles.None, CultureInfo.InvariantCulture, out int ordinal))
+        {
+            foreach (string[] enumNames in _namedIndexEnums)
+            {
+                if (!ContainsAnyIndex(array, enumNames))
+                    continue;
 
-        //    if (members.TryGetMember(fieldPartSpanWithoutIndexer, out StormXmlArray? stormXmlArray))
-        //    {
-        //        if (stormXmlArray.TryGetByIndex(fieldPartIndexValue, out StormXmlMember? indexStormXmlMember))
-        //        {
-        //            return (indexStormXmlMember, null);
-        //        }
-        //    }
-        //    return null;
-        //}
-        //else if (members.TryGetMember(fieldPart, out StormXmlArray? stormXmlArray))
-        //{
-        //    if (stormXmlArray.IsArray)
-        //    {
+                member = null;
+                return ordinal < enumNames.Length && array.TryGetByIndex(enumNames[ordinal], out member);
+            }
+        }
 
-        //    }
-        //    else
-        //    {
-        //        return (members, stormXmlArray);
-        //    }
-        //}
-        //else
-        //{
-        //    return (members, null);
-        //}
+        return array.TryGetByIndex(index, out member);
+    }
 
-        //return null;
+    private static bool ContainsAnyIndex(StormXmlArray array, string[] names)
+    {
+        foreach (string name in names)
+        {
+            if (array.ContainsIndex(name))
+                return true;
+        }
+
+        return false;
     }
 }

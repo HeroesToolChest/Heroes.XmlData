@@ -92,6 +92,11 @@ internal sealed class StormXmlFileParser
         return true;
     }
 
+    private static bool IsElementArrayForRootElementType(string elementName, string rootElementName)
+    {
+        return StormXmlConstants.ElementArraysByRootElementType.TryGetValue(elementName, out string? rootElementType) && rootElementType.Equals(rootElementName, StringComparison.OrdinalIgnoreCase);
+    }
+
     private StormXmlMember ParseElement(XmlReader reader, StormXmlMember? rootMember = null)
     {
         string elementName = reader.LocalName;
@@ -100,7 +105,7 @@ internal sealed class StormXmlFileParser
         StormXmlMember stormXmlMember = new(elementName);
         rootMember ??= stormXmlMember;
 
-        if (elementName.EndsWith("array", StringComparison.OrdinalIgnoreCase) || StormXmlConstants.ElementArrays.Contains(elementName))
+        if (elementName.EndsWith("array", StringComparison.OrdinalIgnoreCase) || StormXmlConstants.ElementArrays.Contains(elementName) || IsElementArrayForRootElementType(elementName, rootMember.Name))
             isArray = true;
 
         // for self-closing tags like <Element ... />

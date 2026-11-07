@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace Heroes.StormData;
+﻿namespace Heroes.StormData;
 
 public class StormModFile : StormFile
 {
