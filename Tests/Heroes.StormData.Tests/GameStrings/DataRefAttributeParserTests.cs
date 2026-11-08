@@ -591,6 +591,11 @@ public class DataRefAttributeParserTests
     [DataRow("10*[d ref='Effect,TestDamage,Amount'/]", 1200)]
     [DataRow("[d ref='Effect,TestDamage,Amount'/]+[d ref='Effect,TestDamage,Amount'/]", 240)]
     [DataRow("[d ref='Effect,TestDamage,Amount'/]/Effect,TestDamage,Amount", 1)]
+    [DataRow("1+2+3+4+5+6+7+8+9+[d ref='Effect,TestDamage,Amount'/]", 165)] // bracket after many operators
+    [DataRow("(10+[d ref='Effect,TestDamage,Amount'/])*2", 260)] // bracket followed by a closing parenthesis
+    [DataRow("[d ref='Effect,TestDamage,Amount'/]-[d ref='Effect,TestDamage,Amount*2'/]", -120)] // second bracket has an operator inside
+    [DataRow("[d ref='(Effect,TestDamage,Amount+30)/2'/]*2", 150)] // operators inside the bracket before its /]
+    [DataRow("Effect,TestDamage,Amount*[d ref='Effect,TestDamage,Amount'/]", 14400)] // bracket after a catalog reference
     public void Parse_HasBracketDataRef_ComputesValue(string dRef, double expected)
     {
         // arrange
@@ -600,6 +605,22 @@ public class DataRefAttributeParserTests
               <Amount value="120" />
             </CEffectDamage>
             """);
+
+        // act
+        ValueScale result = parser.Parse(dRef);
+
+        // assert
+        result.Value.Should().Be(expected);
+    }
+
+    [TestMethod]
+    [DataRow("8/]", 8)] // /] with no [d, so ] is an unresolved reference (0) and dividing by 0 gives the numerator
+    [DataRow("8+[d", 8)] // [d with no /], so it is an unresolved reference
+    [DataRow("8+Effect,[d ,Amount", 8)] // [d with no /] and not at the start of the part
+    public void Parse_HasIncompleteBracketDataRef_TreatsItAsUnresolvedReference(string dRef, double expected)
+    {
+        // arrange
+        DataRefAttributeParser parser = CreateParser();
 
         // act
         ValueScale result = parser.Parse(dRef);

@@ -124,19 +124,24 @@ internal sealed class DataRefAttributeParser
     {
         int indexOfOperator = text.IndexOfAny(_gameStringOps);
 
-        // checking for inner bracket [d ref /]
-        int indexOfStartBracket = text.IndexOf("[d ", StringComparison.OrdinalIgnoreCase);
-        int indexOfEndBracket = text.IndexOf("/]") + 1;
+        // no operator, so there is no inner bracket either, since its /] has one
+        if (indexOfOperator < 0)
+            return text;
 
-        if (indexOfEndBracket > 0 && indexOfStartBracket < indexOfOperator && indexOfStartBracket > -1)
+        // checking for inner bracket [d ref /], which only counts if it starts before the operator, so only that part is searched.
+        // "[d " has no operator characters, so a match that starts before the operator also ends before it
+        int indexOfStartBracket = text[..indexOfOperator].IndexOf("[d ", StringComparison.OrdinalIgnoreCase);
+
+        if (indexOfStartBracket > -1)
         {
-            return text[indexOfStartBracket..(indexOfEndBracket + 1)];
+            // the / is an operator, so the first /] can't be before the operator, which is after the start bracket
+            int indexOfEndBracket = text[indexOfStartBracket..].IndexOf("/]");
+
+            if (indexOfEndBracket > -1)
+                return text[indexOfStartBracket..(indexOfStartBracket + indexOfEndBracket + 2)];
         }
 
-        if (indexOfOperator > -1)
-            return text[..indexOfOperator];
-        else
-            return text;
+        return text[..indexOfOperator];
     }
 
     // builds the expression with a placeholder for each number, and the numbers in the order they appear, so they don't have to be written as text and read back
