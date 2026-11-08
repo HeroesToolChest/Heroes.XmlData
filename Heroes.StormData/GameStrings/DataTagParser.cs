@@ -9,6 +9,8 @@ internal sealed class DataTagParser
     public const string AttributeNameRef = "ref";
     public const string AttributeNamePrecision = "precision";
 
+    private const int MaxStackAllocLength = 256;
+
     private readonly LayeredDataStorage _layeredDataStorage;
     private readonly DataRefAttributeParser _dataRefAttributeParser;
 
@@ -45,12 +47,28 @@ internal sealed class DataTagParser
         }
 
         // not simple, so parse it as the xml tag it would be, [d .../] to <d .../>
-        Span<char> xmlDataTag = stackalloc char[bracketDataTag.Length];
-        bracketDataTag.CopyTo(xmlDataTag);
-        xmlDataTag[0] = '<';
-        xmlDataTag[^1] = '>';
+        char[]? rentedXmlDataTag = null;
 
-        return ParseXmlDataTag(xmlDataTag);
+        Span<char> xmlDataTag = bracketDataTag.Length <= MaxStackAllocLength
+            ? stackalloc char[bracketDataTag.Length]
+            : (rentedXmlDataTag = ArrayPool<char>.Shared.Rent(bracketDataTag.Length));
+
+        try
+        {
+            // a rented array can be longer
+            xmlDataTag = xmlDataTag[..bracketDataTag.Length];
+
+            bracketDataTag.CopyTo(xmlDataTag);
+            xmlDataTag[0] = '<';
+            xmlDataTag[^1] = '>';
+
+            return ParseXmlDataTag(xmlDataTag);
+        }
+        finally
+        {
+            if (rentedXmlDataTag is not null)
+                ArrayPool<char>.Shared.Return(rentedXmlDataTag);
+        }
     }
 
     // parses the tag as xml, for the tags that aren't simple.
@@ -92,24 +110,32 @@ internal sealed class DataTagParser
                 }
             }
 
-            if (hasConst)
+            if (!hasConst && !hasRef)
+                return new ValueScale(0);
+
+            // the const is used over the ref, so only one of them is decoded from utf-8
+            RawString value = hasConst ? constValue : refValue;
+            int charCount = value.GetCharCount();
+
+            char[]? rentedBuffer = null;
+
+            Span<char> buffer = charCount <= MaxStackAllocLength
+                ? stackalloc char[charCount]
+                : (rentedBuffer = ArrayPool<char>.Shared.Rent(charCount));
+
+            try
             {
-                Span<char> valueBuffer = stackalloc char[constValue.GetCharCount()];
+                Encoding.UTF8.TryGetChars(value.AsSpan(), buffer, out int charsWritten);
 
-                Encoding.UTF8.TryGetChars(constValue.AsSpan(), valueBuffer, out int charsWritten);
+                ReadOnlySpan<char> decodedValue = buffer[..charsWritten];
 
-                return GetValueScale(DataTagAttributes.FromConst(valueBuffer[..charsWritten], precision));
+                return GetValueScale(hasConst ? DataTagAttributes.FromConst(decodedValue, precision) : DataTagAttributes.FromRef(decodedValue, precision));
             }
-            else if (hasRef)
+            finally
             {
-                Span<char> buffer = stackalloc char[refValue.GetCharCount()];
-
-                Encoding.UTF8.TryGetChars(refValue.AsSpan(), buffer, out int charsWritten);
-
-                return GetValueScale(DataTagAttributes.FromRef(buffer[..charsWritten], precision));
+                if (rentedBuffer is not null)
+                    ArrayPool<char>.Shared.Return(rentedBuffer);
             }
-
-            return new ValueScale(0);
         }
         catch (Exception)
         {

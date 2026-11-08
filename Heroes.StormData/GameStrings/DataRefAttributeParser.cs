@@ -9,7 +9,6 @@ internal sealed class DataRefAttributeParser
     private const int MaxStackAllocPartCount = 32;
 
     private static readonly SearchValues<char> _gameStringOps = SearchValues.Create("+-*/()");
-    private static readonly SearchValues<char> _catalogReferenceSplitters = SearchValues.Create(",.");
 
     private readonly LayeredDataStorage _layeredDataStorage;
     private readonly DataTagParser _dataTagParser;
@@ -223,15 +222,13 @@ internal sealed class DataRefAttributeParser
     private ValueScale ParseCatalogReference(ReadOnlySpan<char> catalogReference)
     {
         // a proper dref consists of <Catalog>,<Entry>,<Field>
-        // <Field> is period separated
-        int splitterCount = catalogReference.CountAny(',');
+        // <Field> is period separated.
+        // only the first three parts are used, so a fourth range is enough to hold whatever is after them
+        Span<Range> catalogReferencePartRanges = stackalloc Range[4];
 
-        if (splitterCount < 2)
+        int partCount = catalogReference.Split(catalogReferencePartRanges, ',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        if (partCount < 3)
             return new ValueScale(0);
-
-        Span<Range> catalogReferencePartRanges = stackalloc Range[splitterCount + 1];
-
-        catalogReference.SplitAny(catalogReferencePartRanges, ",", StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
 
         ReadOnlySpan<char> catalog = catalogReference[catalogReferencePartRanges[0]];
         ReadOnlySpan<char> entry = catalogReference[catalogReferencePartRanges[1]];

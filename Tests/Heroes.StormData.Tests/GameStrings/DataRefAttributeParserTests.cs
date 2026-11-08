@@ -293,6 +293,11 @@ public class DataRefAttributeParserTests
     [DataRow("Effect,TestDamage,Amount")]
     [DataRow("Effect, TestDamage , Amount")]
     [DataRow(" Effect,TestDamage,Amount ")]
+    [DataRow("Effect,TestDamage,,Amount")] // empty parts are skipped
+    [DataRow(",Effect,TestDamage,Amount")]
+    [DataRow("Effect,TestDamage,Amount,,,")]
+    [DataRow("Effect,TestDamage,Amount,Extra")] // only the first three parts are used
+    [DataRow("Effect,TestDamage,Amount,Extra,More,Parts")]
     public void Parse_IsCatalogReference_ReturnsFieldValue(string dRef)
     {
         // arrange
@@ -385,6 +390,9 @@ public class DataRefAttributeParserTests
     [DataRow("Effect,TestPersistent,PeriodicPeriodArray", 0.5)] // no indexer uses the first entry
     [DataRow("Effect,TestPersistent,Cost[0].CooldownTimeUse", 6)]
     [DataRow("Effect,TestPersistent,Cost.CooldownTimeUse", 6)]
+    [DataRow("Effect,TestPersistent,Cost..CooldownTimeUse", 6)] // empty segments are skipped
+    [DataRow("Effect,TestPersistent,.Cost.CooldownTimeUse.", 6)]
+    [DataRow("Effect,TestPersistent,Cost . CooldownTimeUse", 6)] // segments are trimmed
     [DataRow("Effect,TestPersistent,MultiplicativeModifierArray[Greed].Modifier", 0.15)]
     [DataRow("Effect,TestPersistent,MultiplicativeModifierArray[Headshot].Modifier", 0.75)]
     [DataRow("Effect,TestPersistent,VitalMaxArray[Shields]", 126)]

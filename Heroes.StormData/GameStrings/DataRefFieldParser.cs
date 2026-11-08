@@ -13,17 +13,12 @@ internal static class DataRefFieldParser
     // Effect,GuldanHorrifyAbilityStartCreatePersistent,PeriodicPeriodArray[0]
     public static FieldNode ParseField(StormXmlElement stormXmlElement, ReadOnlySpan<char> field)
     {
-        int splitterCount = field.CountAny('.');
-
-        Span<Range> fieldSegmentRanges = stackalloc Range[splitterCount + 1];
-
-        field.SplitAny(fieldSegmentRanges, ".", StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
-
         FieldNode currentNode = new(stormXmlElement.Members);
 
-        foreach (Range fieldSegmentRange in fieldSegmentRanges)
+        // the split enumerator walks the segments without a buffer for them
+        foreach (Range fieldSegmentRange in field.Split('.'))
         {
-            ReadOnlySpan<char> fieldSegment = field[fieldSegmentRange];
+            ReadOnlySpan<char> fieldSegment = field[fieldSegmentRange].Trim();
             if (fieldSegment.IsEmpty)
                 continue;
 

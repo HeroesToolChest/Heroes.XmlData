@@ -141,6 +141,36 @@ public class DataTagParserTests
     }
 
     [TestMethod]
+    public void ParseDataTag_TagParsedAsXmlWithValueLongerThanStackBuffer_ReturnsValue()
+    {
+        // arrange
+        // not self-closing, so it is parsed as xml, and its 599 character ref is decoded into a rented buffer
+        DataTagParser parser = new(CreateStorage());
+        string dRef = string.Join('+', Enumerable.Repeat("1", 300));
+
+        // act
+        ValueScale result = parser.ParseDataTag($"<d ref=\"{dRef}\"></d>");
+
+        // assert
+        result.Value.Should().Be(300);
+    }
+
+    [TestMethod]
+    public void ParseBracketDataTag_TagParsedAsXmlLongerThanStackBuffer_ReturnsValue()
+    {
+        // arrange
+        // the &amp; makes it parsed as xml, so the bracket is copied into a rented buffer as <d .../>
+        DataTagParser parser = new(CreateStorage());
+        string dRef = string.Join('+', Enumerable.Repeat("1", 300));
+
+        // act
+        ValueScale result = parser.ParseBracketDataTag($"[d ref='{dRef}' note='&amp;'/]");
+
+        // assert
+        result.Value.Should().Be(300);
+    }
+
+    [TestMethod]
     [DataRow("d Ref='Effect,TestDamage,Amount'", 120)]
     [DataRow("d REF='Effect,TestDamage,Amount'", 120)]
     [DataRow("d Const='$TestConst'", 7)]
