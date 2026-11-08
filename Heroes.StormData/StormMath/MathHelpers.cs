@@ -71,8 +71,13 @@ internal static class MathHelpers
         offset += charsWritten;
     }
 
-    // a tiny negative number rounds to -0, which is turned into 0 so it isn't written as "-0"
-    private static double Normalize(double number)
+    /// <summary>
+    /// Gets <paramref name="number"/> as <see cref="WriteNumber"/> writes it: limited to <see cref="ValueScale.MaxValueSize"/>, either sign,
+    /// rounded to 6 decimal places, and with -0 turned into 0.
+    /// </summary>
+    /// <param name="number">The number to normalize.</param>
+    /// <returns>The normalized number.</returns>
+    public static double Normalize(double number)
     {
         double clamped = Math.Clamp(number, -ValueScale.MaxValueSize, ValueScale.MaxValueSize);
         double rounded = Math.Round(clamped, StormCalculator.MaxFractionalDigits, StormCalculator.MaxFractionalMidpointRoundingMode);

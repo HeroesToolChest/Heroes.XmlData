@@ -1,5 +1,6 @@
 ﻿using System.Collections.Concurrent;
 using System.Data;
+using System.Text;
 
 namespace Heroes.StormData.StormMath.Tests;
 
@@ -37,12 +38,142 @@ public sealed class StormCalculatorTests
     {
         // arrange
         // act
-        double result = StormCalculator.Compute(expression);
-        double resultFromSpan = StormCalculator.Compute(expression.AsSpan());
+        double result = StormCalculator.Compute(expression, []);
 
         // assert
         result.Should().Be(expected);
-        resultFromSpan.Should().Be(expected);
+    }
+
+    [TestMethod]
+    [DataRow("(12 + 6.000000) * (0.1875 + 0.062500) - (12 * 0.1875) / (12 * 0.1875) * 100")]
+    [DataRow("17 / 34 * 100")]
+    [DataRow("(57.8 / 34) * 100 - 100")]
+    [DataRow("-100*(1-1.400000)")]
+    [DataRow("--100")]
+    [DataRow("-100*(-0.15)")]
+    [DataRow("-100 * (0.225/(-0.15))")]
+    [DataRow("(1+(-0.6)*100)")]
+    [DataRow("-(-0.6-(-0.3))*100")]
+    [DataRow("- (-0.7*100)")]
+    [DataRow("-0.5")]
+    [DataRow("0")]
+    [DataRow("1+0*100")]
+    [DataRow("((5) + (3) / 5 - 1) * 100")]
+    [DataRow("(30/20)-1*10)")]
+    [DataRow("(1-(-60))*-1")]
+    [DataRow("--100*(-0.09)")]
+    [DataRow("5*/-+5")]
+    [DataRow("*+/-5+5")]
+    [DataRow(".0625 *24")]
+    [DataRow(" 100 * (-(-0.4)) ")]
+    [DataRow("-(-(30)-(-10.000000)")]
+    [DataRow(" 100(100*(-0.4))")]
+    [DataRow("+(0.5)")]
+    [DataRow("10/0")]
+    [DataRow("(5)*(1.04)+(3)")]
+    [DataRow("-(120*1.04)/(0.5)")]
+    public void Compute_NumbersAsValuePlaceholders_ReturnsSameAsNumbersInText(string expression)
+    {
+        // arrange
+        (string placeholderExpression, double[] values) = ToValuePlaceholders(expression);
+
+        // act
+        double expected = StormCalculator.Compute(expression, []);
+        double result = StormCalculator.Compute(placeholderExpression, values);
+
+        // assert
+        result.Should().Be(expected);
+    }
+
+    [TestMethod]
+    public void Compute_ValuePlaceholders_UsesValuesInOrder()
+    {
+        // arrange
+        // act
+        double result = StormCalculator.Compute("(#)-(#)", [10, 4]);
+
+        // assert
+        result.Should().Be(6);
+    }
+
+    [TestMethod]
+    public void Compute_ValuePlaceholderValueIsNegative_UsesNegativeValue()
+    {
+        // arrange
+        // act
+        double result = StormCalculator.Compute("(#*#)", [-5, 1.04]);
+
+        // assert
+        result.Should().Be(-5.2);
+    }
+
+    [TestMethod]
+    public void Compute_ValuePlaceholderAfterNegativeSign_NegatesValue()
+    {
+        // arrange
+        // act
+        double result = StormCalculator.Compute("(-#)*#", [3, 4]);
+
+        // assert
+        result.Should().Be(-12);
+    }
+
+    [TestMethod]
+    public void Compute_MoreValuePlaceholdersThanValues_ThrowsSyntaxErrorException()
+    {
+        // arrange
+        // act
+        Action act = () => StormCalculator.Compute("(#)+(#)", [1]);
+
+        // assert
+        act.Should().Throw<SyntaxErrorException>();
+    }
+
+    [TestMethod]
+    public void Compute_NumbersAndValuePlaceholdersMixed_ReturnsValue()
+    {
+        // arrange
+        // act
+        double result = StormCalculator.Compute("2*(#)-0.5", [3]);
+
+        // assert
+        result.Should().Be(5.5);
+    }
+
+    [TestMethod]
+    public void Compute_ValuePlaceholderWithNoValues_ThrowsSyntaxErrorException()
+    {
+        // arrange
+        // act
+        Action act = () => StormCalculator.Compute("2*#", []);
+
+        // assert
+        act.Should().Throw<SyntaxErrorException>();
+    }
+
+    [TestMethod]
+    public void Compute_MoreValuesThanValuePlaceholders_IgnoresExtraValues()
+    {
+        // arrange
+        // act
+        double result = StormCalculator.Compute("(#)+(#)", [1, 2, 100]);
+
+        // assert
+        result.Should().Be(3);
+    }
+
+    [TestMethod]
+    public void Compute_ValuePlaceholdersLongerThanStackBuffer_ReturnsValue()
+    {
+        // arrange
+        string expression = string.Join('+', Enumerable.Repeat("(#)", 300));
+        double[] values = [.. Enumerable.Repeat(1.5, 300)];
+
+        // act
+        double result = StormCalculator.Compute(expression, values);
+
+        // assert
+        result.Should().Be(450);
     }
 
     [TestMethod]
@@ -60,7 +191,7 @@ public sealed class StormCalculatorTests
         // act
         Parallel.ForEach(expressions, (x) =>
         {
-            results.Add(StormCalculator.Compute(x));
+            results.Add(StormCalculator.Compute(x, []));
         });
 
         // assert
@@ -74,7 +205,7 @@ public sealed class StormCalculatorTests
         string expression = "1(*a4/z)+0*100";
 
         // act
-        Action act = () => StormCalculator.Compute(expression);
+        Action act = () => StormCalculator.Compute(expression, []);
 
         // assert
         act.Should().Throw<SyntaxErrorException>();
@@ -88,8 +219,8 @@ public sealed class StormCalculatorTests
         string nested = $"{new string('(', 200)}2{new string(')', 200)}*(-3)";
 
         // act
-        double sumResult = StormCalculator.Compute(sum);
-        double nestedResult = StormCalculator.Compute(nested);
+        double sumResult = StormCalculator.Compute(sum, []);
+        double nestedResult = StormCalculator.Compute(nested, []);
 
         // assert
         sumResult.Should().Be(300);
@@ -151,7 +282,7 @@ public sealed class StormCalculatorTests
             CultureInfo.CurrentCulture = new CultureInfo("de-DE");
 
             // act
-            double result = StormCalculator.Compute("1.5*2");
+            double result = StormCalculator.Compute("1.5*2", []);
 
             // assert
             result.Should().Be(3);
@@ -160,5 +291,31 @@ public sealed class StormCalculatorTests
         {
             CultureInfo.CurrentCulture = originalCulture;
         }
+    }
+
+    // replaces each number (a run of digits and decimal points, without its sign) with a value placeholder
+    private static (string Expression, double[] Values) ToValuePlaceholders(string expression)
+    {
+        StringBuilder placeholderExpression = new();
+        List<double> values = [];
+
+        for (int i = 0; i < expression.Length; i++)
+        {
+            if (!char.IsAsciiDigit(expression[i]) && expression[i] != '.')
+            {
+                placeholderExpression.Append(expression[i]);
+                continue;
+            }
+
+            int start = i;
+
+            while (i + 1 < expression.Length && (char.IsAsciiDigit(expression[i + 1]) || expression[i + 1] == '.'))
+                i++;
+
+            values.Add(double.Parse(expression.AsSpan(start, i - start + 1), NumberStyles.Float, CultureInfo.InvariantCulture));
+            placeholderExpression.Append(StormCalculator.ValuePlaceholder);
+        }
+
+        return (placeholderExpression.ToString(), [.. values]);
     }
 }

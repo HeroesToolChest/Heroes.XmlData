@@ -94,6 +94,82 @@ public class DataRefAttributeParserTests
     }
 
     [TestMethod]
+    [DataRow(0.1234567, 0.123457)]
+    [DataRow(0.0000004, 0)]
+    [DataRow(2.5000005, 2.5)] // midpoint rounds to even
+    [DataRow(-0.0000001, 0)]
+    public void CalculateExpression_ValueHasMoreThanSixDecimals_IsRoundedToSixDecimals(double value, double expected)
+    {
+        // arrange
+        List<TextSectionItem> dataRefParts = [new TextSectionItem(new ValueScale(value))];
+
+        // act
+        ValueScale result = DataRefAttributeParser.CalculateExpression(string.Empty, dataRefParts);
+
+        // assert
+        result.Value.Should().Be(expected);
+        double.IsNegative(result.Value).Should().BeFalse();
+    }
+
+    [TestMethod]
+    public void CalculateExpression_NegativeValueWithScaling_ReturnsScaling()
+    {
+        // arrange
+        string dRef = "a-b";
+        List<TextSectionItem> dataRefParts =
+        [
+            new TextSectionItem(new ValueScale(-20, 0.05)),
+            new TextSectionItem(new Range(1, 2)), // -
+            new TextSectionItem(new ValueScale(-30)),
+        ];
+
+        // act
+        ValueScale result = DataRefAttributeParser.CalculateExpression(dRef, dataRefParts);
+
+        // assert
+        result.Value.Should().Be(10); // -20 - -30
+        result.Scaling.Should().BeApproximately(-0.1, 0.000001); // (-21 - -30) / 10 - 1
+    }
+
+    [TestMethod]
+    public void CalculateExpression_ValuesWithScalingLongerThanStackBuffer_ReturnsValueAndScaling()
+    {
+        // arrange
+        // 200 values with scaling and 199 operators is 1,598 characters and 400 values with the scaling, both past the stack buffer
+        string dRef = string.Join('+', Enumerable.Repeat("a", 200));
+        List<TextSectionItem> dataRefParts = [];
+
+        for (int i = 0; i < 200; i++)
+        {
+            if (i > 0)
+                dataRefParts.Add(new TextSectionItem(new Range((i * 2) - 1, i * 2))); // +
+
+            dataRefParts.Add(new TextSectionItem(new ValueScale(2, 0.04)));
+        }
+
+        // act
+        ValueScale result = DataRefAttributeParser.CalculateExpression(dRef, dataRefParts);
+
+        // assert
+        result.Value.Should().Be(400);
+        result.Scaling.Should().BeApproximately(0.04, 0.000001);
+    }
+
+    [TestMethod]
+    public void Parse_ExpressionLongerThanStackBuffer_ComputesValue()
+    {
+        // arrange
+        DataRefAttributeParser parser = CreateParser();
+        string dRef = string.Join('+', Enumerable.Repeat("1", 300));
+
+        // act
+        ValueScale result = parser.Parse(dRef);
+
+        // assert
+        result.Value.Should().Be(300);
+    }
+
+    [TestMethod]
     [DataRow("5", 5)]
     [DataRow(" 5 ", 5)]
     [DataRow("-5", -5)]

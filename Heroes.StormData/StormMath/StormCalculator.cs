@@ -5,7 +5,7 @@ namespace Heroes.StormData.StormMath;
 /// <summary>
 /// The Heroes math calculator.
 /// </summary>
-public static class StormCalculator
+internal static class StormCalculator
 {
     /// <summary>
     /// Gets the maximum number of fractional digits.
@@ -24,6 +24,11 @@ public static class StormCalculator
     /// </summary>
     internal const int MaxNumberLength = 14;
 
+    /// <summary>
+    /// The character that stands for the next number in <see cref="Compute(ReadOnlySpan{char}, ReadOnlySpan{double})"/>.
+    /// </summary>
+    internal const char ValuePlaceholder = '#';
+
     // expressions up to this length keep their stacks on the stack (256 doubles is 2 KB), longer ones rent from the array pool
     private const int MaxStackAllocLength = 256;
 
@@ -33,19 +38,13 @@ public static class StormCalculator
     ];
 
     /// <summary>
-    /// Calculates the math expression.
-    /// </summary>
-    /// <param name="expression">The math expression.</param>
-    /// <returns>The calculated value of the expression.</returns>
-    public static double Compute(string expression) => Compute(expression.AsSpan());
-
-    /// <summary>
-    /// Calculates the math expression.
+    /// Calculates the math expression, where each <see cref="ValuePlaceholder"/> stands for the next number in <paramref name="values"/>, in order.
     /// </summary>
     /// <param name="expression">The character span that contains the math expression.</param>
+    /// <param name="values">The numbers for the placeholders.</param>
     /// <returns>The calculated value of the expression.</returns>
-    /// <exception cref="SyntaxErrorException">The expression contains a syntax error.</exception>
-    public static double Compute(ReadOnlySpan<char> expression)
+    /// <exception cref="SyntaxErrorException">The expression contains a syntax error, or there are more placeholders than values.</exception>
+    public static double Compute(ReadOnlySpan<char> expression, ReadOnlySpan<double> values)
     {
         int capacity = expression.Length;
 
@@ -62,7 +61,7 @@ public static class StormCalculator
 
         try
         {
-            Evaluator evaluator = new(valuesBuffer, operatorsBuffer);
+            Evaluator evaluator = new(valuesBuffer, operatorsBuffer, values);
 
             return Math.Round(evaluator.Calculate(expression), MaxFractionalDigits, MaxFractionalMidpointRoundingMode);
         }
@@ -210,13 +209,18 @@ public static class StormCalculator
 
     private ref struct Evaluator
     {
+        private readonly ReadOnlySpan<double> _placeholderValues;
+
         private SpanStack<double> _values;
         private SpanStack<char> _operators;
+        private int _placeholderValueIndex;
 
-        public Evaluator(Span<double> valuesBuffer, Span<char> operatorsBuffer)
+        public Evaluator(Span<double> valuesBuffer, Span<char> operatorsBuffer, ReadOnlySpan<double> placeholderValues)
         {
             _values = new SpanStack<double>(valuesBuffer);
             _operators = new SpanStack<char>(operatorsBuffer);
+            _placeholderValues = placeholderValues;
+            _placeholderValueIndex = 0;
         }
 
         /* Only parentheses have precedence
@@ -237,11 +241,11 @@ public static class StormCalculator
                     continue;
 
                 // check if digit
-                if (IsDigit(token) || token == '.')
+                if (IsDigit(token) || token == '.' || IsValuePlaceholder(token))
                 {
                     GetNumber(tokens, ref i, false);
                 }
-                else if (token == '-' && !IsOperator(lastReadToken) && lastReadToken != ')' && !IsDigit(lastReadToken) && i + 1 < tokens.Length && IsDigit(tokens[i + 1])) // negative number check
+                else if (token == '-' && !IsOperator(lastReadToken) && lastReadToken != ')' && !IsNumberStart(lastReadToken) && i + 1 < tokens.Length && IsNumberStart(tokens[i + 1])) // negative number check
                 {
                     if (_operators.Count > 0 && _operators.Peek() != '(' && _values.Count < 1) // no values, then its a negative number
                     {
@@ -343,12 +347,29 @@ public static class StormCalculator
             return _values.Pop();
         }
 
+        private static bool IsValuePlaceholder(char token) => token == ValuePlaceholder;
+
+        // a digit or a placeholder, which works the same as a number
+        private static bool IsNumberStart(char token) => IsDigit(token) || IsValuePlaceholder(token);
+
         private void GetNumber(ReadOnlySpan<char> tokens, ref int i, bool isNegative)
         {
             int beginning = i;
 
             if (isNegative)
                 i++; // negative sign
+
+            // the placeholder is the whole number, so i is already on its last character
+            if (IsValuePlaceholder(tokens[i]))
+            {
+                if (_placeholderValueIndex >= _placeholderValues.Length)
+                    throw new InvalidOperationException("There are more value placeholders than values.");
+
+                double value = _placeholderValues[_placeholderValueIndex++];
+
+                _values.Push(isNegative ? -value : value);
+                return;
+            }
 
             bool hasDecimal = false;
 

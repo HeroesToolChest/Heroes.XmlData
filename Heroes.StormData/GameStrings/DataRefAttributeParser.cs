@@ -4,6 +4,8 @@ namespace Heroes.StormData.GameStrings;
 
 internal sealed class DataRefAttributeParser
 {
+    private const int MaxStackAllocLength = 256;
+
     private static readonly SearchValues<char> _gameStringOps = SearchValues.Create("+-*/()");
     private static readonly SearchValues<char> _catalogReferenceSplitters = SearchValues.Create(",.");
 
@@ -54,21 +56,68 @@ internal sealed class DataRefAttributeParser
 
     internal static ValueScale CalculateExpression(ReadOnlySpan<char> dRefSpan, List<TextSectionItem> dataRefParts)
     {
-        var (size, sizeScaling) = GetSizeOfBuffer(dRefSpan, dataRefParts);
+        ReadOnlySpan<TextSectionItem> parts = CollectionsMarshal.AsSpan(dataRefParts);
 
-        double expressionValue = ComputeExpression(dRefSpan, size, dataRefParts, false);
+        int textLength = 0;
+        int valueCount = 0;
+        int scalingCount = 0;
 
-        // there is scaling only if the sizeScaling is larger and the expression value is not 0, since a base value of 0 has no scaling ratio
-        if (sizeScaling > size && expressionValue != 0)
+        foreach (ref readonly TextSectionItem item in parts)
         {
-            double expressionWithScalingValue = ComputeExpression(dRefSpan, sizeScaling, dataRefParts, true);
-            double scalingValue = (expressionWithScalingValue / expressionValue) - 1;
+            if (item.Type == TextSectionType.Text)
+            {
+                textLength += dRefSpan[item.Range].Length;
+            }
+            else if (item.Type == TextSectionType.Value)
+            {
+                valueCount++;
 
-            if (scalingValue != 0 && double.IsFinite(scalingValue))
-                return new ValueScale(expressionValue, scalingValue);
+                if (item.ValueScale.Scaling.HasValue)
+                    scalingCount++;
+            }
         }
 
-        return new ValueScale(expressionValue);
+        // the buffers are sized for the expression with scaling, the larger of the two
+        // a value is written as (#) or (#*#) with its scaling multiplier
+        // # is the placeholder character
+        int expressionLength = textLength + (valueCount * 3) + (scalingCount * 2);
+        int valuesLength = valueCount + scalingCount;
+
+        char[]? rentedExpression = null;
+        double[]? rentedValues = null;
+
+        Span<char> expressionBuffer = expressionLength <= MaxStackAllocLength
+            ? stackalloc char[expressionLength]
+            : (rentedExpression = ArrayPool<char>.Shared.Rent(expressionLength));
+
+        Span<double> valuesBuffer = valuesLength <= MaxStackAllocLength
+            ? stackalloc double[valuesLength]
+            : (rentedValues = ArrayPool<double>.Shared.Rent(valuesLength));
+
+        try
+        {
+            double expressionValue = ComputeExpression(dRefSpan, parts, expressionBuffer, valuesBuffer, false);
+
+            // a base value of 0 has no scaling ratio
+            if (scalingCount > 0 && expressionValue != 0)
+            {
+                double expressionWithScalingValue = ComputeExpression(dRefSpan, parts, expressionBuffer, valuesBuffer, true);
+                double scalingValue = (expressionWithScalingValue / expressionValue) - 1;
+
+                if (scalingValue != 0 && double.IsFinite(scalingValue))
+                    return new ValueScale(expressionValue, scalingValue);
+            }
+
+            return new ValueScale(expressionValue);
+        }
+        finally
+        {
+            if (rentedExpression is not null)
+                ArrayPool<char>.Shared.Return(rentedExpression);
+
+            if (rentedValues is not null)
+                ArrayPool<double>.Shared.Return(rentedValues);
+        }
     }
 
     private static ReadOnlySpan<char> GetCatalogReference(ReadOnlySpan<char> text)
@@ -90,76 +139,47 @@ internal sealed class DataRefAttributeParser
             return text;
     }
 
-    private static (int Size, int SizeScaling) GetSizeOfBuffer(ReadOnlySpan<char> dRefSpan, List<TextSectionItem> dataRefParts)
+    // builds the expression with a placeholder for each number, and the numbers in the order they appear, so they don't have to be written as text and read back
+    private static double ComputeExpression(ReadOnlySpan<char> dRefSpan, ReadOnlySpan<TextSectionItem> parts, Span<char> expressionBuffer, Span<double> valuesBuffer, bool includeScaling)
     {
-        int size = 0;
-        int scalingSize = 0;
+        int expressionLength = 0;
+        int valueCount = 0;
 
-        foreach (ref readonly TextSectionItem item in CollectionsMarshal.AsSpan(dataRefParts))
+        foreach (ref readonly TextSectionItem item in parts)
         {
             if (item.Type == TextSectionType.Text)
             {
-                size += dRefSpan[item.Range].Length;
+                ReadOnlySpan<char> itemText = dRefSpan[item.Range];
+
+                itemText.CopyTo(expressionBuffer[expressionLength..]);
+                expressionLength += itemText.Length;
             }
             else if (item.Type == TextSectionType.Value)
             {
-                size += item.ValueScale.TotalValueDigits() + 2; // +2 for ()
+                ValueScale valueScale = item.ValueScale;
 
-                // measure the multiplier, since that's what gets written, not the scaling itself
-                if (item.ValueScale.Scaling.HasValue)
-                    scalingSize += MathHelpers.GetCountOfDigits(GetScalingMultiplier(item.ValueScale.Scaling.Value)) + 1; // +1 for '*'
+                // this value needs to be wrapped in parenthesis.
+                // the numbers are normalized the same way as when they were written as text
+                expressionBuffer[expressionLength++] = '(';
+                expressionBuffer[expressionLength++] = StormCalculator.ValuePlaceholder;
+                valuesBuffer[valueCount++] = MathHelpers.Normalize(valueScale.Value);
+
+                if (includeScaling && valueScale.Scaling.HasValue)
+                {
+                    expressionBuffer[expressionLength++] = '*';
+                    expressionBuffer[expressionLength++] = StormCalculator.ValuePlaceholder;
+                    valuesBuffer[valueCount++] = MathHelpers.Normalize(GetScalingMultiplier(valueScale.Scaling.Value));
+                }
+
+                expressionBuffer[expressionLength++] = ')';
             }
         }
 
-        return (size, size + scalingSize);
-    }
-
-    private static void FillExpressionBuffer(in TextSectionItem item, ReadOnlySpan<char> dRefSpan, Span<char> destination, bool includeScaling, ref int currentOffset)
-    {
-        if (item.Type == TextSectionType.Text)
-        {
-            ReadOnlySpan<char> itemText = dRefSpan[item.Range];
-
-            itemText.CopyTo(destination[currentOffset..]);
-            currentOffset += itemText.Length;
-        }
-        else if (item.Type == TextSectionType.Value)
-        {
-            ValueScale valueScale = item.ValueScale;
-
-            // this value needs to be wrapped in parenthesis
-            destination[currentOffset++] = '(';
-
-            MathHelpers.WriteNumber(valueScale.Value, destination, ref currentOffset);
-
-            if (includeScaling && valueScale.Scaling.HasValue)
-            {
-                destination[currentOffset++] = '*';
-
-                MathHelpers.WriteNumber(GetScalingMultiplier(valueScale.Scaling.Value), destination, ref currentOffset);
-            }
-
-            destination[currentOffset++] = ')';
-        }
+        return StormCalculator.Compute(expressionBuffer[..expressionLength], valuesBuffer[..valueCount]);
     }
 
     // the value is multiplied by this to apply its scaling, e.g. a scaling of 0.04 is * 1.04
     private static double GetScalingMultiplier(double scaling) => scaling + 1;
-
-    private static double ComputeExpression(ReadOnlySpan<char> dRefSpan, int bufferSize, List<TextSectionItem> dataRefParts, bool addScaling)
-    {
-        int currentOffset = 0;
-
-        // buffer for the parsed expression
-        Span<char> buffer = stackalloc char[bufferSize];
-
-        foreach (ref readonly TextSectionItem item in CollectionsMarshal.AsSpan(dataRefParts))
-        {
-            FillExpressionBuffer(in item, dRefSpan, buffer, addScaling, ref currentOffset);
-        }
-
-        return StormCalculator.Compute(buffer[..currentOffset]);
-    }
 
     private ValueScale ParseBracketDRef(ReadOnlySpan<char> text)
     {
