@@ -17,10 +17,6 @@ internal sealed class GameStringParser
     /// <returns>The parsed text.</returns>
     public string ParseText(ReadOnlySpan<char> text, StormLocale stormLocale)
     {
-        TextParser textParser = new(_dataTagParser, text, StormLocaleCulture.GetCultureInfo(stormLocale));
-        List<TextSectionItem> textStack = [];
-
-        textParser.ConstructTextStack(textStack);
-        return textParser.BuildDescription(textStack);
+        return new TextParser(_dataTagParser, text, StormLocaleCulture.GetCultureInfo(stormLocale)).Parse();
     }
 }

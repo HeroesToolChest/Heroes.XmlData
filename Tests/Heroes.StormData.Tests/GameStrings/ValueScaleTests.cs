@@ -9,15 +9,9 @@ public sealed class ValueScaleTests
         // arrange
         ValueScale scale = default;
 
-        // act
-        int valueDigits = scale.TotalValueDigits();
-        int scalingDigits = scale.TotalScalingDigits();
-
         // assert
         scale.Value.Should().Be(0);
         scale.Scaling.Should().BeNull();
-        valueDigits.Should().Be(1);
-        scalingDigits.Should().Be(0);
     }
 
     [TestMethod]
@@ -142,37 +136,6 @@ public sealed class ValueScaleTests
     }
 
     [TestMethod]
-    [DataRow(0.0, 1)]
-    [DataRow(-0.0, 1)] // normalized to 0
-    [DataRow(5.0, 1)]
-    [DataRow(10.0, 2)]
-    [DataRow(12345.0, 5)]
-    [DataRow(999_999.0, 6)]
-    [DataRow(-999_999.0, 7)]
-    [DataRow(-5.0, 2)]
-    [DataRow(-100.0, 4)]
-    [DataRow(0.5, 3)]
-    [DataRow(0.25, 4)]
-    [DataRow(0.125, 5)]
-    [DataRow(1.5, 3)]
-    [DataRow(-1.5, 4)]
-    [DataRow(-0.5, 4)]
-    [DataRow(3.14, 4)]
-    [DataRow(123.5, 5)]
-    [DataRow(0.123456789, 8)] // rounded to 6 decimal places
-    public void TotalValueDigits_ReturnsExpectedCount(double value, int expected)
-    {
-        // arrange
-        ValueScale scale = new(value);
-
-        // act
-        int result = scale.TotalValueDigits();
-
-        // assert
-        result.Should().Be(expected);
-    }
-
-    [TestMethod]
     public void Constructor_NegativeZero_NormalizesToPositiveZero()
     {
         // arrange
@@ -182,81 +145,5 @@ public sealed class ValueScaleTests
         // assert
         double.IsNegative(scale.Value).Should().BeFalse();
         double.IsNegative(scale.Scaling!.Value).Should().BeFalse();
-    }
-
-    [TestMethod]
-    public void TotalValueDigits_ValueAboveMax_CountsClampedValue()
-    {
-        // arrange
-        ValueScale scale = new(1_000_000_000_000.0);
-
-        // act
-        int result = scale.TotalValueDigits();
-
-        // assert
-        result.Should().Be(6);
-    }
-
-    [TestMethod]
-    public void TotalScalingDigits_NoScaling_ReturnsZero()
-    {
-        // arrange
-        ValueScale scale = new(123.5);
-
-        // act
-        int result = scale.TotalScalingDigits();
-
-        // assert
-        result.Should().Be(0);
-    }
-
-    [TestMethod]
-    public void TotalScalingDigits_ZeroScaling_ReturnsOne()
-    {
-        // arrange
-        ValueScale scale = new(123.5, 0);
-
-        // act
-        int result = scale.TotalScalingDigits();
-
-        // assert
-        result.Should().Be(1);
-    }
-
-    [TestMethod]
-    [DataRow(0.04, 4)]
-    [DataRow(0.035, 5)]
-    [DataRow(-0.04, 5)]
-    [DataRow(0.5, 3)]
-    [DataRow(0.125, 5)]
-    [DataRow(-0.5, 4)]
-    [DataRow(0.999999, 8)]
-    [DataRow(5.0, 8)] // clamped to 0.999999
-    [DataRow(-5.0, 9)] // clamped to -0.999999
-    public void TotalScalingDigits_ReturnsExpectedCount(double scaling, int expected)
-    {
-        // arrange
-        ValueScale scale = new(1, scaling);
-
-        // act
-        int result = scale.TotalScalingDigits();
-
-        // assert
-        result.Should().Be(expected);
-    }
-
-    [TestMethod]
-    public void TotalValueDigits_And_TotalScalingDigits_AreIndependent()
-    {
-        // arrange
-        ValueScale scale = new(1234, 0.5);
-
-        // act
-        int valueDigits = scale.TotalValueDigits();
-        int scalingDigits = scale.TotalScalingDigits();
-
-        // assert
-        valueDigits.Should().Be(4);
-        scalingDigits.Should().Be(3);
     }
 }

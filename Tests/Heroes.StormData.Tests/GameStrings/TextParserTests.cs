@@ -1,67 +1,64 @@
+using System.Runtime.CompilerServices;
+
 namespace Heroes.StormData.GameStrings.Tests;
 
 [TestClass]
 public sealed class TextParserTests
 {
-    private const string Text = "Deal X damage";
-
     [TestMethod]
-    public void BuildDescription_ValueHasScaling_WritesValueAndScaling()
+    public void AppendValue_ValueHasScaling_WritesValueAndScaling()
     {
-        // arrange
-        List<TextSectionItem> textStack = CreateTextStack(new ValueScale(120, 0.04));
-
         // act
-        string result = BuildDescription(textStack);
+        string result = AppendValue(new ValueScale(120, 0.04));
 
         // assert
-        result.Should().Be("Deal 120<c val=\"#ColorGray\">~~0.04~~</c> damage");
+        result.Should().Be("120<c val=\"#ColorGray\">~~0.04~~</c>");
     }
 
     [TestMethod]
-    public void BuildDescription_ValueHasScalingAndIsPercent_WritesPercentBeforeScaling()
+    public void AppendValue_ValueHasScalingAndIsPercent_WritesPercentBeforeScaling()
     {
-        // arrange
-        List<TextSectionItem> textStack = CreateTextStack(new ValueScale(25, 0.04), isPercent: true);
-
         // act
-        string result = BuildDescription(textStack);
+        string result = AppendValue(new ValueScale(25, 0.04), isPercent: true);
 
         // assert
-        result.Should().Be("Deal 25%<c val=\"#ColorGray\">~~0.04~~</c> damage");
+        result.Should().Be("25%<c val=\"#ColorGray\">~~0.04~~</c>");
     }
 
     [TestMethod]
-    public void BuildDescription_ValueRoundedToNegativeZero_WritesZero()
+    public void AppendValue_NoScalingAndIsPercent_WritesValueOnly()
     {
-        // arrange
-        List<TextSectionItem> textStack = CreateTextStack(new ValueScale(Math.Round(-0.4), 0.04));
-
         // act
-        string result = BuildDescription(textStack);
+        string result = AppendValue(new ValueScale(25), isPercent: true);
 
         // assert
-        result.Should().Be("Deal 0<c val=\"#ColorGray\">~~0.04~~</c> damage");
+        result.Should().Be("25");
     }
 
     [TestMethod]
-    public void BuildDescription_ValueSmallEnoughForExponentNotation_WritesFixedPoint()
+    public void AppendValue_ValueRoundedToNegativeZero_WritesZero()
     {
-        // arrange
-        List<TextSectionItem> textStack = CreateTextStack(new ValueScale(0.00001));
-
         // act
-        string result = BuildDescription(textStack);
+        string result = AppendValue(new ValueScale(Math.Round(-0.4), 0.04));
 
         // assert
-        result.Should().Be("Deal 0.00001 damage");
+        result.Should().Be("0<c val=\"#ColorGray\">~~0.04~~</c>");
     }
 
     [TestMethod]
-    public void BuildDescription_CurrentCultureUsesCommaDecimalSeparator_WritesInvariantNumbers()
+    public void AppendValue_ValueSmallEnoughForExponentNotation_WritesFixedPoint()
+    {
+        // act
+        string result = AppendValue(new ValueScale(0.00001));
+
+        // assert
+        result.Should().Be("0.00001");
+    }
+
+    [TestMethod]
+    public void AppendValue_CurrentCultureUsesCommaDecimalSeparator_WritesInvariantNumbers()
     {
         // arrange
-        List<TextSectionItem> textStack = CreateTextStack(new ValueScale(1.5, 0.025));
         CultureInfo originalCulture = CultureInfo.CurrentCulture;
 
         try
@@ -69,10 +66,10 @@ public sealed class TextParserTests
             CultureInfo.CurrentCulture = new CultureInfo("de-DE");
 
             // act
-            string result = BuildDescription(textStack);
+            string result = AppendValue(new ValueScale(1.5, 0.025));
 
             // assert
-            result.Should().Be("Deal 1.5<c val=\"#ColorGray\">~~0.025~~</c> damage");
+            result.Should().Be("1.5<c val=\"#ColorGray\">~~0.025~~</c>");
         }
         finally
         {
@@ -80,18 +77,86 @@ public sealed class TextParserTests
         }
     }
 
-    // "Deal " + value + " damage"
-    private static List<TextSectionItem> CreateTextStack(ValueScale valueScale, bool isPercent = false) =>
-    [
-        new TextSectionItem(new Range(0, 5)),
-        new TextSectionItem(valueScale, isPercent),
-        new TextSectionItem(new Range(6, Text.Length)),
-    ];
-
-    private static string BuildDescription(List<TextSectionItem> textStack)
+    [TestMethod]
+    public void Parse_NoDataTags_ReturnsTextUnchanged()
     {
-        TextParser textParser = new(new DataTagParser(new LayeredDataStorage()), Text, CultureInfo.InvariantCulture);
+        // arrange
+        string text = "Deal <c val=\"#TooltipNumbers\">50</c> damage.<n/>";
 
-        return textParser.BuildDescription(textStack);
+        // act
+        string result = Parse(text);
+
+        // assert
+        result.Should().Be(text);
+    }
+
+    [TestMethod]
+    public void Parse_HasDataTag_ReplacesTagWithValue()
+    {
+        // act
+        string result = Parse("Deal <d ref=\"120\"/> damage");
+
+        // assert
+        result.Should().Be("Deal 120 damage");
+    }
+
+    [TestMethod]
+    public void Parse_PercentAfterValueWithNoScaling_KeepsPercent()
+    {
+        // act
+        string result = Parse("Deal <d ref=\"20\"/>% more damage");
+
+        // assert
+        result.Should().Be("Deal 20% more damage");
+    }
+
+    [TestMethod]
+    public void Parse_DataTagIsNotClosed_DropsTheRestOfTheText()
+    {
+        // act
+        string result = Parse("Deal <d ref=\"120\" damage");
+
+        // assert
+        result.Should().Be("Deal ");
+    }
+
+    [TestMethod]
+    public void Parse_DataTagIsNotClosedBeforeTheNextTag_DropsItUpToTheNextTag()
+    {
+        // act
+        string result = Parse("Deal <d ref=\"120\" <c val=\"#TooltipNumbers\"><d ref=\"5\"/></c> damage");
+
+        // assert
+        result.Should().Be("Deal <c val=\"#TooltipNumbers\">5</c> damage");
+    }
+
+    [TestMethod]
+    public void Parse_TextLongerThanTheStackBuffer_ReturnsWholeText()
+    {
+        // arrange
+        string part = "Deal <c val=\"#TooltipNumbers\"><d ref=\"120\"/></c> damage. ";
+        string expectedPart = "Deal <c val=\"#TooltipNumbers\">120</c> damage. ";
+
+        string text = string.Concat(Enumerable.Repeat(part, 40));
+
+        // act
+        string result = Parse(text);
+
+        // assert
+        result.Should().Be(string.Concat(Enumerable.Repeat(expectedPart, 40)));
+    }
+
+    private static string AppendValue(ValueScale valueScale, bool isPercent = false)
+    {
+        DefaultInterpolatedStringHandler builder = new(0, 0, CultureInfo.InvariantCulture);
+
+        TextParser.AppendValue(ref builder, valueScale, isPercent);
+
+        return builder.ToStringAndClear();
+    }
+
+    private static string Parse(string text)
+    {
+        return new TextParser(new DataTagParser(new LayeredDataStorage()), text, CultureInfo.InvariantCulture).Parse();
     }
 }

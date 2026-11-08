@@ -28,29 +28,6 @@ internal readonly struct ValueScale
 
     public double? Scaling { get; }
 
-    /// <summary>
-    /// Gets the total number of digits of <see cref="Value"/>. Includes the negative sign and fractional digits.
-    /// </summary>
-    /// <param name="formatProvider">The culture the value is written in. Defaults to <see cref="CultureInfo.InvariantCulture"/>.</param>
-    /// <returns>The total number of digits.</returns>
-    public int TotalValueDigits(IFormatProvider? formatProvider = null)
-    {
-        return MathHelpers.GetCountOfDigits(Value, formatProvider);
-    }
-
-    /// <summary>
-    /// Gets the total number of digits of <see cref="Scaling"/>. Includes the negative sign and fractional digits.
-    /// </summary>
-    /// <param name="formatProvider">The culture the scaling is written in. Defaults to <see cref="CultureInfo.InvariantCulture"/>.</param>
-    /// <returns>The total number of digits.</returns>
-    public int TotalScalingDigits(IFormatProvider? formatProvider = null)
-    {
-        if (Scaling is null)
-            return 0;
-
-        return MathHelpers.GetCountOfDigits(Scaling.Value, formatProvider);
-    }
-
     private static double ClampValue(double value) => NormalizeZero(Math.Clamp(value, -MaxValueSize, MaxValueSize));
 
     private static double ClampScaling(double scaling) => NormalizeZero(Math.Clamp(scaling, -MaxScalingSize, MaxScalingSize));

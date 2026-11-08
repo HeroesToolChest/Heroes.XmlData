@@ -8,11 +8,10 @@ internal readonly struct TextSectionItem
         Range = range;
     }
 
-    public TextSectionItem(ValueScale valueScale, bool isPercent = false)
+    public TextSectionItem(ValueScale valueScale)
     {
         Type = TextSectionType.Value;
         ValueScale = valueScale;
-        IsPercent = isPercent;
     }
 
     public TextSectionType Type { get; }
@@ -20,6 +19,4 @@ internal readonly struct TextSectionItem
     public Range Range { get; }
 
     public ValueScale ValueScale { get; }
-
-    public bool IsPercent { get; }
 }

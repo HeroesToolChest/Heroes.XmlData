@@ -1,192 +1,118 @@
-﻿using System.Runtime.InteropServices;
+﻿using System.Runtime.CompilerServices;
 
 namespace Heroes.StormData.GameStrings;
 
-internal ref struct TextParser
+/// <summary>
+/// Replaces the data tags (&lt;d ... /&gt;) in a gamestring with their values, in one pass over the text.
+/// </summary>
+internal readonly ref struct TextParser
 {
-    private const string ScalingNumbersTag = "<c val=\"#ColorGray\">";
-    private const int ScalingNumbersTagLength = 20;
+    private const string ScalingStart = "<c val=\"#ColorGray\">~~";
+    private const string ScalingEnd = "~~</c>";
+
+    // most gamestrings fit in this, longer ones grow into a buffer rented from the array pool
+    private const int StackBufferLength = 512;
 
     private readonly DataTagParser _dataTagParser;
     private readonly ReadOnlySpan<char> _text;
 
     // the gamestring locale's format, used for the values and the scaling (~~x~~) written in the text
-    private readonly NumberFormatInfo _numberFormat;
-
-    private int _startingIndex;
-    private int _index;
+    private readonly IFormatProvider _formatProvider;
 
     public TextParser(DataTagParser dataTagParser, ReadOnlySpan<char> text, IFormatProvider formatProvider)
     {
         _dataTagParser = dataTagParser;
         _text = text;
-        _numberFormat = NumberFormatInfo.GetInstance(formatProvider);
+        _formatProvider = formatProvider;
     }
 
-    public void ConstructTextStack(List<TextSectionItem> textStack)
+    /// <summary>
+    /// Parses the text, replacing each data tag with its value and scaling.
+    /// </summary>
+    /// <returns>The parsed text.</returns>
+    public string Parse()
     {
-        _startingIndex = _index;
+        int tagStart = IndexOfDataTag(0);
 
-        while (_index < _text.Length)
+        // nothing to replace
+        if (tagStart < 0)
+            return _text.ToString();
+
+        DefaultInterpolatedStringHandler builder = new(0, 0, _formatProvider, stackalloc char[StackBufferLength]);
+        int textStart = 0;
+
+        while (tagStart >= 0)
         {
-            if (_text[_index] == '<' && _index + 2 < _text.Length && (_text[_index + 1] == 'd' || _text[_index + 1] == 'D') && _text[_index + 2] == ' ')
+            builder.AppendFormatted(_text[textStart..tagStart]);
+
+            // the tag ends at the first '>', unless another tag starts first
+            int endOffset = _text[(tagStart + 1)..].IndexOfAny('<', '>');
+            int end = endOffset < 0 ? _text.Length : tagStart + 1 + endOffset;
+
+            if (end < _text.Length && _text[end] == '>')
             {
-                PushNormalText(textStack);
+                int tagEnd = end + 1;
+                ValueScale valueScale = _dataTagParser.ParseDataTag(_text[tagStart..tagEnd]);
 
-                if (TryParseTagContents(out Range? tag))
-                {
-                    PushValueScaleFromTag(tag.Value, textStack);
-                }
+                // a % right after a scaling value goes before the scaling
+                bool isPercent = valueScale.Scaling.HasValue && tagEnd < _text.Length && _text[tagEnd] == '%';
 
-                _startingIndex = _index;
+                AppendValue(ref builder, valueScale, isPercent);
+
+                textStart = isPercent ? tagEnd + 1 : tagEnd;
             }
             else
             {
-                _index++;
+                // an unfinished tag is dropped, up to where the next tag starts or the text ends
+                textStart = end;
             }
+
+            tagStart = IndexOfDataTag(textStart);
         }
 
-        PushNormalText(textStack);
+        builder.AppendFormatted(_text[textStart..]);
+
+        return builder.ToStringAndClear();
     }
 
-    public readonly string BuildDescription(List<TextSectionItem> textStack)
+    /// <summary>
+    /// Appends <paramref name="valueScale"/> to <paramref name="builder"/>, in the builder's format, with the scaling (if any) after the value.
+    /// </summary>
+    /// <param name="builder">The builder to append to.</param>
+    /// <param name="valueScale">The value and scaling to append.</param>
+    /// <param name="isPercent">Whether a % is written between the value and its scaling. Only used if there is a scaling.</param>
+    internal static void AppendValue(ref DefaultInterpolatedStringHandler builder, ValueScale valueScale, bool isPercent)
     {
-        if (textStack.Count < 1)
-            return string.Empty;
+        MathHelpers.AppendNumber(ref builder, valueScale.Value);
 
-        int totalSize = GetSizeOfBuffer(textStack);
+        if (valueScale.Scaling is not double scaling)
+            return;
 
-        Span<char> buffer = totalSize < 1024 ? stackalloc char[totalSize] : new char[totalSize];
+        if (isPercent)
+            builder.AppendLiteral("%");
 
-        int currentOffset = 0;
-
-        // loop through and build string
-        foreach (ref readonly TextSectionItem item in CollectionsMarshal.AsSpan(textStack))
-        {
-            if (item.Type == TextSectionType.Text)
-            {
-                ReadOnlySpan<char> itemText = _text[item.Range];
-
-                itemText.CopyTo(buffer[currentOffset..]);
-                currentOffset += itemText.Length;
-            }
-            else if (item.Type == TextSectionType.Value)
-            {
-                ValueScale value = item.ValueScale;
-
-                MathHelpers.WriteNumber(value.Value, buffer, ref currentOffset, _numberFormat);
-
-                if (value.Scaling.HasValue)
-                {
-                    if (item.IsPercent)
-                    {
-                        "%".CopyTo(buffer[currentOffset..]);
-                        currentOffset += 1;
-                    }
-
-                    $"{ScalingNumbersTag}~~".CopyTo(buffer[currentOffset..]);
-                    currentOffset += ScalingNumbersTagLength + 2;
-
-                    MathHelpers.WriteNumber(value.Scaling.Value, buffer, ref currentOffset, _numberFormat);
-
-                    "~~</c>".CopyTo(buffer[currentOffset..]);
-                    currentOffset += 6;
-                }
-            }
-        }
-
-        // remove any null chars at the end
-        return buffer[..currentOffset].ToString();
+        builder.AppendLiteral(ScalingStart);
+        MathHelpers.AppendNumber(ref builder, scaling);
+        builder.AppendLiteral(ScalingEnd);
     }
 
-    private readonly int GetSizeOfBuffer(List<TextSectionItem> textStack)
+    // finds the next "<d " (or "<D "), starting at start
+    private int IndexOfDataTag(int start)
     {
-        int sum = 0;
-
-        foreach (ref readonly TextSectionItem current in CollectionsMarshal.AsSpan(textStack))
+        while (start < _text.Length)
         {
-            if (current.Type == TextSectionType.Value)
-            {
-                sum += current.ValueScale.TotalValueDigits(_numberFormat);
-                sum += current.ValueScale.TotalScalingDigits(_numberFormat) + 4; // +4 for ~~ ~~
-                sum += ScalingNumbersTagLength + 4; // +4 for close tag
+            int offset = _text[start..].IndexOf('<');
+            if (offset < 0)
+                return -1;
 
-                if (current.IsPercent)
-                    sum += 1; // for %
-            }
-            else if (current.Type == TextSectionType.Text)
-            {
-                sum += current.Range.End.Value - current.Range.Start.Value;
-            }
+            int index = start + offset;
+
+            if (index + 2 < _text.Length && (_text[index + 1] == 'd' || _text[index + 1] == 'D') && _text[index + 2] == ' ')
+                return index;
+
+            start = index + 1;
         }
 
-        return sum;
-    }
-
-    private readonly void PushNormalText(List<TextSectionItem> textStack)
-    {
-        int normalTextLength = _index - _startingIndex;
-        if (normalTextLength > 0)
-        {
-#if DEBUG
-            ReadOnlySpan<char> temp = _text.Slice(_startingIndex, normalTextLength);
-#endif
-            textStack.Add(new TextSectionItem(new Range(_startingIndex, _index)));
-        }
-    }
-
-    private bool TryParseTagContents([NotNullWhen(true)] out Range? tag)
-    {
-        tag = null;
-
-        ReadOnlySpan<char> currentTextSpan = _text[_index..];
-        int lengthOffset = _text.Length - currentTextSpan.Length;
-
-        int startTagIndex = 0; // index of <
-        int endTagIndex = -1;
-
-        for (int i = 1; i < currentTextSpan.Length; i++)
-        {
-            if (currentTextSpan[i] == '>')
-            {
-                endTagIndex = i;
-                break;
-            }
-            else if (currentTextSpan[i] == '<')
-            {
-                startTagIndex = i;
-                break;
-            }
-        }
-
-        if (endTagIndex > 0)
-        {
-            tag = new Range(startTagIndex + lengthOffset, endTagIndex + lengthOffset + 1);
-
-            _index += endTagIndex - startTagIndex + 1;
-
-            return true;
-        }
-
-        _index += startTagIndex;
-
-        return false;
-    }
-
-    private void PushValueScaleFromTag(Range tag, List<TextSectionItem> textStack)
-    {
-        ReadOnlySpan<char> span = _text[tag];
-
-        ValueScale valueScale = _dataTagParser.ParseDataTag(span);
-
-        if (valueScale.Scaling.HasValue && _index < _text.Length && _text[_index] == '%')
-        {
-            textStack.Add(new TextSectionItem(valueScale, true));
-            _index++;
-        }
-        else
-        {
-            textStack.Add(new TextSectionItem(valueScale));
-        }
+        return -1;
     }
 }

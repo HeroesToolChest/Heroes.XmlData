@@ -1,4 +1,6 @@
-﻿namespace Heroes.StormData.StormMath.Tests;
+﻿using System.Runtime.CompilerServices;
+
+namespace Heroes.StormData.StormMath.Tests;
 
 [TestClass]
 public sealed class MathHelpersTests
@@ -36,95 +38,27 @@ public sealed class MathHelpersTests
     [DataRow(0.000001, "0.000001")]
     [DataRow(0.000000001, "0")] // past 6 decimal places
     [DataRow(double.NaN, "NaN")]
-    public void WriteNumber_HasNumber_WritesNumberAndCountMatches(double number, string expected)
+    public void AppendNumber_HasNumber_AppendsNumber(double number, string expected)
     {
-        // arrange
-        Span<char> buffer = stackalloc char[64];
-        int offset = 0;
-
         // act
-        MathHelpers.WriteNumber(number, buffer, ref offset);
-        int count = MathHelpers.GetCountOfDigits(number);
+        string result = AppendNumber(number, CultureInfo.InvariantCulture);
 
         // assert
-        buffer[..offset].ToString().Should().Be(expected);
-        count.Should().Be(expected.Length);
+        result.Should().Be(expected);
     }
 
     [TestMethod]
-    public void GetCountOfDigits_NumbersOfAnyMagnitude_AreAtMostFourteenCharacters()
+    public void AppendNumber_BuilderHasText_AppendsAfterText()
     {
         // arrange
-        Random random = new(1);
-        List<double> numbers = [.. Enumerable.Range(0, 100_000).Select(_ => (random.NextDouble() - 0.5) * Math.Pow(10, random.Next(-20, 21)))];
+        DefaultInterpolatedStringHandler builder = new(0, 0, CultureInfo.InvariantCulture);
+        builder.AppendLiteral("ab");
 
         // act
-        List<int> counts = [.. numbers.Select(number => MathHelpers.GetCountOfDigits(number))];
+        MathHelpers.AppendNumber(ref builder, 1.5);
 
         // assert
-        counts.Should().OnlyContain(x => x <= 14);
-    }
-
-    [TestMethod]
-    public void WriteNumber_CurrentCultureHasDifferentSigns_WritesInvariantNumber()
-    {
-        // arrange
-        CultureInfo culture = (CultureInfo)CultureInfo.InvariantCulture.Clone();
-        culture.NumberFormat.NegativeSign = "--";
-        culture.NumberFormat.NumberDecimalSeparator = ",";
-
-        CultureInfo originalCulture = CultureInfo.CurrentCulture;
-        char[] buffer = new char[16];
-        int offset = 0;
-
-        try
-        {
-            CultureInfo.CurrentCulture = culture;
-
-            // act
-            MathHelpers.WriteNumber(-1.5, buffer, ref offset);
-            int count = MathHelpers.GetCountOfDigits(-1.5);
-
-            // assert
-            new string(buffer, 0, offset).Should().Be("-1.5");
-            count.Should().Be(4);
-        }
-        finally
-        {
-            CultureInfo.CurrentCulture = originalCulture;
-        }
-    }
-
-    [TestMethod]
-    public void WriteNumber_HasOffset_WritesAtOffsetAndMovesOffsetPastNumber()
-    {
-        // arrange
-        char[] buffer = "ab______".ToCharArray();
-        int offset = 2;
-
-        // act
-        MathHelpers.WriteNumber(1.5, buffer, ref offset);
-
-        // assert
-        new string(buffer).Should().Be("ab1.5___");
-        offset.Should().Be(5);
-    }
-
-    [TestMethod]
-    public void WriteNumber_DestinationTooSmall_ThrowsArgumentException()
-    {
-        // arrange
-        char[] buffer = new char[3];
-
-        // act
-        Action act = () =>
-        {
-            int offset = 0;
-            MathHelpers.WriteNumber(123.5, buffer, ref offset);
-        };
-
-        // assert
-        act.Should().Throw<ArgumentException>();
+        builder.ToStringAndClear().Should().Be("ab1.5");
     }
 
     [TestMethod]
@@ -132,41 +66,38 @@ public sealed class MathHelpersTests
     [DataRow("fr-FR", 2.25, "2,25")]
     [DataRow("en-US", -1.5, "-1.5")]
     [DataRow("de-DE", 120, "120")]
-    public void WriteNumber_HasFormatProvider_WritesInCultureAndCountMatches(string cultureName, double number, string expected)
+    public void AppendNumber_BuilderHasCulture_AppendsInCulture(string cultureName, double number, string expected)
     {
-        // arrange
-        CultureInfo culture = CultureInfo.GetCultureInfo(cultureName);
-        char[] buffer = new char[32];
-        int offset = 0;
-
         // act
-        MathHelpers.WriteNumber(number, buffer, ref offset, culture);
-        int count = MathHelpers.GetCountOfDigits(number, culture);
+        string result = AppendNumber(number, CultureInfo.GetCultureInfo(cultureName));
 
         // assert
-        new string(buffer, 0, offset).Should().Be(expected);
-        count.Should().Be(expected.Length);
+        result.Should().Be(expected);
     }
 
     [TestMethod]
     [DataRow(-5, "--5")]
     [DataRow(-999998.123456, "--999998,,123456")]
-    public void WriteNumber_FormatProviderHasMultiCharSigns_CountMatches(double number, string expected)
+    public void AppendNumber_CultureHasMultiCharSigns_AppendsSigns(double number, string expected)
     {
         // arrange
         CultureInfo culture = (CultureInfo)CultureInfo.InvariantCulture.Clone();
         culture.NumberFormat.NegativeSign = "--";
         culture.NumberFormat.NumberDecimalSeparator = ",,";
 
-        char[] buffer = new char[32];
-        int offset = 0;
-
         // act
-        MathHelpers.WriteNumber(number, buffer, ref offset, culture);
-        int count = MathHelpers.GetCountOfDigits(number, culture);
+        string result = AppendNumber(number, culture);
 
         // assert
-        new string(buffer, 0, offset).Should().Be(expected);
-        count.Should().Be(expected.Length);
+        result.Should().Be(expected);
+    }
+
+    private static string AppendNumber(double number, IFormatProvider formatProvider)
+    {
+        DefaultInterpolatedStringHandler builder = new(0, 0, formatProvider);
+
+        MathHelpers.AppendNumber(ref builder, number);
+
+        return builder.ToStringAndClear();
     }
 }

@@ -1,78 +1,29 @@
-﻿namespace Heroes.StormData.StormMath;
+﻿using System.Runtime.CompilerServices;
+
+namespace Heroes.StormData.StormMath;
 
 internal static class MathHelpers
 {
     /// <summary>
-    /// The format numbers are written in, in gamestrings and in math expressions. It is fixed-point, so never exponent notation,
+    /// The format numbers are written in, in gamestrings. It is fixed-point, so never exponent notation,
     /// with up to 6 decimal places (<see cref="StormCalculator.MaxFractionalDigits"/>) and trailing zeros dropped.
     /// Rounding to 6 decimal places also drops floating-point noise.
     /// </summary>
     public const string NumberFormat = "0.######";
 
     /// <summary>
-    /// Gets the number of characters <see cref="WriteNumber"/> writes for <paramref name="number"/>.
-    /// Includes the negative sign, decimal point, and fractional digits.
+    /// Appends <paramref name="number"/> in <see cref="NumberFormat"/> to <paramref name="builder"/>, in the culture the builder was created with.
+    /// The number is first normalized (see <see cref="Normalize"/>).
     /// </summary>
-    /// <param name="number">The number to evaluate.</param>
-    /// <param name="formatProvider">The culture the number is written in. Defaults to <see cref="CultureInfo.InvariantCulture"/>.</param>
-    /// <returns>The number of characters. At most 14 for the invariant culture.</returns>
-    public static int GetCountOfDigits(double number, IFormatProvider? formatProvider = null)
+    /// <param name="builder">The builder to append to. It must be created with a culture, otherwise the current culture is used.</param>
+    /// <param name="number">The number to append.</param>
+    public static void AppendNumber(ref DefaultInterpolatedStringHandler builder, double number)
     {
-        number = Normalize(number);
-
-        NumberFormatInfo numberFormat = NumberFormatInfo.GetInstance(formatProvider ?? CultureInfo.InvariantCulture);
-
-        // fast path for whole numbers, the most common case
-        if (double.IsInteger(number))
-        {
-            uint magnitude = (uint)Math.Abs(number);
-            int count = 1;
-
-            while (magnitude >= 10)
-            {
-                magnitude /= 10;
-                count++;
-            }
-
-            if (number < 0)
-                count += numberFormat.NegativeSign.Length;
-
-            return count;
-        }
-
-        // measure by writing it, so the count always matches WriteNumber.
-        // the culture's sign and decimal separator can be longer than one char
-        Span<char> buffer = stackalloc char[StormCalculator.MaxNumberLength + numberFormat.NegativeSign.Length + numberFormat.NumberDecimalSeparator.Length];
-        int length = 0;
-
-        WriteNumber(number, buffer, ref length, numberFormat);
-
-        return length;
+        builder.AppendFormatted(Normalize(number), NumberFormat);
     }
 
     /// <summary>
-    /// Writes <paramref name="number"/> in <see cref="NumberFormat"/> into <paramref name="destination"/> at <paramref name="offset"/>,
-    /// then moves <paramref name="offset"/> past it. Numbers beyond <see cref="ValueScale.MaxValueSize"/>, either sign, are written as that limit,
-    /// and numbers are rounded to 6 decimal places.
-    /// </summary>
-    /// <param name="number">The number to write.</param>
-    /// <param name="destination">The buffer to write into.</param>
-    /// <param name="offset">The position in <paramref name="destination"/> to write at.</param>
-    /// <param name="formatProvider">
-    /// The culture the number is written in. Defaults to <see cref="CultureInfo.InvariantCulture"/>, which math expressions must use.
-    /// </param>
-    /// <exception cref="ArgumentException"><paramref name="destination"/> doesn't have room for the number.</exception>
-    public static void WriteNumber(double number, Span<char> destination, ref int offset, IFormatProvider? formatProvider = null)
-    {
-        // null would make TryFormat use the current culture
-        if (!Normalize(number).TryFormat(destination[offset..], out int charsWritten, NumberFormat, formatProvider ?? CultureInfo.InvariantCulture))
-            throw new ArgumentException("The destination is too small to hold the number.", nameof(destination));
-
-        offset += charsWritten;
-    }
-
-    /// <summary>
-    /// Gets <paramref name="number"/> as <see cref="WriteNumber"/> writes it: limited to <see cref="ValueScale.MaxValueSize"/>, either sign,
+    /// Gets <paramref name="number"/> as <see cref="AppendNumber"/> writes it: limited to <see cref="ValueScale.MaxValueSize"/>, either sign,
     /// rounded to 6 decimal places, and with -0 turned into 0.
     /// </summary>
     /// <param name="number">The number to normalize.</param>
