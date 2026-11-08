@@ -2358,6 +2358,79 @@ public sealed class GameStringParserTests
     }
 
     [TestMethod]
+    public void ParseText_ConstsWithRound_ParsedGameString()
+    {
+        // arrange
+        string text = "Basic Attacks against enemy Heroes afflicted by Shadow Mark grant a <c val=\"#TooltipNumbers\"><d ref=\"Behavior,XalatathMarkedResilienceShield,DamageResponse.ModifyLimit*Behavior,XalatathMarkedResilienceShield,MaxStackCount\"/></c> point Shield that rapidly decays.";
+
+        SourceContainer sourceContainer = new();
+        LayeredDataStorage layeredDataStorage = sourceContainer.LayeredDataStorage;
+        DataStorage dataStorage = layeredDataStorage.GetDataStorage(StormModType.Custom);
+
+        dataStorage.AddBaseClassCatalogName(CreateBaseElement("CBehaviorBuff"), "Behavior");
+
+        dataStorage.AddConstElement(XmlReaderHelper.GetStormXmlConstElement(
+            """
+            <const id="$XalatathMarkedResilienceTotalShieldDuration" value="3" />
+            """));
+        dataStorage.AddConstElement(XmlReaderHelper.GetStormXmlConstElement(
+            """
+            <const id="$XalatathMarkedResilienceShieldFullHealthDuration" value="1" />
+            """));
+        dataStorage.AddConstElement(XmlReaderHelper.GetStormXmlConstElement(
+            """
+            <const id="$XalatathMarkedResilienceShieldDecayDuration" value="-($XalatathMarkedResilienceTotalShieldDuration $XalatathMarkedResilienceShieldFullHealthDuration)" evaluateAsExpression="1" />
+            """,
+            layeredDataStorage));
+        dataStorage.AddConstElement(XmlReaderHelper.GetStormXmlConstElement(
+            """
+            <const id="$XalatathMarkedResilienceShieldTotalHealth" value="160" />
+            """));
+        dataStorage.AddConstElement(XmlReaderHelper.GetStormXmlConstElement(
+            """
+            <const id="$XalatathMarkedResilienceShieldStackCount" value="round(/($XalatathMarkedResilienceShieldTotalHealth /($XalatathMarkedResilienceShieldDecayDuration 0.0625)))" evaluateAsExpression="1" />
+            """,
+            layeredDataStorage));
+        dataStorage.AddConstElement(XmlReaderHelper.GetStormXmlConstElement(
+            """
+            <const id="$XalatathMarkedResilienceShieldHealthPerStack" value="/($XalatathMarkedResilienceShieldTotalHealth $XalatathMarkedResilienceShieldStackCount)" evaluateAsExpression="1" />
+            """,
+            layeredDataStorage));
+
+        dataStorage.AddElementWithId(
+            XmlReaderHelper.GetStormXmlElement(
+                """
+                <CBehaviorBuff id="XalatathMarkedResilienceShield">
+                  <MaxStackCount value="$XalatathMarkedResilienceShieldStackCount" />
+                  <DamageResponse ModifyLimit="$XalatathMarkedResilienceShieldHealthPerStack" />
+                </CBehaviorBuff>
+                """,
+                layeredDataStorage),
+            "Behavior");
+        dataStorage.AddLevelScalingElementValue(XmlReaderHelper.GetStormXmlElement(
+            """
+            <CHero>
+              <LevelScalingArray>
+                <Modifications>
+                  <Catalog value="Behavior" />
+                  <Entry value="XalatathMarkedResilienceShield" />
+                  <Field value="DamageResponse.ModifyLimit" />
+                  <Value value="0.040000" />
+                </Modifications>
+              </LevelScalingArray>
+            </CHero>
+            """).Members.GetMember("LevelScalingArray"));
+
+        GameStringParser parser = new(layeredDataStorage);
+
+        // act
+        string parsed = parser.ParseText(text, StormLocale.ENUS);
+
+        // assert
+        parsed.Should().Be("Basic Attacks against enemy Heroes afflicted by Shadow Mark grant a <c val=\"#TooltipNumbers\">160<c val=\"#ColorGray\">~~0.04~~</c></c> point Shield that rapidly decays.");
+    }
+
+    [TestMethod]
     [DataRow(StormLocale.ENUS, "3.75", "0.045")]
     [DataRow(StormLocale.DEDE, "3,75", "0,045")]
     [DataRow(StormLocale.FRFR, "3,75", "0,045")]
