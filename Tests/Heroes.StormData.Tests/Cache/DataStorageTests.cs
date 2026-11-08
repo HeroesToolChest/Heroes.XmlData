@@ -995,6 +995,81 @@ public class DataStorageTests
         dataStorage.ElementCache.ScalingFieldValueByIdByCatalog.Should().BeEmpty();
     }
 
+    [TestMethod]
+    public void ElementsVersion_NewDataStorage_IsZero()
+    {
+        // arrange
+        DataStorage dataStorage = new();
+
+        // act
+        int version = dataStorage.ElementsVersion;
+
+        // assert
+        version.Should().Be(0);
+    }
+
+    [TestMethod]
+    public void ElementsVersion_AddElementWithId_Changes()
+    {
+        // arrange
+        DataStorage dataStorage = new();
+
+        // act
+        dataStorage.AddElementWithId(CreateStormXmlElement("CEffectDamage", "First"), "Effect");
+        int afterFirst = dataStorage.ElementsVersion;
+        dataStorage.AddElementWithId(CreateStormXmlElement("CEffectDamage", "First"), "Effect"); // merged into the existing one
+        int afterSecond = dataStorage.ElementsVersion;
+
+        // assert
+        afterFirst.Should().NotBe(0);
+        afterSecond.Should().NotBe(afterFirst);
+    }
+
+    [TestMethod]
+    public void ElementsVersion_AddElementWithNoId_Changes()
+    {
+        // arrange
+        DataStorage dataStorage = new();
+
+        // act
+        dataStorage.AddElementWithNoId(CreateStormXmlElementWithNoId("CEffectDamage"));
+
+        // assert
+        dataStorage.ElementsVersion.Should().NotBe(0);
+    }
+
+    [TestMethod]
+    public void ElementsVersion_AddBaseClassCatalogName_Changes()
+    {
+        // arrange
+        DataStorage dataStorage = new();
+
+        // act
+        dataStorage.AddBaseClassCatalogName(CreateStormXmlElementWithNoId("CEffectDamage"), "Effect");
+
+        // assert
+        dataStorage.ElementsVersion.Should().NotBe(0);
+    }
+
+    [TestMethod]
+    public void ElementsVersion_AddConstElementOrLevelScaling_DoesNotChange()
+    {
+        // arrange
+        DataStorage dataStorage = new();
+
+        // act
+        dataStorage.AddConstElement(CreateStormXmlConstElement("$Const"));
+        dataStorage.AddLevelScalingElementValue(CreateLevelScalingArray(
+            $"""
+            <LevelScalingArray Ability="Abil">
+              {CreateModificationsXml("Effect", "Damage", "Amount", "0.04")}
+            </LevelScalingArray>
+            """));
+
+        // assert
+        dataStorage.ElementsVersion.Should().Be(0);
+    }
+
     private static StormXmlConstElement CreateStormXmlConstElement(string id, string value = "1")
     {
         return XmlReaderHelper.GetStormXmlConstElement($"""<const id="{id}" value="{value}" />""");

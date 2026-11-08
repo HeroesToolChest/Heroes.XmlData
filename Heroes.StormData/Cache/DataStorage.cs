@@ -9,6 +9,14 @@ internal sealed class DataStorage
 {
     public ElementCache ElementCache { get; } = new();
 
+    /// <summary>
+    /// Gets a number that changes whenever something that affects merged elements is added (a base class catalog name or an element).
+    /// <para>
+    /// Changes made directly to <see cref="ElementCache"/> don't change it.
+    /// </para>
+    /// </summary>
+    public int ElementsVersion { get; private set; }
+
     public void AddConstElement(StormXmlConstElement element)
     {
         ElementCache.StormXmlConstElementById.TryAdd(element.Id, element);
@@ -24,6 +32,8 @@ internal sealed class DataStorage
         elementNames.Add(element.ElementName);
 
         ElementCache.CatalogByClassElement.TryAdd(element.ElementName, catalogName);
+
+        ElementsVersion++;
     }
 
     public void AddElementWithNoId(StormXmlElement element)
@@ -34,6 +44,8 @@ internal sealed class DataStorage
             stormXmlElement = element;
         else
             stormXmlElement.Merge(element);
+
+        ElementsVersion++;
     }
 
     public void AddElementWithId(StormXmlElement element, string catalogName)
@@ -58,6 +70,8 @@ internal sealed class DataStorage
             else
                 stormXmlElement.Merge(element);
         }
+
+        ElementsVersion++;
     }
 
     public void AddLevelScalingElementValue(StormXmlArray levelScalingArray)

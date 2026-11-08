@@ -9,13 +9,11 @@ internal sealed class DataRefAttributeParser
 
     private readonly LayeredDataStorage _layeredDataStorage;
     private readonly DataTagParser _dataTagParser;
-    private readonly StormXmlElementMerger _stormXmlElementMerger;
 
     public DataRefAttributeParser(LayeredDataStorage layeredDataStorage, DataTagParser dataTagParser)
     {
         _layeredDataStorage = layeredDataStorage;
         _dataTagParser = dataTagParser;
-        _stormXmlElementMerger = new StormXmlElementMerger(layeredDataStorage);
     }
 
     // Abil,GuldanHorrify,CastIntroTime+Effect,GuldanHorrifyAbilityStartCreatePersistent,PeriodicPeriodArray[0]
@@ -193,7 +191,7 @@ internal sealed class DataRefAttributeParser
         ReadOnlySpan<char> entry = catalogReference[catalogReferencePartRanges[1]];
         ReadOnlySpan<char> field = catalogReference[catalogReferencePartRanges[2]];
 
-        StormXmlElement? mergedStormXmlElement = _stormXmlElementMerger.GetMerged(entry, catalog);
+        StormXmlElement? mergedStormXmlElement = _layeredDataStorage.GetMergedStormXmlElementById(entry, catalog);
         if (mergedStormXmlElement is not null)
             return ParseField(mergedStormXmlElement, catalog, entry, field);
 

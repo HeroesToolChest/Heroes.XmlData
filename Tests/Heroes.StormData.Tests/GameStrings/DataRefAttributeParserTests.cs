@@ -606,6 +606,113 @@ public class DataRefAttributeParserTests
         result.Value.Should().Be(400);
     }
 
+    [TestMethod]
+    public void Parse_SameCatalogReferenceParsedAgain_ReturnsSameValueAndScaling()
+    {
+        // arrange
+        LayeredDataStorage layeredDataStorage = CreateTestDamageWithScalingStorage("Amount", "0.040000");
+        DataRefAttributeParser parser = new(layeredDataStorage, new DataTagParser(layeredDataStorage));
+
+        // act
+        ValueScale first = parser.Parse("Effect,TestDamage,Amount");
+        ValueScale second = parser.Parse("Effect,TestDamage,Amount");
+
+        // assert
+        second.Value.Should().Be(first.Value).And.Be(120);
+        second.Scaling.Should().Be(first.Scaling);
+        second.Scaling.Should().BeApproximately(0.04, 0.000001);
+    }
+
+    [TestMethod]
+    public void Parse_CatalogReferenceNotFoundParsedAgain_ReturnsZero()
+    {
+        // arrange
+        DataRefAttributeParser parser = CreateParser(
+            """
+            <CEffectDamage id="TestDamage">
+              <Amount value="120" />
+            </CEffectDamage>
+            """);
+
+        // act
+        ValueScale first = parser.Parse("Effect,UnknownDamage,Amount");
+        ValueScale second = parser.Parse("Effect,UnknownDamage,Amount");
+
+        // assert
+        first.Value.Should().Be(0);
+        second.Value.Should().Be(0);
+    }
+
+    [TestMethod]
+    public void Parse_SameEntryWithDifferentFields_ReturnsEachFieldValue()
+    {
+        // arrange
+        DataRefAttributeParser parser = CreateParser(
+            """
+            <CEffectDamage default="1" id="TestDamageParent">
+              <Count value="3" />
+            </CEffectDamage>
+            """,
+            """
+            <CEffectDamage id="TestDamage" parent="TestDamageParent">
+              <Amount value="120" />
+            </CEffectDamage>
+            """);
+
+        // act
+        ValueScale amount = parser.Parse("Effect,TestDamage,Amount");
+        ValueScale count = parser.Parse("Effect,TestDamage,Count");
+
+        // assert
+        amount.Value.Should().Be(120);
+        count.Value.Should().Be(3);
+    }
+
+    [TestMethod]
+    public void Parse_EntryIsAlsoAParent_ReturnsEachEntryValue()
+    {
+        // arrange
+        DataRefAttributeParser parser = CreateParser(
+            """
+            <CEffectDamage default="1" id="TestDamageParent">
+              <Amount value="80" />
+            </CEffectDamage>
+            """,
+            """
+            <CEffectDamage id="TestDamage" parent="TestDamageParent">
+              <Amount value="120" />
+            </CEffectDamage>
+            """);
+
+        // act
+        ValueScale child = parser.Parse("Effect,TestDamage,Amount");
+        ValueScale parent = parser.Parse("Effect,TestDamageParent,Amount");
+
+        // assert
+        child.Value.Should().Be(120);
+        parent.Value.Should().Be(80);
+    }
+
+    [TestMethod]
+    public void Parse_CatalogDiffersInCase_ReturnsSameValue()
+    {
+        // arrange
+        DataRefAttributeParser parser = CreateParser(
+            """
+            <CEffectDamage id="TestDamage">
+              <Amount value="120" />
+            </CEffectDamage>
+            """);
+
+        // act
+        ValueScale lower = parser.Parse("effect,TestDamage,Amount");
+        ValueScale proper = parser.Parse("Effect,TestDamage,Amount");
+
+        // assert
+        lower.Value.Should().Be(120);
+        proper.Value.Should().Be(120);
+    }
+
     private static DataRefAttributeParser CreateParser(params string[] effectXmls)
     {
         LayeredDataStorage layeredDataStorage = new();

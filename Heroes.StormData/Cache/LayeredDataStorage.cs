@@ -17,6 +17,8 @@ internal sealed class LayeredDataStorage
     private readonly ElementCache _mapElementCache;
     private readonly ElementCache _customElementCache;
 
+    private readonly MergedStormXmlElementCache _mergedStormXmlElementCache;
+
     /// <summary>
     /// Initializes a new instance of the <see cref="LayeredDataStorage"/> class.
     /// </summary>
@@ -29,6 +31,8 @@ internal sealed class LayeredDataStorage
         _baseElementCache = _baseDataStorage.ElementCache;
         _mapElementCache = _mapDataStorage.ElementCache;
         _customElementCache = _customDataStorage.ElementCache;
+
+        _mergedStormXmlElementCache = new MergedStormXmlElementCache(new StormXmlElementMerger(this));
     }
 
     /// <summary>
@@ -159,6 +163,22 @@ internal sealed class LayeredDataStorage
     }
 
     /// <summary>
+    /// Retrieves a merged <see cref="StormXmlElement"/> by its <c>id</c> from the specified catalog name.
+    /// The element is merged from the data storages, its parents, and its element with no <c>id</c> (see <see cref="StormXmlElementMerger"/>).
+    /// <para>
+    /// The merged element is cached and the same instance is returned on later calls, so it must not be modified.
+    /// The cache is cleared when a base class catalog name or an element is added to any of the data storages.
+    /// </para>
+    /// </summary>
+    /// <param name="id">The <c>id</c> of the <see cref="StormXmlElement"/>. This is case-sensitive.</param>
+    /// <param name="catalogName">The catalog name of the <see cref="StormXmlElement"/>. This is case-insensitive.</param>
+    /// <returns>The merged <see cref="StormXmlElement"/> if found; otherwise, <see langword="null"/>.</returns>
+    public StormXmlElement? GetMergedStormXmlElementById(ReadOnlySpan<char> id, ReadOnlySpan<char> catalogName)
+    {
+        return _mergedStormXmlElementCache.GetOrMerge(id, catalogName, GetElementsVersion());
+    }
+
+    /// <summary>
     /// Retrieves the <c>LevelScalingArray</c> modification <c>Field</c> and <c>Value</c> list by its <c>id</c> (the <c>Entry</c>) from the specified catalog name, merged from the data storages.
     /// <para>
     /// The lists are merged by <c>Field</c> (case-sensitive): a higher data storage replaces the <c>Value</c> of a matching <c>Field</c> and adds any new <c>Field</c>.
@@ -178,6 +198,14 @@ internal sealed class LayeredDataStorage
         MergeScalingFieldValuesInto(ref scalingFieldValues, ref isCopy, FindScalingFieldValuesById(_customElementCache, id, catalogName));
 
         return scalingFieldValues;
+    }
+
+    /// <summary>
+    /// Clears the cached merged elements from <see cref="GetMergedStormXmlElementById(ReadOnlySpan{char}, ReadOnlySpan{char})"/>.
+    /// </summary>
+    public void ClearMergedStormXmlElementCache()
+    {
+        _mergedStormXmlElementCache.Clear();
     }
 
     private static StormXmlElement? FindStormXmlElementByElementName(ElementCache elementCache, ReadOnlySpan<char> elementName)
@@ -256,4 +284,7 @@ internal sealed class LayeredDataStorage
             DataStorage.AddOrReplaceScalingFieldValue(scalingFieldValues, layerScalingFieldValue);
         }
     }
+
+    // each data storage's version only goes up, so the sum changes whenever any of them does
+    private int GetElementsVersion() => _baseDataStorage.ElementsVersion + _mapDataStorage.ElementsVersion + _customDataStorage.ElementsVersion;
 }
