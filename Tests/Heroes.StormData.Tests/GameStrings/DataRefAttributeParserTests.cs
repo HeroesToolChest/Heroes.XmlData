@@ -49,7 +49,7 @@ public class DataRefAttributeParserTests
     public void CalculateExpression_ValueHasScaling_ReturnsValueAndScaling(double scaling)
     {
         // arrange
-        List<TextSectionItem> dataRefParts = [new TextSectionItem(new ValueScale(5, scaling))];
+        TextSectionItem[] dataRefParts = [new TextSectionItem(new ValueScale(5, scaling))];
 
         // act
         ValueScale result = DataRefAttributeParser.CalculateExpression(string.Empty, dataRefParts);
@@ -64,7 +64,7 @@ public class DataRefAttributeParserTests
     {
         // arrange
         string dRef = "a+b";
-        List<TextSectionItem> dataRefParts =
+        TextSectionItem[] dataRefParts =
         [
             new TextSectionItem(new ValueScale(5, 0.14)),
             new TextSectionItem(new Range(1, 2)), // +
@@ -83,7 +83,7 @@ public class DataRefAttributeParserTests
     public void CalculateExpression_BaseValueIsZero_ReturnsNoScaling()
     {
         // arrange
-        List<TextSectionItem> dataRefParts = [new TextSectionItem(new ValueScale(0, 0.04))];
+        TextSectionItem[] dataRefParts = [new TextSectionItem(new ValueScale(0, 0.04))];
 
         // act
         ValueScale result = DataRefAttributeParser.CalculateExpression(string.Empty, dataRefParts);
@@ -101,7 +101,7 @@ public class DataRefAttributeParserTests
     public void CalculateExpression_ValueHasMoreThanSixDecimals_IsRoundedToSixDecimals(double value, double expected)
     {
         // arrange
-        List<TextSectionItem> dataRefParts = [new TextSectionItem(new ValueScale(value))];
+        TextSectionItem[] dataRefParts = [new TextSectionItem(new ValueScale(value))];
 
         // act
         ValueScale result = DataRefAttributeParser.CalculateExpression(string.Empty, dataRefParts);
@@ -116,7 +116,7 @@ public class DataRefAttributeParserTests
     {
         // arrange
         string dRef = "a-b";
-        List<TextSectionItem> dataRefParts =
+        TextSectionItem[] dataRefParts =
         [
             new TextSectionItem(new ValueScale(-20, 0.05)),
             new TextSectionItem(new Range(1, 2)), // -
@@ -148,7 +148,7 @@ public class DataRefAttributeParserTests
         }
 
         // act
-        ValueScale result = DataRefAttributeParser.CalculateExpression(dRef, dataRefParts);
+        ValueScale result = DataRefAttributeParser.CalculateExpression(dRef, [.. dataRefParts]);
 
         // assert
         result.Value.Should().Be(400);
@@ -167,6 +167,70 @@ public class DataRefAttributeParserTests
 
         // assert
         result.Value.Should().Be(300);
+    }
+
+    [TestMethod]
+    [DataRow(16)] // 15 operators, 31 parts, fits the stack buffer
+    [DataRow(17)] // 16 operators, 33 parts, past the stack buffer
+    public void Parse_PartsAroundStackBufferSize_ComputesValue(int count)
+    {
+        // arrange
+        DataRefAttributeParser parser = CreateParser();
+        string dRef = string.Join('+', Enumerable.Repeat("2", count));
+
+        // act
+        ValueScale result = parser.Parse(dRef);
+
+        // assert
+        result.Value.Should().Be(count * 2);
+    }
+
+    [TestMethod]
+    [DataRow("[d ref='Effect,TestDamage,Amount'/][d ref='Effect,TestDamage,Amount'/]")] // no operator between the brackets
+    [DataRow("[d ref='Effect,TestDamage,Amount'/]abc")] // text after the bracket
+    public void Parse_BracketDataRefFollowedByNonOperator_UsesFirstBracketValue(string dRef)
+    {
+        // arrange
+        // the character after the bracket is taken as the operator, and the calculator ignores it, so only the first bracket's value is left
+        DataRefAttributeParser parser = CreateParser(
+            """
+            <CEffectDamage id="TestDamage">
+              <Amount value="120" />
+            </CEffectDamage>
+            """);
+
+        // act
+        ValueScale result = parser.Parse(dRef);
+
+        // assert
+        result.Value.Should().Be(120);
+    }
+
+    [TestMethod]
+    [DataRow("5* [d ref='Effect,TestDamage,Amount'/]", 600)]
+    [DataRow("5*   [d ref='Effect,TestDamage,Amount'/]", 600)]
+    [DataRow("5*      [d ref='Effect,TestDamage,Amount'/]", 600)]
+    [DataRow("5*          [d ref='Effect,TestDamage,Amount'/]", 600)]
+    [DataRow("5*\t[d ref='Effect,TestDamage,Amount'/]", 600)]
+    [DataRow("   [d ref='Effect,TestDamage,Amount'/]*5", 600)] // spaces at the start of the expression
+    [DataRow("5*      [d ref='Effect,TestDamage,Amount'/]+1", 601)] // the operator after the bracket
+    [DataRow("(5*      [d ref='Effect,TestDamage,Amount'/])/2", 300)] // the parenthesis after the bracket
+    [DataRow("5*  [d ref='Effect,TestDamage,Amount'/]-  [d ref='Effect,TestDamage,Amount'/]", 480)] // two brackets with spaces
+    public void Parse_BracketDataRefHasWhitespaceBeforeIt_ComputesValue(string dRef, double expected)
+    {
+        // arrange
+        DataRefAttributeParser parser = CreateParser(
+            """
+            <CEffectDamage id="TestDamage">
+              <Amount value="120" />
+            </CEffectDamage>
+            """);
+
+        // act
+        ValueScale result = parser.Parse(dRef);
+
+        // assert
+        result.Value.Should().Be(expected);
     }
 
     [TestMethod]

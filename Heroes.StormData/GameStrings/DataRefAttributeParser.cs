@@ -1,10 +1,12 @@
-﻿using System.Runtime.InteropServices;
-
-namespace Heroes.StormData.GameStrings;
+﻿namespace Heroes.StormData.GameStrings;
 
 internal sealed class DataRefAttributeParser
 {
+    // for calculate expressions
     private const int MaxStackAllocLength = 256;
+
+    // up to this many parts are kept on the stack (a TextSectionItem is about 48 bytes), more are rented from the array pool
+    private const int MaxStackAllocPartCount = 32;
 
     private static readonly SearchValues<char> _gameStringOps = SearchValues.Create("+-*/()");
     private static readonly SearchValues<char> _catalogReferenceSplitters = SearchValues.Create(",.");
@@ -21,43 +23,62 @@ internal sealed class DataRefAttributeParser
     // Abil,GuldanHorrify,CastIntroTime+Effect,GuldanHorrifyAbilityStartCreatePersistent,PeriodicPeriodArray[0]
     public ValueScale Parse(ReadOnlySpan<char> dRefExpression)
     {
-        List<TextSectionItem> catalogReferences = [];
-        int startIndex = 0;
+        // each operator is a part, with at most one value part before it and one after.
+        // this can be more than needed but never less
+        int maxPartCount = (dRefExpression.CountAny(_gameStringOps) * 2) + 1;
 
-        while (startIndex < dRefExpression.Length)
+        TextSectionItem[]? rentedParts = null;
+
+        Span<TextSectionItem> dataRefParts = maxPartCount <= MaxStackAllocPartCount
+            ? stackalloc TextSectionItem[maxPartCount]
+            : (rentedParts = ArrayPool<TextSectionItem>.Shared.Rent(maxPartCount));
+
+        int partCount = 0;
+
+        try
         {
-            // getting the part of the expression, e.g. Abil,GuldanHorrify,CastIntroTime
-            ReadOnlySpan<char> catalogReference = GetCatalogReference(dRefExpression[startIndex..]);
-            ReadOnlySpan<char> catalogReferenceTrimmed = catalogReference.Trim();
+            int startIndex = 0;
 
-            if (!catalogReferenceTrimmed.IsEmpty)
+            while (startIndex < dRefExpression.Length)
             {
-                if (catalogReferenceTrimmed[0] == '[')
-                    catalogReferences.Add(new TextSectionItem(ParseBracketDRef(catalogReferenceTrimmed)));
-                else if (double.TryParse(catalogReferenceTrimmed, NumberStyles.Float, CultureInfo.InvariantCulture, out double value))
-                    catalogReferences.Add(new TextSectionItem(new ValueScale(value))); // hardcoded value
-                else if (catalogReferenceTrimmed[0] == '$' && catalogReferenceTrimmed[^1] == '$')
-                    catalogReferences.Add(new TextSectionItem(new ValueScale(0)));
-                else
-                    catalogReferences.Add(new TextSectionItem(ParseCatalogReference(catalogReference)));
+                // getting the part of the expression, e.g. Abil,GuldanHorrify,CastIntroTime
+                ReadOnlySpan<char> catalogReference = GetCatalogReference(dRefExpression[startIndex..], out int catalogReferenceLength);
+                ReadOnlySpan<char> catalogReferenceTrimmed = catalogReference.Trim();
+
+                if (!catalogReferenceTrimmed.IsEmpty)
+                {
+                    if (catalogReferenceTrimmed[0] == '[')
+                        dataRefParts[partCount++] = new TextSectionItem(ParseBracketDRef(catalogReferenceTrimmed));
+                    else if (double.TryParse(catalogReferenceTrimmed, NumberStyles.Float, CultureInfo.InvariantCulture, out double value))
+                        dataRefParts[partCount++] = new TextSectionItem(new ValueScale(value)); // hardcoded value
+                    else if (catalogReferenceTrimmed[0] == '$' && catalogReferenceTrimmed[^1] == '$')
+                        dataRefParts[partCount++] = new TextSectionItem(new ValueScale(0));
+                    else
+                        dataRefParts[partCount++] = new TextSectionItem(ParseCatalogReference(catalogReference));
+                }
+
+                int indexOfOperator = startIndex + catalogReferenceLength;
+
+                if (indexOfOperator >= dRefExpression.Length)
+                    break;
+
+                // the operator
+                dataRefParts[partCount++] = new TextSectionItem(new Range(indexOfOperator, indexOfOperator + 1));
+
+                startIndex = indexOfOperator + 1;
             }
 
-            if (startIndex + catalogReference.Length >= dRefExpression.Length)
-                break;
-
-            // the operator
-            catalogReferences.Add(new TextSectionItem(new Range(startIndex + catalogReference.Length, startIndex + catalogReference.Length + 1)));
-
-            startIndex += catalogReference.Length + 1;
+            return CalculateExpression(dRefExpression, dataRefParts[..partCount]);
         }
-
-        return CalculateExpression(dRefExpression, catalogReferences);
+        finally
+        {
+            if (rentedParts is not null)
+                ArrayPool<TextSectionItem>.Shared.Return(rentedParts);
+        }
     }
 
-    internal static ValueScale CalculateExpression(ReadOnlySpan<char> dRefSpan, List<TextSectionItem> dataRefParts)
+    internal static ValueScale CalculateExpression(ReadOnlySpan<char> dRefSpan, ReadOnlySpan<TextSectionItem> parts)
     {
-        ReadOnlySpan<TextSectionItem> parts = CollectionsMarshal.AsSpan(dataRefParts);
-
         int textLength = 0;
         int valueCount = 0;
         int scalingCount = 0;
@@ -120,13 +141,18 @@ internal sealed class DataRefAttributeParser
         }
     }
 
-    private static ReadOnlySpan<char> GetCatalogReference(ReadOnlySpan<char> text)
+    // returns the part of the expression before the next operator, and in length how many characters of text it takes up.
+    // they differ for an inner bracket with text before it, such as spaces, since only the bracket is returned
+    private static ReadOnlySpan<char> GetCatalogReference(ReadOnlySpan<char> text, out int length)
     {
         int indexOfOperator = text.IndexOfAny(_gameStringOps);
 
         // no operator, so there is no inner bracket either, since its /] has one
         if (indexOfOperator < 0)
+        {
+            length = text.Length;
             return text;
+        }
 
         // checking for inner bracket [d ref /], which only counts if it starts before the operator, so only that part is searched.
         // "[d " has no operator characters, so a match that starts before the operator also ends before it
@@ -138,9 +164,14 @@ internal sealed class DataRefAttributeParser
             int indexOfEndBracket = text[indexOfStartBracket..].IndexOf("/]");
 
             if (indexOfEndBracket > -1)
-                return text[indexOfStartBracket..(indexOfStartBracket + indexOfEndBracket + 2)];
+            {
+                // up to and including the ]
+                length = indexOfStartBracket + indexOfEndBracket + 2;
+                return text[indexOfStartBracket..length];
+            }
         }
 
+        length = indexOfOperator;
         return text[..indexOfOperator];
     }
 
