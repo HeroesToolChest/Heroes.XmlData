@@ -48,7 +48,7 @@ internal sealed class DataRefAttributeParser
                 if (!catalogReferenceTrimmed.IsEmpty)
                 {
                     if (catalogReferenceTrimmed[0] == '[')
-                        dataRefParts[partCount++] = new TextSectionItem(ParseBracketDRef(catalogReferenceTrimmed));
+                        dataRefParts[partCount++] = new TextSectionItem(_dataTagParser.ParseBracketDataTag(catalogReferenceTrimmed));
                     else if (double.TryParse(catalogReferenceTrimmed, NumberStyles.Float, CultureInfo.InvariantCulture, out double value))
                         dataRefParts[partCount++] = new TextSectionItem(new ValueScale(value)); // hardcoded value
                     else if (catalogReferenceTrimmed[0] == '$' && catalogReferenceTrimmed[^1] == '$')
@@ -216,16 +216,6 @@ internal sealed class DataRefAttributeParser
 
     // the value is multiplied by this to apply its scaling, e.g. a scaling of 0.04 is * 1.04
     private static double GetScalingMultiplier(double scaling) => scaling + 1;
-
-    private ValueScale ParseBracketDRef(ReadOnlySpan<char> text)
-    {
-        Span<char> temp = stackalloc char[text.Length];
-        text.CopyTo(temp);
-        temp[0] = '<';
-        temp[^1] = '>';
-
-        return _dataTagParser.ParseDataTag(temp);
-    }
 
     // Abil,GuldanHorrify,CastIntroTime
     // Effect,GuldanHorrifyAbilityStartCreatePersistent,PeriodicPeriodArray[0]
