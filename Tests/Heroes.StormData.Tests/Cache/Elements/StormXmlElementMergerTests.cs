@@ -1,4 +1,4 @@
-﻿namespace Heroes.StormData.Cache.Tests;
+﻿namespace Heroes.StormData.Cache.Elements.Tests;
 
 [TestClass]
 public class StormXmlElementMergerTests
