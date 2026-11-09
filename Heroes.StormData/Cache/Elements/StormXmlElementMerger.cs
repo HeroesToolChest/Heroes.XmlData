@@ -1,4 +1,4 @@
-﻿namespace Heroes.StormData.Cache;
+﻿namespace Heroes.StormData.Cache.Elements;
 
 internal class StormXmlElementMerger
 {

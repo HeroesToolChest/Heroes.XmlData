@@ -1,4 +1,4 @@
-namespace Heroes.StormData.Cache;
+namespace Heroes.StormData.Cache.Elements;
 
 /// <summary>
 /// Caches merged <see cref="StormXmlElement"/>s by catalog name and <c>id</c>.

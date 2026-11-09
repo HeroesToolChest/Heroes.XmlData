@@ -1,6 +1,4 @@
-using Heroes.StormData.GameStrings;
-
-namespace Heroes.StormData.Tests.GameStrings;
+namespace Heroes.StormData.GameStrings.Tests;
 
 [TestClass]
 public class DataTagParserTests

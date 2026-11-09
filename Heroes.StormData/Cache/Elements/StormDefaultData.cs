@@ -1,4 +1,4 @@
-namespace Heroes.StormData.Cache;
+namespace Heroes.StormData.Cache.Elements;
 
 /// <summary>
 /// Default values the game uses when the XML data does not set them.

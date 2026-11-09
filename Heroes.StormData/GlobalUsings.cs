@@ -1,6 +1,7 @@
 ﻿global using CASCLib;
 global using Heroes.LocaleText;
 global using Heroes.StormData.Cache;
+global using Heroes.StormData.Cache.Elements;
 global using Heroes.StormData.CASC;
 global using Heroes.StormData.Extensions;
 global using Heroes.StormData.GameStrings;

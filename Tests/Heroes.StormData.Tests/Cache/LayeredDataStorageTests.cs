@@ -1,4 +1,4 @@
-﻿namespace Heroes.StormData.Tests.Cache;
+﻿namespace Heroes.StormData.Cache.Tests;
 
 [TestClass]
 internal sealed class LayeredDataStorageTests

@@ -1,5 +1,6 @@
 ﻿global using AwesomeAssertions;
 global using Heroes.StormData.Cache;
+global using Heroes.StormData.Cache.Elements;
 global using Heroes.StormData.StormMods;
 global using Heroes.StormData.Tests;
 global using Heroes.StormData.Xml;

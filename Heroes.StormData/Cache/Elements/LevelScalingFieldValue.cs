@@ -1,4 +1,4 @@
-﻿namespace Heroes.StormData.Cache;
+﻿namespace Heroes.StormData.Cache.Elements;
 
 // the Field and Value of a LevelScalingArray modification
 internal readonly struct LevelScalingFieldValue

@@ -1,4 +1,4 @@
-﻿namespace Heroes.StormData.Cache;
+﻿namespace Heroes.StormData.Cache.Elements;
 
 /// <summary>
 /// Represents a cache for storing and retrieving elements from the data storage.
