@@ -14,7 +14,7 @@ internal sealed class LayeredDataStorageTests
         StormXmlConstElement expected = CreateStormXmlConstElement(constId, "1777");
 
         LayeredDataStorage layeredDataStorage = new();
-        layeredDataStorage.GetDataStorage(stormModType).ElementCache.StormXmlConstElementById.Add(constId, expected);
+        layeredDataStorage.GetDataStorage(stormModType).ElementCache.StormXmlConstElementById.Dictionary.Add(constId, expected);
 
         // act
         bool result = layeredDataStorage.TryGetFirstStormXmlConstElementById(constId, out StormXmlConstElement? constElement);
@@ -43,9 +43,9 @@ internal sealed class LayeredDataStorageTests
     {
         // arrange
         LayeredDataStorage layeredDataStorage = new();
-        layeredDataStorage.GetDataStorage(StormModType.Base).ElementCache.StormXmlConstElementById.Add("$BaseConst", CreateStormXmlConstElement("$BaseConst"));
-        layeredDataStorage.GetDataStorage(StormModType.Map).ElementCache.StormXmlConstElementById.Add("$MapConst", CreateStormXmlConstElement("$MapConst"));
-        layeredDataStorage.GetDataStorage(StormModType.Custom).ElementCache.StormXmlConstElementById.Add("$CustomConst", CreateStormXmlConstElement("$CustomConst"));
+        layeredDataStorage.GetDataStorage(StormModType.Base).ElementCache.StormXmlConstElementById.Dictionary.Add("$BaseConst", CreateStormXmlConstElement("$BaseConst"));
+        layeredDataStorage.GetDataStorage(StormModType.Map).ElementCache.StormXmlConstElementById.Dictionary.Add("$MapConst", CreateStormXmlConstElement("$MapConst"));
+        layeredDataStorage.GetDataStorage(StormModType.Custom).ElementCache.StormXmlConstElementById.Dictionary.Add("$CustomConst", CreateStormXmlConstElement("$CustomConst"));
 
         // act
         bool result = layeredDataStorage.TryGetFirstStormXmlConstElementById("$DoesNotExist", out StormXmlConstElement? constElement);
@@ -62,7 +62,7 @@ internal sealed class LayeredDataStorageTests
         const string constId = "$ZagaraHunterKillerDamage";
 
         LayeredDataStorage layeredDataStorage = new();
-        layeredDataStorage.GetDataStorage(StormModType.Base).ElementCache.StormXmlConstElementById.Add(constId, CreateStormXmlConstElement(constId));
+        layeredDataStorage.GetDataStorage(StormModType.Base).ElementCache.StormXmlConstElementById.Dictionary.Add(constId, CreateStormXmlConstElement(constId));
 
         // act
         bool result = layeredDataStorage.TryGetFirstStormXmlConstElementById(constId.ToUpperInvariant(), out StormXmlConstElement? constElement);
@@ -82,8 +82,8 @@ internal sealed class LayeredDataStorageTests
         StormXmlConstElement mapElement = CreateStormXmlConstElement(constId, "2");
 
         LayeredDataStorage layeredDataStorage = new();
-        layeredDataStorage.GetDataStorage(StormModType.Base).ElementCache.StormXmlConstElementById.Add(constId, baseElement);
-        layeredDataStorage.GetDataStorage(StormModType.Map).ElementCache.StormXmlConstElementById.Add(constId, mapElement);
+        layeredDataStorage.GetDataStorage(StormModType.Base).ElementCache.StormXmlConstElementById.Dictionary.Add(constId, baseElement);
+        layeredDataStorage.GetDataStorage(StormModType.Map).ElementCache.StormXmlConstElementById.Dictionary.Add(constId, mapElement);
 
         // act
         bool result = layeredDataStorage.TryGetFirstStormXmlConstElementById(constId, out StormXmlConstElement? constElement);
@@ -104,8 +104,8 @@ internal sealed class LayeredDataStorageTests
         StormXmlConstElement customElement = CreateStormXmlConstElement(constId, "3");
 
         LayeredDataStorage layeredDataStorage = new();
-        layeredDataStorage.GetDataStorage(StormModType.Base).ElementCache.StormXmlConstElementById.Add(constId, baseElement);
-        layeredDataStorage.GetDataStorage(StormModType.Custom).ElementCache.StormXmlConstElementById.Add(constId, customElement);
+        layeredDataStorage.GetDataStorage(StormModType.Base).ElementCache.StormXmlConstElementById.Dictionary.Add(constId, baseElement);
+        layeredDataStorage.GetDataStorage(StormModType.Custom).ElementCache.StormXmlConstElementById.Dictionary.Add(constId, customElement);
 
         // act
         bool result = layeredDataStorage.TryGetFirstStormXmlConstElementById(constId, out StormXmlConstElement? constElement);
@@ -127,9 +127,9 @@ internal sealed class LayeredDataStorageTests
         StormXmlConstElement customElement = CreateStormXmlConstElement(constId, "3");
 
         LayeredDataStorage layeredDataStorage = new();
-        layeredDataStorage.GetDataStorage(StormModType.Base).ElementCache.StormXmlConstElementById.Add(constId, baseElement);
-        layeredDataStorage.GetDataStorage(StormModType.Map).ElementCache.StormXmlConstElementById.Add(constId, mapElement);
-        layeredDataStorage.GetDataStorage(StormModType.Custom).ElementCache.StormXmlConstElementById.Add(constId, customElement);
+        layeredDataStorage.GetDataStorage(StormModType.Base).ElementCache.StormXmlConstElementById.Dictionary.Add(constId, baseElement);
+        layeredDataStorage.GetDataStorage(StormModType.Map).ElementCache.StormXmlConstElementById.Dictionary.Add(constId, mapElement);
+        layeredDataStorage.GetDataStorage(StormModType.Custom).ElementCache.StormXmlConstElementById.Dictionary.Add(constId, customElement);
 
         // act
         bool result = layeredDataStorage.TryGetFirstStormXmlConstElementById(constId, out StormXmlConstElement? constElement);
@@ -149,9 +149,9 @@ internal sealed class LayeredDataStorageTests
 
         LayeredDataStorage layeredDataStorage = new();
 
-        layeredDataStorage.GetDataStorage(StormModType.Base).ElementCache.StormXmlConstElementById.Add("$BaseConst", baseElement);
-        layeredDataStorage.GetDataStorage(StormModType.Map).ElementCache.StormXmlConstElementById.Add("$MapConst", mapElement);
-        layeredDataStorage.GetDataStorage(StormModType.Custom).ElementCache.StormXmlConstElementById.Add("$CustomConst", customElement);
+        layeredDataStorage.GetDataStorage(StormModType.Base).ElementCache.StormXmlConstElementById.Dictionary.Add("$BaseConst", baseElement);
+        layeredDataStorage.GetDataStorage(StormModType.Map).ElementCache.StormXmlConstElementById.Dictionary.Add("$MapConst", mapElement);
+        layeredDataStorage.GetDataStorage(StormModType.Custom).ElementCache.StormXmlConstElementById.Dictionary.Add("$CustomConst", customElement);
 
         // act
         bool baseResult = layeredDataStorage.TryGetFirstStormXmlConstElementById("$BaseConst", out StormXmlConstElement? foundBase);
@@ -178,7 +178,7 @@ internal sealed class LayeredDataStorageTests
         const string catalogName = "Effect";
 
         LayeredDataStorage layeredDataStorage = new();
-        layeredDataStorage.GetDataStorage(stormModType).ElementCache.CatalogByClassElement.Add(elementName, catalogName);
+        layeredDataStorage.GetDataStorage(stormModType).ElementCache.CatalogByClassElement.Dictionary.Add(elementName, catalogName);
 
         // act
         bool result = layeredDataStorage.TryGetFirstCatalogNameByElementName(elementName, out string? foundCatalogName);
@@ -193,9 +193,9 @@ internal sealed class LayeredDataStorageTests
     {
         // arrange
         LayeredDataStorage layeredDataStorage = new();
-        layeredDataStorage.GetDataStorage(StormModType.Base).ElementCache.CatalogByClassElement.Add("EffectDamage", "Effect");
-        layeredDataStorage.GetDataStorage(StormModType.Map).ElementCache.CatalogByClassElement.Add("AbilTargetedHeal", "Abil");
-        layeredDataStorage.GetDataStorage(StormModType.Custom).ElementCache.CatalogByClassElement.Add("BehaviorBuff", "Behavior");
+        layeredDataStorage.GetDataStorage(StormModType.Base).ElementCache.CatalogByClassElement.Dictionary.Add("EffectDamage", "Effect");
+        layeredDataStorage.GetDataStorage(StormModType.Map).ElementCache.CatalogByClassElement.Dictionary.Add("AbilTargetedHeal", "Abil");
+        layeredDataStorage.GetDataStorage(StormModType.Custom).ElementCache.CatalogByClassElement.Dictionary.Add("BehaviorBuff", "Behavior");
 
         // act
         bool result = layeredDataStorage.TryGetFirstCatalogNameByElementName("DoesNotExist", out string? catalogName);
@@ -210,7 +210,7 @@ internal sealed class LayeredDataStorageTests
     {
         // arrange
         LayeredDataStorage layeredDataStorage = new();
-        layeredDataStorage.GetDataStorage(StormModType.Base).ElementCache.CatalogByClassElement.Add("EffectDamage", "Effect");
+        layeredDataStorage.GetDataStorage(StormModType.Base).ElementCache.CatalogByClassElement.Dictionary.Add("EffectDamage", "Effect");
 
         // act
         bool result = layeredDataStorage.TryGetFirstCatalogNameByElementName(string.Empty, out string? catalogName);
@@ -228,7 +228,7 @@ internal sealed class LayeredDataStorageTests
         const string catalogName = "Effect";
 
         LayeredDataStorage layeredDataStorage = new();
-        layeredDataStorage.GetDataStorage(StormModType.Base).ElementCache.CatalogByClassElement.Add(elementName, catalogName);
+        layeredDataStorage.GetDataStorage(StormModType.Base).ElementCache.CatalogByClassElement.Dictionary.Add(elementName, catalogName);
 
         // act
         bool result = layeredDataStorage.TryGetFirstCatalogNameByElementName(elementName.ToUpperInvariant(), out string? foundCatalogName);
@@ -243,7 +243,7 @@ internal sealed class LayeredDataStorageTests
     {
         // arrange
         LayeredDataStorage layeredDataStorage = new();
-        layeredDataStorage.GetDataStorage(StormModType.Map).ElementCache.CatalogByClassElement.Add("EffectDamage", "Effect");
+        layeredDataStorage.GetDataStorage(StormModType.Map).ElementCache.CatalogByClassElement.Dictionary.Add("EffectDamage", "Effect");
 
         ReadOnlySpan<char> elementName = "xxEffectDamageyy".AsSpan(2, 12);
 
@@ -262,8 +262,8 @@ internal sealed class LayeredDataStorageTests
         const string elementName = "EffectDamage";
 
         LayeredDataStorage layeredDataStorage = new();
-        layeredDataStorage.GetDataStorage(StormModType.Base).ElementCache.CatalogByClassElement.Add(elementName, "BaseCatalog");
-        layeredDataStorage.GetDataStorage(StormModType.Map).ElementCache.CatalogByClassElement.Add(elementName, "MapCatalog");
+        layeredDataStorage.GetDataStorage(StormModType.Base).ElementCache.CatalogByClassElement.Dictionary.Add(elementName, "BaseCatalog");
+        layeredDataStorage.GetDataStorage(StormModType.Map).ElementCache.CatalogByClassElement.Dictionary.Add(elementName, "MapCatalog");
 
         // act
         bool result = layeredDataStorage.TryGetFirstCatalogNameByElementName(elementName, out string? catalogName);
@@ -280,8 +280,8 @@ internal sealed class LayeredDataStorageTests
         const string elementName = "EffectDamage";
 
         LayeredDataStorage layeredDataStorage = new();
-        layeredDataStorage.GetDataStorage(StormModType.Base).ElementCache.CatalogByClassElement.Add(elementName, "BaseCatalog");
-        layeredDataStorage.GetDataStorage(StormModType.Custom).ElementCache.CatalogByClassElement.Add(elementName, "CustomCatalog");
+        layeredDataStorage.GetDataStorage(StormModType.Base).ElementCache.CatalogByClassElement.Dictionary.Add(elementName, "BaseCatalog");
+        layeredDataStorage.GetDataStorage(StormModType.Custom).ElementCache.CatalogByClassElement.Dictionary.Add(elementName, "CustomCatalog");
 
         // act
         bool result = layeredDataStorage.TryGetFirstCatalogNameByElementName(elementName, out string? catalogName);
@@ -298,9 +298,9 @@ internal sealed class LayeredDataStorageTests
         const string elementName = "EffectDamage";
 
         LayeredDataStorage layeredDataStorage = new();
-        layeredDataStorage.GetDataStorage(StormModType.Base).ElementCache.CatalogByClassElement.Add(elementName, "BaseCatalog");
-        layeredDataStorage.GetDataStorage(StormModType.Map).ElementCache.CatalogByClassElement.Add(elementName, "MapCatalog");
-        layeredDataStorage.GetDataStorage(StormModType.Custom).ElementCache.CatalogByClassElement.Add(elementName, "CustomCatalog");
+        layeredDataStorage.GetDataStorage(StormModType.Base).ElementCache.CatalogByClassElement.Dictionary.Add(elementName, "BaseCatalog");
+        layeredDataStorage.GetDataStorage(StormModType.Map).ElementCache.CatalogByClassElement.Dictionary.Add(elementName, "MapCatalog");
+        layeredDataStorage.GetDataStorage(StormModType.Custom).ElementCache.CatalogByClassElement.Dictionary.Add(elementName, "CustomCatalog");
 
         // act
         bool result = layeredDataStorage.TryGetFirstCatalogNameByElementName(elementName, out string? catalogName);
@@ -1623,11 +1623,11 @@ internal sealed class LayeredDataStorageTests
     {
         ElementCache elementCache = layeredDataStorage.GetDataStorage(stormModType).ElementCache;
 
-        if (!elementCache.StormXmlElementsByIdByCatalog.TryGetValue(catalogName, out Dictionary<string, StormXmlElement>.AlternateLookup<ReadOnlySpan<char>> elementsById))
+        if (!elementCache.StormXmlElementsByIdByCatalog.Dictionary.TryGetValue(catalogName, out Dictionary<string, StormXmlElement>.AlternateLookup<ReadOnlySpan<char>> elementsById))
         {
             // inner dictionary keys are case-sensitive
             elementsById = new Dictionary<string, StormXmlElement>(StringComparer.Ordinal).GetAlternateLookup<ReadOnlySpan<char>>();
-            elementCache.StormXmlElementsByIdByCatalog.Add(catalogName, elementsById);
+            elementCache.StormXmlElementsByIdByCatalog.Dictionary.Add(catalogName, elementsById);
         }
 
         elementsById.Dictionary.Add(id, element);
@@ -1638,11 +1638,11 @@ internal sealed class LayeredDataStorageTests
     {
         ElementCache elementCache = layeredDataStorage.GetDataStorage(stormModType).ElementCache;
 
-        if (!elementCache.ScalingFieldValueByIdByCatalog.TryGetValue(catalogName, out Dictionary<string, List<LevelScalingFieldValue>>.AlternateLookup<ReadOnlySpan<char>> scalingFieldValuesById))
+        if (!elementCache.ScalingFieldValueByIdByCatalog.Dictionary.TryGetValue(catalogName, out Dictionary<string, List<LevelScalingFieldValue>>.AlternateLookup<ReadOnlySpan<char>> scalingFieldValuesById))
         {
             // inner dictionary keys are case-sensitive
             scalingFieldValuesById = new Dictionary<string, List<LevelScalingFieldValue>>(StringComparer.Ordinal).GetAlternateLookup<ReadOnlySpan<char>>();
-            elementCache.ScalingFieldValueByIdByCatalog.Add(catalogName, scalingFieldValuesById);
+            elementCache.ScalingFieldValueByIdByCatalog.Dictionary.Add(catalogName, scalingFieldValuesById);
         }
 
         List<LevelScalingFieldValue> cachedScalingFieldValues = [.. scalingFieldValues];

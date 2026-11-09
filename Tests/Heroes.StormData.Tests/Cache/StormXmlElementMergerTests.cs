@@ -25,16 +25,16 @@ public class StormXmlElementMergerTests
         LayeredDataStorage layeredDataStorage = new();
 
         DataStorage dataStorage = layeredDataStorage.GetDataStorage(StormModType.Custom);
-        dataStorage.ElementCache.CatalogByClassElement.Add("Effect", "Effect");
-        dataStorage.ElementCache.CatalogByClassElement.Add("EffectApplyBehavior", "Effect");
-        dataStorage.ElementCache.StormXmlElementByClassElement.Add("Effect", XmlReaderHelper.GetStormXmlElement(
+        dataStorage.ElementCache.CatalogByClassElement.Dictionary.Add("Effect", "Effect");
+        dataStorage.ElementCache.CatalogByClassElement.Dictionary.Add("EffectApplyBehavior", "Effect");
+        dataStorage.ElementCache.StormXmlElementByClassElement.Dictionary.Add("Effect", XmlReaderHelper.GetStormXmlElement(
             """
             <CEffect default="1">
               <Chance value="1" />
             </CEffect>
             """,
             layeredDataStorage));
-        dataStorage.ElementCache.StormXmlElementByClassElement.Add("EffectApplyBehavior", XmlReaderHelper.GetStormXmlElement(
+        dataStorage.ElementCache.StormXmlElementByClassElement.Dictionary.Add("EffectApplyBehavior", XmlReaderHelper.GetStormXmlElement(
             """
             <CEffectApplyBehavior default="1">
               <Behavior value="##id##" />
@@ -56,7 +56,7 @@ public class StormXmlElementMergerTests
                     layeredDataStorage)
             },
         };
-        dataStorage.ElementCache.StormXmlElementsByIdByCatalog.Add("Effect", newStormXmlElementById.GetAlternateLookup<ReadOnlySpan<char>>());
+        dataStorage.ElementCache.StormXmlElementsByIdByCatalog.Dictionary.Add("Effect", newStormXmlElementById.GetAlternateLookup<ReadOnlySpan<char>>());
 
         StormXmlElementMerger stormXmlElementMerger = new(layeredDataStorage);
 
@@ -77,7 +77,7 @@ public class StormXmlElementMergerTests
         LayeredDataStorage layeredDataStorage = new();
 
         DataStorage dataStorage = layeredDataStorage.GetDataStorage(StormModType.Custom);
-        dataStorage.ElementCache.CatalogByClassElement.Add("EffectModifyTokenCount", "Effect");
+        dataStorage.ElementCache.CatalogByClassElement.Dictionary.Add("EffectModifyTokenCount", "Effect");
 
         Dictionary<string, StormXmlElement> newStormXmlElementById = new(StringComparer.Ordinal)
         {
@@ -102,7 +102,7 @@ public class StormXmlElementMergerTests
                     layeredDataStorage)
             },
         };
-        dataStorage.ElementCache.StormXmlElementsByIdByCatalog.Add("Effect", newStormXmlElementById.GetAlternateLookup<ReadOnlySpan<char>>());
+        dataStorage.ElementCache.StormXmlElementsByIdByCatalog.Dictionary.Add("Effect", newStormXmlElementById.GetAlternateLookup<ReadOnlySpan<char>>());
 
         StormXmlElementMerger stormXmlElementMerger = new(layeredDataStorage);
 
@@ -122,7 +122,7 @@ public class StormXmlElementMergerTests
         LayeredDataStorage layeredDataStorage = new();
 
         DataStorage dataStorage = layeredDataStorage.GetDataStorage(StormModType.Custom);
-        dataStorage.ElementCache.CatalogByClassElement.Add("EffectModifyTokenCount", "Effect");
+        dataStorage.ElementCache.CatalogByClassElement.Dictionary.Add("EffectModifyTokenCount", "Effect");
 
         Dictionary<string, StormXmlElement> newStormXmlElementById = new(StringComparer.Ordinal)
         {
@@ -137,7 +137,7 @@ public class StormXmlElementMergerTests
                     layeredDataStorage)
             },
         };
-        dataStorage.ElementCache.StormXmlElementsByIdByCatalog.Add("Effect", newStormXmlElementById.GetAlternateLookup<ReadOnlySpan<char>>());
+        dataStorage.ElementCache.StormXmlElementsByIdByCatalog.Dictionary.Add("Effect", newStormXmlElementById.GetAlternateLookup<ReadOnlySpan<char>>());
 
         StormXmlElementMerger stormXmlElementMerger = new(layeredDataStorage);
 
@@ -157,7 +157,7 @@ public class StormXmlElementMergerTests
         LayeredDataStorage layeredDataStorage = new();
 
         DataStorage dataStorage = layeredDataStorage.GetDataStorage(StormModType.Custom);
-        dataStorage.ElementCache.CatalogByClassElement.Add("Unit", "Unit");
+        dataStorage.ElementCache.CatalogByClassElement.Dictionary.Add("Unit", "Unit");
 
         StormXmlElement baseElement = XmlReaderHelper.GetStormXmlElement(
             """
@@ -175,7 +175,7 @@ public class StormXmlElementMergerTests
             """,
             layeredDataStorage));
 
-        dataStorage.ElementCache.StormXmlElementByClassElement.Add("Unit", baseElement);
+        dataStorage.ElementCache.StormXmlElementByClassElement.Dictionary.Add("Unit", baseElement);
 
         Dictionary<string, StormXmlElement> newStormXmlElementById = new(StringComparer.Ordinal)
         {
@@ -190,7 +190,7 @@ public class StormXmlElementMergerTests
                     layeredDataStorage)
             },
         };
-        dataStorage.ElementCache.StormXmlElementsByIdByCatalog.Add("Unit", newStormXmlElementById.GetAlternateLookup<ReadOnlySpan<char>>());
+        dataStorage.ElementCache.StormXmlElementsByIdByCatalog.Dictionary.Add("Unit", newStormXmlElementById.GetAlternateLookup<ReadOnlySpan<char>>());
 
         StormXmlElementMerger stormXmlElementMerger = new(layeredDataStorage);
 
@@ -211,7 +211,7 @@ public class StormXmlElementMergerTests
         LayeredDataStorage layeredDataStorage = new();
 
         DataStorage dataStorage = layeredDataStorage.GetDataStorage(StormModType.Custom);
-        dataStorage.ElementCache.CatalogByClassElement.Add("LootChest", "LootChest");
+        dataStorage.ElementCache.CatalogByClassElement.Dictionary.Add("LootChest", "LootChest");
 
         StormXmlElement baseElement = XmlReaderHelper.GetStormXmlElement(
             """
@@ -260,7 +260,7 @@ public class StormXmlElementMergerTests
                 "LootChestChristmas2018Common", baseElement
             },
         };
-        dataStorage.ElementCache.StormXmlElementsByIdByCatalog.Add("LootChest", newStormXmlElementById.GetAlternateLookup<ReadOnlySpan<char>>());
+        dataStorage.ElementCache.StormXmlElementsByIdByCatalog.Dictionary.Add("LootChest", newStormXmlElementById.GetAlternateLookup<ReadOnlySpan<char>>());
 
         StormXmlElementMerger stormXmlElementMerger = new(layeredDataStorage);
 
@@ -287,7 +287,7 @@ public class StormXmlElementMergerTests
         LayeredDataStorage layeredDataStorage = new();
 
         DataStorage dataStorage = layeredDataStorage.GetDataStorage(StormModType.Custom);
-        dataStorage.ElementCache.CatalogByClassElement.Add("ActorRange", "ActorRange");
+        dataStorage.ElementCache.CatalogByClassElement.Dictionary.Add("ActorRange", "ActorRange");
 
         Dictionary<string, StormXmlElement> newStormXmlElementById = new(StringComparer.Ordinal)
         {
@@ -308,7 +308,7 @@ public class StormXmlElementMergerTests
                     layeredDataStorage)
             },
         };
-        dataStorage.ElementCache.StormXmlElementsByIdByCatalog.Add("ActorRange", newStormXmlElementById.GetAlternateLookup<ReadOnlySpan<char>>());
+        dataStorage.ElementCache.StormXmlElementsByIdByCatalog.Dictionary.Add("ActorRange", newStormXmlElementById.GetAlternateLookup<ReadOnlySpan<char>>());
 
         StormXmlElementMerger stormXmlElementMerger = new(layeredDataStorage);
 
@@ -329,9 +329,9 @@ public class StormXmlElementMergerTests
         LayeredDataStorage layeredDataStorage = new();
 
         DataStorage dataStorage = layeredDataStorage.GetDataStorage(StormModType.Custom);
-        dataStorage.ElementCache.CatalogByClassElement.Add("VoiceLine", "VoiceLine");
+        dataStorage.ElementCache.CatalogByClassElement.Dictionary.Add("VoiceLine", "VoiceLine");
 
-        dataStorage.ElementCache.StormXmlElementByClassElement.Add("VoiceLine", XmlReaderHelper.GetStormXmlElement(
+        dataStorage.ElementCache.StormXmlElementByClassElement.Dictionary.Add("VoiceLine", XmlReaderHelper.GetStormXmlElement(
             """
             <CVoiceLine default="1">
               <Name value="VoiceLine/Name/##id##" />
@@ -389,7 +389,7 @@ public class StormXmlElementMergerTests
                     layeredDataStorage)
             },
         };
-        dataStorage.ElementCache.StormXmlElementsByIdByCatalog.Add("VoiceLine", newStormXmlElementById.GetAlternateLookup<ReadOnlySpan<char>>());
+        dataStorage.ElementCache.StormXmlElementsByIdByCatalog.Dictionary.Add("VoiceLine", newStormXmlElementById.GetAlternateLookup<ReadOnlySpan<char>>());
 
         StormXmlElementMerger stormXmlElementMerger = new(layeredDataStorage);
 

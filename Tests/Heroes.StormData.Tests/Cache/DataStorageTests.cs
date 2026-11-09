@@ -19,7 +19,7 @@ public class DataStorageTests
         dataStorage.AddConstElement(third);
 
         // assert
-        Dictionary<string, StormXmlConstElement> cache = dataStorage.ElementCache.StormXmlConstElementById;
+        Dictionary<string, StormXmlConstElement> cache = dataStorage.ElementCache.StormXmlConstElementById.Dictionary;
 
         cache.Should().HaveCount(3);
         cache["$First"].Should().BeSameAs(first);
@@ -40,7 +40,7 @@ public class DataStorageTests
         dataStorage.AddConstElement(element);
 
         // assert
-        bool result = dataStorage.ElementCache.StormXmlConstElementByIdAltLookup.TryGetValue(constId.AsSpan(), out StormXmlConstElement? found);
+        bool result = dataStorage.ElementCache.StormXmlConstElementById.TryGetValue(constId.AsSpan(), out StormXmlConstElement? found);
 
         result.Should().BeTrue();
         found.Should().BeSameAs(element);
@@ -62,9 +62,9 @@ public class DataStorageTests
         dataStorage.AddConstElement(secondElement);
 
         // assert
-        dataStorage.ElementCache.StormXmlConstElementById.Should().ContainSingle();
-        dataStorage.ElementCache.StormXmlConstElementById[constId].Should().BeSameAs(firstElement);
-        dataStorage.ElementCache.StormXmlConstElementById[constId].Should().NotBeSameAs(secondElement);
+        dataStorage.ElementCache.StormXmlConstElementById.Dictionary.Should().ContainSingle();
+        dataStorage.ElementCache.StormXmlConstElementById.Dictionary[constId].Should().BeSameAs(firstElement);
+        dataStorage.ElementCache.StormXmlConstElementById.Dictionary[constId].Should().NotBeSameAs(secondElement);
     }
 
     [TestMethod]
@@ -81,7 +81,7 @@ public class DataStorageTests
         dataStorage.AddConstElement(upperElement);
 
         // assert
-        Dictionary<string, StormXmlConstElement> cache = dataStorage.ElementCache.StormXmlConstElementById;
+        Dictionary<string, StormXmlConstElement> cache = dataStorage.ElementCache.StormXmlConstElementById.Dictionary;
 
         cache.Should().HaveCount(2);
         cache["$zagarahunterkillerdamage"].Should().BeSameAs(lowerElement);
@@ -120,7 +120,7 @@ public class DataStorageTests
         dataStorage.AddBaseClassCatalogName(element, "Effect");
 
         // assert
-        Dictionary<string, string> cache = dataStorage.ElementCache.CatalogByClassElement;
+        Dictionary<string, string> cache = dataStorage.ElementCache.CatalogByClassElement.Dictionary;
 
         cache.Should().ContainSingle();
         cache[element.ElementName].Should().Be("Effect");
@@ -138,7 +138,7 @@ public class DataStorageTests
         dataStorage.AddBaseClassCatalogName(element, "Effect");
 
         // assert
-        bool result = dataStorage.ElementCache.CatalogByClassElementAltLookup.TryGetValue(element.ElementName.AsSpan(), out string? catalogName);
+        bool result = dataStorage.ElementCache.CatalogByClassElement.TryGetValue(element.ElementName.AsSpan(), out string? catalogName);
 
         result.Should().BeTrue();
         catalogName.Should().Be("Effect");
@@ -161,7 +161,7 @@ public class DataStorageTests
 
         // assert
         Dictionary<string, HashSet<string>> classElementsByCatalog = dataStorage.ElementCache.ClassElementsByCatalog;
-        Dictionary<string, string> catalogByClassElement = dataStorage.ElementCache.CatalogByClassElement;
+        Dictionary<string, string> catalogByClassElement = dataStorage.ElementCache.CatalogByClassElement.Dictionary;
 
         classElementsByCatalog.Should().ContainSingle();
         classElementsByCatalog["Effect"].Should().HaveCount(3);
@@ -210,8 +210,8 @@ public class DataStorageTests
         dataStorage.AddBaseClassCatalogName(element, "Behavior");
 
         // assert
-        dataStorage.ElementCache.CatalogByClassElement.Should().ContainSingle();
-        dataStorage.ElementCache.CatalogByClassElement[element.ElementName].Should().Be("Effect");
+        dataStorage.ElementCache.CatalogByClassElement.Dictionary.Should().ContainSingle();
+        dataStorage.ElementCache.CatalogByClassElement.Dictionary[element.ElementName].Should().Be("Effect");
     }
 
     [TestMethod]
@@ -229,8 +229,8 @@ public class DataStorageTests
         // assert
         dataStorage.ElementCache.ClassElementsByCatalog.Should().ContainSingle();
         dataStorage.ElementCache.ClassElementsByCatalog["Effect"].Should().ContainSingle();
-        dataStorage.ElementCache.CatalogByClassElement.Should().ContainSingle();
-        dataStorage.ElementCache.CatalogByClassElement[element.ElementName].Should().Be("Effect");
+        dataStorage.ElementCache.CatalogByClassElement.Dictionary.Should().ContainSingle();
+        dataStorage.ElementCache.CatalogByClassElement.Dictionary[element.ElementName].Should().Be("Effect");
     }
 
     [TestMethod]
@@ -253,8 +253,8 @@ public class DataStorageTests
 
         elementNames.Should().ContainSingle();
         elementNames.Should().Contain(element.ElementName);
-        dataStorage.ElementCache.CatalogByClassElement.Should().ContainSingle();
-        dataStorage.ElementCache.CatalogByClassElement[lowerElement.ElementName].Should().Be("Effect");
+        dataStorage.ElementCache.CatalogByClassElement.Dictionary.Should().ContainSingle();
+        dataStorage.ElementCache.CatalogByClassElement.Dictionary[lowerElement.ElementName].Should().Be("Effect");
     }
 
     [TestMethod]
@@ -279,8 +279,8 @@ public class DataStorageTests
         classElementsByCatalog["effect"].Should().Contain(healElement.ElementName);
 
         // the catalog name is stored as passed for each element in CatalogByClassElement
-        dataStorage.ElementCache.CatalogByClassElement[damageElement.ElementName].Should().Be("Effect");
-        dataStorage.ElementCache.CatalogByClassElement[healElement.ElementName].Should().Be("EFFECT");
+        dataStorage.ElementCache.CatalogByClassElement.Dictionary[damageElement.ElementName].Should().Be("Effect");
+        dataStorage.ElementCache.CatalogByClassElement.Dictionary[healElement.ElementName].Should().Be("EFFECT");
     }
 
     [TestMethod]
@@ -300,7 +300,7 @@ public class DataStorageTests
 
         // assert
         Dictionary<string, HashSet<string>> classElementsByCatalog = dataStorage.ElementCache.ClassElementsByCatalog;
-        Dictionary<string, string> catalogByClassElement = dataStorage.ElementCache.CatalogByClassElement;
+        Dictionary<string, string> catalogByClassElement = dataStorage.ElementCache.CatalogByClassElement.Dictionary;
 
         classElementsByCatalog.Should().HaveCount(3);
         classElementsByCatalog["Effect"].Should().ContainSingle().Which.Should().Be(effectElement.ElementName);
@@ -325,7 +325,7 @@ public class DataStorageTests
         dataStorage.AddElementWithNoId(element);
 
         // assert
-        Dictionary<string, StormXmlElement> cache = dataStorage.ElementCache.StormXmlElementByClassElement;
+        Dictionary<string, StormXmlElement> cache = dataStorage.ElementCache.StormXmlElementByClassElement.Dictionary;
 
         cache.Should().ContainSingle();
         cache.Should().ContainKey(element.ElementName);
@@ -348,7 +348,7 @@ public class DataStorageTests
         dataStorage.AddElementWithNoId(abilElement);
 
         // assert
-        Dictionary<string, StormXmlElement> cache = dataStorage.ElementCache.StormXmlElementByClassElement;
+        Dictionary<string, StormXmlElement> cache = dataStorage.ElementCache.StormXmlElementByClassElement.Dictionary;
 
         cache.Should().HaveCount(3);
         cache[effectElement.ElementName].Should().BeSameAs(effectElement);
@@ -370,7 +370,7 @@ public class DataStorageTests
         dataStorage.AddElementWithNoId(secondElement);
 
         // assert - the second element is merged into the first, not stored
-        Dictionary<string, StormXmlElement> cache = dataStorage.ElementCache.StormXmlElementByClassElement;
+        Dictionary<string, StormXmlElement> cache = dataStorage.ElementCache.StormXmlElementByClassElement.Dictionary;
 
         cache.Should().ContainSingle();
         cache[firstElement.ElementName].Should().BeSameAs(firstElement);
@@ -393,7 +393,7 @@ public class DataStorageTests
         dataStorage.AddElementWithNoId(upperElement);
 
         // assert - the first element and its key casing are kept
-        Dictionary<string, StormXmlElement> cache = dataStorage.ElementCache.StormXmlElementByClassElement;
+        Dictionary<string, StormXmlElement> cache = dataStorage.ElementCache.StormXmlElementByClassElement.Dictionary;
 
         cache.Should().ContainSingle();
         cache.Keys.Should().ContainSingle().Which.Should().BeEquivalentTo(element.ElementName);
@@ -415,8 +415,8 @@ public class DataStorageTests
         dataStorage.AddElementWithId(element, catalogName);
 
         // assert
-        dataStorage.ElementCache.StormXmlElementsByIdByCatalog.Should().ContainSingle();
-        dataStorage.ElementCache.StormXmlElementsByIdByCatalog.Should().ContainKey(catalogName);
+        dataStorage.ElementCache.StormXmlElementsByIdByCatalog.Dictionary.Should().ContainSingle();
+        dataStorage.ElementCache.StormXmlElementsByIdByCatalog.Dictionary.Should().ContainKey(catalogName);
 
         Dictionary<string, StormXmlElement> catalog = GetCatalogLookup(dataStorage, catalogName).Dictionary;
 
@@ -460,7 +460,7 @@ public class DataStorageTests
         dataStorage.AddElementWithId(third, catalogName);
 
         // assert
-        dataStorage.ElementCache.StormXmlElementsByIdByCatalog.Should().ContainSingle();
+        dataStorage.ElementCache.StormXmlElementsByIdByCatalog.Dictionary.Should().ContainSingle();
 
         Dictionary<string, StormXmlElement> catalog = GetCatalogLookup(dataStorage, catalogName).Dictionary;
 
@@ -553,7 +553,7 @@ public class DataStorageTests
         dataStorage.AddElementWithId(abilElement, "Abil");
 
         // assert
-        dataStorage.ElementCache.StormXmlElementsByIdByCatalog.Should().HaveCount(3);
+        dataStorage.ElementCache.StormXmlElementsByIdByCatalog.Dictionary.Should().HaveCount(3);
 
         GetCatalogLookup(dataStorage, "Effect").Dictionary["Shared"].Should().BeSameAs(effectElement);
         GetCatalogLookup(dataStorage, "Behavior").Dictionary["Shared"].Should().BeSameAs(behaviorElement);
@@ -574,8 +574,8 @@ public class DataStorageTests
         dataStorage.AddElementWithId(upperElement, "EFFECT");
 
         // assert - the first casing of the catalog name is kept as the key
-        dataStorage.ElementCache.StormXmlElementsByIdByCatalog.Should().ContainSingle();
-        dataStorage.ElementCache.StormXmlElementsByIdByCatalog.Keys.Should().ContainSingle().Which.Should().Be("effect");
+        dataStorage.ElementCache.StormXmlElementsByIdByCatalog.Dictionary.Should().ContainSingle();
+        dataStorage.ElementCache.StormXmlElementsByIdByCatalog.Dictionary.Keys.Should().ContainSingle().Which.Should().Be("effect");
 
         Dictionary<string, StormXmlElement> catalog = GetCatalogLookup(dataStorage, "Effect").Dictionary;
 
@@ -598,7 +598,7 @@ public class DataStorageTests
         dataStorage.AddElementWithId(secondElement, "EFFECT");
 
         // assert - same catalog and same id, so the second element is merged into the first
-        dataStorage.ElementCache.StormXmlElementsByIdByCatalog.Should().ContainSingle();
+        dataStorage.ElementCache.StormXmlElementsByIdByCatalog.Dictionary.Should().ContainSingle();
 
         Dictionary<string, StormXmlElement> catalog = GetCatalogLookup(dataStorage, "Effect").Dictionary;
 
@@ -629,7 +629,7 @@ public class DataStorageTests
         dataStorage.AddLevelScalingElementValue(levelScalingArray);
 
         // assert - only Catalog, Entry, Field and Value are used, AffectedByOverdrive is ignored
-        dataStorage.ElementCache.ScalingFieldValueByIdByCatalog.Should().ContainSingle();
+        dataStorage.ElementCache.ScalingFieldValueByIdByCatalog.Dictionary.Should().ContainSingle();
         GetScalingFieldValuesById(dataStorage, "Behavior").Should().ContainSingle();
         GetScalingFieldValues(dataStorage, "Behavior", "AlexstraszaDragonqueenHealthIncrease").Should().Equal(
             new LevelScalingFieldValue("Modification.VitalMaxArray[0]", "0.040000"));
@@ -653,7 +653,7 @@ public class DataStorageTests
         dataStorage.AddLevelScalingElementValue(levelScalingArray);
 
         // assert
-        dataStorage.ElementCache.ScalingFieldValueByIdByCatalog.Should().HaveCount(2);
+        dataStorage.ElementCache.ScalingFieldValueByIdByCatalog.Dictionary.Should().HaveCount(2);
         GetScalingFieldValuesById(dataStorage, "Effect").Should().HaveCount(2);
         GetScalingFieldValuesById(dataStorage, "Behavior").Should().ContainSingle();
         GetScalingFieldValues(dataStorage, "Effect", "AbathurSymbioteStabDamage").Should().Equal(new LevelScalingFieldValue("Amount", "0.04"));
@@ -828,7 +828,7 @@ public class DataStorageTests
         dataStorage.AddLevelScalingElementValue(levelScalingArray);
 
         // assert
-        dataStorage.ElementCache.ScalingFieldValueByIdByCatalog.Should().ContainSingle();
+        dataStorage.ElementCache.ScalingFieldValueByIdByCatalog.Dictionary.Should().ContainSingle();
         GetScalingFieldValuesById(dataStorage, "effect").Should().HaveCount(2);
     }
 
@@ -992,7 +992,7 @@ public class DataStorageTests
         dataStorage.AddLevelScalingElementValue(levelScalingArray);
 
         // assert
-        dataStorage.ElementCache.ScalingFieldValueByIdByCatalog.Should().BeEmpty();
+        dataStorage.ElementCache.ScalingFieldValueByIdByCatalog.Dictionary.Should().BeEmpty();
     }
 
     [TestMethod]
@@ -1087,12 +1087,12 @@ public class DataStorageTests
 
     private static Dictionary<string, StormXmlElement>.AlternateLookup<ReadOnlySpan<char>> GetCatalogLookup(DataStorage dataStorage, string catalogName)
     {
-        return dataStorage.ElementCache.StormXmlElementsByIdByCatalog[catalogName];
+        return dataStorage.ElementCache.StormXmlElementsByIdByCatalog.Dictionary[catalogName];
     }
 
     private static Dictionary<string, List<LevelScalingFieldValue>> GetScalingFieldValuesById(DataStorage dataStorage, string catalogName)
     {
-        return dataStorage.ElementCache.ScalingFieldValueByIdByCatalog[catalogName].Dictionary;
+        return dataStorage.ElementCache.ScalingFieldValueByIdByCatalog.Dictionary[catalogName].Dictionary;
     }
 
     private static List<LevelScalingFieldValue> GetScalingFieldValues(DataStorage dataStorage, string catalogName, string id)

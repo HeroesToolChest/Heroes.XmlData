@@ -57,13 +57,13 @@ internal sealed class LayeredDataStorage
     public bool TryGetFirstStormXmlConstElementById(ReadOnlySpan<char> id, [NotNullWhen(true)] out StormXmlConstElement? stormXmlConstElement)
     {
         // custom first
-        if (_customElementCache.StormXmlConstElementByIdAltLookup.TryGetValue(id, out stormXmlConstElement))
+        if (_customElementCache.StormXmlConstElementById.TryGetValue(id, out stormXmlConstElement))
             return true;
 
-        if (_mapElementCache.StormXmlConstElementByIdAltLookup.TryGetValue(id, out stormXmlConstElement))
+        if (_mapElementCache.StormXmlConstElementById.TryGetValue(id, out stormXmlConstElement))
             return true;
 
-        if (_baseElementCache.StormXmlConstElementByIdAltLookup.TryGetValue(id, out stormXmlConstElement))
+        if (_baseElementCache.StormXmlConstElementById.TryGetValue(id, out stormXmlConstElement))
             return true;
 
         return false;
@@ -78,13 +78,13 @@ internal sealed class LayeredDataStorage
     public bool TryGetFirstCatalogNameByElementName(ReadOnlySpan<char> elementName, [NotNullWhen(true)] out string? catalogName)
     {
         // custom first
-        if (_customElementCache.CatalogByClassElementAltLookup.TryGetValue(elementName, out catalogName))
+        if (_customElementCache.CatalogByClassElement.TryGetValue(elementName, out catalogName))
             return true;
 
-        if (_mapElementCache.CatalogByClassElementAltLookup.TryGetValue(elementName, out catalogName))
+        if (_mapElementCache.CatalogByClassElement.TryGetValue(elementName, out catalogName))
             return true;
 
-        if (_baseElementCache.CatalogByClassElementAltLookup.TryGetValue(elementName, out catalogName))
+        if (_baseElementCache.CatalogByClassElement.TryGetValue(elementName, out catalogName))
             return true;
 
         return false;
@@ -210,7 +210,7 @@ internal sealed class LayeredDataStorage
 
     private static StormXmlElement? FindStormXmlElementByElementName(ElementCache elementCache, ReadOnlySpan<char> elementName)
     {
-        if (elementCache.StormXmlElementByClassElementAltLookup.TryGetValue(elementName, out StormXmlElement? stormXmlElement))
+        if (elementCache.StormXmlElementByClassElement.TryGetValue(elementName, out StormXmlElement? stormXmlElement))
             return stormXmlElement;
 
         return null;
@@ -218,7 +218,7 @@ internal sealed class LayeredDataStorage
 
     private static StormXmlElement? FindStormXmlElementById(ElementCache elementCache, ReadOnlySpan<char> id, ReadOnlySpan<char> catalogName)
     {
-        if (elementCache.StormXmlElementsByCatalogAltLookup.TryGetValue(catalogName, out var stormXmlElementById) &&
+        if (elementCache.StormXmlElementsByIdByCatalog.TryGetValue(catalogName, out var stormXmlElementById) &&
             stormXmlElementById.TryGetValue(id, out StormXmlElement? stormXmlElement))
         {
             return stormXmlElement;
@@ -229,7 +229,7 @@ internal sealed class LayeredDataStorage
 
     private static List<LevelScalingFieldValue>? FindScalingFieldValuesById(ElementCache elementCache, ReadOnlySpan<char> id, ReadOnlySpan<char> catalogName)
     {
-        if (elementCache.ScalingFieldValueByIdByCatalogAltLookup.TryGetValue(catalogName, out var scalingFieldValueById) &&
+        if (elementCache.ScalingFieldValueByIdByCatalog.TryGetValue(catalogName, out var scalingFieldValueById) &&
             scalingFieldValueById.TryGetValue(id, out List<LevelScalingFieldValue>? scalingFieldValues))
         {
             return scalingFieldValues;
