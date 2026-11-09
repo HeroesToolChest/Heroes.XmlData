@@ -317,3 +317,11 @@ dotnet_diagnostic.IDE0161.severity = none
 
 # SYSLIB0014: Type or member is obsolete
 dotnet_diagnostic.SYSLIB0014.severity = none
+
+# Test projects use <production namespace>.Tests (e.g. Heroes.StormData.Xml.Tests)
+# instead of folder-based namespaces
+[Tests/**/*.cs]
+dotnet_style_namespace_match_folder = false
+
+# IDE0130: Namespace does not match folder structure
+dotnet_diagnostic.IDE0130.severity = none
