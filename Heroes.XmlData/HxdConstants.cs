@@ -1,6 +1,6 @@
 ﻿namespace Heroes.XmlData;
 
-internal class HxdConstants
+internal static class HxdConstants
 {
     public const string Name = "Hxd";
 }

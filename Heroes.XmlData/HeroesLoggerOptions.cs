@@ -1,6 +1,6 @@
 ﻿namespace Heroes.XmlData;
 
-internal class HeroesLoggerOptions : ILoggerOptions
+internal sealed class HeroesLoggerOptions : ILoggerOptions
 {
     public string LogFileName => "casclib.log";
 

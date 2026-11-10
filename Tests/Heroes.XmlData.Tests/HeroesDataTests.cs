@@ -213,7 +213,6 @@ public class HeroesDataTests
                         new XElement(
                             "DamageResponse",
                             new XAttribute("ModifyLimit", "$XalatathMarkedResilienceShieldHealthPerStack"))),
-
                 })
                 .AddLevelScalingArrayElements(new List<XElement>()
                 {
