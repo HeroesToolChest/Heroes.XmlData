@@ -1,4 +1,6 @@
-﻿namespace Heroes.StormData.Xml.Tests;
+﻿using Heroes.StormData.Cache.Strings;
+
+namespace Heroes.StormData.Xml.Tests;
 
 [TestClass]
 public sealed class StormXmlFileParserTests
@@ -496,59 +498,331 @@ public sealed class StormXmlFileParserTests
         cost.ByMember["Amount"].Value.GetString().Should().Be("2");
     }
 
-    //[TestMethod]
-    //public void Parse_NonIdChildIntoBase_ShouldMergeProperties()
-    //{
-    //    // arrange
-    //    ElementCache elementCache = new();
-    //    StormXmlFileParser stormXmlFileParser = new(elementCache);
+    [TestMethod]
+    public void Parse_ValueAttributeIsAssetReference_ShouldReturnAssetTextValue()
+    {
+        // arrange
+        LayeredDataStorage layeredDataStorage = new();
 
-    //    using XmlReader reader = XmlReaderHelper.CreateXmlReader(
-    //        """
-    //        <Catalog>
-    //          <CAbil default="1">
-    //            <Name value="Abil/Name/##id##" />
-    //            <TechPlayer value="Upkeep" />
-    //            <TargetMessage value="Abil/TargetMessage/DefaultTargetMessage" />
-    //            <OrderArray>
-    //              <Color value="255,0,255,0" />
-    //              <Model value="Assets\UI\Feedback\WayPointConfirm\WayPointConfirm.m3" />
-    //              <LineTexture value="Assets\Textures\WayPointLine.dds" />
-    //            </OrderArray>
-    //            <SharedFlags index="DisableWhileDead" value="1" />
-    //            <SharedFlags index="AllowQuickCastCustomization" value="1" />
-    //            <SharedFlags index="TargetCursorVisibleInBlackMask" value="1" />
-    //          </CAbil>
-    //          <CAbilEffectInstant default="1">
-    //            <CmdButtonArray index="Execute" AutoQueueId="Spell">
-    //             <Flags index="Continuous" value="1" />
-    //            </CmdButtonArray>
-    //            <OrderArray index="0" LineTexture="Assets\Textures\Storm_WayPointLine.dds" />
-    //            <Flags index="AllowMovement" value="1" />
-    //            <Flags index="WaitToSpend" value="0" />
-    //            <Flags index="ValidateButtonState" value="1" />
-    //            <SharedFlags index="DisableWhileDead" value="0" />
-    //          </CAbilEffectInstant>
-    //        </Catalog>
-    //        """);
+        AddAssetText(layeredDataStorage, StormModType.Base, "UI_Portrait_Alarak", @"Assets\Textures\ui_targetportrait_hero_alarak.dds");
 
-    //    // act
-    //    List<StormXmlElement> result = [.. stormXmlFileParser.Parse(reader, StormFileHelper.CreateStormFile())];
+        StormXmlFileParser stormXmlFileParser = new(layeredDataStorage);
 
-    //    // assert
-    //    StormXmlElement element = result[0];
-    //    element.ElementName.Should().Be("CAbilEffectInstant");
-    //    element.Data["Name"].Value.ToString().Should().Be("Abil/Name/##id##");
-    //    element.Data["OrderArray"].ByIndex["0"]["Color"].Value.ToString().Should().Be("255,0,255,0");
-    //    element.Data["OrderArray"].ByIndex["0"]["Model"].Value.ToString().Should().Be("Assets\\UI\\Feedback\\WayPointConfirm\\WayPointConfirm.m3");
-    //    element.Data["OrderArray"].ByIndex["0"]["LineTexture"].Value.ToString().Should().Be("Assets\\Textures\\Storm_WayPointLine.dds");
-    //    element.Data["SharedFlags"].ByIndex["DisableWhileDead"].Value.ToString().Should().Be("0");
-    //    element.Data["SharedFlags"].ByIndex["AllowQuickCastCustomization"].Value.ToString().Should().Be("1");
-    //    element.Data["SharedFlags"].ByIndex["TargetCursorVisibleInBlackMask"].Value.ToString().Should().Be("1");
-    //    element.Data["Flags"].ByIndex["AllowMovement"].Value.ToString().Should().Be("1");
-    //    element.Data["Flags"].ByIndex["WaitToSpend"].Value.ToString().Should().Be("0");
-    //    element.Data["Flags"].ByIndex["ValidateButtonState"].Value.ToString().Should().Be("1");
-    //    element.Data["CmdButtonArray"].ByIndex["Execute"]["AutoQueueId"].Value.ToString().Should().Be("Spell");
-    //    element.Data["CmdButtonArray"].ByIndex["Execute"]["Flags"].ByIndex["Continuous"].Value.ToString().Should().Be("1");
-    //}
+        using XmlReader reader = XmlReaderHelper.CreateXmlReader(
+            """
+            <CHero id="Alarak">
+              <Portrait value="@UI_Portrait_Alarak" />
+            </CHero>
+            """);
+
+        // act
+        List<StormXmlElement> result = [.. stormXmlFileParser.Parse(reader, StormFileHelper.CreateStormFile())];
+
+        // assert
+        result[0].Members["Portrait"].Value.RawValue.Should().Be(@"Assets\Textures\ui_targetportrait_hero_alarak.dds");
+    }
+
+    [TestMethod]
+    public void Parse_NonValueAttributeIsAssetReference_ShouldReturnAssetTextValue()
+    {
+        // arrange
+        LayeredDataStorage layeredDataStorage = new();
+
+        AddAssetText(layeredDataStorage, StormModType.Base, "UI_WayPointLine", @"Assets\Textures\Storm_WayPointLine.dds");
+
+        StormXmlFileParser stormXmlFileParser = new(layeredDataStorage);
+
+        using XmlReader reader = XmlReaderHelper.CreateXmlReader(
+            """
+            <CAbil>
+              <OrderArray index="0" LineTexture="@UI_WayPointLine" />
+            </CAbil>
+            """);
+
+        // act
+        List<StormXmlElement> result = [.. stormXmlFileParser.Parse(reader, StormFileHelper.CreateStormFile())];
+
+        // assert
+        result[0].Members["OrderArray"].ByIndex["0"]["LineTexture"].Value.RawValue.Should().Be(@"Assets\Textures\Storm_WayPointLine.dds");
+    }
+
+    [TestMethod]
+    public void Parse_RootElementAttributeIsAssetReference_ShouldReturnAssetTextValue()
+    {
+        // arrange
+        LayeredDataStorage layeredDataStorage = new();
+
+        AddAssetText(layeredDataStorage, StormModType.Base, "UI_Model_Alarak", @"Assets\Units\Heroes\Alarak\Alarak.m3");
+
+        StormXmlFileParser stormXmlFileParser = new(layeredDataStorage);
+
+        using XmlReader reader = XmlReaderHelper.CreateXmlReader(
+            """
+            <CModel id="Alarak" Model="@UI_Model_Alarak" />
+            """);
+
+        // act
+        List<StormXmlElement> result = [.. stormXmlFileParser.Parse(reader, StormFileHelper.CreateStormFile())];
+
+        // assert
+        result[0].Id.Should().Be("Alarak");
+        result[0].Members["Model"].Value.RawValue.Should().Be(@"Assets\Units\Heroes\Alarak\Alarak.m3");
+    }
+
+    [TestMethod]
+    public void Parse_AssetReferenceNotFound_ShouldReturnEmptyValue()
+    {
+        // arrange
+        StormXmlFileParser stormXmlFileParser = new(new LayeredDataStorage());
+
+        using XmlReader reader = XmlReaderHelper.CreateXmlReader(
+            """
+            <CHero id="Alarak">
+              <Portrait value="@UI_Portrait_Alarak" />
+            </CHero>
+            """);
+
+        // act
+        List<StormXmlElement> result = [.. stormXmlFileParser.Parse(reader, StormFileHelper.CreateStormFile())];
+
+        // assert
+        StormXmlValue value = result[0].Members["Portrait"].Value;
+        value.HasValue.Should().BeTrue();
+        value.RawValue.Should().BeEmpty();
+    }
+
+    [TestMethod]
+    public void Parse_AssetReferenceWithDifferentCasing_ShouldReturnEmptyValue()
+    {
+        // arrange - asset ids are case-sensitive
+        LayeredDataStorage layeredDataStorage = new();
+
+        AddAssetText(layeredDataStorage, StormModType.Base, "UI_Portrait_Alarak", @"Assets\Textures\ui_targetportrait_hero_alarak.dds");
+
+        StormXmlFileParser stormXmlFileParser = new(layeredDataStorage);
+
+        using XmlReader reader = XmlReaderHelper.CreateXmlReader(
+            """
+            <CHero id="Alarak">
+              <Portrait value="@ui_portrait_alarak" />
+            </CHero>
+            """);
+
+        // act
+        List<StormXmlElement> result = [.. stormXmlFileParser.Parse(reader, StormFileHelper.CreateStormFile())];
+
+        // assert
+        result[0].Members["Portrait"].Value.RawValue.Should().BeEmpty();
+    }
+
+    [TestMethod]
+    public void Parse_AssetReferenceIsOnlyAtSign_ShouldReturnEmptyValue()
+    {
+        // arrange
+        LayeredDataStorage layeredDataStorage = new();
+
+        AddAssetText(layeredDataStorage, StormModType.Base, "UI_Portrait_Alarak", @"Assets\Textures\ui_targetportrait_hero_alarak.dds");
+
+        StormXmlFileParser stormXmlFileParser = new(layeredDataStorage);
+
+        using XmlReader reader = XmlReaderHelper.CreateXmlReader(
+            """
+            <CHero id="Alarak">
+              <Portrait value="@" />
+            </CHero>
+            """);
+
+        // act
+        List<StormXmlElement> result = [.. stormXmlFileParser.Parse(reader, StormFileHelper.CreateStormFile())];
+
+        // assert
+        result[0].Members["Portrait"].Value.RawValue.Should().BeEmpty();
+    }
+
+    [TestMethod]
+    public void Parse_AssetReferenceAssetTextValueIsEmpty_ShouldReturnEmptyValue()
+    {
+        // arrange
+        LayeredDataStorage layeredDataStorage = new();
+
+        AddAssetText(layeredDataStorage, StormModType.Base, "UI_Portrait_Alarak", string.Empty);
+
+        StormXmlFileParser stormXmlFileParser = new(layeredDataStorage);
+
+        using XmlReader reader = XmlReaderHelper.CreateXmlReader(
+            """
+            <CHero id="Alarak">
+              <Portrait value="@UI_Portrait_Alarak" />
+            </CHero>
+            """);
+
+        // act
+        List<StormXmlElement> result = [.. stormXmlFileParser.Parse(reader, StormFileHelper.CreateStormFile())];
+
+        // assert
+        result[0].Members["Portrait"].Value.RawValue.Should().BeEmpty();
+    }
+
+    [TestMethod]
+    public void Parse_AssetReferenceInMultipleLayers_ShouldReturnCustomAssetTextValue()
+    {
+        // arrange
+        LayeredDataStorage layeredDataStorage = new();
+
+        AddAssetText(layeredDataStorage, StormModType.Base, "UI_Portrait_Alarak", "base.dds");
+        AddAssetText(layeredDataStorage, StormModType.Map, "UI_Portrait_Alarak", "map.dds");
+        AddAssetText(layeredDataStorage, StormModType.Custom, "UI_Portrait_Alarak", "custom.dds");
+
+        StormXmlFileParser stormXmlFileParser = new(layeredDataStorage);
+
+        using XmlReader reader = XmlReaderHelper.CreateXmlReader(
+            """
+            <CHero id="Alarak">
+              <Portrait value="@UI_Portrait_Alarak" />
+            </CHero>
+            """);
+
+        // act
+        List<StormXmlElement> result = [.. stormXmlFileParser.Parse(reader, StormFileHelper.CreateStormFile())];
+
+        // assert
+        result[0].Members["Portrait"].Value.RawValue.Should().Be("custom.dds");
+    }
+
+    [TestMethod]
+    public void Parse_AssetTextValueContainsConstant_ShouldNotEvaluateConstant()
+    {
+        // arrange - the asset text value is used as is, it is not evaluated as a $ constant
+        LayeredDataStorage layeredDataStorage = new();
+
+        layeredDataStorage.GetDataStorage(StormModType.Base).AddConstElement(XmlReaderHelper.GetStormXmlConstElement(
+            """
+            <const id="$AlarakLife" value="1330" />
+            """));
+        AddAssetText(layeredDataStorage, StormModType.Base, "AlarakLifeAsset", "$AlarakLife");
+
+        StormXmlFileParser stormXmlFileParser = new(layeredDataStorage);
+
+        using XmlReader reader = XmlReaderHelper.CreateXmlReader(
+            """
+            <CUnit id="HeroAlarak">
+              <LifeMax value="@AlarakLifeAsset" />
+            </CUnit>
+            """);
+
+        // act
+        List<StormXmlElement> result = [.. stormXmlFileParser.Parse(reader, StormFileHelper.CreateStormFile())];
+
+        // assert
+        result[0].Members["LifeMax"].Value.RawValue.Should().Be("$AlarakLife");
+    }
+
+    [TestMethod]
+    public void Parse_AssetReferenceContainsConstant_ShouldLookUpAssetNotConstant()
+    {
+        // arrange - a value starting with '@' is always an asset reference, even if it contains a '$'
+        LayeredDataStorage layeredDataStorage = new();
+
+        layeredDataStorage.GetDataStorage(StormModType.Base).AddConstElement(XmlReaderHelper.GetStormXmlConstElement(
+            """
+            <const id="$AlarakLife" value="1330" />
+            """));
+
+        StormXmlFileParser stormXmlFileParser = new(layeredDataStorage);
+
+        using XmlReader reader = XmlReaderHelper.CreateXmlReader(
+            """
+            <CUnit id="HeroAlarak">
+              <LifeMax value="@$AlarakLife" />
+            </CUnit>
+            """);
+
+        // act
+        List<StormXmlElement> result = [.. stormXmlFileParser.Parse(reader, StormFileHelper.CreateStormFile())];
+
+        // assert
+        result[0].Members["LifeMax"].Value.RawValue.Should().BeEmpty();
+    }
+
+    [TestMethod]
+    [DataRow("Alarak@Portrait")]
+    [DataRow(" @UI_Portrait_Alarak")]
+    [DataRow("UI_Portrait_Alarak@")]
+    public void Parse_AtSignNotAtStartOfValue_ShouldReturnValueAsIs(string attributeValue)
+    {
+        // arrange - only a leading '@' makes it an asset reference
+        LayeredDataStorage layeredDataStorage = new();
+
+        AddAssetText(layeredDataStorage, StormModType.Base, "UI_Portrait_Alarak", @"Assets\Textures\ui_targetportrait_hero_alarak.dds");
+
+        StormXmlFileParser stormXmlFileParser = new(layeredDataStorage);
+
+        using XmlReader reader = XmlReaderHelper.CreateXmlReader(
+            $"""
+            <CHero id="Alarak">
+              <Portrait value="{attributeValue}" />
+            </CHero>
+            """);
+
+        // act
+        List<StormXmlElement> result = [.. stormXmlFileParser.Parse(reader, StormFileHelper.CreateStormFile())];
+
+        // assert
+        result[0].Members["Portrait"].Value.RawValue.Should().Be(attributeValue);
+    }
+
+    [TestMethod]
+    public void Parse_ConstElementValueIsAssetReference_ShouldReturnAssetTextValue()
+    {
+        // arrange
+        LayeredDataStorage layeredDataStorage = new();
+
+        AddAssetText(layeredDataStorage, StormModType.Base, "UI_Portrait_Alarak", @"Assets\Textures\ui_targetportrait_hero_alarak.dds");
+
+        StormXmlFileParser stormXmlFileParser = new(layeredDataStorage);
+
+        using XmlReader reader = XmlReaderHelper.CreateXmlReader(
+            """
+            <const id="$AlarakPortrait" value="@UI_Portrait_Alarak" />
+            """);
+
+        // act
+        List<StormXmlElement> result = [.. stormXmlFileParser.Parse(reader, StormFileHelper.CreateStormFile())];
+
+        // assert
+        StormXmlConstElement constElement = (StormXmlConstElement)result[0];
+        constElement.Id.Should().Be("$AlarakPortrait");
+        constElement.Value.Should().Be(@"Assets\Textures\ui_targetportrait_hero_alarak.dds");
+    }
+
+    [TestMethod]
+    public void Parse_IdAttributeStartsWithAtSign_ShouldReturnIdAsIs()
+    {
+        // arrange - the id attribute is never an asset reference
+        LayeredDataStorage layeredDataStorage = new();
+
+        AddAssetText(layeredDataStorage, StormModType.Base, "Alarak", @"Assets\Textures\ui_targetportrait_hero_alarak.dds");
+
+        StormXmlFileParser stormXmlFileParser = new(layeredDataStorage);
+
+        using XmlReader reader = XmlReaderHelper.CreateXmlReader(
+            """
+            <CHero id="@Alarak">
+              <Portrait value="@Alarak" />
+            </CHero>
+            """);
+
+        // act
+        List<StormXmlElement> result = [.. stormXmlFileParser.Parse(reader, StormFileHelper.CreateStormFile())];
+
+        // assert
+        result[0].Id.Should().Be("@Alarak");
+        result[0].Members["Portrait"].Value.RawValue.Should().Be(@"Assets\Textures\ui_targetportrait_hero_alarak.dds");
+    }
+
+    // adds the asset text directly to the text cache of the given layer
+    private static void AddAssetText(LayeredDataStorage layeredDataStorage, StormModType stormModType, string id, string value)
+    {
+        layeredDataStorage.GetDataStorage(stormModType).TextCache.AssetTextsById.Dictionary.Add(id, new StringValue(value, StormFileHelper.CreateStormFile()));
+    }
 }

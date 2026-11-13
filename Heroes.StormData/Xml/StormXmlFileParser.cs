@@ -2,8 +2,6 @@
 
 internal sealed class StormXmlFileParser
 {
-    private static readonly SearchValues<char> _constantVariableSearch = SearchValues.Create(" ,.;");
-
     private readonly LayeredDataStorage _layeredDataStorage;
 
     public StormXmlFileParser(LayeredDataStorage layeredDataStorage)
@@ -124,18 +122,12 @@ internal sealed class StormXmlFileParser
                 else if (!isArray && name.Equals(StormXmlConstants.IndexAttributeName, StringComparison.OrdinalIgnoreCase))
                     isArray = true;
 
-                if (value.Length > 0 && value[0] == '@')
-                {
-                    // TODO: asset text
-                }
+                if (!isIdAttribute && value.Length > 0 && value[0] == '@')
+                    stormXmlMember.Add(name, GetAssetTextValue(value), rootMember);
                 else if (!isIdAttribute && value.IndexOf('$') is int indexOfConstant && indexOfConstant >= 0)
-                {
                     stormXmlMember.Add(name, ComputeConstantValue(value, indexOfConstant), rootMember);
-                }
                 else
-                {
                     stormXmlMember.Add(name, value, rootMember);
-                }
             }
             while (reader.MoveToNextAttribute());
 
@@ -191,94 +183,13 @@ internal sealed class StormXmlFileParser
         }
 
         return StormPrefixNotation.Compute(_layeredDataStorage, value).ToString(CultureInfo.InvariantCulture);
+    }
 
-        // here it should be a const element so we need to find the constant in the value
-        //ReadOnlySpan<char> startOfConstant = value.AsSpan(indexOfConstant);
+    private string GetAssetTextValue(string value)
+    {
+        if (_layeredDataStorage.TryGetFirstAssetTextById(value.AsSpan(1), out string? stringValue))
+            return stringValue;
 
-        //int endIndexOfConst = startOfConstant.IndexOfAny(_constantVariableSearch);
-
-        //ReadOnlySpan<char> constant = endIndexOfConst < 0
-        //    ? startOfConstant
-        //    : startOfConstant[..endIndexOfConst];
-
-        //if (constant.IsEmpty)
-        //    return string.Empty;
-
-
-
-
-        //if (constant[0] == '$')
-        //{
-        //    if (_layeredDataStorage.TryGetFirstStormXmlConstElementById(constant, out StormXmlConstElement? stormXmlConstElement))
-        //    {
-        //        //stormXmlConstElement
-        //    }
-        //}
-        //else if (double.TryParse(constant, NumberStyles.Float, CultureInfo.InvariantCulture, out double result))
-        //{
-        //    return result.ToString();
-        //}
-
-        //return constant.ToString();
-        //return _stormStorage.GetValueFromConstTextAsText(constant);
-
-
-
-        //if (text.IsEmpty)
-        //    return string.Empty;
-
-        //if (text[0] == '$')
-        //{
-        //    if (TryGetFirstConstantXElementById(text, out StormXElementValuePath? stormXElementValuePath))
-        //    {
-        //        return GetValueFromConstElement(stormXElementValuePath.Value);
-        //    }
-        //}
-        //else if (double.TryParse(text, NumberStyles.Float, CultureInfo.InvariantCulture, out double result))
-        //{
-        //    return result.ToString();
-        //}
-
-        //return text.ToString();
-
-
-
-        //public string GetValueFromConstElement(XElement constElement)
-        //{
-        //    (string? valueAttribute, bool isExpressionAttribute) = ReadConstAttributes(constElement);
-
-        //    if (string.IsNullOrWhiteSpace(valueAttribute))
-        //        return valueAttribute ?? string.Empty;
-
-        //    if (isExpressionAttribute)
-        //        return HeroesPrefixNotation.Compute(this, valueAttribute).ToString();
-
-        //    if (double.TryParse(valueAttribute, NumberStyles.Float, CultureInfo.InvariantCulture, out double value))
-        //        return value.ToString();
-
-        //    return valueAttribute;
-        //}
-
-
-
-        //public double GetValueFromConstTextAsNumber(ReadOnlySpan<char> text)
-        //{
-        //    if (text.IsEmpty)
-        //        return 0;
-
-        //    if (text[0] == '$')
-        //    {
-        //        if (TryGetFirstConstantXElementById(text, out StormXElementValuePath? stormXElementValuePath))
-        //        {
-        //            return GetValueFromConstElementAsNumber(stormXElementValuePath.Value);
-        //        }
-        //    }
-        //    else if (double.TryParse(text, NumberStyles.Float, CultureInfo.InvariantCulture, out double result))
-        //    {
-        //        return result;
-        //    }
-
-        //    return 0;
-        //}
+        return string.Empty;
     }
 }

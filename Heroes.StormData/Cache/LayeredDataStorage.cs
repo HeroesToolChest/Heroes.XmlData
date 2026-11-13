@@ -17,6 +17,10 @@ internal sealed class LayeredDataStorage
     private readonly ElementCache _mapElementCache;
     private readonly ElementCache _customElementCache;
 
+    private readonly TextCache _baseTextCache;
+    private readonly TextCache _mapTextCache;
+    private readonly TextCache _customTextCache;
+
     private readonly MergedStormXmlElementCache _mergedStormXmlElementCache;
 
     /// <summary>
@@ -31,6 +35,10 @@ internal sealed class LayeredDataStorage
         _baseElementCache = _baseDataStorage.ElementCache;
         _mapElementCache = _mapDataStorage.ElementCache;
         _customElementCache = _customDataStorage.ElementCache;
+
+        _baseTextCache = _baseDataStorage.TextCache;
+        _mapTextCache = _mapDataStorage.TextCache;
+        _customTextCache = _customDataStorage.TextCache;
 
         _mergedStormXmlElementCache = new MergedStormXmlElementCache(new StormXmlElementMerger(this));
     }
@@ -206,6 +214,41 @@ internal sealed class LayeredDataStorage
     public void ClearMergedStormXmlElementCache()
     {
         _mergedStormXmlElementCache.Clear();
+    }
+
+    /// <summary>
+    /// Tries to retrieve the first asset text value (from an <c>assets.txt</c> file) by its <c>id</c> from the data storages.
+    /// </summary>
+    /// <param name="id">The <c>id</c> (the key) of the asset text, without the leading <c>@</c> that is used to reference it in XML. This is case-sensitive.</param>
+    /// <param name="value">
+    /// When this method returns, contains the asset text value associated with the specified <c>id</c>, if found; otherwise, <see langword="null"/>.
+    /// The value can be <see cref="string.Empty"/> if the asset text has no value.
+    /// </param>
+    /// <returns><see langword="true"/> if the asset text was found; otherwise, <see langword="false"/>.</returns>
+    public bool TryGetFirstAssetTextById(ReadOnlySpan<char> id, [NotNullWhen(true)] out string? value)
+    {
+        value = null;
+
+        // custom first
+        if (_customTextCache.AssetTextsById.TryGetValue(id, out StringValue? stringValue))
+        {
+            value = stringValue.Value;
+            return true;
+        }
+
+        if (_mapTextCache.AssetTextsById.TryGetValue(id, out stringValue))
+        {
+            value = stringValue.Value;
+            return true;
+        }
+
+        if (_baseTextCache.AssetTextsById.TryGetValue(id, out stringValue))
+        {
+            value = stringValue.Value;
+            return true;
+        }
+
+        return false;
     }
 
     private static StormXmlElement? FindStormXmlElementByElementName(ElementCache elementCache, ReadOnlySpan<char> elementName)

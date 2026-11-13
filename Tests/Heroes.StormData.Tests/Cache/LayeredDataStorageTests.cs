@@ -1,4 +1,6 @@
-﻿namespace Heroes.StormData.Cache.Tests;
+﻿using Heroes.StormData.Cache.Strings;
+
+namespace Heroes.StormData.Cache.Tests;
 
 [TestClass]
 internal sealed class LayeredDataStorageTests
@@ -1558,6 +1560,219 @@ internal sealed class LayeredDataStorageTests
         after.Should().NotBeSameAs(before);
         after!.Members.GetMember("Amount").Value.RawValue.Should().Be("120");
         after.Members.GetMember("Kind").Value.RawValue.Should().Be("Spell");
+    }
+
+    [TestMethod]
+    [DataRow(StormModType.Base)]
+    [DataRow(StormModType.Map)]
+    [DataRow(StormModType.Custom)]
+    public void TryGetFirstAssetTextById_InSingleLayer_ReturnsValue(StormModType stormModType)
+    {
+        // arrange
+        LayeredDataStorage layeredDataStorage = new();
+        AddAssetText(layeredDataStorage, stormModType, "AlarakPortrait", "Assets/Textures/ui_alarak_portrait.dds");
+
+        // act
+        bool result = layeredDataStorage.TryGetFirstAssetTextById("AlarakPortrait", out string? value);
+
+        // assert
+        result.Should().BeTrue();
+        value.Should().Be("Assets/Textures/ui_alarak_portrait.dds");
+    }
+
+    [TestMethod]
+    public void TryGetFirstAssetTextById_NoLayersPopulated_ReturnsFalse()
+    {
+        // arrange
+        LayeredDataStorage layeredDataStorage = new();
+
+        // act
+        bool result = layeredDataStorage.TryGetFirstAssetTextById("AlarakPortrait", out string? value);
+
+        // assert
+        result.Should().BeFalse();
+        value.Should().BeNull();
+    }
+
+    [TestMethod]
+    public void TryGetFirstAssetTextById_IdNotInAnyLayer_ReturnsFalse()
+    {
+        // arrange
+        LayeredDataStorage layeredDataStorage = new();
+        AddAssetText(layeredDataStorage, StormModType.Base, "BaseId", "base.dds");
+        AddAssetText(layeredDataStorage, StormModType.Map, "MapId", "map.dds");
+        AddAssetText(layeredDataStorage, StormModType.Custom, "CustomId", "custom.dds");
+
+        // act
+        bool result = layeredDataStorage.TryGetFirstAssetTextById("DoesNotExist", out string? value);
+
+        // assert
+        result.Should().BeFalse();
+        value.Should().BeNull();
+    }
+
+    [TestMethod]
+    public void TryGetFirstAssetTextById_IdWithDifferentCasing_ReturnsFalse()
+    {
+        // arrange - asset ids are stored with StringComparer.Ordinal, so lookups are case-sensitive
+        LayeredDataStorage layeredDataStorage = new();
+        AddAssetText(layeredDataStorage, StormModType.Base, "AlarakPortrait", "alarak.dds");
+
+        // act
+        bool result = layeredDataStorage.TryGetFirstAssetTextById("alarakportrait", out string? value);
+
+        // assert
+        result.Should().BeFalse();
+        value.Should().BeNull();
+    }
+
+    [TestMethod]
+    public void TryGetFirstAssetTextById_EmptyId_ReturnsFalse()
+    {
+        // arrange
+        LayeredDataStorage layeredDataStorage = new();
+        AddAssetText(layeredDataStorage, StormModType.Base, "AlarakPortrait", "alarak.dds");
+
+        // act
+        bool result = layeredDataStorage.TryGetFirstAssetTextById(ReadOnlySpan<char>.Empty, out string? value);
+
+        // assert
+        result.Should().BeFalse();
+        value.Should().BeNull();
+    }
+
+    [TestMethod]
+    public void TryGetFirstAssetTextById_IdAsSpanSlice_ReturnsValue()
+    {
+        // arrange - mirrors the xml lookup, where the leading '@' is sliced off the attribute value
+        LayeredDataStorage layeredDataStorage = new();
+        AddAssetText(layeredDataStorage, StormModType.Base, "AlarakPortrait", "alarak.dds");
+
+        // act
+        bool result = layeredDataStorage.TryGetFirstAssetTextById("@AlarakPortrait".AsSpan(1), out string? value);
+
+        // assert
+        result.Should().BeTrue();
+        value.Should().Be("alarak.dds");
+    }
+
+    [TestMethod]
+    public void TryGetFirstAssetTextById_ValueIsEmpty_ReturnsTrueWithEmptyValue()
+    {
+        // arrange - an assets.txt entry with no value is stored as an empty string
+        LayeredDataStorage layeredDataStorage = new();
+        AddAssetText(layeredDataStorage, StormModType.Base, "AlarakPortrait", string.Empty);
+
+        // act
+        bool result = layeredDataStorage.TryGetFirstAssetTextById("AlarakPortrait", out string? value);
+
+        // assert
+        result.Should().BeTrue();
+        value.Should().BeEmpty();
+    }
+
+    [TestMethod]
+    public void TryGetFirstAssetTextById_InBaseAndMap_ReturnsMapValue()
+    {
+        // arrange
+        LayeredDataStorage layeredDataStorage = new();
+        AddAssetText(layeredDataStorage, StormModType.Base, "AlarakPortrait", "base.dds");
+        AddAssetText(layeredDataStorage, StormModType.Map, "AlarakPortrait", "map.dds");
+
+        // act
+        bool result = layeredDataStorage.TryGetFirstAssetTextById("AlarakPortrait", out string? value);
+
+        // assert
+        result.Should().BeTrue();
+        value.Should().Be("map.dds");
+    }
+
+    [TestMethod]
+    public void TryGetFirstAssetTextById_InBaseAndCustom_ReturnsCustomValue()
+    {
+        // arrange
+        LayeredDataStorage layeredDataStorage = new();
+        AddAssetText(layeredDataStorage, StormModType.Base, "AlarakPortrait", "base.dds");
+        AddAssetText(layeredDataStorage, StormModType.Custom, "AlarakPortrait", "custom.dds");
+
+        // act
+        bool result = layeredDataStorage.TryGetFirstAssetTextById("AlarakPortrait", out string? value);
+
+        // assert
+        result.Should().BeTrue();
+        value.Should().Be("custom.dds");
+    }
+
+    [TestMethod]
+    public void TryGetFirstAssetTextById_InMapAndCustom_ReturnsCustomValue()
+    {
+        // arrange
+        LayeredDataStorage layeredDataStorage = new();
+        AddAssetText(layeredDataStorage, StormModType.Map, "AlarakPortrait", "map.dds");
+        AddAssetText(layeredDataStorage, StormModType.Custom, "AlarakPortrait", "custom.dds");
+
+        // act
+        bool result = layeredDataStorage.TryGetFirstAssetTextById("AlarakPortrait", out string? value);
+
+        // assert
+        result.Should().BeTrue();
+        value.Should().Be("custom.dds");
+    }
+
+    [TestMethod]
+    public void TryGetFirstAssetTextById_InAllLayers_ReturnsCustomValue()
+    {
+        // arrange
+        LayeredDataStorage layeredDataStorage = new();
+        AddAssetText(layeredDataStorage, StormModType.Base, "AlarakPortrait", "base.dds");
+        AddAssetText(layeredDataStorage, StormModType.Map, "AlarakPortrait", "map.dds");
+        AddAssetText(layeredDataStorage, StormModType.Custom, "AlarakPortrait", "custom.dds");
+
+        // act
+        bool result = layeredDataStorage.TryGetFirstAssetTextById("AlarakPortrait", out string? value);
+
+        // assert
+        result.Should().BeTrue();
+        value.Should().Be("custom.dds");
+    }
+
+    [TestMethod]
+    public void TryGetFirstAssetTextById_EmptyValueInHigherLayer_ReturnsEmptyValue()
+    {
+        // arrange - a higher layer with an empty value still takes precedence, it does not fall through to a lower layer
+        LayeredDataStorage layeredDataStorage = new();
+        AddAssetText(layeredDataStorage, StormModType.Base, "AlarakPortrait", "base.dds");
+        AddAssetText(layeredDataStorage, StormModType.Custom, "AlarakPortrait", string.Empty);
+
+        // act
+        bool result = layeredDataStorage.TryGetFirstAssetTextById("AlarakPortrait", out string? value);
+
+        // assert
+        result.Should().BeTrue();
+        value.Should().BeEmpty();
+    }
+
+    [TestMethod]
+    public void TryGetFirstAssetTextById_HigherLayerHasOtherIds_ReturnsLowerLayerValue()
+    {
+        // arrange
+        LayeredDataStorage layeredDataStorage = new();
+        AddAssetText(layeredDataStorage, StormModType.Base, "AlarakPortrait", "base.dds");
+        AddAssetText(layeredDataStorage, StormModType.Map, "OtherId", "map.dds");
+        AddAssetText(layeredDataStorage, StormModType.Custom, "AnotherId", "custom.dds");
+
+        // act
+        bool result = layeredDataStorage.TryGetFirstAssetTextById("AlarakPortrait", out string? value);
+
+        // assert
+        result.Should().BeTrue();
+        value.Should().Be("base.dds");
+    }
+
+    // adds the asset text directly to the text cache of the given layer
+    private static void AddAssetText(LayeredDataStorage layeredDataStorage, StormModType stormModType, string id, string value)
+    {
+        layeredDataStorage.GetDataStorage(stormModType).TextCache.AssetTextsById.Dictionary.Add(id, new StringValue(value, StormFileHelper.CreateStormFile()));
     }
 
     // Effect,ChildDamage (Amount 120) with parent Effect,ParentDamage (Kind Spell), and Effect,OrphanDamage whose parent doesn't exist yet
