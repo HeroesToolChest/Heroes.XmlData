@@ -3,10 +3,6 @@
 /// <summary>
 /// Represents a cache for storing and retrieving elements from the data storage.
 /// </summary>
-/// <remarks>
-/// Lookups are exposed as <see cref="ReadOnlySpan{T}"/> alternate lookups. Add entries through the lookup's <c>Dictionary</c> property
-/// so the existing <see cref="string"/> key is stored instead of a new copy created from a span.
-/// </remarks>
 internal sealed class ElementCache
 {
     /// <summary>

@@ -31,6 +31,9 @@ internal abstract class StormModBase<T> : IStormMod
         HeroesSource = heroesSource;
         ModContainer = new StormModContainer(heroesSource.SourceContainer, ModType);
         //StormModStorage = heroesSource.StormStorage.CreateModStorage(this);
+
+        GameDataDirectoryPath = Path.Combine(DirectoryPath, SourceConstants.BaseStormDataDirectory, SourceConstants.GameDataDirectory);
+        AssetsTextFilePath = Path.Combine(GameDataDirectoryPath, SourceConstants.AssetsTextFile);
     }
 
     public string Name => Path.GetFileNameWithoutExtension(DirectoryPath);
@@ -48,7 +51,12 @@ internal abstract class StormModBase<T> : IStormMod
     /// <summary>
     /// Gets the path of the <c>GameData</c> directory.
     /// </summary>
-    protected virtual string GameDataDirectoryPath => Path.Combine(DirectoryPath, SourceConstants.BaseStormDataDirectory, SourceConstants.GameDataDirectory);
+    protected virtual string GameDataDirectoryPath { get; }
+
+    /// <summary>
+    /// Gets the <c>Assets.txt</c> file path.
+    /// </summary>
+    protected virtual string AssetsTextFilePath { get; } 
 
     public virtual void LoadStormFiles()
     {
@@ -56,7 +64,7 @@ internal abstract class StormModBase<T> : IStormMod
         //LoadFontStyleFile();
         //LoadStormLayoutDirectory();
         //LoadAssetsDirectory();
-        //LoadAssetsTextFile();
+        LoadAssetsTextFile();
 
         LoadGameDataDirectory();
         //LoadGameDataXmlFile();
@@ -77,6 +85,26 @@ internal abstract class StormModBase<T> : IStormMod
     /// The subdirectories are loaded from <see cref="LoadGameDataXmlFile"/>.
     /// </summary>
     public abstract void LoadGameDataDirectory();
+
+    //    /// <summary>
+    ///// Loads the assets files from the <see cref="AssetsDirectoryPath"/>. Include all subdirectories.
+    ///// </summary>
+    //public abstract void LoadAssetsDirectory();
+
+    protected void LoadAssetsTextFile()
+    {
+        if (!TryGetFile(AssetsTextFilePath, out Stream? stream))
+            return;
+
+        using (stream)
+        {
+            ModContainer.LoadAssetsTextFile(stream, new StormFile()
+            {
+                StormModName = Name,
+                StormModPath = AssetsTextFilePath,
+            });
+        }
+    }
 
     protected void LoadGameDataFiles(IEnumerable<string> files)
     {

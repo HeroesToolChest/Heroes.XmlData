@@ -15,6 +15,4 @@ public class StormFile
     /// Gets the relative path to the <c>stormmod</c> that this file exists in.
     /// </summary>
     public required string StormModPath { get; init; }
-
-
 }

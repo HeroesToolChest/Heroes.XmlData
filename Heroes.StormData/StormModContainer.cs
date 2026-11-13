@@ -1,4 +1,6 @@
-﻿namespace Heroes.StormData;
+﻿using System.Text;
+
+namespace Heroes.StormData;
 
 /// <summary>
 /// Represents a container for a specific <c>stormmod</c> and its associated files and elements.
@@ -10,6 +12,7 @@ public class StormModContainer
 
     private readonly List<StormFile> _notFoundFilesList = [];
     private readonly List<StormFile> _loadedXmlFilesList = [];
+    private readonly List<StormFile> _loadedAssetsTextFilesList = [];
 
     internal StormModContainer(SourceContainer sourceContainer, StormModType stormModType)
     {
@@ -37,7 +40,21 @@ public class StormModContainer
             else
                 AddElement(element);
         }
+    }
 
+    internal void LoadAssetsTextFile(Stream stream, StormFile stormFile)
+    {
+        _loadedAssetsTextFilesList.Add(stormFile);
+
+        using KeyValueTextReader reader = new(stream);
+
+        while (reader.TryRead(out ReadOnlySpan<byte> key, out ReadOnlySpan<byte> value))
+        {
+            string id = Encoding.UTF8.GetString(key);
+            string text = value.IsEmpty ? string.Empty : Encoding.UTF8.GetString(value);
+
+            _specificDataStorage.TextCache.AssetTextsById.Dictionary[id] = new StringValue(text, stormFile);
+        }
     }
 
     internal void AddFileNotFound(StormFile stormFile)
