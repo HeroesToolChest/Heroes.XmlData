@@ -1395,7 +1395,7 @@ public class StormXmlArrayTests
     private static StormXmlMember CreateArrayMember(string name, params (string Name, string Value)[] attributes)
     {
         StormXmlMember member = CreateMember(name, attributes);
-        member.IsArray = true;
+        member.IsArrayItem = true;
 
         return member;
     }

@@ -134,7 +134,7 @@ internal sealed class StormXmlFileParser
             reader.MoveToElement(); // back to the element node
         }
 
-        stormXmlMember.IsArray = isArray;
+        stormXmlMember.IsArrayItem = isArray;
 
         if (isEmptyElement)
         {

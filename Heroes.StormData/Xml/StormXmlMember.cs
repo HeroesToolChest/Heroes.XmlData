@@ -29,14 +29,18 @@ public sealed class StormXmlMember
     public StormXmlValue Value { get; private set; }
 
     /// <summary>
-    /// Gets a value indicating whether the member is in an array.
-    /// </summary>
-    public bool IsArray { get; internal set; }
-
-    /// <summary>
     /// Gets the number of unique members the member has (elements that are arrays are counted as one single item).
     /// </summary>
     public int Count => _membersByName.Count;
+
+    /// <summary>
+    /// Gets or sets a value indicating whether the member is an item of an array (e.g. <c>&lt;Flags index="Continuous" value="1" /&gt;</c>), rather than a single member.
+    /// <para>
+    /// This is set when the element name ends with <c>Array</c>, is a known array element, or has an <c>index</c> attribute.
+    /// The first occurrence of a member name decides whether its parent's <see cref="StormXmlArray"/> is an array (<see cref="StormXmlArray.IsArray"/>).
+    /// </para>
+    /// </summary>
+    internal bool IsArrayItem { get; set; }
 
     /// <summary>
     /// Gets the member with the specified name.
@@ -137,10 +141,10 @@ public sealed class StormXmlMember
 
         if (!arrayExists || currentArray is null)
         {
-            currentArray = new StormXmlArray(member.IsArray);
+            currentArray = new StormXmlArray(member.IsArrayItem);
         }
 
-        if (!member.IsArray && member.TryGetMember(StormXmlConstants.ValueAttributeName, out StormXmlArray? valueProperty))
+        if (!member.IsArrayItem && member.TryGetMember(StormXmlConstants.ValueAttributeName, out StormXmlArray? valueProperty))
         {
             currentArray.Value = valueProperty.Value;
         }
@@ -218,7 +222,7 @@ public sealed class StormXmlMember
     {
         StormXmlMember clone = new(Name)
         {
-            IsArray = IsArray,
+            IsArrayItem = IsArrayItem,
         };
 
         rootMember ??= clone;

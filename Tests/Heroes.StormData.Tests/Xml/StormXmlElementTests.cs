@@ -468,15 +468,15 @@ public sealed class StormXmlElementTests
         baseElement.ElementName.Should().Be("EffectDamage");
         baseElement.Parent.Should().Be("StormSpell");
         baseElement.Members["ResponseFlags"].ByIndex["Acquire"].Value.RawValue.Should().Be("1");
-        baseElement.Members["ResponseFlags"].ByIndex["Acquire"].IsArray.Should().BeTrue();
+        baseElement.Members["ResponseFlags"].ByIndex["Acquire"].IsArrayItem.Should().BeTrue();
         baseElement.Members["LeechScoreArray"].ByIndex["0"]["Value"].Value.RawValue.Should().Be("SelfHealing");
-        baseElement.Members["LeechScoreArray"].ByIndex["0"].IsArray.Should().BeTrue();
+        baseElement.Members["LeechScoreArray"].ByIndex["0"].IsArrayItem.Should().BeTrue();
         baseElement.Members["ImpactLocation"].ByMember["Value"].Value.RawValue.Should().Be("TargetUnitOrPoint");
         baseElement.Members["ImpactLocation"].ByMember["History"].Value.RawValue.Should().Be("Damage");
         baseElement.Members["DamageModifierSource"].ByMember["Value"].Value.RawValue.Should().Be("Caster");
         baseElement.Members["AmountScoreArray"].ByIndex["3"]["Value"].Value.RawValue.Should().Be("MinionDamage");
         baseElement.Members["AmountScoreArray"].ByIndex["3"]["Validator"].Value.RawValue.Should().Be("TargetMinion");
-        baseElement.Members["AmountScoreArray"].ByIndex["3"].IsArray.Should().BeTrue();
+        baseElement.Members["AmountScoreArray"].ByIndex["3"].IsArrayItem.Should().BeTrue();
         baseElement.Members["MultiplicativeModifierArray"].ByIndex["MuradinStormboltSledgehammer"]["Modifier"].Value.RawValue.Should().Be("2.5");
 
         baseElement.Members["SplashHistory"].IsArray.Should().BeFalse();

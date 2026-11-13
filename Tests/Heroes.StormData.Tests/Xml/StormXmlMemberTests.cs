@@ -21,7 +21,7 @@ public sealed class StormXmlMemberTests
 
         // assert
         member.Count.Should().Be(0);
-        member.IsArray.Should().BeFalse();
+        member.IsArrayItem.Should().BeFalse();
         member.Value.HasValue.Should().BeFalse();
     }
 
@@ -931,7 +931,7 @@ public sealed class StormXmlMemberTests
 
         clonedItem.Should().NotBeSameAs(item);
         clonedItem.Name.Should().Be("Items");
-        clonedItem.IsArray.Should().BeTrue();
+        clonedItem.IsArrayItem.Should().BeTrue();
         clonedItem.GetMember("X").Value.RawValue.Should().Be("1");
     }
 
@@ -1518,7 +1518,7 @@ public sealed class StormXmlMemberTests
     private static StormXmlMember CreateArrayMember(string name, params (string Name, string Value)[] attributes)
     {
         StormXmlMember member = CreateMember(name, attributes);
-        member.IsArray = true;
+        member.IsArrayItem = true;
 
         return member;
     }
