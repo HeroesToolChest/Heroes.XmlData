@@ -7,14 +7,13 @@ namespace Heroes.StormData.Xml;
 /// </summary>
 public sealed class StormXmlMember
 {
-    private readonly Dictionary<string, StormXmlArray> _membersByName = new(StringComparer.Ordinal);
-    private readonly Dictionary<string, StormXmlArray>.AlternateLookup<ReadOnlySpan<char>> _membersByNameAltLookup;
+    private readonly Dictionary<string, StormXmlArray>.AlternateLookup<ReadOnlySpan<char>> _membersByName =
+        new Dictionary<string, StormXmlArray>(StringComparer.Ordinal).GetAlternateLookup<ReadOnlySpan<char>>();
+
     private Dictionary<string, StormXmlToken> _tokens = new(StringComparer.Ordinal);
 
     internal StormXmlMember(string name)
     {
-        _membersByNameAltLookup = _membersByName.GetAlternateLookup<ReadOnlySpan<char>>();
-
         Name = name;
     }
 
@@ -31,7 +30,7 @@ public sealed class StormXmlMember
     /// <summary>
     /// Gets the number of unique members the member has (elements that are arrays are counted as one single item).
     /// </summary>
-    public int Count => _membersByName.Count;
+    public int Count => _membersByName.Dictionary.Count;
 
     /// <summary>
     /// Gets or sets a value indicating whether the member is an item of an array (e.g. <c>&lt;Flags index="Continuous" value="1" /&gt;</c>), rather than a single member.
@@ -94,7 +93,7 @@ public sealed class StormXmlMember
     /// <exception cref="ArgumentNullException">Thrown if <paramref name="name"/> is <see langword="null"/>.</exception>
     public bool TryGetMember(string name, [NotNullWhen(true)] out StormXmlArray? property)
     {
-        return _membersByName.TryGetValue(name, out property);
+        return _membersByName.Dictionary.TryGetValue(name, out property);
     }
 
     /// <summary>
@@ -105,7 +104,7 @@ public sealed class StormXmlMember
     /// <returns><see langword="true"/> if the member with the specified name exists; otherwise, <see langword="false"/>.</returns>
     public bool TryGetMember(ReadOnlySpan<char> name, [NotNullWhen(true)] out StormXmlArray? property)
     {
-        return _membersByNameAltLookup.TryGetValue(name, out property);
+        return _membersByName.TryGetValue(name, out property);
     }
 
     /// <summary>
@@ -116,7 +115,7 @@ public sealed class StormXmlMember
     /// <exception cref="ArgumentNullException">Thrown if <paramref name="name"/> is <see langword="null"/>.</exception>
     public bool ContainsMember(string name)
     {
-        return _membersByName.ContainsKey(name);
+        return _membersByName.Dictionary.ContainsKey(name);
     }
 
     /// <summary>
@@ -126,7 +125,7 @@ public sealed class StormXmlMember
     /// <returns><see langword="true"/> if the member with the specified name exists; otherwise, <see langword="false"/>.</returns>
     public bool ContainsMember(ReadOnlySpan<char> name)
     {
-        return _membersByNameAltLookup.ContainsKey(name);
+        return _membersByName.ContainsKey(name);
     }
 
     /// <summary>
@@ -137,7 +136,7 @@ public sealed class StormXmlMember
     /// <param name="rootMember">The root member of the XML hierarchy, used when a repeated non-array member is merged over the earlier one. Defaults to this member.</param>
     internal void Add(StormXmlMember member, string? index = null, StormXmlMember? rootMember = null)
     {
-        ref StormXmlArray? currentArray = ref CollectionsMarshal.GetValueRefOrAddDefault(_membersByName, member.Name, out bool arrayExists);
+        ref StormXmlArray? currentArray = ref CollectionsMarshal.GetValueRefOrAddDefault(_membersByName.Dictionary, member.Name, out bool arrayExists);
 
         if (!arrayExists || currentArray is null)
         {
@@ -165,7 +164,7 @@ public sealed class StormXmlMember
     /// <param name="rootMember">The root member of the XML hierarchy.</param>
     internal void Add(string name, string value, StormXmlMember rootMember)
     {
-        ref StormXmlArray? currentArray = ref CollectionsMarshal.GetValueRefOrAddDefault(_membersByName, name, out bool arrayExists);
+        ref StormXmlArray? currentArray = ref CollectionsMarshal.GetValueRefOrAddDefault(_membersByName.Dictionary, name, out bool arrayExists);
 
         if (!arrayExists || currentArray is null)
         {
@@ -202,9 +201,9 @@ public sealed class StormXmlMember
 
         Name = other.Name;
 
-        foreach ((string name, StormXmlArray otherArray) in other._membersByName)
+        foreach ((string name, StormXmlArray otherArray) in other._membersByName.Dictionary)
         {
-            ref StormXmlArray? currentArray = ref CollectionsMarshal.GetValueRefOrAddDefault(_membersByName, name, out bool arrayExists);
+            ref StormXmlArray? currentArray = ref CollectionsMarshal.GetValueRefOrAddDefault(_membersByName.Dictionary, name, out bool arrayExists);
 
             if (!arrayExists || currentArray is null)
                 currentArray = otherArray.Clone(rootMember);
@@ -227,8 +226,8 @@ public sealed class StormXmlMember
 
         rootMember ??= clone;
 
-        foreach ((string name, StormXmlArray stormXmlArray) in _membersByName)
-            clone._membersByName[name] = stormXmlArray.Clone(rootMember);
+        foreach ((string name, StormXmlArray stormXmlArray) in _membersByName.Dictionary)
+            clone._membersByName.Dictionary[name] = stormXmlArray.Clone(rootMember);
 
         if (Value.HasValue)
             clone.Value = new StormXmlValue(Value.RawValue, rootMember);
@@ -245,7 +244,7 @@ public sealed class StormXmlMember
     /// <returns><see langword="true"/> if the member was removed; otherwise, <see langword="false"/>.</returns>
     internal bool Remove(string name)
     {
-        bool removed = _membersByName.Remove(name);
+        bool removed = _membersByName.Dictionary.Remove(name);
 
         if (removed && name.Equals(StormXmlConstants.ValueAttributeName, StringComparison.Ordinal))
             Value = default;

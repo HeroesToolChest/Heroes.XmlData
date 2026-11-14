@@ -9,13 +9,11 @@ public sealed class StormXmlArray
     private readonly List<StormXmlMember> _stormXmlMembers = [];
 
     // some members in the array can be indexed by name
-    private readonly Dictionary<string, int> _indexByMemberName = new(StringComparer.Ordinal);
-    private readonly Dictionary<string, int>.AlternateLookup<ReadOnlySpan<char>> _indexByMemberNameAltLookup;
+    private readonly Dictionary<string, int>.AlternateLookup<ReadOnlySpan<char>> _indexByMemberName =
+        new Dictionary<string, int>(StringComparer.Ordinal).GetAlternateLookup<ReadOnlySpan<char>>();
 
     internal StormXmlArray(bool isArray)
     {
-        _indexByMemberNameAltLookup = _indexByMemberName.GetAlternateLookup<ReadOnlySpan<char>>();
-
         IsArray = isArray;
     }
 
@@ -208,7 +206,7 @@ public sealed class StormXmlArray
                     return true;
                 }
             }
-            else if (_indexByMemberNameAltLookup.TryGetValue(name, out int index))
+            else if (_indexByMemberName.TryGetValue(name, out int index))
             {
                 member = _stormXmlMembers[index];
                 return true;
@@ -260,7 +258,7 @@ public sealed class StormXmlArray
             return numericalIndex >= 0 && numericalIndex < _stormXmlMembers.Count;
         }
 
-        return _indexByMemberNameAltLookup.ContainsKey(name);
+        return _indexByMemberName.ContainsKey(name);
     }
 
     /// <summary>
@@ -275,7 +273,7 @@ public sealed class StormXmlArray
 
         string[] indexes = new string[_stormXmlMembers.Count];
 
-        foreach ((string namedIndex, int position) in _indexByMemberName)
+        foreach ((string namedIndex, int position) in _indexByMemberName.Dictionary)
             indexes[position] = namedIndex;
 
         for (int i = 0; i < indexes.Length; i++)
@@ -313,13 +311,13 @@ public sealed class StormXmlArray
 
     internal void SetMemberByNamedIndex(string name, StormXmlMember member)
     {
-        if (_indexByMemberName.TryGetValue(name, out int i))
+        if (_indexByMemberName.Dictionary.TryGetValue(name, out int i))
         {
             _stormXmlMembers[i] = member;
         }
         else
         {
-            _indexByMemberName[name] = _stormXmlMembers.Count;
+            _indexByMemberName.Dictionary[name] = _stormXmlMembers.Count;
             _stormXmlMembers.Add(member);
         }
     }
@@ -338,11 +336,11 @@ public sealed class StormXmlArray
         // the named indexes are stored as name -> position, so invert them to resolve a position back to its name
         Dictionary<int, string>? namedIndexesByPosition = null;
 
-        if (other._indexByMemberName.Count > 0)
+        if (other._indexByMemberName.Dictionary.Count > 0)
         {
-            namedIndexesByPosition = new Dictionary<int, string>(other._indexByMemberName.Count);
+            namedIndexesByPosition = new Dictionary<int, string>(other._indexByMemberName.Dictionary.Count);
 
-            foreach ((string namedIndex, int position) in other._indexByMemberName)
+            foreach ((string namedIndex, int position) in other._indexByMemberName.Dictionary)
             {
                 namedIndexesByPosition[position] = namedIndex;
             }
@@ -366,8 +364,8 @@ public sealed class StormXmlArray
         if (Value.HasValue)
             clone.Value = new StormXmlValue(Value.RawValue, rootMember);
 
-        foreach ((string namedIndex, int position) in _indexByMemberName)
-            clone._indexByMemberName[namedIndex] = position;
+        foreach ((string namedIndex, int position) in _indexByMemberName.Dictionary)
+            clone._indexByMemberName.Dictionary[namedIndex] = position;
 
         foreach (StormXmlMember stormXmlMember in _stormXmlMembers)
             clone._stormXmlMembers.Add(stormXmlMember.Clone(rootMember));
@@ -385,7 +383,7 @@ public sealed class StormXmlArray
 
     private void MergeMemberByNamedIndex(string namedIndex, StormXmlMember otherMember, StormXmlMember rootMember)
     {
-        if (_indexByMemberName.TryGetValue(namedIndex, out int index) && _stormXmlMembers[index] is StormXmlMember existingMember)
+        if (_indexByMemberName.Dictionary.TryGetValue(namedIndex, out int index) && _stormXmlMembers[index] is StormXmlMember existingMember)
             existingMember.Merge(otherMember, rootMember);
         else
             SetMemberByNamedIndex(namedIndex, otherMember.Clone(rootMember));
