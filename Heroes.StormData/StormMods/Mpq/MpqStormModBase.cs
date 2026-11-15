@@ -13,10 +13,10 @@ internal abstract class MpqStormModBase<T> : StormModBase<T>
 
     }
 
-    protected override bool IsFileExists(string filePath)
-    {
-        throw new NotImplementedException();
-    }
+    //protected override bool IsFileExists(string filePath)
+    //{
+    //    throw new NotImplementedException();
+    //}
 
     protected override bool TryGetFile(string path, [NotNullWhen(true)] out Stream? stream)
     {

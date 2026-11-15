@@ -12,14 +12,14 @@ internal sealed class CASCStormMod : StormModBase<ICASCHeroesSource>
         throw new NotImplementedException();
     }
 
-    protected override bool IsFileExists(string filePath) => HeroesSource.CASCHeroesStorage.CASCHandlerWrapper.FileExists(filePath);
+    //protected override bool IsFileExists(string filePath) => HeroesSource.CASCHeroesStorage.CASCHandlerWrapper.FileExists(filePath);
 
     protected override bool TryGetFile(string path, [NotNullWhen(true)] out Stream? stream)
     {
         stream = null;
 
-        if (!IsFileExists(path))
-            return false;
+        //if (!IsFileExists(path))
+         //   return false;
 
         stream = HeroesSource.CASCHeroesStorage.CASCHandlerWrapper.OpenFile(path);
 

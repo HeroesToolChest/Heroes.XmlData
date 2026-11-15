@@ -158,13 +158,6 @@ internal abstract class StormModBase<T> : IStormMod
     }
 
     /// <summary>
-    /// Checks if a file exists.
-    /// </summary>
-    /// <param name="filePath">The file path of the file.</param>
-    /// <returns><see langword="true"/> if the file was found; otherwise <see langword="false"/>.</returns>
-    protected abstract bool IsFileExists(string filePath);
-
-    /// <summary>
     /// Gets a file if it exists, returns a value that indicates whether the file exists.
     /// </summary>
     /// <param name="path">The file path of the file.</param>
@@ -251,7 +244,6 @@ internal abstract class StormModBase<T> : IStormMod
 
     /// <summary>
     /// Loads the <c>stormmods</c> listed in the <c>includes.xml</c> file and adds their containers to the <see cref="SourceContainer"/>.
-    /// Caches the <c>stormmods</c> from the file.
     /// </summary>
     private void LoadIncludesStormMods()
     {

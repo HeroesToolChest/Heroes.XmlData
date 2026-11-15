@@ -51,8 +51,6 @@ internal sealed class FileStormMod : StormModBase<IFileHeroesSource>
         LoadAssetFiles(files);
     }
 
-    protected override bool IsFileExists(string filePath) => _fileSystem.File.Exists(filePath);
-
     protected override bool TryGetFile(string path, [NotNullWhen(true)] out Stream? stream)
     {
         // open the file directly instead of checking if it exists first, which saves a file system call for every file.
