@@ -4,6 +4,7 @@
 /// Represents a base class for a <c>stormmod</c> directory.
 /// </summary>
 /// <typeparam name="T">The type of the <see cref="IHeroesSource"/> source.</typeparam>
+[DebuggerDisplay("{DebuggerDisplay,nq}")]
 internal abstract class StormModBase<T> : IStormMod
     where T : IHeroesSource
 {
@@ -101,6 +102,9 @@ internal abstract class StormModBase<T> : IStormMod
     /// Gets the <c>fontstyles.stormstyle</c> file path.
     /// </summary>
     protected virtual string FontStylesFilePath { get; }
+
+    [DebuggerBrowsable(DebuggerBrowsableState.Never)]
+    private string DebuggerDisplay => $"{{{GetType().Name}, Name = \"{Name}\", ModType = {ModType}, Path = \"{RelativeStormModPath}\"}}";
 
     public virtual void LoadStormFiles()
     {

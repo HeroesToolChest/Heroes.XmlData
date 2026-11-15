@@ -3,6 +3,7 @@
 /// <summary>
 /// Represents a file from a <c>stormmod</c>.
 /// </summary>
+[DebuggerDisplay("{DebuggerDisplay,nq}")]
 public sealed class StormFile
 {
     internal StormFile()
@@ -24,4 +25,7 @@ public sealed class StormFile
     /// Gets the full path of the file (e.g. <c>C:\heroesbuild\mods\core.stormmod\base.stormdata\gamedata.xml</c>).
     /// </summary>
     public required string FullPath { get; init; }
+
+    [DebuggerBrowsable(DebuggerBrowsableState.Never)]
+    private string DebuggerDisplay => $"{{StormModName = \"{StormModName}\", RelativePath = \"{RelativePath}\"}}";
 }
