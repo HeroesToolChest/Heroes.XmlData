@@ -21,6 +21,10 @@ internal sealed class LayeredDataStorage
     private readonly TextCache _mapTextCache;
     private readonly TextCache _customTextCache;
 
+    private readonly FileCache _baseFileCache;
+    private readonly FileCache _mapFileCache;
+    private readonly FileCache _customFileCache;
+
     private readonly MergedStormXmlElementCache _mergedStormXmlElementCache;
 
     /// <summary>
@@ -39,6 +43,10 @@ internal sealed class LayeredDataStorage
         _baseTextCache = _baseDataStorage.TextCache;
         _mapTextCache = _mapDataStorage.TextCache;
         _customTextCache = _customDataStorage.TextCache;
+
+        _baseFileCache = _baseDataStorage.FileCache;
+        _mapFileCache = _mapDataStorage.FileCache;
+        _customFileCache = _customDataStorage.FileCache;
 
         _mergedStormXmlElementCache = new MergedStormXmlElementCache(new StormXmlElementMerger(this));
     }

@@ -16,13 +16,10 @@ internal sealed class FileStormMod : StormModBase<IFileHeroesSource>
         _fileSystem = fileSystem;
     }
 
-    public override void LoadGameDataDirectory()
+    protected override void LoadGameDataDirectory()
     {
         if (!_fileSystem.Directory.Exists(GameDataDirectoryPath))
-        {
-            // TODO: log
             return;
-        }
 
         IEnumerable<string> files = _fileSystem.Directory.EnumerateFiles(GameDataDirectoryPath, $"*{XmlFileExtension}", new EnumerationOptions()
         {
@@ -30,6 +27,34 @@ internal sealed class FileStormMod : StormModBase<IFileHeroesSource>
         }).OrderBy(x => x, StringComparer.OrdinalIgnoreCase);
 
         LoadGameDataFiles(files);
+    }
+
+    protected override void LoadStormLayoutDirectory()
+    {
+        if (!_fileSystem.Directory.Exists(LayoutDirectoryPath))
+            return;
+
+        IEnumerable<string> files = _fileSystem.Directory.EnumerateFiles(LayoutDirectoryPath, $"*{StormLayoutFileExtension}", new EnumerationOptions()
+        {
+            MatchCasing = MatchCasing.CaseInsensitive,
+            RecurseSubdirectories = true,
+        }).OrderBy(x => x, StringComparer.OrdinalIgnoreCase);
+
+        LoadStormLayoutFiles(files);
+    }
+
+    protected override void LoadAssetsDirectory()
+    {
+        if (!_fileSystem.Directory.Exists(AssetsDirectoryPath))
+            return;
+
+        IEnumerable<string> files = _fileSystem.Directory.EnumerateFiles(AssetsDirectoryPath, $"*{DDSFileExtension}", new EnumerationOptions()
+        {
+            MatchCasing = MatchCasing.CaseInsensitive,
+            RecurseSubdirectories = true,
+        }).OrderBy(x => x, StringComparer.OrdinalIgnoreCase);
+
+        LoadAssetFiles(files);
     }
 
     protected override bool IsFileExists(string filePath) => _fileSystem.File.Exists(filePath);
@@ -44,4 +69,8 @@ internal sealed class FileStormMod : StormModBase<IFileHeroesSource>
         stream = _fileSystem.File.OpenRead(path);
         return true;
     }
+
+    protected override IStormMod GetStormMod(string path, StormModType stormModType) => HeroesSource.StormModFactory.CreateFileStormMod(HeroesSource, path, stormModType);
+
+
 }

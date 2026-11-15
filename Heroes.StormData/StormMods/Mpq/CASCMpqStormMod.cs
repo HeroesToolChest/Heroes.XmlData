@@ -6,4 +6,19 @@ internal sealed class CASCMpqStormMod : MpqStormModBase<ICASCHeroesSource>
         : base(heroesSource, path, stormModType)
     {
     }
+
+    protected override void LoadStormLayoutDirectory()
+    {
+        throw new NotImplementedException();
+    }
+
+    protected override IStormMod GetStormMod(string path, StormModType stormModType)
+    {
+        throw new NotImplementedException();
+    }
+
+    protected override void LoadAssetsDirectory()
+    {
+        throw new NotImplementedException();
+    }
 }

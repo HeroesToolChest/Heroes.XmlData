@@ -14,4 +14,19 @@ internal sealed class FileMpqStormMod : MpqStormModBase<IFileHeroesSource>
     {
         _fileSystem = fileSystem;
     }
+
+    protected override IStormMod GetStormMod(string path, StormModType stormModType)
+    {
+        throw new NotImplementedException();
+    }
+
+    protected override void LoadAssetsDirectory()
+    {
+        throw new NotImplementedException();
+    }
+
+    protected override void LoadStormLayoutDirectory()
+    {
+        throw new NotImplementedException();
+    }
 }

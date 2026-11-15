@@ -5,6 +5,10 @@
 /// </summary>
 internal class SourceContainer
 {
+    private int _loadedNormalMods;
+    private int _loadedMapMods;
+    private int _loadedCustomMods;
+
     public SourceContainer()
     {
         LayeredDataStorage = new LayeredDataStorage();
@@ -23,6 +27,55 @@ internal class SourceContainer
     /// </summary>
     public StormXmlFileParser StormXmlFileParser { get; }
 
+    public List<StormModContainer> StormModContainers { get; } = [];
+
+    private bool HasLoadedMapMods => _loadedMapMods > 0;
+
+    private bool HasLoadedCustomMods => _loadedCustomMods > 0;
+
+    public void AddModContainer(StormModContainer stormModContainer)
+    {
+        if (stormModContainer.StormModType == StormModType.Base)
+        {
+            if (HasLoadedMapMods)
+            {
+                int insertIndex = StormModContainers.FindIndex(x => x.StormModType == StormModType.Map);
+                StormModContainers.Insert(insertIndex, stormModContainer);
+            }
+            else if (HasLoadedCustomMods)
+            {
+                int insertIndex = StormModContainers.FindIndex(x => x.StormModType == StormModType.Custom);
+                StormModContainers.Insert(insertIndex, stormModContainer);
+            }
+            else
+            {
+                StormModContainers.Add(stormModContainer);
+            }
+
+            _loadedNormalMods++;
+        }
+        else if (stormModContainer.StormModType == StormModType.Map)
+        {
+            if (HasLoadedCustomMods)
+            {
+                int insertIndex = StormModContainers.FindIndex(x => x.StormModType == StormModType.Custom);
+                StormModContainers.Insert(insertIndex, stormModContainer);
+            }
+            else
+            {
+                StormModContainers.Add(stormModContainer);
+            }
+
+            _loadedMapMods++;
+        }
+        else if (stormModContainer.StormModType == StormModType.Custom)
+        {
+            StormModContainers.Add(stormModContainer);
+
+            _loadedCustomMods++;
+        }
+    }
+
     private void AddDefaults()
     {
         using XmlReader reader = XmlReader.Create(new StringReader(StormDefaultData.DefaultXml));
@@ -30,69 +83,4 @@ internal class SourceContainer
         foreach (StormXmlElement element in StormXmlFileParser.Parse(reader, StormDefaultData.StormFile))
             LayeredDataStorage.GetDataStorage(StormModType.Base).AddElementWithNoId(element);
     }
-
-    //public void AddElement(StormXmlElement element, DataStorage dataStorage)
-    //{
-    //    if (element.ElementType != StormXmlElementType.Class)
-    //        return;
-
-    //    string? elementType = GetElementTypeFromFileName(element);
-
-    //    if (!string.IsNullOrWhiteSpace(elementType) && element.ElementName.AsSpan(1).StartsWith(elementType, StringComparison.OrdinalIgnoreCase))
-    //    {
-    //        AddBaseClassElementType(element, elementType, dataStorage);
-    //    }
-
-    //    if (string.IsNullOrEmpty(element.Id))
-    //    {
-    //        AddElementWithNoId(element, dataStorage);
-    //        return;
-    //    }
-
-
-    //}
-
-    //public static void AddConstElement(StormXmlConstElement element, DataStorage dataStorage)
-    //{
-    //    if (element.ElementType != StormXmlElementType.Const)
-    //        return;
-
-    //    dataStorage.ElementCache.StormXmlConstElementById.TryAdd(element.Id, element);
-    //}
-
-
-    //private static string? GetElementTypeFromFileName(StormXmlElement element)
-    //{
-    //    string fileName = Path.GetFileName(element.StormFiles[0].StormModPath);
-
-    //    int index = fileName.LastIndexOf("data.xml", StringComparison.OrdinalIgnoreCase);
-    //    if (index > 1)
-    //    {
-    //        return fileName[..index];
-    //    }
-
-    //    return null;
-    //}
-
-    //private static void AddBaseClassElementType(StormXmlElement element, string elementType, DataStorage dataStorage)
-    //{
-    //    ref HashSet<string>? catalogNames = ref CollectionsMarshal.GetValueRefOrAddDefault(dataStorage.ElementCache.ClassElementsByCatalog, element.ElementName, out bool exists);
-
-    //    if (!exists || catalogNames is null)
-    //        catalogNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-
-    //    catalogNames.Add(elementType);
-
-    //    dataStorage.ElementCache.CatalogByClassElement.TryAdd(element.ElementName, elementType);
-    //}
-
-    //private static void AddElementWithNoId(StormXmlElement element, DataStorage dataStorage)
-    //{
-    //    ref StormXmlElement? stormXmlElement = ref CollectionsMarshal.GetValueRefOrAddDefault(dataStorage.ElementCache.StormXmlElementByClassElement, element.ElementName, out bool exists);
-
-    //    if (!exists || stormXmlElement is null)
-    //        stormXmlElement = element;
-    //    else
-    //        stormXmlElement.Merge(element);
-    //}
 }

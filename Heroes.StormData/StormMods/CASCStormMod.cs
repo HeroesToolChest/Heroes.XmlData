@@ -7,7 +7,7 @@ internal sealed class CASCStormMod : StormModBase<ICASCHeroesSource>
     {
     }
 
-    public override void LoadGameDataDirectory()
+    protected override void LoadGameDataDirectory()
     {
         throw new NotImplementedException();
     }
@@ -27,5 +27,20 @@ internal sealed class CASCStormMod : StormModBase<ICASCHeroesSource>
             return false;
 
         return true;
+    }
+
+    protected override IStormMod GetStormMod(string path, StormModType stormModType)
+    {
+        throw new NotImplementedException();
+    }
+
+    protected override void LoadAssetsDirectory()
+    {
+        throw new NotImplementedException();
+    }
+
+    protected override void LoadStormLayoutDirectory()
+    {
+        throw new NotImplementedException();
     }
 }

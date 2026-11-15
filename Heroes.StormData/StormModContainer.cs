@@ -13,6 +13,8 @@ public class StormModContainer
     private readonly List<StormFile> _notFoundFilesList = [];
     private readonly List<StormFile> _loadedXmlFilesList = [];
     private readonly List<StormFile> _loadedAssetsTextFilesList = [];
+    private readonly List<StormFile> _loadedAssetFilesList = [];
+    private readonly List<StormFile> _loadedStormLayoutFilesList = [];
 
     internal StormModContainer(SourceContainer sourceContainer, StormModType stormModType)
     {
@@ -23,9 +25,9 @@ public class StormModContainer
         _xmlParser = SourceContainer.StormXmlFileParser;
     }
 
-    private SourceContainer SourceContainer { get; }
+    public StormModType StormModType { get; }
 
-    private StormModType StormModType { get; }
+    private SourceContainer SourceContainer { get; }
 
     internal void LoadXmlFile(XmlReader xmlReader, StormFile stormFile)
     {
@@ -42,6 +44,7 @@ public class StormModContainer
         }
     }
 
+    // assets.txt
     internal void LoadAssetsTextFile(Stream stream, StormFile stormFile)
     {
         _loadedAssetsTextFilesList.Add(stormFile);
@@ -57,10 +60,21 @@ public class StormModContainer
         }
     }
 
+    internal void AddAssetFile(string relativePath, StormFile stormFile)
+    {
+        _loadedAssetFilesList.Add(stormFile);
+        _specificDataStorage.FileCache.AssetFilesByRelativePath.Dictionary[relativePath] = stormFile;
+    }
+
+    internal void AddStormLayoutFile(string relativePath, StormFile stormFile)
+    {
+        _loadedStormLayoutFilesList.Add(stormFile);
+        _specificDataStorage.FileCache.StormLayoutFilesByRelativePath.Dictionary[relativePath] = stormFile;
+    }
+
     internal void AddFileNotFound(StormFile stormFile)
     {
         _notFoundFilesList.Add(stormFile);
-        // _stormStorage.AddFileNotFound(StormModType, stormFile);
     }
 
     private static string? GetCatalogNameFromFileName(StormXmlElement element)
@@ -106,8 +120,6 @@ public class StormModContainer
         }
 
         _specificDataStorage.AddElementWithId(element, existingCatalogName);
-
-
 
         // TODO: unitname attribute stuff
     }

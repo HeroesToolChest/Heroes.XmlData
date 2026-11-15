@@ -8,7 +8,7 @@ internal abstract class MpqStormModBase<T> : StormModBase<T>
     {
     }
 
-    public override void LoadGameDataDirectory()
+    protected override void LoadGameDataDirectory()
     {
 
     }

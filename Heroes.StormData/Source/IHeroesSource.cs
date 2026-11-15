@@ -12,5 +12,7 @@ internal interface IHeroesSource
     /// </summary>
     SourceContainer SourceContainer { get; }
 
+    IStormModFactory StormModFactory { get; }
+
     void LoadStormMods();
 }

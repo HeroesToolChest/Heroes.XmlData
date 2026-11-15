@@ -17,5 +17,7 @@ internal interface IStormMod
     /// </summary>
     public string DirectoryPath { get; }
 
+    public StormModContainer ModContainer { get; }
+
     void LoadStormFiles();
 }

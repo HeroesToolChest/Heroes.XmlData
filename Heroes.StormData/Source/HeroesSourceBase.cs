@@ -18,7 +18,7 @@ internal abstract class HeroesSourceBase : IHeroesSource
 
     public SourceContainer SourceContainer { get; } = new();
 
-    protected IStormModFactory StormModFactory { get; }
+    public IStormModFactory StormModFactory { get; }
 
     public void LoadStormMods()
     {

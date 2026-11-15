@@ -1,4 +1,5 @@
-﻿using System.Runtime.InteropServices;
+﻿
+using System.Runtime.InteropServices;
 
 namespace Heroes.StormData.Cache;
 
@@ -10,6 +11,8 @@ internal sealed class DataStorage
     public ElementCache ElementCache { get; } = new();
 
     public TextCache TextCache { get; } = new();
+
+    public FileCache FileCache { get; } = new();
 
     /// <summary>
     /// Gets a number that changes whenever something that affects merged elements is added (a base class catalog name or an element).
