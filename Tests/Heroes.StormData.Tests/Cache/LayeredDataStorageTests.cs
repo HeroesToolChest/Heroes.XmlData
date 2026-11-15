@@ -1932,6 +1932,261 @@ internal sealed class LayeredDataStorageTests
         first.Should().NotBeSameAs(second);
     }
 
+    [TestMethod]
+    [DataRow(StormModType.Base)]
+    [DataRow(StormModType.Map)]
+    [DataRow(StormModType.Custom)]
+    public void TryGetFirstAssetFileByRelativePath_FileInSingleLayer_ReturnsFile(StormModType stormModType)
+    {
+        // arrange
+        LayeredDataStorage layeredDataStorage = new();
+        StormFile expected = AddAssetFile(layeredDataStorage, stormModType, Path.Join("assets", "textures", "storm_ui_icon_abathur.dds"));
+
+        // act
+        bool result = layeredDataStorage.TryGetFirstAssetFileByRelativePath(Path.Join("assets", "textures", "storm_ui_icon_abathur.dds"), out StormFile? stormFile);
+
+        // assert
+        result.Should().BeTrue();
+        stormFile.Should().BeSameAs(expected);
+    }
+
+    [TestMethod]
+    public void TryGetFirstAssetFileByRelativePath_NoLayersPopulated_ReturnsFalse()
+    {
+        // arrange
+        LayeredDataStorage layeredDataStorage = new();
+
+        // act
+        bool result = layeredDataStorage.TryGetFirstAssetFileByRelativePath(Path.Join("assets", "textures", "storm_ui_icon_abathur.dds"), out StormFile? stormFile);
+
+        // assert
+        result.Should().BeFalse();
+        stormFile.Should().BeNull();
+    }
+
+    [TestMethod]
+    public void TryGetFirstAssetFileByRelativePath_PathNotInAnyLayer_ReturnsFalse()
+    {
+        // arrange
+        LayeredDataStorage layeredDataStorage = new();
+        AddAssetFile(layeredDataStorage, StormModType.Base, Path.Join("assets", "textures", "storm_ui_icon_abathur.dds"));
+
+        // act
+        bool result = layeredDataStorage.TryGetFirstAssetFileByRelativePath(Path.Join("assets", "textures", "storm_ui_icon_alarak.dds"), out StormFile? stormFile);
+
+        // assert
+        result.Should().BeFalse();
+        stormFile.Should().BeNull();
+    }
+
+    [TestMethod]
+    public void TryGetFirstAssetFileByRelativePath_EmptyPath_ReturnsFalse()
+    {
+        // arrange
+        LayeredDataStorage layeredDataStorage = new();
+        AddAssetFile(layeredDataStorage, StormModType.Base, Path.Join("assets", "textures", "storm_ui_icon_abathur.dds"));
+
+        // act
+        bool result = layeredDataStorage.TryGetFirstAssetFileByRelativePath(string.Empty, out StormFile? stormFile);
+
+        // assert
+        result.Should().BeFalse();
+        stormFile.Should().BeNull();
+    }
+
+    [TestMethod]
+    [DataRow(@"Assets\Textures\Storm_UI_Icon_Abathur.dds")]
+    [DataRow("Assets/Textures/Storm_UI_Icon_Abathur.dds")]
+    [DataRow(@"assets/textures\storm_ui_icon_abathur.DDS")]
+    public void TryGetFirstAssetFileByRelativePath_DifferentSeparatorsAndCasing_ReturnsFile(string relativePath)
+    {
+        // arrange
+        LayeredDataStorage layeredDataStorage = new();
+        StormFile expected = AddAssetFile(layeredDataStorage, StormModType.Base, Path.Join("assets", "textures", "storm_ui_icon_abathur.dds"));
+
+        // act
+        bool result = layeredDataStorage.TryGetFirstAssetFileByRelativePath(relativePath, out StormFile? stormFile);
+
+        // assert
+        result.Should().BeTrue();
+        stormFile.Should().BeSameAs(expected);
+    }
+
+    [TestMethod]
+    public void TryGetFirstAssetFileByRelativePath_PathLongerThanStackBuffer_ReturnsFile()
+    {
+        // arrange
+        string relativePath = Path.Join("assets", new string('a', 300), "storm_ui_icon_abathur.dds");
+
+        LayeredDataStorage layeredDataStorage = new();
+        StormFile expected = AddAssetFile(layeredDataStorage, StormModType.Base, relativePath);
+
+        // act
+        bool result = layeredDataStorage.TryGetFirstAssetFileByRelativePath(relativePath.ToUpperInvariant(), out StormFile? stormFile);
+
+        // assert
+        result.Should().BeTrue();
+        stormFile.Should().BeSameAs(expected);
+    }
+
+    [TestMethod]
+    public void TryGetFirstAssetFileByRelativePath_SliceOfLargerString_ReturnsFile()
+    {
+        // arrange
+        LayeredDataStorage layeredDataStorage = new();
+        StormFile expected = AddAssetFile(layeredDataStorage, StormModType.Base, Path.Join("assets", "textures", "storm_ui_icon_abathur.dds"));
+
+        string value = """<Icon value="Assets\Textures\storm_ui_icon_abathur.dds"/>""";
+        ReadOnlySpan<char> relativePath = value.AsSpan(13, @"Assets\Textures\storm_ui_icon_abathur.dds".Length);
+
+        // act
+        bool result = layeredDataStorage.TryGetFirstAssetFileByRelativePath(relativePath, out StormFile? stormFile);
+
+        // assert
+        result.Should().BeTrue();
+        stormFile.Should().BeSameAs(expected);
+    }
+
+    [TestMethod]
+    public void TryGetFirstAssetFileByRelativePath_InBaseAndMap_ReturnsMapFile()
+    {
+        // arrange
+        string relativePath = Path.Join("assets", "textures", "storm_ui_icon_abathur.dds");
+
+        LayeredDataStorage layeredDataStorage = new();
+        AddAssetFile(layeredDataStorage, StormModType.Base, relativePath);
+        StormFile mapFile = AddAssetFile(layeredDataStorage, StormModType.Map, relativePath);
+
+        // act
+        bool result = layeredDataStorage.TryGetFirstAssetFileByRelativePath(relativePath, out StormFile? stormFile);
+
+        // assert
+        result.Should().BeTrue();
+        stormFile.Should().BeSameAs(mapFile);
+    }
+
+    [TestMethod]
+    public void TryGetFirstAssetFileByRelativePath_InAllLayers_ReturnsCustomFile()
+    {
+        // arrange
+        string relativePath = Path.Join("assets", "textures", "storm_ui_icon_abathur.dds");
+
+        LayeredDataStorage layeredDataStorage = new();
+        AddAssetFile(layeredDataStorage, StormModType.Base, relativePath);
+        AddAssetFile(layeredDataStorage, StormModType.Map, relativePath);
+        StormFile customFile = AddAssetFile(layeredDataStorage, StormModType.Custom, relativePath);
+
+        // act
+        bool result = layeredDataStorage.TryGetFirstAssetFileByRelativePath(relativePath, out StormFile? stormFile);
+
+        // assert
+        result.Should().BeTrue();
+        stormFile.Should().BeSameAs(customFile);
+    }
+
+    [TestMethod]
+    public void TryGetFirstAssetFileByRelativePath_StormLayoutFileWithSamePath_ReturnsFalse()
+    {
+        // arrange
+        string relativePath = Path.Join("ui", "layout", "hero", "herotalents.stormlayout");
+
+        LayeredDataStorage layeredDataStorage = new();
+        AddStormLayoutFile(layeredDataStorage, StormModType.Base, relativePath);
+
+        // act
+        bool result = layeredDataStorage.TryGetFirstAssetFileByRelativePath(relativePath, out _);
+
+        // assert
+        result.Should().BeFalse();
+    }
+
+    [TestMethod]
+    [DataRow(StormModType.Base)]
+    [DataRow(StormModType.Map)]
+    [DataRow(StormModType.Custom)]
+    public void TryGetFirstStormLayoutFileByRelativePath_FileInSingleLayer_ReturnsFile(StormModType stormModType)
+    {
+        // arrange
+        LayeredDataStorage layeredDataStorage = new();
+        StormFile expected = AddStormLayoutFile(layeredDataStorage, stormModType, Path.Join("ui", "layout", "hero", "herotalents.stormlayout"));
+
+        // act
+        bool result = layeredDataStorage.TryGetFirstStormLayoutFileByRelativePath(Path.Join("ui", "layout", "hero", "herotalents.stormlayout"), out StormFile? stormFile);
+
+        // assert
+        result.Should().BeTrue();
+        stormFile.Should().BeSameAs(expected);
+    }
+
+    [TestMethod]
+    public void TryGetFirstStormLayoutFileByRelativePath_PathNotInAnyLayer_ReturnsFalse()
+    {
+        // arrange
+        LayeredDataStorage layeredDataStorage = new();
+        AddStormLayoutFile(layeredDataStorage, StormModType.Base, Path.Join("ui", "layout", "hero", "herotalents.stormlayout"));
+
+        // act
+        bool result = layeredDataStorage.TryGetFirstStormLayoutFileByRelativePath(Path.Join("ui", "layout", "hero", "heroselect.stormlayout"), out StormFile? stormFile);
+
+        // assert
+        result.Should().BeFalse();
+        stormFile.Should().BeNull();
+    }
+
+    [TestMethod]
+    [DataRow(@"UI\Layout\Hero\HeroTalents.StormLayout")]
+    [DataRow("UI/Layout/Hero/HeroTalents.StormLayout")]
+    public void TryGetFirstStormLayoutFileByRelativePath_DifferentSeparatorsAndCasing_ReturnsFile(string relativePath)
+    {
+        // arrange
+        LayeredDataStorage layeredDataStorage = new();
+        StormFile expected = AddStormLayoutFile(layeredDataStorage, StormModType.Base, Path.Join("ui", "layout", "hero", "herotalents.stormlayout"));
+
+        // act
+        bool result = layeredDataStorage.TryGetFirstStormLayoutFileByRelativePath(relativePath, out StormFile? stormFile);
+
+        // assert
+        result.Should().BeTrue();
+        stormFile.Should().BeSameAs(expected);
+    }
+
+    [TestMethod]
+    public void TryGetFirstStormLayoutFileByRelativePath_InAllLayers_ReturnsCustomFile()
+    {
+        // arrange
+        string relativePath = Path.Join("ui", "layout", "hero", "herotalents.stormlayout");
+
+        LayeredDataStorage layeredDataStorage = new();
+        AddStormLayoutFile(layeredDataStorage, StormModType.Base, relativePath);
+        AddStormLayoutFile(layeredDataStorage, StormModType.Map, relativePath);
+        StormFile customFile = AddStormLayoutFile(layeredDataStorage, StormModType.Custom, relativePath);
+
+        // act
+        bool result = layeredDataStorage.TryGetFirstStormLayoutFileByRelativePath(relativePath, out StormFile? stormFile);
+
+        // assert
+        result.Should().BeTrue();
+        stormFile.Should().BeSameAs(customFile);
+    }
+
+    // adds a new storm file directly to the asset files cache of the given layer, keyed by the (already normalized) relative path
+    private static StormFile AddAssetFile(LayeredDataStorage layeredDataStorage, StormModType stormModType, string relativePath)
+    {
+        StormFile stormFile = StormFileHelper.CreateStormFile();
+        layeredDataStorage.GetDataStorage(stormModType).FileCache.AssetFilesByRelativePath.Dictionary[relativePath] = stormFile;
+
+        return stormFile;
+    }
+
+    // adds a new storm file directly to the storm layout files cache of the given layer, keyed by the (already normalized) relative path
+    private static StormFile AddStormLayoutFile(LayeredDataStorage layeredDataStorage, StormModType stormModType, string relativePath)
+    {
+        StormFile stormFile = StormFileHelper.CreateStormFile();
+        layeredDataStorage.GetDataStorage(stormModType).FileCache.StormLayoutFilesByRelativePath.Dictionary[relativePath] = stormFile;
+
+        return stormFile;
+    }
+
     // parses the xml into a style constant element and adds it to the data storage of the given layer
     private static StormXmlStyleConstantElement AddStyleConstantElement(LayeredDataStorage layeredDataStorage, StormModType stormModType, string xml)
     {

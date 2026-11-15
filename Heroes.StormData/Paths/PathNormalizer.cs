@@ -43,7 +43,7 @@ internal sealed class PathNormalizer
     /// Modifies the path in place to use the current platform's directory separator character and lowercase all characters.
     /// </summary>
     /// <param name="filePath">A file path.</param>
-    private static void NormalizePath(Span<char> filePath)
+    public static void NormalizePath(Span<char> filePath)
     {
         for (int i = 0; i < filePath.Length; i++)
         {

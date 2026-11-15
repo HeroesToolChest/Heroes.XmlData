@@ -132,4 +132,87 @@ public sealed class PathNormalizerTests
         // assert
         result.Should().Be($"mods{_directorySeperatorChar}abildata.xml");
     }
+
+    [TestMethod]
+    [DataRow("This\\IS\\path")]
+    [DataRow("This/IS/path")]
+    [DataRow("This/IS\\path")]
+    public void NormalizePathSpan_MixedCaseAndSeparators_ModifiedInPlaceToLowercaseWithOSSeparator(string path)
+    {
+        // arrange
+        Span<char> buffer = path.ToCharArray();
+
+        // act
+        PathNormalizer.NormalizePath(buffer);
+
+        // assert
+        buffer.ToString().Should().Be($"this{_directorySeperatorChar}is{_directorySeperatorChar}path");
+    }
+
+    [TestMethod]
+    public void NormalizePathSpan_EmptySpan_DoesNotThrow()
+    {
+        // act
+        Action act = () => PathNormalizer.NormalizePath(Span<char>.Empty);
+
+        // assert
+        act.Should().NotThrow();
+    }
+
+    [TestMethod]
+    public void NormalizePathSpan_WhiteSpace_IsLeftUnchanged()
+    {
+        // arrange - unlike the string overload, whitespace is not turned into an empty path
+        Span<char> buffer = "   ".ToCharArray();
+
+        // act
+        PathNormalizer.NormalizePath(buffer);
+
+        // assert
+        buffer.ToString().Should().Be("   ");
+    }
+
+    [TestMethod]
+    public void NormalizePathSpan_SliceOfLargerBuffer_OnlySliceIsModified()
+    {
+        // arrange
+        char[] buffer = "KEEP|Assets/Textures/Icon.DDS|KEEP".ToCharArray();
+        Span<char> slice = buffer.AsSpan(5, "Assets/Textures/Icon.DDS".Length);
+
+        // act
+        PathNormalizer.NormalizePath(slice);
+
+        // assert
+        new string(buffer).Should().Be($"KEEP|assets{_directorySeperatorChar}textures{_directorySeperatorChar}icon.dds|KEEP");
+    }
+
+    [TestMethod]
+    [DataRow("GameData/Mods/AbilData.xml")]
+    [DataRow("UI\\Layout\\Hero\\HeroTalents.StormLayout")]
+    [DataRow("assets/textures\\storm_ui_icon_abathur.DDS")]
+    [DataRow("mods//HeroesData.StormMod\\Base.StormData")]
+    public void NormalizePathSpan_NonWhiteSpacePath_SameResultAsStringOverload(string path)
+    {
+        // arrange
+        Span<char> buffer = path.ToCharArray();
+
+        // act
+        PathNormalizer.NormalizePath(buffer);
+
+        // assert
+        buffer.ToString().Should().Be(PathNormalizer.NormalizePath(path.AsSpan()));
+    }
+
+    [TestMethod]
+    public void NormalizePathSpan_NonAsciiCharacters_LowercasedInvariant()
+    {
+        // arrange
+        Span<char> buffer = "Ü/É\\Ñ".ToCharArray(); // Ü/É\Ñ
+
+        // act
+        PathNormalizer.NormalizePath(buffer);
+
+        // assert
+        buffer.ToString().Should().Be($"ü{_directorySeperatorChar}é{_directorySeperatorChar}ñ"); // ü/é/ñ
+    }
 }

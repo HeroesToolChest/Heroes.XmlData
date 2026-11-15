@@ -337,6 +337,34 @@ internal sealed class LayeredDataStorage
         return false;
     }
 
+    /// <summary>
+    /// Tries to retrieve the first <c>.stormlayout</c> file by its relative <c>ui</c> path from the data storages.
+    /// </summary>
+    /// <param name="relativePath">
+    /// The path of the file relative to the <c>base.stormdata</c> directory, which starts with <c>ui</c> (e.g. <c>ui/layout/hero/herotalents.stormlayout</c>).
+    /// This is case-insensitive and either <c>/</c> or <c>\</c> can be used as the directory separator.
+    /// </param>
+    /// <param name="stormFile">When this method returns, contains the <see cref="StormFile"/> associated with the specified path, if found; otherwise, <see langword="null"/>.</param>
+    /// <returns><see langword="true"/> if the file was found; otherwise, <see langword="false"/>.</returns>
+    public bool TryGetFirstStormLayoutFileByRelativePath(ReadOnlySpan<char> relativePath, [NotNullWhen(true)] out StormFile? stormFile)
+    {
+        return TryGetFirstFileByRelativePath(relativePath, static fileCache => fileCache.StormLayoutFilesByRelativePath, out stormFile);
+    }
+
+    /// <summary>
+    /// Tries to retrieve the first asset file (e.g. a <c>.dds</c> file) by its relative <c>assets</c> path from the data storages.
+    /// </summary>
+    /// <param name="relativePath">
+    /// The path of the file relative to the <c>base.stormassets</c> directory, which starts with <c>assets</c> (e.g. <c>assets/textures/storm_ui_icon_abathur.dds</c>).
+    /// This is case-insensitive and either <c>/</c> or <c>\</c> can be used as the directory separator.
+    /// </param>
+    /// <param name="stormFile">When this method returns, contains the <see cref="StormFile"/> associated with the specified path, if found; otherwise, <see langword="null"/>.</param>
+    /// <returns><see langword="true"/> if the file was found; otherwise, <see langword="false"/>.</returns>
+    public bool TryGetFirstAssetFileByRelativePath(ReadOnlySpan<char> relativePath, [NotNullWhen(true)] out StormFile? stormFile)
+    {
+        return TryGetFirstFileByRelativePath(relativePath, static fileCache => fileCache.AssetFilesByRelativePath, out stormFile);
+    }
+
     private static StormXmlElement? FindStormXmlElementByElementName(ElementCache elementCache, ReadOnlySpan<char> elementName)
     {
         if (elementCache.StormXmlElementByClassElement.TryGetValue(elementName, out StormXmlElement? stormXmlElement))
@@ -428,6 +456,45 @@ internal sealed class LayeredDataStorage
         foreach (LevelScalingFieldValue layerScalingFieldValue in CollectionsMarshal.AsSpan(layerScalingFieldValues))
         {
             DataStorage.AddOrReplaceScalingFieldValue(scalingFieldValues, layerScalingFieldValue);
+        }
+    }
+
+    // the file caches are keyed by normalized paths (see PathNormalizer), so the path is normalized the same way before the lookup
+    private bool TryGetFirstFileByRelativePath(
+        ReadOnlySpan<char> relativePath,
+        Func<FileCache, Dictionary<string, StormFile>.AlternateLookup<ReadOnlySpan<char>>> getFilesByRelativePath,
+        [NotNullWhen(true)] out StormFile? stormFile)
+    {
+        const int maxStackLength = 256;
+
+        char[]? rentedBuffer = null;
+
+        Span<char> buffer = relativePath.Length <= maxStackLength
+            ? stackalloc char[maxStackLength]
+            : (rentedBuffer = ArrayPool<char>.Shared.Rent(relativePath.Length));
+
+        try
+        {
+            Span<char> normalizedPath = buffer[..relativePath.Length];
+            relativePath.CopyTo(normalizedPath);
+            PathNormalizer.NormalizePath(normalizedPath);
+
+            // custom first
+            if (getFilesByRelativePath(_customFileCache).TryGetValue(normalizedPath, out stormFile))
+                return true;
+
+            if (getFilesByRelativePath(_mapFileCache).TryGetValue(normalizedPath, out stormFile))
+                return true;
+
+            if (getFilesByRelativePath(_baseFileCache).TryGetValue(normalizedPath, out stormFile))
+                return true;
+
+            return false;
+        }
+        finally
+        {
+            if (rentedBuffer is not null)
+                ArrayPool<char>.Shared.Return(rentedBuffer);
         }
     }
 
