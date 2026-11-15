@@ -4,12 +4,6 @@ internal sealed class FileStormMod : StormModBase<IFileHeroesSource>
 {
     private readonly IFileSystem _fileSystem;
 
-    public FileStormMod(IFileHeroesSource heroesSource, string directoryPath, StormModType stormModType)
-        : base(heroesSource, directoryPath, stormModType)
-    {
-        _fileSystem = new FileSystem();
-    }
-
     public FileStormMod(IFileSystem fileSystem, IFileHeroesSource heroesSource, string directoryPath, StormModType stormModType)
         : base(heroesSource, directoryPath, stormModType)
     {
