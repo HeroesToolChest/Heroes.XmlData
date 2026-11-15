@@ -23,6 +23,7 @@ internal static class StormDefaultData
     public static StormFile StormFile { get; } = new()
     {
         StormModName = HsdConstants.Name,
-        StormModPath = $"{HsdConstants.Name}-defaults",
+        RelativePath = $"{HsdConstants.Name}-defaults",
+        FullPath = $"{HsdConstants.Name}-defaults",
     };
 }

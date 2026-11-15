@@ -71,6 +71,4 @@ internal sealed class FileStormMod : StormModBase<IFileHeroesSource>
     }
 
     protected override IStormMod GetStormMod(string path, StormModType stormModType) => HeroesSource.StormModFactory.CreateFileStormMod(HeroesSource, path, stormModType);
-
-
 }

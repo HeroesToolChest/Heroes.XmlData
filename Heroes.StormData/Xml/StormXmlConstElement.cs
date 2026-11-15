@@ -23,7 +23,7 @@ public sealed class StormXmlConstElement : StormXmlElement
         get
         {
             if (base.Id is null)
-                throw new HeroesStormDataException($"The 'id' attribute is required for const elements. Element '{ElementName}' in file '{StormFiles[0].StormModPath}' does not have an 'id' attribute.");
+                throw new HeroesStormDataException($"The 'id' attribute is required for const elements. Element '{ElementName}' in file '{StormFiles[0].FullPath}' does not have an 'id' attribute.");
 
             return base.Id;
         }

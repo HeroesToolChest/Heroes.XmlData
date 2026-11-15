@@ -16,6 +16,7 @@ internal abstract class StormModBase<T> : IStormMod
         IgnoreWhitespace = true,
         IgnoreComments = true,
         IgnoreProcessingInstructions = false,
+        CloseInput = true,
     };
 
     private readonly List<IStormMod> _includesStormModsCache = [];
@@ -45,7 +46,7 @@ internal abstract class StormModBase<T> : IStormMod
         IncludesXmlFilePath = Path.Combine(BaseStormDataPath, SourceConstants.IncludesXmlFile);
         AssetsTextFilePath = Path.Combine(GameDataDirectoryPath, SourceConstants.AssetsTextFile);
         LayoutDirectoryPath = Path.Combine(BaseStormDataPath, SourceConstants.UiDirectory, SourceConstants.LayoutDirectory);
-        AssetsDirectoryPath = Path.Combine(BaseStormDataPath, SourceConstants.AssetsDirectory);
+        AssetsDirectoryPath = Path.Combine(DirectoryPath, SourceConstants.BaseStormAssetsDirectory, SourceConstants.AssetsDirectory);
         FontStyleFilePath = Path.Combine(BaseStormDataPath, SourceConstants.UiDirectory, SourceConstants.FontStyleFile);
     }
 
@@ -188,11 +189,7 @@ internal abstract class StormModBase<T> : IStormMod
 
         using (stream)
         {
-            ModContainer.LoadAssetsTextFile(stream, new StormFile()
-            {
-                StormModName = Name,
-                StormModPath = AssetsTextFilePath,
-            });
+            ModContainer.LoadAssetsTextFile(stream, CreateStormFile(AssetsTextFilePath));
         }
     }
 
@@ -253,7 +250,7 @@ internal abstract class StormModBase<T> : IStormMod
             if (string.IsNullOrWhiteSpace(pathValue))
                 continue;
 
-            string path = Paths.PathNormalizer.NormalizePath(pathValue, SourceConstants.DefaultModsDirectory);
+            string path = Path.Combine(HeroesSource.ModsDirectoryPath, PathNormalizer.NormalizePath(pathValue, SourceConstants.DefaultModsDirectory));
 
             IStormMod stormMod = GetStormMod(path, StormModType.Base);
 
@@ -289,11 +286,7 @@ internal abstract class StormModBase<T> : IStormMod
 
         if (uiPath.StartsWith(SourceConstants.UiDirectory, StringComparison.OrdinalIgnoreCase))
         {
-            ModContainer.AddStormLayoutFile(PathNormalizer.NormalizePath(uiPath), new StormFile()
-            {
-                StormModName = Name,
-                StormModPath = layoutFilePath,
-            });
+            ModContainer.AddStormLayoutFile(PathNormalizer.NormalizePath(uiPath), CreateStormFile(layoutFilePath));
         }
     }
 
@@ -308,22 +301,14 @@ internal abstract class StormModBase<T> : IStormMod
 
         if (assetsPath.StartsWith(SourceConstants.AssetsDirectory, StringComparison.OrdinalIgnoreCase))
         {
-            ModContainer.AddAssetFile(PathNormalizer.NormalizePath(assetsPath), new StormFile()
-            {
-                StormModName = Name,
-                StormModPath = assetFilePath,
-            });
+            ModContainer.AddAssetFile(PathNormalizer.NormalizePath(assetsPath), CreateStormFile(assetFilePath));
         }
     }
 
     private bool ValidateXmlFile(string path, [NotNullWhen(true)] out XmlReader? reader, out StormFile stormFile, bool isRequired = true)
     {
         reader = null;
-        stormFile = new StormFile()
-        {
-            StormModName = Name,
-            StormModPath = path,
-        };
+        stormFile = CreateStormFile(path);
 
         if (!TryGetFile(path, out Stream? stream))
         {
@@ -337,4 +322,16 @@ internal abstract class StormModBase<T> : IStormMod
 
         return true;
     }
+
+    /// <summary>
+    /// Creates a <see cref="StormFile"/> for a file in this <c>stormmod</c>.
+    /// </summary>
+    /// <param name="filePath">The full path of the file.</param>
+    /// <returns>The <see cref="StormFile"/> with a path relative to the <c>mods</c> directory and the full path.</returns>
+    private StormFile CreateStormFile(string filePath) => new()
+    {
+        StormModName = Name,
+        RelativePath = Path.GetRelativePath(HeroesSource.ModsDirectoryPath, filePath),
+        FullPath = filePath,
+    };
 }

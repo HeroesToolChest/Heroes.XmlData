@@ -7,7 +7,8 @@ public static class StormFileHelper
         return new StormFile()
         {
             StormModName = "TestMod",
-            StormModPath = "TestModPath",
+            RelativePath = "TestModPath",
+            FullPath = "TestModPath",
         };
     }
 }

@@ -7,6 +7,8 @@ namespace Heroes.StormData;
 /// </summary>
 public class StormModContainer
 {
+    private readonly SourceContainer _sourceContainer;
+
     private readonly StormXmlFileParser _xmlParser;
     private readonly DataStorage _specificDataStorage;
 
@@ -18,16 +20,49 @@ public class StormModContainer
 
     internal StormModContainer(SourceContainer sourceContainer, StormModType stormModType)
     {
-        SourceContainer = sourceContainer;
+        _sourceContainer = sourceContainer;
         StormModType = stormModType;
 
-        _specificDataStorage = SourceContainer.LayeredDataStorage.GetDataStorage(StormModType);
-        _xmlParser = SourceContainer.StormXmlFileParser;
+        _specificDataStorage = _sourceContainer.LayeredDataStorage.GetDataStorage(StormModType);
+        _xmlParser = _sourceContainer.StormXmlFileParser;
+
+        NotFoundFiles = _notFoundFilesList.AsReadOnly();
+        LoadedXmlFiles = _loadedXmlFilesList.AsReadOnly();
+        LoadedAssetsTextFiles = _loadedAssetsTextFilesList.AsReadOnly();
+        LoadedAssetFiles = _loadedAssetFilesList.AsReadOnly();
+        LoadedStormLayoutFiles = _loadedStormLayoutFilesList.AsReadOnly();
     }
 
+    /// <summary>
+    /// Gets the type of the <c>stormmod</c>, which is the data layer (<see cref="StormModType.Base"/>, <see cref="StormModType.Map"/>,
+    /// or <see cref="StormModType.Custom"/>) that this container loads its data into.
+    /// </summary>
     public StormModType StormModType { get; }
 
-    private SourceContainer SourceContainer { get; }
+    /// <summary>
+    /// Gets the required files that were not found, such as the XML files listed in a <c>gamedata.xml</c> file.
+    /// </summary>
+    public IReadOnlyList<StormFile> NotFoundFiles { get; }
+
+    /// <summary>
+    /// Gets the XML files that were loaded, in the order they were loaded.
+    /// </summary>
+    public IReadOnlyList<StormFile> LoadedXmlFiles { get; }
+
+    /// <summary>
+    /// Gets the <c>assets.txt</c> files that were loaded.
+    /// </summary>
+    public IReadOnlyList<StormFile> LoadedAssetsTextFiles { get; }
+
+    /// <summary>
+    /// Gets the asset (<c>.dds</c>) files that were added.
+    /// </summary>
+    public IReadOnlyList<StormFile> LoadedAssetFiles { get; }
+
+    /// <summary>
+    /// Gets the <c>.stormlayout</c> files that were added.
+    /// </summary>
+    public IReadOnlyList<StormFile> LoadedStormLayoutFiles { get; }
 
     internal void LoadXmlFile(XmlReader xmlReader, StormFile stormFile)
     {
@@ -79,7 +114,7 @@ public class StormModContainer
 
     private static string? GetCatalogNameFromFileName(StormXmlElement element)
     {
-        string fileName = Path.GetFileName(element.StormFiles[0].StormModPath);
+        string fileName = Path.GetFileName(element.StormFiles[0].RelativePath);
 
         int index = fileName.LastIndexOf("data.xml", StringComparison.OrdinalIgnoreCase);
         if (index > 1)
@@ -113,7 +148,7 @@ public class StormModContainer
         if (element.Members.TryGetMember("LevelScalingArray", out StormXmlArray? levelScalingArray))
             _specificDataStorage.AddLevelScalingElementValue(levelScalingArray);
 
-        if (!SourceContainer.LayeredDataStorage.TryGetFirstCatalogNameByElementName(element.ElementName, out string? existingCatalogName))
+        if (!_sourceContainer.LayeredDataStorage.TryGetFirstCatalogNameByElementName(element.ElementName, out string? existingCatalogName))
         {
             // TODO: more lookup
             existingCatalogName = string.Empty;
