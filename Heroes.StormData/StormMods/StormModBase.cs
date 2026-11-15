@@ -33,11 +33,9 @@ internal abstract class StormModBase<T> : IStormMod
     {
         DirectoryPath = directoryPath;
         ModType = stormModType;
-        //StormPathType = stormPathType;
 
         HeroesSource = heroesSource;
         ModContainer = new StormModContainer(heroesSource.SourceContainer, ModType);
-        //StormModStorage = heroesSource.StormStorage.CreateModStorage(this);
 
         Name = Path.GetFileNameWithoutExtension(DirectoryPath);
         RelativeStormModPath = Path.GetRelativePath(HeroesSource.ModsDirectoryPath, DirectoryPath);
@@ -49,7 +47,7 @@ internal abstract class StormModBase<T> : IStormMod
         AssetsTextFilePath = Path.Combine(GameDataDirectoryPath, SourceConstants.AssetsTextFile);
         LayoutDirectoryPath = Path.Combine(BaseStormDataPath, SourceConstants.UiDirectory, SourceConstants.LayoutDirectory);
         AssetsDirectoryPath = Path.Combine(DirectoryPath, SourceConstants.BaseStormAssetsDirectory, SourceConstants.AssetsDirectory);
-        FontStyleFilePath = Path.Combine(BaseStormDataPath, SourceConstants.UiDirectory, SourceConstants.FontStyleFile);
+        FontStylesFilePath = Path.Combine(BaseStormDataPath, SourceConstants.UiDirectory, SourceConstants.FontStylesFile);
     }
 
     public string Name { get; }
@@ -102,11 +100,11 @@ internal abstract class StormModBase<T> : IStormMod
     /// <summary>
     /// Gets the <c>fontstyles.stormstyle</c> file path.
     /// </summary>
-    protected virtual string FontStyleFilePath { get; }
+    protected virtual string FontStylesFilePath { get; }
 
     public virtual void LoadStormFiles()
     {
-        LoadFontStyleFile();
+        LoadFontStylesFile();
         LoadStormLayoutDirectory();
         LoadAssetsDirectory();
         LoadAssetsTextFile();
@@ -203,14 +201,13 @@ internal abstract class StormModBase<T> : IStormMod
 
     private static bool IsDirectorySeparator(char value) => value == Path.DirectorySeparatorChar || value == Path.AltDirectorySeparatorChar;
 
-    private void LoadFontStyleFile()
+    private void LoadFontStylesFile()
     {
-        if (!TryGetFile(FontStyleFilePath, out Stream? stream))
+        if (!TryCreateXmlReader(FontStylesFilePath, out XmlReader? xmlReader))
             return;
 
-        //XDocument document = XDocument.Load(stream);
-
-        //StormModStorage.AddXmlFontStyleFile(document, GetStormPath(FontStyleFilePath));
+        using (xmlReader)
+            ModContainer.LoadFontStylesFile(xmlReader, CreateStormFile(FontStylesFilePath));
     }
 
     private void LoadAssetsTextFile()

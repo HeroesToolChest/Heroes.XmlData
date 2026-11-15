@@ -14,6 +14,8 @@ internal sealed class DataStorage
 
     public FileCache FileCache { get; } = new();
 
+    public StyleCache StyleCache { get; } = new();
+
     /// <summary>
     /// Gets a number that changes whenever something that affects merged elements is added (a base class catalog name or an element).
     /// <para>
@@ -25,6 +27,34 @@ internal sealed class DataStorage
     public void AddConstElement(StormXmlConstElement element)
     {
         ElementCache.StormXmlConstElementById.Dictionary.TryAdd(element.Id, element);
+    }
+
+    /// <summary>
+    /// Adds a <see cref="StormXmlStyleConstantElement"/>, or merges it into the existing one with the same <c>name</c>.
+    /// </summary>
+    /// <param name="element">The <see cref="StormXmlStyleConstantElement"/> to add.</param>
+    public void AddStyleConstantElement(StormXmlStyleConstantElement element)
+    {
+        ref StormXmlStyleConstantElement? stormXmlStyleConstantElement = ref CollectionsMarshal.GetValueRefOrAddDefault(StyleCache.StormXmlStyleConstantElementByName.Dictionary, element.Name, out bool exists);
+
+        if (!exists || stormXmlStyleConstantElement is null)
+            stormXmlStyleConstantElement = element;
+        else
+            stormXmlStyleConstantElement.Merge(element);
+    }
+
+    /// <summary>
+    /// Adds a <see cref="StormXmlStyleElement"/>, or merges it into the existing one with the same <c>name</c>.
+    /// </summary>
+    /// <param name="element">The <see cref="StormXmlStyleElement"/> to add.</param>
+    public void AddStyleElement(StormXmlStyleElement element)
+    {
+        ref StormXmlStyleElement? stormXmlStyleElement = ref CollectionsMarshal.GetValueRefOrAddDefault(StyleCache.StormXmlStyleElementByName.Dictionary, element.Name, out bool exists);
+
+        if (!exists || stormXmlStyleElement is null)
+            stormXmlStyleElement = element;
+        else
+            stormXmlStyleElement.Merge(element);
     }
 
     public void AddBaseClassCatalogName(StormXmlElement element, string catalogName)

@@ -1,6 +1,6 @@
 ﻿using System.Collections.Frozen;
 
-namespace Heroes.StormData.Xml;
+namespace Heroes.StormData.Xml.Parsing;
 
 internal sealed class StormXmlConstants
 {
@@ -13,7 +13,14 @@ internal sealed class StormXmlConstants
     public const string TokenInstructionName = "token";
     public const string TokenTypeAttributeName = "type";
 
-    // elements that are array that don't have the "array" suffix in their name
+    // .stormstyle files
+    public const string StyleConstantElementName = "Constant";
+    public const string StyleElementName = "Style";
+    public const string NameAttributeName = "name";
+    public const string ValAttributeName = "val";
+    public const string TemplateAttributeName = "template";
+
+    // elements that are arrays that don't have the "array" suffix in their name
     public static readonly FrozenSet<string> ElementArrays = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
     {
         "Buttons",

@@ -1,4 +1,4 @@
-﻿namespace Heroes.StormData.Xml.Tests;
+﻿namespace Heroes.StormData.Xml.Members.Tests;
 
 [TestClass]
 public class StormXmlArrayTests

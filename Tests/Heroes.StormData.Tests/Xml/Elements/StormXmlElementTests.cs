@@ -1,4 +1,4 @@
-﻿namespace Heroes.StormData.Xml.Tests;
+﻿namespace Heroes.StormData.Xml.Elements.Tests;
 
 [TestClass]
 public sealed class StormXmlElementTests

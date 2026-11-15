@@ -36,4 +36,32 @@ internal static class XmlReaderHelper
     {
         return (StormXmlConstElement)GetStormXmlElement(xml, layeredDataStorage);
     }
+
+    /// <summary>
+    /// Parses the provided XML string into a <see cref="StormXmlStyleConstantElement"/> using <see cref="StormXmlFileParser.ParseStyleFile(XmlReader, StormFile)"/>.
+    /// </summary>
+    /// <param name="xml">A string containing a <c>Constant</c> element. Do not include the root element, as it will be added automatically.</param>
+    /// <returns>A <see cref="StormXmlStyleConstantElement"/> instance.</returns>
+    internal static StormXmlStyleConstantElement GetStormXmlStyleConstantElement(string xml)
+    {
+        return (StormXmlStyleConstantElement)GetStormXmlStyleFileElement(xml);
+    }
+
+    /// <summary>
+    /// Parses the provided XML string into a <see cref="StormXmlStyleElement"/> using <see cref="StormXmlFileParser.ParseStyleFile(XmlReader, StormFile)"/>.
+    /// </summary>
+    /// <param name="xml">A string containing a <c>Style</c> element. Do not include the root element, as it will be added automatically.</param>
+    /// <returns>A <see cref="StormXmlStyleElement"/> instance.</returns>
+    internal static StormXmlStyleElement GetStormXmlStyleElement(string xml)
+    {
+        return (StormXmlStyleElement)GetStormXmlStyleFileElement(xml);
+    }
+
+    private static StormXmlElement GetStormXmlStyleFileElement(string xml)
+    {
+        StormXmlFileParser stormXmlFileParser = new(new LayeredDataStorage());
+        using XmlReader reader = CreateXmlReader(xml);
+
+        return stormXmlFileParser.ParseStyleFile(reader, StormFileHelper.CreateStormFile()).First();
+    }
 }

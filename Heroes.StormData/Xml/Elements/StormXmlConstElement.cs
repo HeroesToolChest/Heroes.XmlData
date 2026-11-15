@@ -1,4 +1,4 @@
-﻿namespace Heroes.StormData.Xml;
+﻿namespace Heroes.StormData.Xml.Elements;
 
 /// <summary>
 /// Represents a <c>const</c> XML element.
@@ -17,7 +17,10 @@ public sealed class StormXmlConstElement : StormXmlElement
         EvaluateAsExpression = other.EvaluateAsExpression;
     }
 
-    /// <inheritdoc/>
+    /// <summary>
+    /// Gets the value of the <c>id</c> attribute.
+    /// </summary>
+    /// <exception cref="HeroesStormDataException">Thrown when the element does not have a <c>id</c> attribute.</exception>
     public override string Id
     {
         get

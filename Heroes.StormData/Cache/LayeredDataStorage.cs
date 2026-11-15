@@ -25,6 +25,10 @@ internal sealed class LayeredDataStorage
     private readonly FileCache _mapFileCache;
     private readonly FileCache _customFileCache;
 
+    private readonly StyleCache _baseStyleCache;
+    private readonly StyleCache _mapStyleCache;
+    private readonly StyleCache _customStyleCache;
+
     private readonly MergedStormXmlElementCache _mergedStormXmlElementCache;
 
     /// <summary>
@@ -47,6 +51,10 @@ internal sealed class LayeredDataStorage
         _baseFileCache = _baseDataStorage.FileCache;
         _mapFileCache = _mapDataStorage.FileCache;
         _customFileCache = _customDataStorage.FileCache;
+
+        _baseStyleCache = _baseDataStorage.StyleCache;
+        _mapStyleCache = _mapDataStorage.StyleCache;
+        _customStyleCache = _customDataStorage.StyleCache;
 
         _mergedStormXmlElementCache = new MergedStormXmlElementCache(new StormXmlElementMerger(this));
     }
@@ -179,6 +187,76 @@ internal sealed class LayeredDataStorage
     }
 
     /// <summary>
+    /// Retrieves a <see cref="StormXmlStyleConstantElement"/> (from <c>.stormstyle</c> files) by its <c>name</c> from the data storages.
+    /// <para>
+    /// The returned element can be the stored instance, so it must not be modified.
+    /// </para>
+    /// </summary>
+    /// <param name="name">The <c>name</c> of the style constant. This is case-sensitive.</param>
+    /// <returns>The <see cref="StormXmlStyleConstantElement"/> if found; otherwise, <see langword="null"/>.</returns>
+    public StormXmlStyleConstantElement? GetStormXmlStyleConstantElementByName(ReadOnlySpan<char> name)
+    {
+        return GetStormXmlStyleConstantElementByName(name, out _);
+    }
+
+    /// <summary>
+    /// Retrieves a <see cref="StormXmlStyleConstantElement"/> (from <c>.stormstyle</c> files) by its <c>name</c> from the data storages.
+    /// </summary>
+    /// <param name="name">The <c>name</c> of the style constant. This is case-sensitive.</param>
+    /// <param name="isCopy">
+    /// When this method returns, <see langword="true"/> if the returned element is a new copy (more than one data storage had it, so they were merged), which the caller can modify;
+    /// <see langword="false"/> if it is the stored instance, which must not be modified.
+    /// </param>
+    /// <returns>The <see cref="StormXmlStyleConstantElement"/> if found; otherwise, <see langword="null"/>.</returns>
+    public StormXmlStyleConstantElement? GetStormXmlStyleConstantElementByName(ReadOnlySpan<char> name, out bool isCopy)
+    {
+        StormXmlStyleConstantElement? stormXmlStyleConstantElement = null;
+        isCopy = false;
+
+        // base first
+        MergeInto(ref stormXmlStyleConstantElement, ref isCopy, FindStormXmlStyleConstantElementByName(_baseStyleCache, name));
+        MergeInto(ref stormXmlStyleConstantElement, ref isCopy, FindStormXmlStyleConstantElementByName(_mapStyleCache, name));
+        MergeInto(ref stormXmlStyleConstantElement, ref isCopy, FindStormXmlStyleConstantElementByName(_customStyleCache, name));
+
+        return stormXmlStyleConstantElement;
+    }
+
+    /// <summary>
+    /// Retrieves a <see cref="StormXmlStyleElement"/> (from <c>.stormstyle</c> files) by its <c>name</c> from the data storages.
+    /// <para>
+    /// The returned element can be the stored instance, so it must not be modified.
+    /// </para>
+    /// </summary>
+    /// <param name="name">The <c>name</c> of the style. This is case-sensitive.</param>
+    /// <returns>The <see cref="StormXmlStyleElement"/> if found; otherwise, <see langword="null"/>.</returns>
+    public StormXmlStyleElement? GetStormXmlStyleElementByName(ReadOnlySpan<char> name)
+    {
+        return GetStormXmlStyleElementByName(name, out _);
+    }
+
+    /// <summary>
+    /// Retrieves a <see cref="StormXmlStyleElement"/> (from <c>.stormstyle</c> files) by its <c>name</c> from the data storages.
+    /// </summary>
+    /// <param name="name">The <c>name</c> of the style. This is case-sensitive.</param>
+    /// <param name="isCopy">
+    /// When this method returns, <see langword="true"/> if the returned element is a new copy (more than one data storage had it, so they were merged), which the caller can modify;
+    /// <see langword="false"/> if it is the stored instance, which must not be modified.
+    /// </param>
+    /// <returns>The <see cref="StormXmlStyleElement"/> if found; otherwise, <see langword="null"/>.</returns>
+    public StormXmlStyleElement? GetStormXmlStyleElementByName(ReadOnlySpan<char> name, out bool isCopy)
+    {
+        StormXmlStyleElement? stormXmlStyleElement = null;
+        isCopy = false;
+
+        // base first
+        MergeInto(ref stormXmlStyleElement, ref isCopy, FindStormXmlStyleElementByName(_baseStyleCache, name));
+        MergeInto(ref stormXmlStyleElement, ref isCopy, FindStormXmlStyleElementByName(_mapStyleCache, name));
+        MergeInto(ref stormXmlStyleElement, ref isCopy, FindStormXmlStyleElementByName(_customStyleCache, name));
+
+        return stormXmlStyleElement;
+    }
+
+    /// <summary>
     /// Retrieves a merged <see cref="StormXmlElement"/> by its <c>id</c> from the specified catalog name.
     /// The element is merged from the data storages, its parents, and its element with no <c>id</c> (see <see cref="StormXmlElementMerger"/>).
     /// <para>
@@ -278,6 +356,22 @@ internal sealed class LayeredDataStorage
         return null;
     }
 
+    private static StormXmlStyleConstantElement? FindStormXmlStyleConstantElementByName(StyleCache styleCache, ReadOnlySpan<char> name)
+    {
+        if (styleCache.StormXmlStyleConstantElementByName.TryGetValue(name, out StormXmlStyleConstantElement? stormXmlStyleConstantElement))
+            return stormXmlStyleConstantElement;
+
+        return null;
+    }
+
+    private static StormXmlStyleElement? FindStormXmlStyleElementByName(StyleCache styleCache, ReadOnlySpan<char> name)
+    {
+        if (styleCache.StormXmlStyleElementByName.TryGetValue(name, out StormXmlStyleElement? stormXmlStyleElement))
+            return stormXmlStyleElement;
+
+        return null;
+    }
+
     private static List<LevelScalingFieldValue>? FindScalingFieldValuesById(ElementCache elementCache, ReadOnlySpan<char> id, ReadOnlySpan<char> catalogName)
     {
         if (elementCache.ScalingFieldValueByIdByCatalog.TryGetValue(catalogName, out var scalingFieldValueById) &&
@@ -289,7 +383,8 @@ internal sealed class LayeredDataStorage
         return null;
     }
 
-    private static void MergeInto(ref StormXmlElement? stormXmlElement, ref bool isCopy, StormXmlElement? layerElement)
+    private static void MergeInto<T>(ref T? stormXmlElement, ref bool isCopy, T? layerElement)
+        where T : StormXmlElement
     {
         if (layerElement is null)
             return;
@@ -304,7 +399,7 @@ internal sealed class LayeredDataStorage
         if (!isCopy)
         {
             // need to merge, so clone the first layer to avoid modifying the cached instance
-            stormXmlElement = stormXmlElement.Clone();
+            stormXmlElement = (T)stormXmlElement.Clone();
             isCopy = true;
         }
 

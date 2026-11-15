@@ -1,4 +1,4 @@
-﻿namespace Heroes.StormData.Xml;
+﻿namespace Heroes.StormData.Xml.Parsing;
 
 internal sealed class StormXmlFileParser
 {
@@ -34,6 +34,39 @@ internal sealed class StormXmlFileParser
                 yield return new StormXmlConstElement(stormXmlMember, stormFile);
             else
                 yield return new StormXmlElement(stormXmlMember, stormFile);
+        }
+    }
+
+    /// <summary>
+    /// Parses a <c>.stormstyle</c> file and returns its <c>Constant</c> and <c>Style</c> elements. All other elements are skipped.
+    /// <para>
+    /// Attribute values are kept as-is; <c>@</c> asset texts and <c>$</c> constants are not resolved.
+    /// </para>
+    /// </summary>
+    /// <param name="reader">The XML reader to read from.</param>
+    /// <param name="stormFile">The file associated with the XML elements.</param>
+    /// <returns>A collection of <see cref="StormXmlStyleConstantElement"/> and <see cref="StormXmlStyleElement"/> objects.</returns>
+    public IEnumerable<StormXmlElement> ParseStyleFile(XmlReader reader, StormFile stormFile)
+    {
+        reader.MoveToContent(); // <StyleFile>
+        reader.Read();
+
+        while (!reader.EOF && reader.NodeType != XmlNodeType.EndElement)
+        {
+            if (reader.NodeType != XmlNodeType.Element)
+            {
+                reader.Read();
+                continue;
+            }
+
+            string elementName = reader.LocalName;
+
+            if (elementName.Equals(StormXmlConstants.StyleConstantElementName, StringComparison.Ordinal))
+                yield return new StormXmlStyleConstantElement(ParseElement(reader, resolveValues: false), stormFile);
+            else if (elementName.Equals(StormXmlConstants.StyleElementName, StringComparison.Ordinal))
+                yield return new StormXmlStyleElement(ParseElement(reader, resolveValues: false), stormFile);
+            else
+                reader.Skip();
         }
     }
 
@@ -95,7 +128,7 @@ internal sealed class StormXmlFileParser
         return StormXmlConstants.ElementArraysByRootElementType.TryGetValue(elementName, out string? rootElementType) && rootElementType.Equals(rootElementName, StringComparison.OrdinalIgnoreCase);
     }
 
-    private StormXmlMember ParseElement(XmlReader reader, StormXmlMember? rootMember = null)
+    private StormXmlMember ParseElement(XmlReader reader, StormXmlMember? rootMember = null, bool resolveValues = true)
     {
         string elementName = reader.LocalName;
         bool isArray = false;
@@ -122,9 +155,11 @@ internal sealed class StormXmlFileParser
                 else if (!isArray && name.Equals(StormXmlConstants.IndexAttributeName, StringComparison.OrdinalIgnoreCase))
                     isArray = true;
 
-                if (!isIdAttribute && value.Length > 0 && value[0] == '@')
+                if (!resolveValues || isIdAttribute)
+                    stormXmlMember.Add(name, value, rootMember);
+                else if (value.Length > 0 && value[0] == '@')
                     stormXmlMember.Add(name, GetAssetTextValue(value), rootMember);
-                else if (!isIdAttribute && value.IndexOf('$') is int indexOfConstant && indexOfConstant >= 0)
+                else if (value.IndexOf('$') is int indexOfConstant && indexOfConstant >= 0)
                     stormXmlMember.Add(name, ComputeConstantValue(value, indexOfConstant), rootMember);
                 else
                     stormXmlMember.Add(name, value, rootMember);
@@ -151,7 +186,7 @@ internal sealed class StormXmlFileParser
                 // Peek the child's index attribute without moving the reader
                 string? indexValue = reader.GetAttribute(StormXmlConstants.IndexAttributeName);
 
-                stormXmlMember.Add(ParseElement(reader, rootMember), indexValue, rootMember);
+                stormXmlMember.Add(ParseElement(reader, rootMember, resolveValues), indexValue, rootMember);
             }
             else if (reader.NodeType == XmlNodeType.ProcessingInstruction && reader.Name.Equals(StormXmlConstants.TokenInstructionName, StringComparison.Ordinal))
             {

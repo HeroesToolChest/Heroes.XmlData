@@ -12,7 +12,7 @@ internal static class SourceConstants
     public const string GameDataXmlFile = "gamedata.xml";
     public const string IncludesXmlFile = "includes.xml";
     public const string DocumentInfoFile = "documentinfo";
-    public const string FontStyleFile = "fontstyles.stormstyle";
+    public const string FontStylesFile = "fontstyles.stormstyle";
     public const string BuildIdFile = "buildid.txt";
     public const string AssetsTextFile = "assets.txt";
     public const string DescIndexStormLayoutFile = "descindex.stormlayout";

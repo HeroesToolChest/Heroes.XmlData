@@ -1,4 +1,4 @@
-﻿namespace Heroes.StormData.Xml;
+﻿namespace Heroes.StormData.Xml.Elements;
 
 /// <summary>
 /// Represents a top level XML element.

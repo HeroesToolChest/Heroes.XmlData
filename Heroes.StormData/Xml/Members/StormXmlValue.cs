@@ -1,4 +1,4 @@
-﻿namespace Heroes.StormData.Xml;
+﻿namespace Heroes.StormData.Xml.Members;
 
 /// <summary>
 /// Represents a value for an XML element or attribute.

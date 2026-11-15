@@ -1070,6 +1070,148 @@ public class DataStorageTests
         dataStorage.ElementsVersion.Should().Be(0);
     }
 
+    [TestMethod]
+    public void AddStyleConstantElement_MultipleDifferentNames_AddsAllElements()
+    {
+        // arrange
+        StormXmlStyleConstantElement first = XmlReaderHelper.GetStormXmlStyleConstantElement("""<Constant name="ColorGray" val="a7a7a7" />""");
+        StormXmlStyleConstantElement second = XmlReaderHelper.GetStormXmlStyleConstantElement("""<Constant name="ColorWhite" val="ffffff" />""");
+
+        DataStorage dataStorage = new();
+
+        // act
+        dataStorage.AddStyleConstantElement(first);
+        dataStorage.AddStyleConstantElement(second);
+
+        // assert
+        Dictionary<string, StormXmlStyleConstantElement> cache = dataStorage.StyleCache.StormXmlStyleConstantElementByName.Dictionary;
+
+        cache.Should().HaveCount(2);
+        cache["ColorGray"].Should().BeSameAs(first);
+        cache["ColorWhite"].Should().BeSameAs(second);
+    }
+
+    [TestMethod]
+    public void AddStyleConstantElement_DuplicateName_MergesIntoFirstElement()
+    {
+        // arrange
+        StormXmlStyleConstantElement first = XmlReaderHelper.GetStormXmlStyleConstantElement("""<Constant name="ColorGray" val="a7a7a7" />""");
+        StormXmlStyleConstantElement second = XmlReaderHelper.GetStormXmlStyleConstantElement("""<Constant name="ColorGray" val="bbbbbb" />""");
+
+        DataStorage dataStorage = new();
+
+        // act
+        dataStorage.AddStyleConstantElement(first);
+        dataStorage.AddStyleConstantElement(second);
+
+        // assert
+        Dictionary<string, StormXmlStyleConstantElement> cache = dataStorage.StyleCache.StormXmlStyleConstantElementByName.Dictionary;
+
+        cache.Should().ContainSingle();
+        cache["ColorGray"].Should().BeSameAs(first);
+        cache["ColorGray"].Value.Should().Be("bbbbbb");
+        cache["ColorGray"].StormFiles.Should().HaveCount(2);
+    }
+
+    [TestMethod]
+    public void AddStyleConstantElement_NamesDifferingOnlyByCase_AddsBothElements()
+    {
+        // arrange - names are stored with StringComparer.Ordinal, so they are case-sensitive
+        StormXmlStyleConstantElement lowerElement = XmlReaderHelper.GetStormXmlStyleConstantElement("""<Constant name="colorgray" val="1" />""");
+        StormXmlStyleConstantElement upperElement = XmlReaderHelper.GetStormXmlStyleConstantElement("""<Constant name="COLORGRAY" val="2" />""");
+
+        DataStorage dataStorage = new();
+
+        // act
+        dataStorage.AddStyleConstantElement(lowerElement);
+        dataStorage.AddStyleConstantElement(upperElement);
+
+        // assert
+        dataStorage.StyleCache.StormXmlStyleConstantElementByName.Dictionary.Should().HaveCount(2);
+    }
+
+    [TestMethod]
+    public void AddStyleConstantElement_Element_IsFoundByAlternateLookup()
+    {
+        // arrange
+        StormXmlStyleConstantElement element = XmlReaderHelper.GetStormXmlStyleConstantElement("""<Constant name="ColorGray" val="a7a7a7" />""");
+
+        DataStorage dataStorage = new();
+
+        // act
+        dataStorage.AddStyleConstantElement(element);
+
+        // assert
+        bool result = dataStorage.StyleCache.StormXmlStyleConstantElementByName.TryGetValue("ColorGray".AsSpan(), out StormXmlStyleConstantElement? found);
+
+        result.Should().BeTrue();
+        found.Should().BeSameAs(element);
+    }
+
+    [TestMethod]
+    public void AddStyleElement_MultipleDifferentNames_AddsAllElements()
+    {
+        // arrange
+        StormXmlStyleElement first = XmlReaderHelper.GetStormXmlStyleElement("""<Style name="ReticleEnemy" template="Storm_Tutorial_Reticle_Text" />""");
+        StormXmlStyleElement second = XmlReaderHelper.GetStormXmlStyleElement("""<Style name="ReticleAlly" template="Storm_Tutorial_Reticle_Text" />""");
+
+        DataStorage dataStorage = new();
+
+        // act
+        dataStorage.AddStyleElement(first);
+        dataStorage.AddStyleElement(second);
+
+        // assert
+        Dictionary<string, StormXmlStyleElement> cache = dataStorage.StyleCache.StormXmlStyleElementByName.Dictionary;
+
+        cache.Should().HaveCount(2);
+        cache["ReticleEnemy"].Should().BeSameAs(first);
+        cache["ReticleAlly"].Should().BeSameAs(second);
+    }
+
+    [TestMethod]
+    public void AddStyleElement_DuplicateName_MergesAttributesIntoFirstElement()
+    {
+        // arrange
+        StormXmlStyleElement first = XmlReaderHelper.GetStormXmlStyleElement("""<Style name="ReticleEnemy" template="Storm_Tutorial_Reticle_Text" textcolor="255,255,255,255" />""");
+        StormXmlStyleElement second = XmlReaderHelper.GetStormXmlStyleElement("""<Style name="ReticleEnemy" textcolor="255,0,0,255" fontflags="Shadow" />""");
+
+        DataStorage dataStorage = new();
+
+        // act
+        dataStorage.AddStyleElement(first);
+        dataStorage.AddStyleElement(second);
+
+        // assert
+        Dictionary<string, StormXmlStyleElement> cache = dataStorage.StyleCache.StormXmlStyleElementByName.Dictionary;
+
+        cache.Should().ContainSingle();
+
+        StormXmlStyleElement merged = cache["ReticleEnemy"];
+        merged.Should().BeSameAs(first);
+        merged.Template.Should().Be("Storm_Tutorial_Reticle_Text");
+        merged.Members["textcolor"].Value.RawValue.Should().Be("255,0,0,255");
+        merged.Members["fontflags"].Value.RawValue.Should().Be("Shadow");
+        merged.StormFiles.Should().HaveCount(2);
+    }
+
+    [TestMethod]
+    public void AddStyleElement_NamesDifferingOnlyByCase_AddsBothElements()
+    {
+        // arrange - names are stored with StringComparer.Ordinal, so they are case-sensitive
+        StormXmlStyleElement lowerElement = XmlReaderHelper.GetStormXmlStyleElement("""<Style name="reticleenemy" />""");
+        StormXmlStyleElement upperElement = XmlReaderHelper.GetStormXmlStyleElement("""<Style name="RETICLEENEMY" />""");
+
+        DataStorage dataStorage = new();
+
+        // act
+        dataStorage.AddStyleElement(lowerElement);
+        dataStorage.AddStyleElement(upperElement);
+
+        // assert
+        dataStorage.StyleCache.StormXmlStyleElementByName.Dictionary.Should().HaveCount(2);
+    }
+
     private static StormXmlConstElement CreateStormXmlConstElement(string id, string value = "1")
     {
         return XmlReaderHelper.GetStormXmlConstElement($"""<const id="{id}" value="{value}" />""");

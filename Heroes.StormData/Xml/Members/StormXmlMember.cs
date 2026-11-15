@@ -1,6 +1,6 @@
 ﻿using System.Runtime.InteropServices;
 
-namespace Heroes.StormData.Xml;
+namespace Heroes.StormData.Xml.Members;
 
 /// <summary>
 /// Represents a member, that is either an element or attribute, for an XML element.

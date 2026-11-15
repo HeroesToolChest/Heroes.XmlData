@@ -14,6 +14,7 @@ public class StormModContainer
 
     private readonly List<StormFile> _notFoundFilesList = [];
     private readonly List<StormFile> _loadedXmlFilesList = [];
+    private readonly List<StormFile> _loadedFontStylesFilesList = [];
     private readonly List<StormFile> _loadedAssetsTextFilesList = [];
     private readonly List<StormFile> _loadedAssetFilesList = [];
     private readonly List<StormFile> _loadedStormLayoutFilesList = [];
@@ -72,10 +73,25 @@ public class StormModContainer
 
         foreach (StormXmlElement element in elements)
         {
-            if (element.ElementType == StormXmlElementType.Const)
-                _specificDataStorage.AddConstElement((StormXmlConstElement)element);
+            if (element is StormXmlConstElement constElement)
+                _specificDataStorage.AddConstElement(constElement);
             else
                 AddElement(element);
+        }
+    }
+
+    internal void LoadFontStylesFile(XmlReader xmlReader, StormFile stormFile)
+    {
+        _loadedFontStylesFilesList.Add(stormFile);
+
+        IEnumerable<StormXmlElement> elements = _xmlParser.ParseStyleFile(xmlReader, stormFile);
+
+        foreach (StormXmlElement element in elements)
+        {
+            if (element is StormXmlStyleConstantElement styleConstantElement)
+                _specificDataStorage.AddStyleConstantElement(styleConstantElement);
+            else if (element is StormXmlStyleElement styleElement)
+                _specificDataStorage.AddStyleElement(styleElement);
         }
     }
 

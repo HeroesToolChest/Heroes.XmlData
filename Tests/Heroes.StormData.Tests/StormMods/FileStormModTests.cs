@@ -209,6 +209,40 @@ internal sealed class FileStormModTests
     }
 
     [TestMethod]
+    public void LoadStormFiles_FontStylesFileExists_AddsStyleConstantAndStyleElements()
+    {
+        // arrange
+        // the file path is built from the lowercase constants, not the casing on disk
+        string filePath = Path.Combine(_baseStormDataPath, "ui", "fontstyles.stormstyle");
+        _fileSystem.AddFile(Path.Combine(_baseStormDataPath, "UI", "FontStyles.StormStyle"), new MockFileData(
+            """
+            <?xml version="1.0" encoding="utf-8" standalone="yes"?>
+            <StyleFile>
+              <Constant name="ColorGray" val="a7a7a7" />
+              <Style name="ReticleEnemy" template="Storm_Tutorial_Reticle_Text" textcolor="#ColorGray" />
+            </StyleFile>
+            """));
+
+        FileStormMod fileStormMod = CreateFileStormMod();
+
+        // act
+        fileStormMod.LoadStormFiles();
+
+        // assert
+        StyleCache styleCache = GetDataStorage(StormModType.Base).StyleCache;
+
+        StormXmlStyleConstantElement constantElement = styleCache.StormXmlStyleConstantElementByName.Dictionary.Should().ContainSingle().Which.Value;
+        constantElement.Name.Should().Be("ColorGray");
+        constantElement.Value.Should().Be("a7a7a7");
+        constantElement.StormFiles.Should().ContainSingle().Which.Should().BeEquivalentTo(ExpectedStormFile(filePath));
+
+        StormXmlStyleElement styleElement = styleCache.StormXmlStyleElementByName.Dictionary.Should().ContainSingle().Which.Value;
+        styleElement.Name.Should().Be("ReticleEnemy");
+        styleElement.Template.Should().Be("Storm_Tutorial_Reticle_Text");
+        styleElement.Members["textcolor"].Value.RawValue.Should().Be("#ColorGray");
+    }
+
+    [TestMethod]
     public void LoadStormFiles_LayoutDirectoryHasStormLayoutFiles_AddsRelativeUiPaths()
     {
         // arrange

@@ -1769,6 +1769,189 @@ internal sealed class LayeredDataStorageTests
         value.Should().Be("base.dds");
     }
 
+    [TestMethod]
+    [DataRow(StormModType.Base)]
+    [DataRow(StormModType.Map)]
+    [DataRow(StormModType.Custom)]
+    public void GetStormXmlStyleConstantElementByName_ElementInSingleLayer_ReturnsCachedInstance(StormModType stormModType)
+    {
+        // arrange
+        LayeredDataStorage layeredDataStorage = new();
+        StormXmlStyleConstantElement expected = AddStyleConstantElement(layeredDataStorage, stormModType, """<Constant name="ColorGray" val="a7a7a7" />""");
+
+        // act
+        StormXmlStyleConstantElement? result = layeredDataStorage.GetStormXmlStyleConstantElementByName("ColorGray", out bool isCopy);
+
+        // assert
+        result.Should().BeSameAs(expected);
+        isCopy.Should().BeFalse();
+    }
+
+    [TestMethod]
+    public void GetStormXmlStyleConstantElementByName_NameNotInAnyLayer_ReturnsNull()
+    {
+        // arrange
+        LayeredDataStorage layeredDataStorage = new();
+        AddStyleConstantElement(layeredDataStorage, StormModType.Base, """<Constant name="ColorGray" val="a7a7a7" />""");
+
+        // act
+        StormXmlStyleConstantElement? result = layeredDataStorage.GetStormXmlStyleConstantElementByName("ColorWhite", out bool isCopy);
+
+        // assert
+        result.Should().BeNull();
+        isCopy.Should().BeFalse();
+    }
+
+    [TestMethod]
+    public void GetStormXmlStyleConstantElementByName_NameWithDifferentCasing_ReturnsNull()
+    {
+        // arrange
+        LayeredDataStorage layeredDataStorage = new();
+        AddStyleConstantElement(layeredDataStorage, StormModType.Base, """<Constant name="ColorGray" val="a7a7a7" />""");
+
+        // act
+        StormXmlStyleConstantElement? result = layeredDataStorage.GetStormXmlStyleConstantElementByName("colorgray");
+
+        // assert
+        result.Should().BeNull();
+    }
+
+    [TestMethod]
+    public void GetStormXmlStyleConstantElementByName_InAllLayers_ReturnsMergedCopyWithCustomValue()
+    {
+        // arrange
+        LayeredDataStorage layeredDataStorage = new();
+        StormXmlStyleConstantElement baseElement = AddStyleConstantElement(layeredDataStorage, StormModType.Base, """<Constant name="ColorGray" val="111111" />""");
+        StormXmlStyleConstantElement mapElement = AddStyleConstantElement(layeredDataStorage, StormModType.Map, """<Constant name="ColorGray" val="222222" />""");
+        StormXmlStyleConstantElement customElement = AddStyleConstantElement(layeredDataStorage, StormModType.Custom, """<Constant name="ColorGray" val="333333" />""");
+
+        // act
+        StormXmlStyleConstantElement? result = layeredDataStorage.GetStormXmlStyleConstantElementByName("ColorGray", out bool isCopy);
+
+        // assert
+        result.Should().NotBeNull();
+        isCopy.Should().BeTrue();
+        result.Should().NotBeSameAs(baseElement);
+        result.Value.Should().Be("333333");
+        result.StormFiles.Should().HaveCount(3);
+
+        baseElement.Value.Should().Be("111111");
+        mapElement.Value.Should().Be("222222");
+        customElement.Value.Should().Be("333333");
+    }
+
+    [TestMethod]
+    [DataRow(StormModType.Base)]
+    [DataRow(StormModType.Map)]
+    [DataRow(StormModType.Custom)]
+    public void GetStormXmlStyleElementByName_ElementInSingleLayer_ReturnsCachedInstance(StormModType stormModType)
+    {
+        // arrange
+        LayeredDataStorage layeredDataStorage = new();
+        StormXmlStyleElement expected = AddStyleElement(layeredDataStorage, stormModType, """<Style name="ReticleEnemy" template="Storm_Tutorial_Reticle_Text" />""");
+
+        // act
+        StormXmlStyleElement? result = layeredDataStorage.GetStormXmlStyleElementByName("ReticleEnemy", out bool isCopy);
+
+        // assert
+        result.Should().BeSameAs(expected);
+        isCopy.Should().BeFalse();
+    }
+
+    [TestMethod]
+    public void GetStormXmlStyleElementByName_NameNotInAnyLayer_ReturnsNull()
+    {
+        // arrange
+        LayeredDataStorage layeredDataStorage = new();
+        AddStyleElement(layeredDataStorage, StormModType.Base, """<Style name="ReticleEnemy" />""");
+
+        // act
+        StormXmlStyleElement? result = layeredDataStorage.GetStormXmlStyleElementByName("ReticleAlly", out bool isCopy);
+
+        // assert
+        result.Should().BeNull();
+        isCopy.Should().BeFalse();
+    }
+
+    [TestMethod]
+    public void GetStormXmlStyleElementByName_NameWithDifferentCasing_ReturnsNull()
+    {
+        // arrange
+        LayeredDataStorage layeredDataStorage = new();
+        AddStyleElement(layeredDataStorage, StormModType.Base, """<Style name="ReticleEnemy" />""");
+
+        // act
+        StormXmlStyleElement? result = layeredDataStorage.GetStormXmlStyleElementByName("reticleenemy");
+
+        // assert
+        result.Should().BeNull();
+    }
+
+    [TestMethod]
+    public void GetStormXmlStyleElementByName_InMultipleLayers_ReturnsMergedCopyAndDoesNotModifyCachedElements()
+    {
+        // arrange
+        LayeredDataStorage layeredDataStorage = new();
+        StormXmlStyleElement baseElement = AddStyleElement(layeredDataStorage, StormModType.Base, """<Style name="ReticleEnemy" template="Storm_Tutorial_Reticle_Text" textcolor="255,255,255,255" />""");
+        StormXmlStyleElement mapElement = AddStyleElement(layeredDataStorage, StormModType.Map, """<Style name="ReticleEnemy" fontflags="Shadow" />""");
+        StormXmlStyleElement customElement = AddStyleElement(layeredDataStorage, StormModType.Custom, """<Style name="ReticleEnemy" textcolor="255,0,0,255" />""");
+
+        // act
+        StormXmlStyleElement? result = layeredDataStorage.GetStormXmlStyleElementByName("ReticleEnemy", out bool isCopy);
+
+        // assert
+        result.Should().NotBeNull();
+        isCopy.Should().BeTrue();
+        result.Should().NotBeSameAs(baseElement);
+        result.Template.Should().Be("Storm_Tutorial_Reticle_Text");
+        result.Members["textcolor"].Value.RawValue.Should().Be("255,0,0,255");
+        result.Members["fontflags"].Value.RawValue.Should().Be("Shadow");
+        result.StormFiles.Should().HaveCount(3);
+
+        baseElement.Members["textcolor"].Value.RawValue.Should().Be("255,255,255,255");
+        baseElement.Members.ContainsMember("fontflags").Should().BeFalse();
+        mapElement.HasTemplate.Should().BeFalse();
+        customElement.Members.ContainsMember("fontflags").Should().BeFalse();
+    }
+
+    [TestMethod]
+    public void GetStormXmlStyleElementByName_InMultipleLayers_ReturnsNewInstanceEachCall()
+    {
+        // arrange
+        LayeredDataStorage layeredDataStorage = new();
+        AddStyleElement(layeredDataStorage, StormModType.Base, """<Style name="ReticleEnemy" textcolor="255,255,255,255" />""");
+        AddStyleElement(layeredDataStorage, StormModType.Custom, """<Style name="ReticleEnemy" textcolor="255,0,0,255" />""");
+
+        // act
+        StormXmlStyleElement? first = layeredDataStorage.GetStormXmlStyleElementByName("ReticleEnemy");
+        StormXmlStyleElement? second = layeredDataStorage.GetStormXmlStyleElementByName("ReticleEnemy");
+
+        // assert
+        first.Should().NotBeNull();
+        second.Should().NotBeNull();
+        first.Should().NotBeSameAs(second);
+    }
+
+    // parses the xml into a style constant element and adds it to the data storage of the given layer
+    private static StormXmlStyleConstantElement AddStyleConstantElement(LayeredDataStorage layeredDataStorage, StormModType stormModType, string xml)
+    {
+        StormXmlStyleConstantElement element = XmlReaderHelper.GetStormXmlStyleConstantElement(xml);
+
+        layeredDataStorage.GetDataStorage(stormModType).AddStyleConstantElement(element);
+
+        return element;
+    }
+
+    // parses the xml into a style element and adds it to the data storage of the given layer
+    private static StormXmlStyleElement AddStyleElement(LayeredDataStorage layeredDataStorage, StormModType stormModType, string xml)
+    {
+        StormXmlStyleElement element = XmlReaderHelper.GetStormXmlStyleElement(xml);
+
+        layeredDataStorage.GetDataStorage(stormModType).AddStyleElement(element);
+
+        return element;
+    }
+
     // adds the asset text directly to the text cache of the given layer
     private static void AddAssetText(LayeredDataStorage layeredDataStorage, StormModType stormModType, string id, string value)
     {

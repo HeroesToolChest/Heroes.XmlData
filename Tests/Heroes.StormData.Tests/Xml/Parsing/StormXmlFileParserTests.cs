@@ -1,6 +1,6 @@
 ﻿using Heroes.StormData.Cache.Strings;
 
-namespace Heroes.StormData.Xml.Tests;
+namespace Heroes.StormData.Xml.Parsing.Tests;
 
 [TestClass]
 public sealed class StormXmlFileParserTests
@@ -821,6 +821,116 @@ public sealed class StormXmlFileParserTests
     }
 
     // adds the asset text directly to the text cache of the given layer
+    [TestMethod]
+    public void ParseStyleFile_ConstantAndStyleElements_ReturnsOnlyConstantAndStyleElements()
+    {
+        // arrange
+        StormXmlFileParser stormXmlFileParser = new(new LayeredDataStorage());
+
+        using XmlReader reader = XmlReaderHelper.CreateXmlReader(
+            """
+            <Constant name="ColorGray" val="a7a7a7" />
+            <Include path="UI/Other.stormstyle" />
+            <Style name="ReticleEnemy" template="Storm_Tutorial_Reticle_Text" textcolor="#ColorGray" />
+            <Style name="NoTemplate" fontflags="Shadow" />
+            """);
+
+        // act
+        List<StormXmlElement> result = [.. stormXmlFileParser.ParseStyleFile(reader, StormFileHelper.CreateStormFile())];
+
+        // assert
+        result.Should().HaveCount(3);
+
+        StormXmlStyleConstantElement constantElement = (StormXmlStyleConstantElement)result[0];
+        constantElement.ElementName.Should().Be("Constant");
+        constantElement.ElementType.Should().Be(StormXmlElementType.StyleConstant);
+        constantElement.Name.Should().Be("ColorGray");
+        constantElement.Id.Should().Be("ColorGray");
+        constantElement.HasId.Should().BeTrue();
+        constantElement.Value.Should().Be("a7a7a7");
+
+        StormXmlStyleElement styleElement = (StormXmlStyleElement)result[1];
+        styleElement.ElementName.Should().Be("Style");
+        styleElement.ElementType.Should().Be(StormXmlElementType.Style);
+        styleElement.Name.Should().Be("ReticleEnemy");
+        styleElement.Id.Should().Be("ReticleEnemy");
+        styleElement.HasTemplate.Should().BeTrue();
+        styleElement.Template.Should().Be("Storm_Tutorial_Reticle_Text");
+        styleElement.Members["textcolor"].Value.RawValue.Should().Be("#ColorGray");
+
+        StormXmlStyleElement noTemplateElement = (StormXmlStyleElement)result[2];
+        noTemplateElement.Name.Should().Be("NoTemplate");
+        noTemplateElement.HasTemplate.Should().BeFalse();
+        noTemplateElement.Template.Should().BeNull();
+        noTemplateElement.Members["fontflags"].Value.RawValue.Should().Be("Shadow");
+    }
+
+    [TestMethod]
+    public void ParseStyleFile_ValuesWithAtAndDollarSigns_ShouldNotBeResolved()
+    {
+        // arrange
+        LayeredDataStorage layeredDataStorage = new();
+        AddAssetText(layeredDataStorage, StormModType.Base, "SomeAsset", "resolved");
+
+        StormXmlFileParser stormXmlFileParser = new(layeredDataStorage);
+
+        using XmlReader reader = XmlReaderHelper.CreateXmlReader(
+            """
+            <Style name="Test" font="@SomeAsset" other="$Something" />
+            """);
+
+        // act
+        List<StormXmlElement> result = [.. stormXmlFileParser.ParseStyleFile(reader, StormFileHelper.CreateStormFile())];
+
+        // assert
+        StormXmlStyleElement styleElement = (StormXmlStyleElement)result[0];
+        styleElement.Members["font"].Value.RawValue.Should().Be("@SomeAsset");
+        styleElement.Members["other"].Value.RawValue.Should().Be("$Something");
+    }
+
+    [TestMethod]
+    public void ParseStyleFile_ConstantHasNoName_ThrowsException()
+    {
+        // arrange
+        StormXmlFileParser stormXmlFileParser = new(new LayeredDataStorage());
+
+        using XmlReader reader = XmlReaderHelper.CreateXmlReader(
+            """
+            <Constant val="a7a7a7" />
+            """);
+
+        // act
+        Action act = () => _ = stormXmlFileParser.ParseStyleFile(reader, StormFileHelper.CreateStormFile()).ToList();
+
+        // assert
+        act.Should().Throw<HeroesStormDataException>();
+    }
+
+    [TestMethod]
+    public void Clone_StyleElements_ReturnsSameTypeAndValues()
+    {
+        // arrange
+        StormXmlFileParser stormXmlFileParser = new(new LayeredDataStorage());
+
+        using XmlReader reader = XmlReaderHelper.CreateXmlReader(
+            """
+            <Constant name="ColorGray" val="a7a7a7" />
+            <Style name="ReticleEnemy" template="Storm_Tutorial_Reticle_Text" />
+            """);
+
+        List<StormXmlElement> result = [.. stormXmlFileParser.ParseStyleFile(reader, StormFileHelper.CreateStormFile())];
+
+        // act
+        StormXmlElement constantClone = result[0].Clone();
+        StormXmlElement styleClone = result[1].Clone();
+
+        // assert
+        constantClone.Should().BeOfType<StormXmlStyleConstantElement>().Which.Value.Should().Be("a7a7a7");
+        constantClone.ElementType.Should().Be(StormXmlElementType.StyleConstant);
+        styleClone.Should().BeOfType<StormXmlStyleElement>().Which.Template.Should().Be("Storm_Tutorial_Reticle_Text");
+        styleClone.ElementType.Should().Be(StormXmlElementType.Style);
+    }
+
     private static void AddAssetText(LayeredDataStorage layeredDataStorage, StormModType stormModType, string id, string value)
     {
         layeredDataStorage.GetDataStorage(stormModType).TextCache.AssetTextsById.Dictionary.Add(id, new StringValue(value, StormFileHelper.CreateStormFile()));

@@ -1,4 +1,4 @@
-﻿namespace Heroes.StormData.Xml;
+﻿namespace Heroes.StormData.Xml.Members;
 
 /// <summary>
 /// Represents a token declared by a <c>&lt;?token id="..." type="..." value="..."?&gt;</c> processing instruction.

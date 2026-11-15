@@ -1,4 +1,4 @@
-﻿namespace Heroes.StormData.Xml;
+﻿namespace Heroes.StormData.Xml.Members;
 
 /// <summary>
 /// Represents an array of members for an element. Can be indexed by name or by numerical index.
