@@ -61,13 +61,17 @@ internal sealed class FileStormMod : StormModBase<IFileHeroesSource>
 
     protected override bool TryGetFile(string path, [NotNullWhen(true)] out Stream? stream)
     {
-        stream = null;
-
-        if (!IsFileExists(path))
+        // open the file directly instead of checking if it exists first, which saves a file system call for every file.
+        try
+        {
+            stream = _fileSystem.File.OpenRead(path);
+            return true;
+        }
+        catch (Exception ex) when (ex is FileNotFoundException or DirectoryNotFoundException)
+        {
+            stream = null;
             return false;
-
-        stream = _fileSystem.File.OpenRead(path);
-        return true;
+        }
     }
 
     protected override IStormMod GetStormMod(string path, StormModType stormModType) => HeroesSource.StormModFactory.CreateFileStormMod(HeroesSource, path, stormModType);

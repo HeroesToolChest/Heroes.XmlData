@@ -19,6 +19,8 @@ internal abstract class StormModBase<T> : IStormMod
         CloseInput = true,
     };
 
+    private static readonly char[] _directorySeparatorChars = [Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar];
+
     private readonly List<IStormMod> _includesStormModsCache = [];
 
     /// <summary>
@@ -172,6 +174,42 @@ internal abstract class StormModBase<T> : IStormMod
 
     protected abstract IStormMod GetStormMod(string path, StormModType stormModType);
 
+    /// <summary>
+    /// Reads the value of an attribute from each sibling element with the specified name, starting from the first one found.
+    /// Elements without the attribute, or with an empty value, are skipped.
+    /// </summary>
+    /// <param name="xmlReader">The <see cref="XmlReader"/> to read from.</param>
+    /// <param name="elementName">The name of the elements.</param>
+    /// <param name="attributeName">The name of the attribute.</param>
+    /// <returns>The attribute values.</returns>
+    private static IEnumerable<string> ReadAttributeValues(XmlReader xmlReader, string elementName, string attributeName)
+    {
+        if (!xmlReader.ReadToFollowing(elementName))
+            yield break;
+
+        do
+        {
+            string? value = xmlReader.GetAttribute(attributeName);
+
+            if (!string.IsNullOrWhiteSpace(value))
+                yield return value;
+        }
+        while (xmlReader.ReadToNextSibling(elementName));
+    }
+
+    /// <summary>
+    /// Checks if a path starts with a directory, as a whole directory name (e.g. <c>gamedata</c> does not match <c>gamedata.xml</c>).
+    /// </summary>
+    /// <param name="path">The path to check.</param>
+    /// <param name="directory">The directory name.</param>
+    /// <returns><see langword="true"/> if <paramref name="path"/> starts with <paramref name="directory"/>; otherwise <see langword="false"/>.</returns>
+    private static bool StartsWithDirectory(ReadOnlySpan<char> path, string directory) =>
+        path.Length > directory.Length &&
+        path.StartsWith(directory, StringComparison.OrdinalIgnoreCase) &&
+        IsDirectorySeparator(path[directory.Length]);
+
+    private static bool IsDirectorySeparator(char value) => value == Path.DirectorySeparatorChar || value == Path.AltDirectorySeparatorChar;
+
     private void LoadFontStyleFile()
     {
         if (!TryGetFile(FontStyleFilePath, out Stream? stream))
@@ -188,138 +226,129 @@ internal abstract class StormModBase<T> : IStormMod
             return;
 
         using (stream)
-        {
             ModContainer.LoadAssetsTextFile(stream, CreateStormFile(AssetsTextFilePath));
-        }
     }
 
     /// <summary>
-    /// Loads and adds the files from the gamedata.xml file.
+    /// Loads and adds the XML files listed in the <c>gamedata.xml</c> file. Only the files in the <c>gamedata</c> directory are added.
     /// </summary>
     private void LoadGameDataXmlFile()
     {
-        if (!ValidateXmlFile(GameDataXmlFilePath, out XmlReader? reader, out _, isRequired: false))
+        if (!TryCreateXmlReader(GameDataXmlFilePath, out XmlReader? xmlReader))
             return;
 
-        using XmlReader xmlReader = reader;
-
-        if (!xmlReader.ReadToFollowing("Catalog"))
-            return;
-
-        do
+        using (xmlReader)
         {
-            if (xmlReader.NodeType != XmlNodeType.Element || xmlReader.Name != "Catalog")
-                continue;
-
-            string? pathValue = xmlReader.GetAttribute("path");
-
-            if (string.IsNullOrWhiteSpace(pathValue))
-                continue;
-
-            string path = PathNormalizer.NormalizePath(pathValue, SourceConstants.DefaultModsDirectory);
-
-            if (path.StartsWith(SourceConstants.GameDataDirectory, StringComparison.OrdinalIgnoreCase))
+            foreach (string pathValue in ReadAttributeValues(xmlReader, "Catalog", "path"))
             {
-                string xmlFilePath = Path.Combine(BaseStormDataPath, path);
-                AddXmlFile(xmlFilePath);
+                string path = PathNormalizer.NormalizePath(pathValue, SourceConstants.DefaultModsDirectory);
+
+                if (StartsWithDirectory(path, SourceConstants.GameDataDirectory))
+                    AddXmlFile(Path.Join(BaseStormDataPath, path));
             }
         }
-        while (xmlReader.ReadToNextSibling("Catalog"));
     }
 
     /// <summary>
-    /// Loads and adds the files from the <c>includes.xml</c> file. Caches the storm mods from the file.
+    /// Loads the <c>stormmods</c> listed in the <c>includes.xml</c> file and adds their containers to the <see cref="SourceContainer"/>.
+    /// Caches the <c>stormmods</c> from the file.
     /// </summary>
     private void LoadIncludesStormMods()
     {
-        if (!ValidateXmlFile(IncludesXmlFilePath, out XmlReader? reader, out _, isRequired: false))
+        if (!TryCreateXmlReader(IncludesXmlFilePath, out XmlReader? xmlReader))
             return;
 
-        using XmlReader xmlReader = reader;
-
-        if (!xmlReader.ReadToFollowing("Path"))
-            return;
-
-        do
+        using (xmlReader)
         {
-            if (xmlReader.NodeType != XmlNodeType.Element || xmlReader.Name != "Path")
-                continue;
+            foreach (string pathValue in ReadAttributeValues(xmlReader, "Path", "value"))
+            {
+                string path = Path.Join(HeroesSource.ModsDirectoryPath, PathNormalizer.NormalizePath(pathValue, SourceConstants.DefaultModsDirectory));
 
-            string? pathValue = xmlReader.GetAttribute("value");
+                IStormMod stormMod = GetStormMod(path, StormModType.Base);
 
-            if (string.IsNullOrWhiteSpace(pathValue))
-                continue;
+                _includesStormModsCache.Add(stormMod);
+                stormMod.LoadStormFiles();
 
-            string path = Path.Combine(HeroesSource.ModsDirectoryPath, PathNormalizer.NormalizePath(pathValue, SourceConstants.DefaultModsDirectory));
-
-            IStormMod stormMod = GetStormMod(path, StormModType.Base);
-
-            _includesStormModsCache.Add(stormMod);
-            stormMod.LoadStormFiles();
-
-            HeroesSource.SourceContainer.AddModContainer(stormMod.ModContainer);
+                HeroesSource.SourceContainer.AddModContainer(stormMod.ModContainer);
+            }
         }
-        while (xmlReader.ReadToNextSibling("Path"));
     }
 
     /// <summary>
-    /// Adds an XML file to the <see cref="ModContainer"/>. Checks first if it's an XML file and it exists.
+    /// Loads an XML file into the <see cref="ModContainer"/>. If the file does not exist, it is added as a not found file.
     /// </summary>
-    /// <param name="path">The path to the XML file.</param>
+    /// <param name="path">The full path of the XML file.</param>
     private void AddXmlFile(string path)
     {
-        if (!ValidateXmlFile(path, out XmlReader? xmlReader, out StormFile stormFile))
+        StormFile stormFile = CreateStormFile(path);
+
+        if (!TryCreateXmlReader(path, out XmlReader? xmlReader))
+        {
+            ModContainer.AddFileNotFound(stormFile);
             return;
+        }
 
         using (xmlReader)
             ModContainer.LoadXmlFile(xmlReader, stormFile);
     }
 
+    /// <summary>
+    /// Adds a <c>.stormlayout</c> file to the <see cref="ModContainer"/> by its path relative to the <c>base.stormdata</c> directory (starts with <c>ui</c>).
+    /// </summary>
+    /// <param name="layoutFilePath">The full path of the <c>.stormlayout</c> file.</param>
     private void AddStormLayoutFilePath(string layoutFilePath)
     {
-        ReadOnlySpan<char> uiPath = layoutFilePath;
-
-        int indexOfBase = layoutFilePath.IndexOf(SourceConstants.BaseStormDataDirectory, StringComparison.OrdinalIgnoreCase);
-
-        if (indexOfBase > -1)
-            uiPath = layoutFilePath.AsSpan()[(indexOfBase + SourceConstants.BaseStormDataDirectory.Length)..].TrimStart(Path.DirectorySeparatorChar);
-
-        if (uiPath.StartsWith(SourceConstants.UiDirectory, StringComparison.OrdinalIgnoreCase))
-        {
+        if (TryGetPathAfterDirectory(layoutFilePath, SourceConstants.BaseStormDataDirectory, SourceConstants.UiDirectory, out ReadOnlySpan<char> uiPath))
             ModContainer.AddStormLayoutFile(PathNormalizer.NormalizePath(uiPath), CreateStormFile(layoutFilePath));
-        }
     }
 
+    /// <summary>
+    /// Adds an asset file to the <see cref="ModContainer"/> by its path relative to the <c>base.stormassets</c> directory (starts with <c>assets</c>).
+    /// </summary>
+    /// <param name="assetFilePath">The full path of the asset file.</param>
     private void AddAssetFilePath(string assetFilePath)
     {
-        ReadOnlySpan<char> assetsPath = assetFilePath;
-
-        int indexOfBase = assetFilePath.IndexOf(SourceConstants.BaseStormAssetsDirectory, StringComparison.OrdinalIgnoreCase);
-
-        if (indexOfBase > -1)
-            assetsPath = assetFilePath.AsSpan()[(indexOfBase + SourceConstants.BaseStormAssetsDirectory.Length)..].TrimStart(Path.DirectorySeparatorChar);
-
-        if (assetsPath.StartsWith(SourceConstants.AssetsDirectory, StringComparison.OrdinalIgnoreCase))
-        {
+        if (TryGetPathAfterDirectory(assetFilePath, SourceConstants.BaseStormAssetsDirectory, SourceConstants.AssetsDirectory, out ReadOnlySpan<char> assetsPath))
             ModContainer.AddAssetFile(PathNormalizer.NormalizePath(assetsPath), CreateStormFile(assetFilePath));
-        }
     }
 
-    private bool ValidateXmlFile(string path, [NotNullWhen(true)] out XmlReader? reader, out StormFile stormFile, bool isRequired = true)
+    /// <summary>
+    /// Gets the part of a file path that comes after a directory (e.g. <c>base.stormdata</c>), if that part starts with another directory (e.g. <c>ui</c>).
+    /// </summary>
+    /// <param name="filePath">The full path of the file.</param>
+    /// <param name="directory">The directory to remove from the start of the path, along with everything before it.</param>
+    /// <param name="startDirectory">The directory that the remaining path must start with.</param>
+    /// <param name="path">When this method returns, contains the part of <paramref name="filePath"/> after <paramref name="directory"/>.</param>
+    /// <returns><see langword="true"/> if the remaining path starts with <paramref name="startDirectory"/>; otherwise <see langword="false"/>.</returns>
+    private bool TryGetPathAfterDirectory(string filePath, string directory, string startDirectory, out ReadOnlySpan<char> path)
     {
-        reader = null;
-        stormFile = CreateStormFile(path);
+        path = filePath;
 
+        // only search after the stormmod directory, so a parent directory with the same name is not matched
+        int searchStart = filePath.StartsWith(DirectoryPath, StringComparison.OrdinalIgnoreCase) ? DirectoryPath.Length : 0;
+        int index = filePath.IndexOf(directory, searchStart, StringComparison.OrdinalIgnoreCase);
+
+        if (index > -1)
+            path = path[(index + directory.Length)..].TrimStart(_directorySeparatorChars);
+
+        return StartsWithDirectory(path, startDirectory);
+    }
+
+    /// <summary>
+    /// Opens a file and creates an <see cref="XmlReader"/> for it. Disposing the reader also closes the file.
+    /// </summary>
+    /// <param name="path">The full path of the XML file.</param>
+    /// <param name="xmlReader">When this method returns, contains the <see cref="XmlReader"/> of the file, if it exists; otherwise, <see langword="null"/>.</param>
+    /// <returns><see langword="true"/> if the file exists; otherwise <see langword="false"/>.</returns>
+    private bool TryCreateXmlReader(string path, [NotNullWhen(true)] out XmlReader? xmlReader)
+    {
         if (!TryGetFile(path, out Stream? stream))
         {
-            if (isRequired)
-                ModContainer.AddFileNotFound(stormFile);
-
+            xmlReader = null;
             return false;
         }
 
-        reader = XmlReader.Create(stream, _xmlReaderSettings);
-
+        xmlReader = XmlReader.Create(stream, _xmlReaderSettings);
         return true;
     }
 
@@ -331,7 +360,25 @@ internal abstract class StormModBase<T> : IStormMod
     private StormFile CreateStormFile(string filePath) => new()
     {
         StormModName = Name,
-        RelativePath = Path.GetRelativePath(HeroesSource.ModsDirectoryPath, filePath),
+        RelativePath = GetRelativePath(filePath),
         FullPath = filePath,
     };
+
+    /// <summary>
+    /// Gets the path of a file relative to the <c>mods</c> directory.
+    /// </summary>
+    /// <param name="filePath">The full path of the file.</param>
+    /// <returns>The path relative to the <c>mods</c> directory.</returns>
+    private string GetRelativePath(string filePath)
+    {
+        // the files are almost always in this stormmod's directory, and this is a lot faster than Path.GetRelativePath
+        if (filePath.Length > DirectoryPath.Length &&
+            filePath.StartsWith(DirectoryPath, StringComparison.Ordinal) &&
+            IsDirectorySeparator(filePath[DirectoryPath.Length]))
+        {
+            return string.Concat(RelativeStormModPath, filePath.AsSpan(DirectoryPath.Length));
+        }
+
+        return Path.GetRelativePath(HeroesSource.ModsDirectoryPath, filePath);
+    }
 }

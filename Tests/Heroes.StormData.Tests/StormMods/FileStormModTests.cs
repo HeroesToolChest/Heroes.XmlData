@@ -141,6 +141,29 @@ internal sealed class FileStormModTests
     }
 
     [TestMethod]
+    public void LoadStormFiles_GameDataXmlFileCatalogInDirectoryStartingWithGameData_DoesNotLoadFile()
+    {
+        // arrange
+        AddConstXmlFile(Path.Combine(_baseStormDataPath, "GameDataExtra", "ExtraData.xml"), "$ExtraConst");
+
+        _fileSystem.AddFile(Path.Combine(_baseStormDataPath, "GameData.xml"), new MockFileData(
+            """
+            <Includes>
+              <Catalog path="GameDataExtra/ExtraData.xml" />
+            </Includes>
+            """));
+
+        FileStormMod fileStormMod = CreateFileStormMod();
+
+        // act
+        fileStormMod.LoadStormFiles();
+
+        // assert
+        GetDataStorage(StormModType.Base).ElementCache.StormXmlConstElementById.Dictionary.Should().BeEmpty();
+        fileStormMod.ModContainer.NotFoundFiles.Should().BeEmpty();
+    }
+
+    [TestMethod]
     public void LoadStormFiles_GameDataXmlFileCatalogFileDoesNotExist_SkipsMissingFile()
     {
         // arrange
