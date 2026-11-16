@@ -24,4 +24,5 @@ internal static class SourceConstants
     public const string HeroModsDirectory = "heromods";
     public const string UiDirectory = "ui";
     public const string LayoutDirectory = "layout";
+    public const string DepotCacheDirectory = "depotcache";
 }

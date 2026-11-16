@@ -203,6 +203,7 @@ internal abstract class StormModBase<T> : IStormMod
         path.StartsWith(directory, StringComparison.OrdinalIgnoreCase) &&
         IsDirectorySeparator(path[directory.Length]);
 
+    // match the chars in _directorySeparatorChars
     private static bool IsDirectorySeparator(char value) => value == Path.DirectorySeparatorChar || value == Path.AltDirectorySeparatorChar;
 
     private void LoadFontStylesFile()

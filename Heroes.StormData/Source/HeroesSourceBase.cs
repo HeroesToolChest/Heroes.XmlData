@@ -6,6 +6,8 @@ internal abstract class HeroesSourceBase : IHeroesSource
     private readonly List<IStormMod> _stormMapMods = [];
     private readonly List<IStormMod> _stormCustomMods = [];
 
+    private IDepotCache? _depotCache;
+
     public HeroesSourceBase(string modsDirectoryPath, IStormModFactory stormModFactory)
     {
         ModsDirectoryPath = modsDirectoryPath;
@@ -20,15 +22,22 @@ internal abstract class HeroesSourceBase : IHeroesSource
 
     public IStormModFactory StormModFactory { get; }
 
+    // created on first use so the derived class has finished constructing (e.g. CASCHeroesSource sets its storage after the base constructor)
+    public IDepotCache DepotCache => _depotCache ??= CreateDepotCache();
+
     public void LoadStormMods()
     {
         foreach (IStormMod stormMod in _stormMods)
         {
-
-            // StormStorage.AddModStorage(stormMod.StormModStorage);
+            SourceContainer.AddModContainer(stormMod.ModContainer);
 
             stormMod.LoadStormFiles();
         }
+    }
+
+    public void LoadDepotCache()
+    {
+        DepotCache.LoadDepotCache();
     }
 
     public void LoadGamestrings(StormLocale stormLocale)
@@ -43,6 +52,12 @@ internal abstract class HeroesSourceBase : IHeroesSource
     /// <param name="stormModType">The type of the <c>stormmod</c>.</param>
     /// <returns>The <see cref="IStormMod"/> instance.</returns>
     protected abstract IStormMod GetStormMod(string directoryPath, StormModType stormModType);
+
+    /// <summary>
+    /// Creates the <see cref="IDepotCache"/> for this source.
+    /// </summary>
+    /// <returns>The <see cref="IDepotCache"/> instance.</returns>
+    protected abstract IDepotCache CreateDepotCache();
 
     private void AddStormMods()
     {

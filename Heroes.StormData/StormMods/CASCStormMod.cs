@@ -19,7 +19,7 @@ internal sealed class CASCStormMod : StormModBase<ICASCHeroesSource>
         stream = null;
 
         //if (!IsFileExists(path))
-         //   return false;
+        //   return false;
 
         stream = HeroesSource.CASCHeroesStorage.CASCHandlerWrapper.OpenFile(path);
 

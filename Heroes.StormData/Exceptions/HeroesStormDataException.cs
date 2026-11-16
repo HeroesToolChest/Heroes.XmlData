@@ -1,4 +1,4 @@
-﻿namespace Heroes.StormData;
+﻿namespace Heroes.StormData.Exceptions;
 
 /// <summary>
 /// Contains the methods for a heroes storm data exception.
