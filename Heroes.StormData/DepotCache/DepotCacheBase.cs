@@ -14,6 +14,8 @@ internal abstract class DepotCacheBase<T> : IDepotCache
         CloseInput = true,
     };
 
+    private static readonly SearchValues<string> _mapStringIdSearchValues = SearchValues.Create(["mAPMapStringID"], StringComparison.OrdinalIgnoreCase);
+
     public DepotCacheBase(T heroesSource)
         : this(new FileSystem(), heroesSource)
     {
@@ -292,31 +294,81 @@ internal abstract class DepotCacheBase<T> : IDepotCache
     // finds the value assigned to the mAPMapStringID variable, e.g. libCore_gv_mAPMapStringID = "BraxisHoldout";
     private static string? GetMapId(MpqHeroesArchive mpqHeroesArchive, MpqHeroesArchiveEntry mapScriptEntry)
     {
-        using Stream stream = mpqHeroesArchive.DecompressEntry(mapScriptEntry);
-        using StreamReader reader = new(stream, Encoding.UTF8);
+        int byteCount = (int)mapScriptEntry.FileSize;
+        byte[] byteBuffer = ArrayPool<byte>.Shared.Rent(byteCount);
+        char[]? charBuffer = null;
 
-        while (reader.ReadLine() is string line)
+        try
         {
-            ReadOnlySpan<char> lineSpan = line.AsSpan().TrimStart();
-            if (lineSpan.StartsWith("//", StringComparison.Ordinal))
-                continue;
+            Span<byte> bytes = byteBuffer.AsSpan(0, byteCount);
+            mpqHeroesArchive.DecompressEntry(mapScriptEntry, bytes);
 
-            int indexOfEquals = lineSpan.IndexOf('=');
+            if (bytes.StartsWith(Encoding.UTF8.Preamble))
+                bytes = bytes[Encoding.UTF8.Preamble.Length..];
 
-            // skip lines without an assignment, and comparisons such as ==, !=, <= and >=
-            if (indexOfEquals < 1 ||
-                (indexOfEquals + 1 < lineSpan.Length && lineSpan[indexOfEquals + 1] == '=') ||
-                lineSpan[indexOfEquals - 1] is '!' or '<' or '>')
-            {
-                continue;
-            }
+            charBuffer = ArrayPool<char>.Shared.Rent(Encoding.UTF8.GetMaxCharCount(bytes.Length));
+            int charCount = Encoding.UTF8.GetChars(bytes, charBuffer);
 
-            if (!lineSpan[..indexOfEquals].TrimEnd().EndsWith("mAPMapStringID", StringComparison.OrdinalIgnoreCase))
-                continue;
+            return FindMapId(charBuffer.AsSpan(0, charCount));
+        }
+        finally
+        {
+            ArrayPool<byte>.Shared.Return(byteBuffer);
 
-            return lineSpan[(indexOfEquals + 1)..].Trim([' ', '\t', '"', ';']).ToString();
+            if (charBuffer is not null)
+                ArrayPool<char>.Shared.Return(charBuffer);
+        }
+    }
+
+    // only the lines containing mAPMapStringID are checked, instead of reading every line of the script
+    private static string? FindMapId(ReadOnlySpan<char> script)
+    {
+        int searchStart = 0;
+
+        while (searchStart < script.Length)
+        {
+            int index = script[searchStart..].IndexOfAny(_mapStringIdSearchValues);
+            if (index < 0)
+                return null;
+
+            index += searchStart;
+
+            int lineStart = script[..index].LastIndexOfAny('\r', '\n') + 1;
+            int lineEnd = script[index..].IndexOfAny('\r', '\n');
+            lineEnd = lineEnd < 0 ? script.Length : index + lineEnd;
+
+            if (TryGetMapIdFromLine(script[lineStart..lineEnd], out string? mapId))
+                return mapId;
+
+            searchStart = lineEnd;
         }
 
         return null;
+    }
+
+    private static bool TryGetMapIdFromLine(ReadOnlySpan<char> line, [NotNullWhen(true)] out string? mapId)
+    {
+        mapId = null;
+
+        line = line.TrimStart();
+        if (line.StartsWith("//", StringComparison.Ordinal))
+            return false;
+
+        int indexOfEquals = line.IndexOf('=');
+
+        // skip lines without an assignment, and comparisons such as ==, !=, <= and >=
+        if (indexOfEquals < 1 ||
+            (indexOfEquals + 1 < line.Length && line[indexOfEquals + 1] == '=') ||
+            line[indexOfEquals - 1] is '!' or '<' or '>')
+        {
+            return false;
+        }
+
+        if (!line[..indexOfEquals].TrimEnd().EndsWith("mAPMapStringID", StringComparison.OrdinalIgnoreCase))
+            return false;
+
+        mapId = line[(indexOfEquals + 1)..].Trim([' ', '\t', '"', ';']).ToString();
+
+        return true;
     }
 }
