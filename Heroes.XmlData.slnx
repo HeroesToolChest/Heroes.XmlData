@@ -8,6 +8,7 @@
   </Folder>
   <Project Path="CascLib/CascLib/CascLib.csproj" />
   <Project Path="Heroes.StormData.Console/Heroes.StormData.Console.csproj" Id="61937e86-4d59-4776-9148-34b3265ba1eb" />
+  <Project Path="Heroes.StormData.Benchmarks/Heroes.StormData.Benchmarks.csproj" />
   <Project Path="Heroes.StormData/Heroes.StormData.csproj" />
   <Project Path="Heroes.XmlData.Benchmarks/Heroes.XmlData.Benchmarks.csproj" />
   <Project Path="Heroes.XmlData.Console/Heroes.XmlData.Console.csproj" />
