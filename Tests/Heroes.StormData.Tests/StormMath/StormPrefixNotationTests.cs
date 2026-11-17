@@ -89,7 +89,7 @@ public sealed class StormPrefixNotationTests
             """));
 
         // act
-        double result = StormPrefixNotation.Compute(layeredDataStorage, expression);
+        double result = StormPrefixNotation.Compute(layeredDataStorage.Elements, expression);
 
         // assert
         result.Should().Be(2);
@@ -110,7 +110,7 @@ public sealed class StormPrefixNotationTests
             """));
 
         // act
-        double result = StormPrefixNotation.Compute(layeredDataStorage, expression);
+        double result = StormPrefixNotation.Compute(layeredDataStorage.Elements, expression);
 
         // assert
         result.Should().Be(-0.25);
@@ -131,7 +131,7 @@ public sealed class StormPrefixNotationTests
             """));
 
         // act
-        double result = StormPrefixNotation.Compute(layeredDataStorage, expression);
+        double result = StormPrefixNotation.Compute(layeredDataStorage.Elements, expression);
 
         // assert
         result.Should().Be(-0.4);
@@ -157,7 +157,7 @@ public sealed class StormPrefixNotationTests
             """));
 
         // act
-        double result = StormPrefixNotation.Compute(layeredDataStorage, expression);
+        double result = StormPrefixNotation.Compute(layeredDataStorage.Elements, expression);
 
         // assert
         result.Should().Be(-0.5);

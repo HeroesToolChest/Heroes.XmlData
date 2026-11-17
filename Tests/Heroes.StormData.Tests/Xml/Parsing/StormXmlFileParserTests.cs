@@ -9,7 +9,7 @@ public sealed class StormXmlFileParserTests
     public void Parse_GeneralElements_ReturnsItems()
     {
         // arrange
-        StormXmlFileParser stormXmlFileParser = new(new LayeredDataStorage());
+        StormXmlFileParser stormXmlFileParser = XmlReaderHelper.CreateStormXmlFileParser();
 
         using XmlReader reader = XmlReaderHelper.CreateXmlReader(
             """
@@ -60,7 +60,7 @@ public sealed class StormXmlFileParserTests
     public void Parse_ConstNoExpression_ShouldReturnConstElement()
     {
         // arrange
-        StormXmlFileParser stormXmlFileParser = new(new LayeredDataStorage());
+        StormXmlFileParser stormXmlFileParser = XmlReaderHelper.CreateStormXmlFileParser();
 
         using XmlReader reader = XmlReaderHelper.CreateXmlReader(
             """
@@ -94,7 +94,7 @@ public sealed class StormXmlFileParserTests
             <const id="$XalatathDarkHeartRitualLinkDamage" value="35" />
             """));
 
-        StormXmlFileParser stormXmlFileParser = new(layeredDataStorage);
+        StormXmlFileParser stormXmlFileParser = XmlReaderHelper.CreateStormXmlFileParser(layeredDataStorage);
 
         using XmlReader reader = XmlReaderHelper.CreateXmlReader(
             """
@@ -120,7 +120,7 @@ public sealed class StormXmlFileParserTests
     public void Parse_HasIdAttribute_ShouldReturnId()
     {
         // arrange
-        StormXmlFileParser stormXmlFileParser = new(new LayeredDataStorage());
+        StormXmlFileParser stormXmlFileParser = XmlReaderHelper.CreateStormXmlFileParser();
 
         using XmlReader reader = XmlReaderHelper.CreateXmlReader(
             """
@@ -141,7 +141,7 @@ public sealed class StormXmlFileParserTests
     public void Parse_HasNoIdAttribute_ShouldReturnNull()
     {
         // arrange
-        StormXmlFileParser stormXmlFileParser = new(new LayeredDataStorage());
+        StormXmlFileParser stormXmlFileParser = XmlReaderHelper.CreateStormXmlFileParser();
 
         using XmlReader reader = XmlReaderHelper.CreateXmlReader(
             """
@@ -160,7 +160,7 @@ public sealed class StormXmlFileParserTests
     public void Parse_HasParentAttribute_ShouldReturnParent()
     {
         // arrange
-        StormXmlFileParser stormXmlFileParser = new(new LayeredDataStorage());
+        StormXmlFileParser stormXmlFileParser = XmlReaderHelper.CreateStormXmlFileParser();
 
         using XmlReader reader = XmlReaderHelper.CreateXmlReader(
             """
@@ -179,7 +179,7 @@ public sealed class StormXmlFileParserTests
     public void Parse_HasNoParentAttribute_ShouldReturnNull()
     {
         // arrange
-        StormXmlFileParser stormXmlFileParser = new(new LayeredDataStorage());
+        StormXmlFileParser stormXmlFileParser = XmlReaderHelper.CreateStormXmlFileParser();
 
         using XmlReader reader = XmlReaderHelper.CreateXmlReader(
             """
@@ -198,7 +198,7 @@ public sealed class StormXmlFileParserTests
     public void Parse_HasDefaultAttribute_ShouldReturnTrue()
     {
         // arrange
-        StormXmlFileParser stormXmlFileParser = new(new LayeredDataStorage());
+        StormXmlFileParser stormXmlFileParser = XmlReaderHelper.CreateStormXmlFileParser();
 
         using XmlReader reader = XmlReaderHelper.CreateXmlReader(
             """
@@ -217,7 +217,7 @@ public sealed class StormXmlFileParserTests
     public void Parse_HasDefaultAttribute_ShouldReturnFalse()
     {
         // arrange
-        StormXmlFileParser stormXmlFileParser = new(new LayeredDataStorage());
+        StormXmlFileParser stormXmlFileParser = XmlReaderHelper.CreateStormXmlFileParser();
 
         using XmlReader reader = XmlReaderHelper.CreateXmlReader(
             """
@@ -236,7 +236,7 @@ public sealed class StormXmlFileParserTests
     public void Parse_HasNoDefaultAttribute_ShouldReturnFalse()
     {
         // arrange
-        StormXmlFileParser stormXmlFileParser = new(new LayeredDataStorage());
+        StormXmlFileParser stormXmlFileParser = XmlReaderHelper.CreateStormXmlFileParser();
 
         using XmlReader reader = XmlReaderHelper.CreateXmlReader(
             """
@@ -255,7 +255,7 @@ public sealed class StormXmlFileParserTests
     public void Parse_HasOrderArrayProperty_ShouldReturnLineTexture()
     {
         // arrange
-        StormXmlFileParser stormXmlFileParser = new(new LayeredDataStorage());
+        StormXmlFileParser stormXmlFileParser = XmlReaderHelper.CreateStormXmlFileParser();
 
         using XmlReader reader = XmlReaderHelper.CreateXmlReader(
             """
@@ -277,7 +277,7 @@ public sealed class StormXmlFileParserTests
     public void Parse_HasNumericalIndexes_ShouldReturnLineTexture()
     {
         // arrange
-        StormXmlFileParser stormXmlFileParser = new(new LayeredDataStorage());
+        StormXmlFileParser stormXmlFileParser = XmlReaderHelper.CreateStormXmlFileParser();
 
         using XmlReader reader = XmlReaderHelper.CreateXmlReader(
             """
@@ -303,7 +303,7 @@ public sealed class StormXmlFileParserTests
     public void Parse_HasNamedArrayIndex_ShouldReturnValues()
     {
         // arrange
-        StormXmlFileParser stormXmlFileParser = new(new LayeredDataStorage());
+        StormXmlFileParser stormXmlFileParser = XmlReaderHelper.CreateStormXmlFileParser();
 
         using XmlReader reader = XmlReaderHelper.CreateXmlReader(
             """
@@ -329,7 +329,7 @@ public sealed class StormXmlFileParserTests
     public void Parse_HasNumericalIndexInnerArray_ShouldReturnValues()
     {
         // arrange
-        StormXmlFileParser stormXmlFileParser = new(new LayeredDataStorage());
+        StormXmlFileParser stormXmlFileParser = XmlReaderHelper.CreateStormXmlFileParser();
 
         using XmlReader reader = XmlReaderHelper.CreateXmlReader(
             """
@@ -372,7 +372,7 @@ public sealed class StormXmlFileParserTests
     public void Parse_HasElementWithInnerElement_ShouldReturnValues()
     {
         // arrange
-        StormXmlFileParser stormXmlFileParser = new(new LayeredDataStorage());
+        StormXmlFileParser stormXmlFileParser = XmlReaderHelper.CreateStormXmlFileParser();
 
         using XmlReader reader = XmlReaderHelper.CreateXmlReader(
             """
@@ -402,7 +402,7 @@ public sealed class StormXmlFileParserTests
     public void Parse_HasAbilityModificationArray_ShouldReturnValues()
     {
         // arrange
-        StormXmlFileParser stormXmlFileParser = new(new LayeredDataStorage());
+        StormXmlFileParser stormXmlFileParser = XmlReaderHelper.CreateStormXmlFileParser();
 
         using XmlReader reader = XmlReaderHelper.CreateXmlReader(
             """
@@ -444,7 +444,7 @@ public sealed class StormXmlFileParserTests
     public void Parse_HasProcessingInstructions_ShouldReturnValues()
     {
         // arrange
-        StormXmlFileParser stormXmlFileParser = new(new LayeredDataStorage());
+        StormXmlFileParser stormXmlFileParser = XmlReaderHelper.CreateStormXmlFileParser();
 
         using XmlReader reader = XmlReaderHelper.CreateXmlReader(
             """
@@ -470,7 +470,7 @@ public sealed class StormXmlFileParserTests
     public void Parse_RepeatedNonArrayElement_MergesOverEarlierElement()
     {
         // arrange
-        StormXmlFileParser stormXmlFileParser = new(new LayeredDataStorage());
+        StormXmlFileParser stormXmlFileParser = XmlReaderHelper.CreateStormXmlFileParser();
 
         using XmlReader reader = XmlReaderHelper.CreateXmlReader(
             """
@@ -506,7 +506,7 @@ public sealed class StormXmlFileParserTests
 
         AddAssetText(layeredDataStorage, StormModType.Base, "UI_Portrait_Alarak", @"Assets\Textures\ui_targetportrait_hero_alarak.dds");
 
-        StormXmlFileParser stormXmlFileParser = new(layeredDataStorage);
+        StormXmlFileParser stormXmlFileParser = XmlReaderHelper.CreateStormXmlFileParser(layeredDataStorage);
 
         using XmlReader reader = XmlReaderHelper.CreateXmlReader(
             """
@@ -530,7 +530,7 @@ public sealed class StormXmlFileParserTests
 
         AddAssetText(layeredDataStorage, StormModType.Base, "UI_WayPointLine", @"Assets\Textures\Storm_WayPointLine.dds");
 
-        StormXmlFileParser stormXmlFileParser = new(layeredDataStorage);
+        StormXmlFileParser stormXmlFileParser = XmlReaderHelper.CreateStormXmlFileParser(layeredDataStorage);
 
         using XmlReader reader = XmlReaderHelper.CreateXmlReader(
             """
@@ -554,7 +554,7 @@ public sealed class StormXmlFileParserTests
 
         AddAssetText(layeredDataStorage, StormModType.Base, "UI_Model_Alarak", @"Assets\Units\Heroes\Alarak\Alarak.m3");
 
-        StormXmlFileParser stormXmlFileParser = new(layeredDataStorage);
+        StormXmlFileParser stormXmlFileParser = XmlReaderHelper.CreateStormXmlFileParser(layeredDataStorage);
 
         using XmlReader reader = XmlReaderHelper.CreateXmlReader(
             """
@@ -573,7 +573,7 @@ public sealed class StormXmlFileParserTests
     public void Parse_AssetReferenceNotFound_ShouldReturnEmptyValue()
     {
         // arrange
-        StormXmlFileParser stormXmlFileParser = new(new LayeredDataStorage());
+        StormXmlFileParser stormXmlFileParser = XmlReaderHelper.CreateStormXmlFileParser();
 
         using XmlReader reader = XmlReaderHelper.CreateXmlReader(
             """
@@ -599,7 +599,7 @@ public sealed class StormXmlFileParserTests
 
         AddAssetText(layeredDataStorage, StormModType.Base, "UI_Portrait_Alarak", @"Assets\Textures\ui_targetportrait_hero_alarak.dds");
 
-        StormXmlFileParser stormXmlFileParser = new(layeredDataStorage);
+        StormXmlFileParser stormXmlFileParser = XmlReaderHelper.CreateStormXmlFileParser(layeredDataStorage);
 
         using XmlReader reader = XmlReaderHelper.CreateXmlReader(
             """
@@ -623,7 +623,7 @@ public sealed class StormXmlFileParserTests
 
         AddAssetText(layeredDataStorage, StormModType.Base, "UI_Portrait_Alarak", @"Assets\Textures\ui_targetportrait_hero_alarak.dds");
 
-        StormXmlFileParser stormXmlFileParser = new(layeredDataStorage);
+        StormXmlFileParser stormXmlFileParser = XmlReaderHelper.CreateStormXmlFileParser(layeredDataStorage);
 
         using XmlReader reader = XmlReaderHelper.CreateXmlReader(
             """
@@ -647,7 +647,7 @@ public sealed class StormXmlFileParserTests
 
         AddAssetText(layeredDataStorage, StormModType.Base, "UI_Portrait_Alarak", string.Empty);
 
-        StormXmlFileParser stormXmlFileParser = new(layeredDataStorage);
+        StormXmlFileParser stormXmlFileParser = XmlReaderHelper.CreateStormXmlFileParser(layeredDataStorage);
 
         using XmlReader reader = XmlReaderHelper.CreateXmlReader(
             """
@@ -673,7 +673,7 @@ public sealed class StormXmlFileParserTests
         AddAssetText(layeredDataStorage, StormModType.Map, "UI_Portrait_Alarak", "map.dds");
         AddAssetText(layeredDataStorage, StormModType.Custom, "UI_Portrait_Alarak", "custom.dds");
 
-        StormXmlFileParser stormXmlFileParser = new(layeredDataStorage);
+        StormXmlFileParser stormXmlFileParser = XmlReaderHelper.CreateStormXmlFileParser(layeredDataStorage);
 
         using XmlReader reader = XmlReaderHelper.CreateXmlReader(
             """
@@ -701,7 +701,7 @@ public sealed class StormXmlFileParserTests
             """));
         AddAssetText(layeredDataStorage, StormModType.Base, "AlarakLifeAsset", "$AlarakLife");
 
-        StormXmlFileParser stormXmlFileParser = new(layeredDataStorage);
+        StormXmlFileParser stormXmlFileParser = XmlReaderHelper.CreateStormXmlFileParser(layeredDataStorage);
 
         using XmlReader reader = XmlReaderHelper.CreateXmlReader(
             """
@@ -728,7 +728,7 @@ public sealed class StormXmlFileParserTests
             <const id="$AlarakLife" value="1330" />
             """));
 
-        StormXmlFileParser stormXmlFileParser = new(layeredDataStorage);
+        StormXmlFileParser stormXmlFileParser = XmlReaderHelper.CreateStormXmlFileParser(layeredDataStorage);
 
         using XmlReader reader = XmlReaderHelper.CreateXmlReader(
             """
@@ -755,7 +755,7 @@ public sealed class StormXmlFileParserTests
 
         AddAssetText(layeredDataStorage, StormModType.Base, "UI_Portrait_Alarak", @"Assets\Textures\ui_targetportrait_hero_alarak.dds");
 
-        StormXmlFileParser stormXmlFileParser = new(layeredDataStorage);
+        StormXmlFileParser stormXmlFileParser = XmlReaderHelper.CreateStormXmlFileParser(layeredDataStorage);
 
         using XmlReader reader = XmlReaderHelper.CreateXmlReader(
             $"""
@@ -779,7 +779,7 @@ public sealed class StormXmlFileParserTests
 
         AddAssetText(layeredDataStorage, StormModType.Base, "UI_Portrait_Alarak", @"Assets\Textures\ui_targetportrait_hero_alarak.dds");
 
-        StormXmlFileParser stormXmlFileParser = new(layeredDataStorage);
+        StormXmlFileParser stormXmlFileParser = XmlReaderHelper.CreateStormXmlFileParser(layeredDataStorage);
 
         using XmlReader reader = XmlReaderHelper.CreateXmlReader(
             """
@@ -803,7 +803,7 @@ public sealed class StormXmlFileParserTests
 
         AddAssetText(layeredDataStorage, StormModType.Base, "Alarak", @"Assets\Textures\ui_targetportrait_hero_alarak.dds");
 
-        StormXmlFileParser stormXmlFileParser = new(layeredDataStorage);
+        StormXmlFileParser stormXmlFileParser = XmlReaderHelper.CreateStormXmlFileParser(layeredDataStorage);
 
         using XmlReader reader = XmlReaderHelper.CreateXmlReader(
             """
@@ -825,7 +825,7 @@ public sealed class StormXmlFileParserTests
     public void ParseStyleFile_ConstantAndStyleElements_ReturnsOnlyConstantAndStyleElements()
     {
         // arrange
-        StormXmlFileParser stormXmlFileParser = new(new LayeredDataStorage());
+        StormXmlFileParser stormXmlFileParser = XmlReaderHelper.CreateStormXmlFileParser();
 
         using XmlReader reader = XmlReaderHelper.CreateXmlReader(
             """
@@ -872,7 +872,7 @@ public sealed class StormXmlFileParserTests
         LayeredDataStorage layeredDataStorage = new();
         AddAssetText(layeredDataStorage, StormModType.Base, "SomeAsset", "resolved");
 
-        StormXmlFileParser stormXmlFileParser = new(layeredDataStorage);
+        StormXmlFileParser stormXmlFileParser = XmlReaderHelper.CreateStormXmlFileParser(layeredDataStorage);
 
         using XmlReader reader = XmlReaderHelper.CreateXmlReader(
             """
@@ -892,7 +892,7 @@ public sealed class StormXmlFileParserTests
     public void ParseStyleFile_ConstantHasNoName_ThrowsException()
     {
         // arrange
-        StormXmlFileParser stormXmlFileParser = new(new LayeredDataStorage());
+        StormXmlFileParser stormXmlFileParser = XmlReaderHelper.CreateStormXmlFileParser();
 
         using XmlReader reader = XmlReaderHelper.CreateXmlReader(
             """
@@ -910,7 +910,7 @@ public sealed class StormXmlFileParserTests
     public void Clone_StyleElements_ReturnsSameTypeAndValues()
     {
         // arrange
-        StormXmlFileParser stormXmlFileParser = new(new LayeredDataStorage());
+        StormXmlFileParser stormXmlFileParser = XmlReaderHelper.CreateStormXmlFileParser();
 
         using XmlReader reader = XmlReaderHelper.CreateXmlReader(
             """

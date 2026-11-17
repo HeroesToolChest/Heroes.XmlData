@@ -2,11 +2,13 @@
 
 internal sealed class StormXmlFileParser
 {
-    private readonly LayeredDataStorage _layeredDataStorage;
+    private readonly LayeredElementCache _layeredElementCache;
+    private readonly LayeredTextCache _layeredTextCache;
 
-    public StormXmlFileParser(LayeredDataStorage layeredDataStorage)
+    public StormXmlFileParser(LayeredElementCache layeredElementCache, LayeredTextCache layeredTextCache)
     {
-        _layeredDataStorage = layeredDataStorage;
+        _layeredElementCache = layeredElementCache;
+        _layeredTextCache = layeredTextCache;
     }
 
     /// <summary>
@@ -211,18 +213,18 @@ internal sealed class StormXmlFileParser
         // should be a non-const element
         if (indexOfConstant == 0)
         {
-            if (_layeredDataStorage.Elements.TryGetFirstStormXmlConstElementById(value, out StormXmlConstElement? stormXmlConstElement))
+            if (_layeredElementCache.TryGetFirstStormXmlConstElementById(value, out StormXmlConstElement? stormXmlConstElement))
             {
                 return stormXmlConstElement.Value;
             }
         }
 
-        return StormPrefixNotation.Compute(_layeredDataStorage, value).ToString(CultureInfo.InvariantCulture);
+        return StormPrefixNotation.Compute(_layeredElementCache, value).ToString(CultureInfo.InvariantCulture);
     }
 
     private string GetAssetTextValue(string value)
     {
-        if (_layeredDataStorage.Texts.TryGetFirstAssetTextById(value.AsSpan(1), out string? stringValue))
+        if (_layeredTextCache.TryGetFirstAssetTextById(value.AsSpan(1), out string? stringValue))
             return stringValue;
 
         return string.Empty;

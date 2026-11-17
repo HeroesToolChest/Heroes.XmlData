@@ -20,7 +20,7 @@ internal static class XmlReaderHelper
     /// <returns>A <see cref="StormXmlElement"/> instance.</returns>
     internal static StormXmlElement GetStormXmlElement(string xml, LayeredDataStorage? layeredDataStorage = null)
     {
-        StormXmlFileParser stormXmlFileParser = new(layeredDataStorage ?? new LayeredDataStorage());
+        StormXmlFileParser stormXmlFileParser = CreateStormXmlFileParser(layeredDataStorage);
         using XmlReader reader = CreateXmlReader(xml);
 
         return stormXmlFileParser.Parse(reader, StormFileHelper.CreateStormFile()).First();
@@ -57,9 +57,21 @@ internal static class XmlReaderHelper
         return (StormXmlStyleElement)GetStormXmlStyleFileElement(xml);
     }
 
+    /// <summary>
+    /// Creates a <see cref="StormXmlFileParser"/> that looks up <c>const</c> elements and asset texts from the given <see cref="LayeredDataStorage"/>.
+    /// </summary>
+    /// <param name="layeredDataStorage">An optional <see cref="LayeredDataStorage"/> instance. If <see langword="null"/>, an empty one is used.</param>
+    /// <returns>A <see cref="StormXmlFileParser"/> instance.</returns>
+    internal static StormXmlFileParser CreateStormXmlFileParser(LayeredDataStorage? layeredDataStorage = null)
+    {
+        layeredDataStorage ??= new LayeredDataStorage();
+
+        return new StormXmlFileParser(layeredDataStorage.Elements, layeredDataStorage.Texts);
+    }
+
     private static StormXmlElement GetStormXmlStyleFileElement(string xml)
     {
-        StormXmlFileParser stormXmlFileParser = new(new LayeredDataStorage());
+        StormXmlFileParser stormXmlFileParser = CreateStormXmlFileParser();
         using XmlReader reader = CreateXmlReader(xml);
 
         return stormXmlFileParser.ParseStyleFile(reader, StormFileHelper.CreateStormFile()).First();

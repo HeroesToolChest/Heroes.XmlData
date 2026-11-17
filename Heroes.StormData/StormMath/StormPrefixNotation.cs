@@ -4,11 +4,11 @@ namespace Heroes.StormData.StormMath;
 
 internal static class StormPrefixNotation
 {
-    public static double Compute(LayeredDataStorage layeredDataStorage, ReadOnlySpan<char> expression)
+    public static double Compute(LayeredElementCache layeredElementCache, ReadOnlySpan<char> expression)
     {
         try
         {
-            return Math.Round(Evaluate(layeredDataStorage, expression), StormCalculator.MaxFractionalDigits, StormCalculator.MaxFractionalMidpointRoundingMode);
+            return Math.Round(Evaluate(layeredElementCache, expression), StormCalculator.MaxFractionalDigits, StormCalculator.MaxFractionalMidpointRoundingMode);
         }
         catch (Exception ex)
         {
@@ -16,19 +16,19 @@ internal static class StormPrefixNotation
         }
     }
 
-    private static double Evaluate(LayeredDataStorage layeredDataStorage, ReadOnlySpan<char> expression)
+    private static double Evaluate(LayeredElementCache layeredElementCache, ReadOnlySpan<char> expression)
     {
         char firstChar = expression[0];
 
         if (StormCalculator.IsOperator(firstChar) && expression.Length > 1 && expression[1] == '(')
         {
-            GetParameters(layeredDataStorage, expression, 1, out double firstParam, out double secondParam);
+            GetParameters(layeredElementCache, expression, 1, out double firstParam, out double secondParam);
 
             return StormCalculator.ApplyOperator(firstChar, secondParam, firstParam);
         }
         else if (firstChar == '$')
         {
-            if (layeredDataStorage.Elements.TryGetFirstStormXmlConstElementById(expression, out StormXmlConstElement? stormXmlConstElement))
+            if (layeredElementCache.TryGetFirstStormXmlConstElementById(expression, out StormXmlConstElement? stormXmlConstElement))
                 return ParseConstValue(stormXmlConstElement.Value);
             else
                 return 0;
@@ -43,23 +43,23 @@ internal static class StormPrefixNotation
         {
             ReadOnlySpan<char> valueToBeNegatedSpan = expression[7..^1];  // removed negate( and )
 
-            return Evaluate(layeredDataStorage, valueToBeNegatedSpan) * -1;
+            return Evaluate(layeredElementCache, valueToBeNegatedSpan) * -1;
         }
         else if (expression.StartsWith("round", StringComparison.OrdinalIgnoreCase))
         {
             ReadOnlySpan<char> valueToBeRoundedSpan = expression[6..^1];  // removed round( and )
 
-            return Math.Round(Evaluate(layeredDataStorage, valueToBeRoundedSpan));
+            return Math.Round(Evaluate(layeredElementCache, valueToBeRoundedSpan));
         }
         else if (expression.StartsWith("max", StringComparison.OrdinalIgnoreCase))
         {
-            GetParameters(layeredDataStorage, expression, expression.IndexOf('('), out double firstParam, out double secondParam);
+            GetParameters(layeredElementCache, expression, expression.IndexOf('('), out double firstParam, out double secondParam);
 
             return Math.Max(firstParam, secondParam);
         }
         else if (expression.StartsWith("min", StringComparison.OrdinalIgnoreCase))
         {
-            GetParameters(layeredDataStorage, expression, expression.IndexOf('('), out double firstParam, out double secondParam);
+            GetParameters(layeredElementCache, expression, expression.IndexOf('('), out double firstParam, out double secondParam);
 
             return Math.Min(firstParam, secondParam);
         }
@@ -73,7 +73,7 @@ internal static class StormPrefixNotation
 
     // Splits the two space separated parameters inside the parentheses that open at openIndex, e.g. +(*(2 3) 4) into *(2 3) and 4.
     // Finds the split and the closing parenthesis in a single pass.
-    private static void GetParameters(LayeredDataStorage layeredDataStorage, ReadOnlySpan<char> expression, int openIndex, out double firstParam, out double secondParam)
+    private static void GetParameters(LayeredElementCache layeredElementCache, ReadOnlySpan<char> expression, int openIndex, out double firstParam, out double secondParam)
     {
         if (openIndex < 0)
             throw new FormatException("Missing an opening parenthesis.");
@@ -97,8 +97,8 @@ internal static class StormPrefixNotation
                     if (splitIndex <= openIndex + 1)
                         throw new FormatException("Expected two parameters separated by a space.");
 
-                    firstParam = Evaluate(layeredDataStorage, expression[(openIndex + 1)..splitIndex]);
-                    secondParam = Evaluate(layeredDataStorage, expression[(splitIndex + 1)..i]);
+                    firstParam = Evaluate(layeredElementCache, expression[(openIndex + 1)..splitIndex]);
+                    secondParam = Evaluate(layeredElementCache, expression[(splitIndex + 1)..i]);
 
                     return;
                 }

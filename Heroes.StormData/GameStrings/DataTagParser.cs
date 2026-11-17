@@ -11,12 +11,12 @@ internal sealed class DataTagParser
 
     private const int MaxStackAllocLength = 256;
 
-    private readonly LayeredDataStorage _layeredDataStorage;
+    private readonly LayeredElementCache _layeredElementCache;
     private readonly DataRefAttributeParser _dataRefAttributeParser;
 
     public DataTagParser(LayeredDataStorage layeredDataStorage)
     {
-        _layeredDataStorage = layeredDataStorage;
+        _layeredElementCache = layeredDataStorage.Elements;
         _dataRefAttributeParser = new DataRefAttributeParser(layeredDataStorage, this);
     }
 
@@ -152,7 +152,7 @@ internal sealed class DataTagParser
             {
                 double value = 0;
 
-                if (_layeredDataStorage.Elements.TryGetFirstStormXmlConstElementById(attributes.ConstId, out StormXmlConstElement? stormXmlConstElement))
+                if (_layeredElementCache.TryGetFirstStormXmlConstElementById(attributes.ConstId, out StormXmlConstElement? stormXmlConstElement))
                     value = stormXmlConstElement.GetValueAsDouble();
 
                 return new ValueScale(Math.Round(value, attributes.Precision));
