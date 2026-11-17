@@ -245,6 +245,7 @@ internal sealed class FileDepotCacheTests
     [DataRow("DDS |\0\0\0", DisplayName = "DDS image")]
     [DataRow("  {}", DisplayName = "Does not start with {")]
     [DataRow("""{ "AddMultiMod": {}, "UsedStrings": {} }""", DisplayName = "JSON without MapInfo")]
+    [DataRow("""{ "UsedStrings": { "Name": "MapInfo" } }""", DisplayName = "JSON with MapInfo only as a value")]
     [DataRow("""{ "MapInfo": { "Properties": """, DisplayName = "Invalid JSON")]
     public void LoadDepotCache_S2MVFileIsNotAMap_FileIsSkipped(string fileContent)
     {

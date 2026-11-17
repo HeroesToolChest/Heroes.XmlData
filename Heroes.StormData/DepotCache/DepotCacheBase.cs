@@ -89,12 +89,36 @@ internal abstract class DepotCacheBase<T> : IDepotCache
 
     private static S2MVProperties? LoadS2MVFile(Stream s2mvFile)
     {
+        // a map's s2mv file is json, most of the others are images
         if (s2mvFile.Length <= 0 || s2mvFile.ReadByte() != '{')
             return null;
 
         s2mvFile.Position = 0;
 
-        using JsonDocument? jsonDocument = TryParseJson(s2mvFile);
+        int length = (int)s2mvFile.Length;
+        byte[] buffer = ArrayPool<byte>.Shared.Rent(length);
+
+        try
+        {
+            s2mvFile.ReadExactly(buffer, 0, length);
+
+            ReadOnlyMemory<byte> json = buffer.AsMemory(0, length);
+
+            // json files that are not maps don't have a MapInfo property, so they can be rejected without parsing them.
+            if (json.Span.IndexOf("\"MapInfo\""u8) < 0)
+                return null;
+
+            return ParseS2MVJson(json);
+        }
+        finally
+        {
+            ArrayPool<byte>.Shared.Return(buffer);
+        }
+    }
+
+    private static S2MVProperties? ParseS2MVJson(ReadOnlyMemory<byte> json)
+    {
+        using JsonDocument? jsonDocument = TryParseJson(json);
         if (jsonDocument is null)
             return null;
 
@@ -162,11 +186,12 @@ internal abstract class DepotCacheBase<T> : IDepotCache
         return s2mvProperties;
     }
 
-    private static JsonDocument? TryParseJson(Stream stream)
+    // the returned JsonDocument uses json directly, so json must not be changed or returned to a pool until the JsonDocument is disposed
+    private static JsonDocument? TryParseJson(ReadOnlyMemory<byte> json)
     {
         try
         {
-            return JsonDocument.Parse(stream);
+            return JsonDocument.Parse(json);
         }
         catch (JsonException)
         {
@@ -191,36 +216,172 @@ internal abstract class DepotCacheBase<T> : IDepotCache
         if (!mpqHeroesArchive.FileEntryExists("BankList.xml") || !mpqHeroesArchive.TryGetEntry("mapscript.galaxy", out MpqHeroesArchiveEntry? mapScriptEntry) || !mpqHeroesArchive.TryGetEntry(SourceConstants.DocumentInfoFile, out MpqHeroesArchiveEntry? documentInfoEntry))
             return null;
 
-        XElement? documentInfoRoot;
+        string? iconFile;
+        List<MapDependency> mapDependencies;
+        List<string> modifiableDependencies;
 
         using (Stream documentInfoStream = mpqHeroesArchive.DecompressEntry(documentInfoEntry.Value))
         {
-            documentInfoRoot = TryLoadXml(documentInfoStream)?.Root;
-        }
-
-        if (documentInfoRoot is null)
-            return null;
-
-        List<MapDependency> mapDependencies = [];
-
-        foreach (XElement dependencyElement in documentInfoRoot.Element("Dependencies")?.Elements() ?? [])
-        {
-            // a dependency that can't be parsed would change the dependency key, so the map would not match its s2mv file
-            if (!TryParseMapDependency(dependencyElement.Value, SourceConstants.DefaultModsDirectory, out MapDependency? mapDependency))
+            if (!TryReadDocumentInfo(documentInfoStream, out iconFile, out mapDependencies, out modifiableDependencies))
                 return null;
-
-            mapDependencies.Add(mapDependency);
         }
-
-        IEnumerable<XElement> modifiableDependencyElements = documentInfoRoot.Element("ModifiableDependencies")?.Elements() ?? [];
 
         return new S2MAProperties()
         {
-            DocInfoIconFile = PathNormalizer.NormalizePath(documentInfoRoot.Element("Icon")?.Value),
+            DocInfoIconFile = PathNormalizer.NormalizePath(iconFile),
             MapId = GetMapId(mpqHeroesArchive, mapScriptEntry.Value),
             MapDependencies = mapDependencies,
-            ModifiableDependencies = [.. modifiableDependencyElements.Select(x => PathNormalizer.NormalizePath(x.Value, SourceConstants.DefaultModsDirectory))],
+            ModifiableDependencies = modifiableDependencies,
         };
+    }
+
+    /// <summary>
+    /// Reads the <c>Icon</c>, <c>Dependencies</c> and <c>ModifiableDependencies</c> elements of a <c>documentinfo</c> file.
+    /// Only the first of each element under the root is used.
+    /// </summary>
+    /// <param name="stream">The stream of the <c>documentinfo</c> file.</param>
+    /// <param name="iconFile">The value of the <c>Icon</c> element, or <see langword="null"/> if there is none.</param>
+    /// <param name="mapDependencies">The parsed values of the <c>Dependencies</c> child elements.</param>
+    /// <param name="modifiableDependencies">The normalized values of the <c>ModifiableDependencies</c> child elements.</param>
+    /// <returns><see langword="false"/> if the file is not valid xml or a dependency could not be parsed; otherwise <see langword="true"/>.</returns>
+    private static bool TryReadDocumentInfo(Stream stream, out string? iconFile, out List<MapDependency> mapDependencies, out List<string> modifiableDependencies)
+    {
+        iconFile = null;
+        mapDependencies = [];
+        modifiableDependencies = [];
+
+        bool hasIcon = false;
+        bool hasDependencies = false;
+        bool hasModifiableDependencies = false;
+
+        try
+        {
+            using XmlReader reader = XmlReader.Create(stream, _xmlReaderSettings);
+
+            if (reader.MoveToContent() != XmlNodeType.Element)
+                return false;
+
+            if (reader.IsEmptyElement)
+            {
+                reader.Read();
+            }
+            else
+            {
+                reader.Read();
+
+                // the direct children of the root element
+                while (reader.NodeType != XmlNodeType.EndElement && !reader.EOF)
+                {
+                    if (reader.NodeType != XmlNodeType.Element)
+                    {
+                        reader.Skip();
+                    }
+                    else if (!hasIcon && reader.Name == "Icon")
+                    {
+                        hasIcon = true;
+                        iconFile = ReadElementValue(reader);
+                    }
+                    else if (!hasDependencies && reader.Name == "Dependencies")
+                    {
+                        hasDependencies = true;
+
+                        foreach (string value in ReadChildElementValues(reader))
+                        {
+                            // a dependency that can't be parsed would change the dependency key, so the map would not match its s2mv file
+                            if (!TryParseMapDependency(value, SourceConstants.DefaultModsDirectory, out MapDependency? mapDependency))
+                                return false;
+
+                            mapDependencies.Add(mapDependency);
+                        }
+                    }
+                    else if (!hasModifiableDependencies && reader.Name == "ModifiableDependencies")
+                    {
+                        hasModifiableDependencies = true;
+
+                        foreach (string value in ReadChildElementValues(reader))
+                        {
+                            modifiableDependencies.Add(PathNormalizer.NormalizePath(value, SourceConstants.DefaultModsDirectory));
+                        }
+                    }
+                    else
+                    {
+                        reader.Skip();
+                    }
+                }
+            }
+
+            // read the rest of the document so that malformed xml after the root element is still rejected
+            while (reader.Read())
+            {
+            }
+
+            return true;
+        }
+        catch (XmlException)
+        {
+            return false;
+        }
+    }
+
+    // reader must be on the start of an element; returns the values of its child elements and moves past its end element
+    private static List<string> ReadChildElementValues(XmlReader reader)
+    {
+        List<string> values = [];
+
+        if (reader.IsEmptyElement)
+        {
+            reader.Read();
+            return values;
+        }
+
+        reader.Read();
+
+        while (reader.NodeType != XmlNodeType.EndElement && !reader.EOF)
+        {
+            if (reader.NodeType == XmlNodeType.Element)
+                values.Add(ReadElementValue(reader));
+            else
+                reader.Skip();
+        }
+
+        reader.Read();
+
+        return values;
+    }
+
+    // reader must be on the start of an element; returns all of its descendant text (like XElement.Value) and moves past its end element
+    private static string ReadElementValue(XmlReader reader)
+    {
+        if (reader.IsEmptyElement)
+        {
+            reader.Read();
+            return string.Empty;
+        }
+
+        int depth = reader.Depth;
+        string? value = null;
+        StringBuilder? stringBuilder = null;
+
+        while (reader.Read() && reader.Depth > depth)
+        {
+            if (reader.NodeType is not (XmlNodeType.Text or XmlNodeType.CDATA or XmlNodeType.SignificantWhitespace))
+                continue;
+
+            if (value is null)
+            {
+                value = reader.Value;
+            }
+            else
+            {
+                stringBuilder ??= new StringBuilder(value);
+                stringBuilder.Append(reader.Value);
+            }
+        }
+
+        // move past the end element
+        reader.Read();
+
+        return stringBuilder?.ToString() ?? value ?? string.Empty;
     }
 
     /// <summary>
@@ -275,20 +436,6 @@ internal abstract class DepotCacheBase<T> : IDepotCache
         };
 
         return true;
-    }
-
-    private static XDocument? TryLoadXml(Stream stream)
-    {
-        try
-        {
-            using XmlReader xmlReader = XmlReader.Create(stream, _xmlReaderSettings);
-
-            return XDocument.Load(xmlReader, LoadOptions.None);
-        }
-        catch (XmlException)
-        {
-            return null;
-        }
     }
 
     // finds the value assigned to the mAPMapStringID variable, e.g. libCore_gv_mAPMapStringID = "BraxisHoldout";
