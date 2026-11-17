@@ -9,6 +9,7 @@ global using Heroes.StormData.Cache.Styles;
 global using Heroes.StormData.CASC;
 global using Heroes.StormData.DepotCache;
 global using Heroes.StormData.DepotCache.Maps;
+global using Heroes.StormData.DepotCache.Parsing;
 global using Heroes.StormData.Exceptions;
 global using Heroes.StormData.Extensions;
 global using Heroes.StormData.GameStrings;
