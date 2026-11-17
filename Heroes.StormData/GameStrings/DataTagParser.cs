@@ -152,7 +152,7 @@ internal sealed class DataTagParser
             {
                 double value = 0;
 
-                if (_layeredDataStorage.TryGetFirstStormXmlConstElementById(attributes.ConstId, out StormXmlConstElement? stormXmlConstElement))
+                if (_layeredDataStorage.Elements.TryGetFirstStormXmlConstElementById(attributes.ConstId, out StormXmlConstElement? stormXmlConstElement))
                     value = stormXmlConstElement.GetValueAsDouble();
 
                 return new ValueScale(Math.Round(value, attributes.Precision));

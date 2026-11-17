@@ -19,7 +19,7 @@ internal sealed class LayeredDataStorageTests
         layeredDataStorage.GetDataStorage(stormModType).ElementCache.StormXmlConstElementById.Dictionary.Add(constId, expected);
 
         // act
-        bool result = layeredDataStorage.TryGetFirstStormXmlConstElementById(constId, out StormXmlConstElement? constElement);
+        bool result = layeredDataStorage.Elements.TryGetFirstStormXmlConstElementById(constId, out StormXmlConstElement? constElement);
 
         // assert
         result.Should().BeTrue();
@@ -33,7 +33,7 @@ internal sealed class LayeredDataStorageTests
         LayeredDataStorage layeredDataStorage = new();
 
         // act
-        bool result = layeredDataStorage.TryGetFirstStormXmlConstElementById("$Id", out StormXmlConstElement? constElement);
+        bool result = layeredDataStorage.Elements.TryGetFirstStormXmlConstElementById("$Id", out StormXmlConstElement? constElement);
 
         // assert
         result.Should().BeFalse();
@@ -50,7 +50,7 @@ internal sealed class LayeredDataStorageTests
         layeredDataStorage.GetDataStorage(StormModType.Custom).ElementCache.StormXmlConstElementById.Dictionary.Add("$CustomConst", CreateStormXmlConstElement("$CustomConst"));
 
         // act
-        bool result = layeredDataStorage.TryGetFirstStormXmlConstElementById("$DoesNotExist", out StormXmlConstElement? constElement);
+        bool result = layeredDataStorage.Elements.TryGetFirstStormXmlConstElementById("$DoesNotExist", out StormXmlConstElement? constElement);
 
         // assert
         result.Should().BeFalse();
@@ -67,7 +67,7 @@ internal sealed class LayeredDataStorageTests
         layeredDataStorage.GetDataStorage(StormModType.Base).ElementCache.StormXmlConstElementById.Dictionary.Add(constId, CreateStormXmlConstElement(constId));
 
         // act
-        bool result = layeredDataStorage.TryGetFirstStormXmlConstElementById(constId.ToUpperInvariant(), out StormXmlConstElement? constElement);
+        bool result = layeredDataStorage.Elements.TryGetFirstStormXmlConstElementById(constId.ToUpperInvariant(), out StormXmlConstElement? constElement);
 
         // assert
         result.Should().BeFalse();
@@ -88,7 +88,7 @@ internal sealed class LayeredDataStorageTests
         layeredDataStorage.GetDataStorage(StormModType.Map).ElementCache.StormXmlConstElementById.Dictionary.Add(constId, mapElement);
 
         // act
-        bool result = layeredDataStorage.TryGetFirstStormXmlConstElementById(constId, out StormXmlConstElement? constElement);
+        bool result = layeredDataStorage.Elements.TryGetFirstStormXmlConstElementById(constId, out StormXmlConstElement? constElement);
 
         // assert
         result.Should().BeTrue();
@@ -110,7 +110,7 @@ internal sealed class LayeredDataStorageTests
         layeredDataStorage.GetDataStorage(StormModType.Custom).ElementCache.StormXmlConstElementById.Dictionary.Add(constId, customElement);
 
         // act
-        bool result = layeredDataStorage.TryGetFirstStormXmlConstElementById(constId, out StormXmlConstElement? constElement);
+        bool result = layeredDataStorage.Elements.TryGetFirstStormXmlConstElementById(constId, out StormXmlConstElement? constElement);
 
         // assert
         result.Should().BeTrue();
@@ -134,7 +134,7 @@ internal sealed class LayeredDataStorageTests
         layeredDataStorage.GetDataStorage(StormModType.Custom).ElementCache.StormXmlConstElementById.Dictionary.Add(constId, customElement);
 
         // act
-        bool result = layeredDataStorage.TryGetFirstStormXmlConstElementById(constId, out StormXmlConstElement? constElement);
+        bool result = layeredDataStorage.Elements.TryGetFirstStormXmlConstElementById(constId, out StormXmlConstElement? constElement);
 
         // assert
         result.Should().BeTrue();
@@ -156,9 +156,9 @@ internal sealed class LayeredDataStorageTests
         layeredDataStorage.GetDataStorage(StormModType.Custom).ElementCache.StormXmlConstElementById.Dictionary.Add("$CustomConst", customElement);
 
         // act
-        bool baseResult = layeredDataStorage.TryGetFirstStormXmlConstElementById("$BaseConst", out StormXmlConstElement? foundBase);
-        bool mapResult = layeredDataStorage.TryGetFirstStormXmlConstElementById("$MapConst", out StormXmlConstElement? foundMap);
-        bool customResult = layeredDataStorage.TryGetFirstStormXmlConstElementById("$CustomConst", out StormXmlConstElement? foundCustom);
+        bool baseResult = layeredDataStorage.Elements.TryGetFirstStormXmlConstElementById("$BaseConst", out StormXmlConstElement? foundBase);
+        bool mapResult = layeredDataStorage.Elements.TryGetFirstStormXmlConstElementById("$MapConst", out StormXmlConstElement? foundMap);
+        bool customResult = layeredDataStorage.Elements.TryGetFirstStormXmlConstElementById("$CustomConst", out StormXmlConstElement? foundCustom);
 
         // assert
         baseResult.Should().BeTrue();
@@ -183,7 +183,7 @@ internal sealed class LayeredDataStorageTests
         layeredDataStorage.GetDataStorage(stormModType).ElementCache.CatalogByClassElement.Dictionary.Add(elementName, catalogName);
 
         // act
-        bool result = layeredDataStorage.TryGetFirstCatalogNameByElementName(elementName, out string? foundCatalogName);
+        bool result = layeredDataStorage.Elements.TryGetFirstCatalogNameByElementName(elementName, out string? foundCatalogName);
 
         // assert
         result.Should().BeTrue();
@@ -200,7 +200,7 @@ internal sealed class LayeredDataStorageTests
         layeredDataStorage.GetDataStorage(StormModType.Custom).ElementCache.CatalogByClassElement.Dictionary.Add("BehaviorBuff", "Behavior");
 
         // act
-        bool result = layeredDataStorage.TryGetFirstCatalogNameByElementName("DoesNotExist", out string? catalogName);
+        bool result = layeredDataStorage.Elements.TryGetFirstCatalogNameByElementName("DoesNotExist", out string? catalogName);
 
         // assert
         result.Should().BeFalse();
@@ -215,7 +215,7 @@ internal sealed class LayeredDataStorageTests
         layeredDataStorage.GetDataStorage(StormModType.Base).ElementCache.CatalogByClassElement.Dictionary.Add("EffectDamage", "Effect");
 
         // act
-        bool result = layeredDataStorage.TryGetFirstCatalogNameByElementName(string.Empty, out string? catalogName);
+        bool result = layeredDataStorage.Elements.TryGetFirstCatalogNameByElementName(string.Empty, out string? catalogName);
 
         // assert
         result.Should().BeFalse();
@@ -233,7 +233,7 @@ internal sealed class LayeredDataStorageTests
         layeredDataStorage.GetDataStorage(StormModType.Base).ElementCache.CatalogByClassElement.Dictionary.Add(elementName, catalogName);
 
         // act
-        bool result = layeredDataStorage.TryGetFirstCatalogNameByElementName(elementName.ToUpperInvariant(), out string? foundCatalogName);
+        bool result = layeredDataStorage.Elements.TryGetFirstCatalogNameByElementName(elementName.ToUpperInvariant(), out string? foundCatalogName);
 
         // assert
         result.Should().BeTrue();
@@ -250,7 +250,7 @@ internal sealed class LayeredDataStorageTests
         ReadOnlySpan<char> elementName = "xxEffectDamageyy".AsSpan(2, 12);
 
         // act
-        bool result = layeredDataStorage.TryGetFirstCatalogNameByElementName(elementName, out string? catalogName);
+        bool result = layeredDataStorage.Elements.TryGetFirstCatalogNameByElementName(elementName, out string? catalogName);
 
         // assert
         result.Should().BeTrue();
@@ -268,7 +268,7 @@ internal sealed class LayeredDataStorageTests
         layeredDataStorage.GetDataStorage(StormModType.Map).ElementCache.CatalogByClassElement.Dictionary.Add(elementName, "MapCatalog");
 
         // act
-        bool result = layeredDataStorage.TryGetFirstCatalogNameByElementName(elementName, out string? catalogName);
+        bool result = layeredDataStorage.Elements.TryGetFirstCatalogNameByElementName(elementName, out string? catalogName);
 
         // assert
         result.Should().BeTrue();
@@ -286,7 +286,7 @@ internal sealed class LayeredDataStorageTests
         layeredDataStorage.GetDataStorage(StormModType.Custom).ElementCache.CatalogByClassElement.Dictionary.Add(elementName, "CustomCatalog");
 
         // act
-        bool result = layeredDataStorage.TryGetFirstCatalogNameByElementName(elementName, out string? catalogName);
+        bool result = layeredDataStorage.Elements.TryGetFirstCatalogNameByElementName(elementName, out string? catalogName);
 
         // assert
         result.Should().BeTrue();
@@ -305,7 +305,7 @@ internal sealed class LayeredDataStorageTests
         layeredDataStorage.GetDataStorage(StormModType.Custom).ElementCache.CatalogByClassElement.Dictionary.Add(elementName, "CustomCatalog");
 
         // act
-        bool result = layeredDataStorage.TryGetFirstCatalogNameByElementName(elementName, out string? catalogName);
+        bool result = layeredDataStorage.Elements.TryGetFirstCatalogNameByElementName(elementName, out string? catalogName);
 
         // assert
         result.Should().BeTrue();
@@ -319,7 +319,7 @@ internal sealed class LayeredDataStorageTests
         LayeredDataStorage layeredDataStorage = new();
 
         // act
-        StormXmlElement? result = layeredDataStorage.GetStormXmlElementByClassElement("Abil");
+        StormXmlElement? result = layeredDataStorage.Elements.GetStormXmlElementByClassElement("Abil");
 
         // assert
         result.Should().BeNull();
@@ -340,7 +340,7 @@ internal sealed class LayeredDataStorageTests
         StormXmlElement baseElement = AddStormXmlElement(layeredDataStorage, StormModType.Base, xml);
 
         // act
-        StormXmlElement? result = layeredDataStorage.GetStormXmlElementByClassElement("Abil");
+        StormXmlElement? result = layeredDataStorage.Elements.GetStormXmlElementByClassElement("Abil");
 
         // assert
         result.Should().BeSameAs(baseElement);
@@ -362,7 +362,7 @@ internal sealed class LayeredDataStorageTests
         StormXmlElement mapElement = AddStormXmlElement(layeredDataStorage, StormModType.Map, xml);
 
         // act
-        StormXmlElement? result = layeredDataStorage.GetStormXmlElementByClassElement("Abil");
+        StormXmlElement? result = layeredDataStorage.Elements.GetStormXmlElementByClassElement("Abil");
 
         // assert
         result.Should().BeSameAs(mapElement);
@@ -384,7 +384,7 @@ internal sealed class LayeredDataStorageTests
         StormXmlElement customElement = AddStormXmlElement(layeredDataStorage, StormModType.Custom, xml);
 
         // act
-        StormXmlElement? result = layeredDataStorage.GetStormXmlElementByClassElement("Abil");
+        StormXmlElement? result = layeredDataStorage.Elements.GetStormXmlElementByClassElement("Abil");
 
         // assert
         result.Should().BeSameAs(customElement);
@@ -409,7 +409,7 @@ internal sealed class LayeredDataStorageTests
         StormXmlElement baseElement = AddStormXmlElement(layeredDataStorage, StormModType.Base, xml);
 
         // act
-        StormXmlElement? result = layeredDataStorage.GetStormXmlElementByClassElement(elementName);
+        StormXmlElement? result = layeredDataStorage.Elements.GetStormXmlElementByClassElement(elementName);
 
         // assert
         result.Should().BeSameAs(baseElement);
@@ -430,7 +430,7 @@ internal sealed class LayeredDataStorageTests
         AddStormXmlElement(layeredDataStorage, StormModType.Base, xml);
 
         // act
-        StormXmlElement? result = layeredDataStorage.GetStormXmlElementByClassElement("CAbil");
+        StormXmlElement? result = layeredDataStorage.Elements.GetStormXmlElementByClassElement("CAbil");
 
         // assert
         result.Should().BeNull();
@@ -453,7 +453,7 @@ internal sealed class LayeredDataStorageTests
         const string text = "xxAbilyy";
 
         // act
-        StormXmlElement? result = layeredDataStorage.GetStormXmlElementByClassElement(text.AsSpan(2, 4));
+        StormXmlElement? result = layeredDataStorage.Elements.GetStormXmlElementByClassElement(text.AsSpan(2, 4));
 
         // assert
         result.Should().BeSameAs(baseElement);
@@ -474,7 +474,7 @@ internal sealed class LayeredDataStorageTests
         AddStormXmlElement(layeredDataStorage, StormModType.Base, xml);
 
         // act
-        StormXmlElement? result = layeredDataStorage.GetStormXmlElementByClassElement("Abil");
+        StormXmlElement? result = layeredDataStorage.Elements.GetStormXmlElementByClassElement("Abil");
 
         // assert
         result.Should().BeNull();
@@ -496,7 +496,7 @@ internal sealed class LayeredDataStorageTests
         layeredDataStorage.GetDataStorage(StormModType.Base).AddElementWithId(elementWithId, "Abil");
 
         // act
-        StormXmlElement? result = layeredDataStorage.GetStormXmlElementByClassElement("Abil");
+        StormXmlElement? result = layeredDataStorage.Elements.GetStormXmlElementByClassElement("Abil");
 
         // assert
         result.Should().BeNull();
@@ -526,7 +526,7 @@ internal sealed class LayeredDataStorageTests
         AddStormXmlElement(layeredDataStorage, StormModType.Map, mapXml);
 
         // act
-        StormXmlElement? result = layeredDataStorage.GetStormXmlElementByClassElement("Abil");
+        StormXmlElement? result = layeredDataStorage.Elements.GetStormXmlElementByClassElement("Abil");
 
         // assert
         result.Should().NotBeNull();
@@ -558,7 +558,7 @@ internal sealed class LayeredDataStorageTests
         AddStormXmlElement(layeredDataStorage, StormModType.Custom, customXml);
 
         // act
-        StormXmlElement? result = layeredDataStorage.GetStormXmlElementByClassElement("Abil");
+        StormXmlElement? result = layeredDataStorage.Elements.GetStormXmlElementByClassElement("Abil");
 
         // assert
         result.Should().NotBeNull();
@@ -589,7 +589,7 @@ internal sealed class LayeredDataStorageTests
         AddStormXmlElement(layeredDataStorage, StormModType.Custom, customXml);
 
         // act
-        StormXmlElement? result = layeredDataStorage.GetStormXmlElementByClassElement("Abil");
+        StormXmlElement? result = layeredDataStorage.Elements.GetStormXmlElementByClassElement("Abil");
 
         // assert
         result.Should().NotBeNull();
@@ -631,7 +631,7 @@ internal sealed class LayeredDataStorageTests
         AddStormXmlElement(layeredDataStorage, StormModType.Custom, customXml);
 
         // act
-        StormXmlElement? result = layeredDataStorage.GetStormXmlElementByClassElement("Abil");
+        StormXmlElement? result = layeredDataStorage.Elements.GetStormXmlElementByClassElement("Abil");
 
         // assert
         result.Should().NotBeNull();
@@ -672,7 +672,7 @@ internal sealed class LayeredDataStorageTests
         StormXmlElement customElement = AddStormXmlElement(layeredDataStorage, StormModType.Custom, customXml);
 
         // act
-        StormXmlElement? result = layeredDataStorage.GetStormXmlElementByClassElement("Abil");
+        StormXmlElement? result = layeredDataStorage.Elements.GetStormXmlElementByClassElement("Abil");
 
         // assert
         result.Should().NotBeNull();
@@ -711,8 +711,8 @@ internal sealed class LayeredDataStorageTests
         AddStormXmlElement(layeredDataStorage, StormModType.Custom, customXml);
 
         // act
-        StormXmlElement? first = layeredDataStorage.GetStormXmlElementByClassElement("Abil");
-        StormXmlElement? second = layeredDataStorage.GetStormXmlElementByClassElement("Abil");
+        StormXmlElement? first = layeredDataStorage.Elements.GetStormXmlElementByClassElement("Abil");
+        StormXmlElement? second = layeredDataStorage.Elements.GetStormXmlElementByClassElement("Abil");
 
         // assert
         first.Should().NotBeNull();
@@ -745,7 +745,7 @@ internal sealed class LayeredDataStorageTests
         StormXmlElement customElement = AddStormXmlElement(layeredDataStorage, StormModType.Custom, customXml);
 
         // act
-        StormXmlElement? result = layeredDataStorage.GetStormXmlElementByClassElement("Abil");
+        StormXmlElement? result = layeredDataStorage.Elements.GetStormXmlElementByClassElement("Abil");
 
         // assert
         result.Should().NotBeNull();
@@ -778,7 +778,7 @@ internal sealed class LayeredDataStorageTests
         AddStormXmlElement(layeredDataStorage, StormModType.Custom, customXml);
 
         // act
-        StormXmlElement? result = layeredDataStorage.GetStormXmlElementByClassElement("Abil");
+        StormXmlElement? result = layeredDataStorage.Elements.GetStormXmlElementByClassElement("Abil");
 
         // assert
         result.Should().NotBeNull();
@@ -802,7 +802,7 @@ internal sealed class LayeredDataStorageTests
         AddStormXmlElement(layeredDataStorage, stormModType, catalogName, id, expected);
 
         // act
-        StormXmlElement? result = layeredDataStorage.GetStormXmlElementById(id, catalogName);
+        StormXmlElement? result = layeredDataStorage.Elements.GetStormXmlElementById(id, catalogName);
 
         // assert
         result.Should().BeSameAs(expected);
@@ -815,7 +815,7 @@ internal sealed class LayeredDataStorageTests
         LayeredDataStorage layeredDataStorage = new();
 
         // act
-        StormXmlElement? result = layeredDataStorage.GetStormXmlElementById("TestEffect", "Effect");
+        StormXmlElement? result = layeredDataStorage.Elements.GetStormXmlElementById("TestEffect", "Effect");
 
         // assert
         result.Should().BeNull();
@@ -833,7 +833,7 @@ internal sealed class LayeredDataStorageTests
         AddStormXmlElement(layeredDataStorage, StormModType.Custom, catalogName, "CustomEffect", CreateStormXmlElement("CustomEffect"));
 
         // act
-        StormXmlElement? result = layeredDataStorage.GetStormXmlElementById("DoesNotExist", catalogName);
+        StormXmlElement? result = layeredDataStorage.Elements.GetStormXmlElementById("DoesNotExist", catalogName);
 
         // assert
         result.Should().BeNull();
@@ -849,7 +849,7 @@ internal sealed class LayeredDataStorageTests
         AddStormXmlElement(layeredDataStorage, StormModType.Base, "Effect", id, CreateStormXmlElement(id));
 
         // act
-        StormXmlElement? result = layeredDataStorage.GetStormXmlElementById(id, "Abil");
+        StormXmlElement? result = layeredDataStorage.Elements.GetStormXmlElementById(id, "Abil");
 
         // assert
         result.Should().BeNull();
@@ -865,7 +865,7 @@ internal sealed class LayeredDataStorageTests
         AddStormXmlElement(layeredDataStorage, StormModType.Base, "Abil", id, CreateStormXmlElement(id));
 
         // act
-        StormXmlElement? result = layeredDataStorage.GetStormXmlElementById(id, "Effect");
+        StormXmlElement? result = layeredDataStorage.Elements.GetStormXmlElementById(id, "Effect");
 
         // assert
         result.Should().BeNull();
@@ -884,7 +884,7 @@ internal sealed class LayeredDataStorageTests
         AddStormXmlElement(layeredDataStorage, StormModType.Base, catalogName, id, expected);
 
         // act
-        StormXmlElement? result = layeredDataStorage.GetStormXmlElementById(id, catalogName.ToUpperInvariant());
+        StormXmlElement? result = layeredDataStorage.Elements.GetStormXmlElementById(id, catalogName.ToUpperInvariant());
 
         // assert
         result.Should().BeSameAs(expected);
@@ -903,7 +903,7 @@ internal sealed class LayeredDataStorageTests
         ReadOnlySpan<char> catalogName = "xxEffectyy".AsSpan(2, 6);
 
         // act
-        StormXmlElement? result = layeredDataStorage.GetStormXmlElementById(id, catalogName);
+        StormXmlElement? result = layeredDataStorage.Elements.GetStormXmlElementById(id, catalogName);
 
         // assert
         result.Should().BeSameAs(expected);
@@ -924,7 +924,7 @@ internal sealed class LayeredDataStorageTests
         AddStormXmlElement(layeredDataStorage, StormModType.Map, catalogName, id, mapElement);
 
         // act
-        StormXmlElement? result = layeredDataStorage.GetStormXmlElementById(id, catalogName);
+        StormXmlElement? result = layeredDataStorage.Elements.GetStormXmlElementById(id, catalogName);
 
         // assert
         result.Should().NotBeNull();
@@ -949,7 +949,7 @@ internal sealed class LayeredDataStorageTests
         AddStormXmlElement(layeredDataStorage, StormModType.Custom, catalogName, id, customElement);
 
         // act
-        StormXmlElement? result = layeredDataStorage.GetStormXmlElementById(id, catalogName);
+        StormXmlElement? result = layeredDataStorage.Elements.GetStormXmlElementById(id, catalogName);
 
         // assert
         result.Should().NotBeNull();
@@ -974,7 +974,7 @@ internal sealed class LayeredDataStorageTests
         AddStormXmlElement(layeredDataStorage, StormModType.Custom, catalogName, id, customElement);
 
         // act
-        StormXmlElement? result = layeredDataStorage.GetStormXmlElementById(id, catalogName);
+        StormXmlElement? result = layeredDataStorage.Elements.GetStormXmlElementById(id, catalogName);
 
         // assert
         result.Should().NotBeNull();
@@ -1001,7 +1001,7 @@ internal sealed class LayeredDataStorageTests
         AddStormXmlElement(layeredDataStorage, StormModType.Custom, catalogName, id, customElement);
 
         // act
-        StormXmlElement? result = layeredDataStorage.GetStormXmlElementById(id, catalogName);
+        StormXmlElement? result = layeredDataStorage.Elements.GetStormXmlElementById(id, catalogName);
 
         // assert
         result.Should().NotBeNull();
@@ -1029,7 +1029,7 @@ internal sealed class LayeredDataStorageTests
         AddStormXmlElement(layeredDataStorage, StormModType.Custom, catalogName, id, customElement);
 
         // act
-        layeredDataStorage.GetStormXmlElementById(id, catalogName);
+        layeredDataStorage.Elements.GetStormXmlElementById(id, catalogName);
 
         // assert
         baseElement.Members["Amount"].Value.RawValue.Should().Be("1");
@@ -1053,8 +1053,8 @@ internal sealed class LayeredDataStorageTests
         AddStormXmlElement(layeredDataStorage, StormModType.Custom, catalogName, id, CreateStormXmlElement(id, "3"));
 
         // act
-        StormXmlElement? first = layeredDataStorage.GetStormXmlElementById(id, catalogName);
-        StormXmlElement? second = layeredDataStorage.GetStormXmlElementById(id, catalogName);
+        StormXmlElement? first = layeredDataStorage.Elements.GetStormXmlElementById(id, catalogName);
+        StormXmlElement? second = layeredDataStorage.Elements.GetStormXmlElementById(id, catalogName);
 
         // assert
         second.Should().NotBeSameAs(first);
@@ -1079,7 +1079,7 @@ internal sealed class LayeredDataStorageTests
         AddStormXmlElement(layeredDataStorage, StormModType.Custom, catalogName, id, customElement);
 
         // act
-        StormXmlElement? result = layeredDataStorage.GetStormXmlElementById(id, catalogName);
+        StormXmlElement? result = layeredDataStorage.Elements.GetStormXmlElementById(id, catalogName);
 
         // assert
         result.Should().NotBeNull();
@@ -1099,7 +1099,7 @@ internal sealed class LayeredDataStorageTests
         List<LevelScalingFieldValue> expected = AddScalingFieldValues(layeredDataStorage, stormModType, "Unit", "HeroAbathur", new LevelScalingFieldValue("LifeMax", "0.04"), new LevelScalingFieldValue("LifeRegenRate", "0.03"));
 
         // act
-        IReadOnlyList<LevelScalingFieldValue>? result = layeredDataStorage.GetScalingFieldValuesById("HeroAbathur", "Unit");
+        IReadOnlyList<LevelScalingFieldValue>? result = layeredDataStorage.Elements.GetScalingFieldValuesById("HeroAbathur", "Unit");
 
         // assert - nothing to merge, so the cached list is returned without a copy
         result.Should().BeSameAs(expected);
@@ -1113,7 +1113,7 @@ internal sealed class LayeredDataStorageTests
         LayeredDataStorage layeredDataStorage = new();
 
         // act
-        IReadOnlyList<LevelScalingFieldValue>? result = layeredDataStorage.GetScalingFieldValuesById("HeroAbathur", "Unit");
+        IReadOnlyList<LevelScalingFieldValue>? result = layeredDataStorage.Elements.GetScalingFieldValuesById("HeroAbathur", "Unit");
 
         // assert
         result.Should().BeNull();
@@ -1129,7 +1129,7 @@ internal sealed class LayeredDataStorageTests
         AddScalingFieldValues(layeredDataStorage, StormModType.Custom, "Unit", "HeroAlexstrasza", new LevelScalingFieldValue("LifeMax", "0.04"));
 
         // act
-        IReadOnlyList<LevelScalingFieldValue>? result = layeredDataStorage.GetScalingFieldValuesById("DoesNotExist", "Unit");
+        IReadOnlyList<LevelScalingFieldValue>? result = layeredDataStorage.Elements.GetScalingFieldValuesById("DoesNotExist", "Unit");
 
         // assert
         result.Should().BeNull();
@@ -1143,7 +1143,7 @@ internal sealed class LayeredDataStorageTests
         AddScalingFieldValues(layeredDataStorage, StormModType.Base, "Unit", "HeroAbathur", new LevelScalingFieldValue("LifeMax", "0.04"));
 
         // act
-        IReadOnlyList<LevelScalingFieldValue>? result = layeredDataStorage.GetScalingFieldValuesById("HeroAbathur", "Effect");
+        IReadOnlyList<LevelScalingFieldValue>? result = layeredDataStorage.Elements.GetScalingFieldValuesById("HeroAbathur", "Effect");
 
         // assert
         result.Should().BeNull();
@@ -1157,7 +1157,7 @@ internal sealed class LayeredDataStorageTests
         AddScalingFieldValues(layeredDataStorage, StormModType.Base, "Behavior", "AlexstraszaDragonqueenHealthIncrease", new LevelScalingFieldValue("Modification.VitalMaxArray[0]", "0.04"));
 
         // act
-        IReadOnlyList<LevelScalingFieldValue>? result = layeredDataStorage.GetScalingFieldValuesById("AlexstraszaDragonqueenHealthIncrease", "Effect");
+        IReadOnlyList<LevelScalingFieldValue>? result = layeredDataStorage.Elements.GetScalingFieldValuesById("AlexstraszaDragonqueenHealthIncrease", "Effect");
 
         // assert
         result.Should().BeNull();
@@ -1171,7 +1171,7 @@ internal sealed class LayeredDataStorageTests
         AddScalingFieldValues(layeredDataStorage, StormModType.Base, "Unit", "HeroAbathur", new LevelScalingFieldValue("LifeMax", "0.04"));
 
         // act
-        IReadOnlyList<LevelScalingFieldValue>? result = layeredDataStorage.GetScalingFieldValuesById("HEROABATHUR", "Unit");
+        IReadOnlyList<LevelScalingFieldValue>? result = layeredDataStorage.Elements.GetScalingFieldValuesById("HEROABATHUR", "Unit");
 
         // assert
         result.Should().BeNull();
@@ -1185,7 +1185,7 @@ internal sealed class LayeredDataStorageTests
         List<LevelScalingFieldValue> expected = AddScalingFieldValues(layeredDataStorage, StormModType.Base, "Unit", "HeroAbathur", new LevelScalingFieldValue("LifeMax", "0.04"));
 
         // act
-        IReadOnlyList<LevelScalingFieldValue>? result = layeredDataStorage.GetScalingFieldValuesById("HeroAbathur", "UNIT");
+        IReadOnlyList<LevelScalingFieldValue>? result = layeredDataStorage.Elements.GetScalingFieldValuesById("HeroAbathur", "UNIT");
 
         // assert
         result.Should().BeSameAs(expected);
@@ -1202,7 +1202,7 @@ internal sealed class LayeredDataStorageTests
         ReadOnlySpan<char> catalogName = "xxUnityy".AsSpan(2, 4);
 
         // act
-        IReadOnlyList<LevelScalingFieldValue>? result = layeredDataStorage.GetScalingFieldValuesById(id, catalogName);
+        IReadOnlyList<LevelScalingFieldValue>? result = layeredDataStorage.Elements.GetScalingFieldValuesById(id, catalogName);
 
         // assert
         result.Should().BeSameAs(expected);
@@ -1218,7 +1218,7 @@ internal sealed class LayeredDataStorageTests
         AddScalingFieldValues(layeredDataStorage, StormModType.Custom, "Unit", "HeroAlexstrasza", new LevelScalingFieldValue("LifeMax", "0.06"));
 
         // act
-        IReadOnlyList<LevelScalingFieldValue>? result = layeredDataStorage.GetScalingFieldValuesById("HeroAbathur", "Unit");
+        IReadOnlyList<LevelScalingFieldValue>? result = layeredDataStorage.Elements.GetScalingFieldValuesById("HeroAbathur", "Unit");
 
         // assert
         result.Should().BeSameAs(expected);
@@ -1233,7 +1233,7 @@ internal sealed class LayeredDataStorageTests
         AddScalingFieldValues(layeredDataStorage, StormModType.Map, "Unit", "HeroAbathur", new LevelScalingFieldValue("LifeMax", "0.05"));
 
         // act
-        IReadOnlyList<LevelScalingFieldValue>? result = layeredDataStorage.GetScalingFieldValuesById("HeroAbathur", "Unit");
+        IReadOnlyList<LevelScalingFieldValue>? result = layeredDataStorage.Elements.GetScalingFieldValuesById("HeroAbathur", "Unit");
 
         // assert
         result.Should().Equal(new LevelScalingFieldValue("LifeMax", "0.05"));
@@ -1248,7 +1248,7 @@ internal sealed class LayeredDataStorageTests
         AddScalingFieldValues(layeredDataStorage, StormModType.Custom, "Unit", "HeroAbathur", new LevelScalingFieldValue("LifeMax", "0.06"));
 
         // act
-        IReadOnlyList<LevelScalingFieldValue>? result = layeredDataStorage.GetScalingFieldValuesById("HeroAbathur", "Unit");
+        IReadOnlyList<LevelScalingFieldValue>? result = layeredDataStorage.Elements.GetScalingFieldValuesById("HeroAbathur", "Unit");
 
         // assert
         result.Should().Equal(new LevelScalingFieldValue("LifeMax", "0.06"));
@@ -1263,7 +1263,7 @@ internal sealed class LayeredDataStorageTests
         AddScalingFieldValues(layeredDataStorage, StormModType.Custom, "Unit", "HeroAbathur", new LevelScalingFieldValue("LifeMax", "0.06"));
 
         // act
-        IReadOnlyList<LevelScalingFieldValue>? result = layeredDataStorage.GetScalingFieldValuesById("HeroAbathur", "Unit");
+        IReadOnlyList<LevelScalingFieldValue>? result = layeredDataStorage.Elements.GetScalingFieldValuesById("HeroAbathur", "Unit");
 
         // assert
         result.Should().Equal(new LevelScalingFieldValue("LifeMax", "0.06"));
@@ -1278,7 +1278,7 @@ internal sealed class LayeredDataStorageTests
         AddScalingFieldValues(layeredDataStorage, StormModType.Custom, "Unit", "HeroAbathur", new LevelScalingFieldValue("ShieldsMax", "0.02"));
 
         // act
-        IReadOnlyList<LevelScalingFieldValue>? result = layeredDataStorage.GetScalingFieldValuesById("HeroAbathur", "Unit");
+        IReadOnlyList<LevelScalingFieldValue>? result = layeredDataStorage.Elements.GetScalingFieldValuesById("HeroAbathur", "Unit");
 
         // assert - base fields first, then the new fields
         result.Should().Equal(
@@ -1297,7 +1297,7 @@ internal sealed class LayeredDataStorageTests
         AddScalingFieldValues(layeredDataStorage, StormModType.Custom, "Unit", "HeroAbathur", new LevelScalingFieldValue("LifeMax", "custom"), new LevelScalingFieldValue("EnergyRegenRate", "custom"));
 
         // act
-        IReadOnlyList<LevelScalingFieldValue>? result = layeredDataStorage.GetScalingFieldValuesById("HeroAbathur", "Unit");
+        IReadOnlyList<LevelScalingFieldValue>? result = layeredDataStorage.Elements.GetScalingFieldValuesById("HeroAbathur", "Unit");
 
         // assert - replaced fields keep their position, new fields are added in layer order
         result.Should().Equal(
@@ -1317,7 +1317,7 @@ internal sealed class LayeredDataStorageTests
         AddScalingFieldValues(layeredDataStorage, StormModType.Custom, "Unit", "HeroAbathur", new LevelScalingFieldValue("LIFEMAX", "0.06"));
 
         // act
-        IReadOnlyList<LevelScalingFieldValue>? result = layeredDataStorage.GetScalingFieldValuesById("HeroAbathur", "Unit");
+        IReadOnlyList<LevelScalingFieldValue>? result = layeredDataStorage.Elements.GetScalingFieldValuesById("HeroAbathur", "Unit");
 
         // assert
         result.Should().Equal(
@@ -1335,7 +1335,7 @@ internal sealed class LayeredDataStorageTests
         List<LevelScalingFieldValue> customValues = AddScalingFieldValues(layeredDataStorage, StormModType.Custom, "Unit", "HeroAbathur", new LevelScalingFieldValue("LifeMax", "0.06"));
 
         // act
-        IReadOnlyList<LevelScalingFieldValue>? result = layeredDataStorage.GetScalingFieldValuesById("HeroAbathur", "Unit");
+        IReadOnlyList<LevelScalingFieldValue>? result = layeredDataStorage.Elements.GetScalingFieldValuesById("HeroAbathur", "Unit");
 
         // assert
         result.Should().NotBeNull();
@@ -1357,8 +1357,8 @@ internal sealed class LayeredDataStorageTests
         AddScalingFieldValues(layeredDataStorage, StormModType.Custom, "Unit", "HeroAbathur", new LevelScalingFieldValue("LifeRegenRate", "0.03"));
 
         // act
-        IReadOnlyList<LevelScalingFieldValue>? first = layeredDataStorage.GetScalingFieldValuesById("HeroAbathur", "Unit");
-        IReadOnlyList<LevelScalingFieldValue>? second = layeredDataStorage.GetScalingFieldValuesById("HeroAbathur", "Unit");
+        IReadOnlyList<LevelScalingFieldValue>? first = layeredDataStorage.Elements.GetScalingFieldValuesById("HeroAbathur", "Unit");
+        IReadOnlyList<LevelScalingFieldValue>? second = layeredDataStorage.Elements.GetScalingFieldValuesById("HeroAbathur", "Unit");
 
         // assert
         second.Should().NotBeSameAs(first);
@@ -1573,7 +1573,7 @@ internal sealed class LayeredDataStorageTests
         AddAssetText(layeredDataStorage, stormModType, "AlarakPortrait", "Assets/Textures/ui_alarak_portrait.dds");
 
         // act
-        bool result = layeredDataStorage.TryGetFirstAssetTextById("AlarakPortrait", out string? value);
+        bool result = layeredDataStorage.Texts.TryGetFirstAssetTextById("AlarakPortrait", out string? value);
 
         // assert
         result.Should().BeTrue();
@@ -1587,7 +1587,7 @@ internal sealed class LayeredDataStorageTests
         LayeredDataStorage layeredDataStorage = new();
 
         // act
-        bool result = layeredDataStorage.TryGetFirstAssetTextById("AlarakPortrait", out string? value);
+        bool result = layeredDataStorage.Texts.TryGetFirstAssetTextById("AlarakPortrait", out string? value);
 
         // assert
         result.Should().BeFalse();
@@ -1604,7 +1604,7 @@ internal sealed class LayeredDataStorageTests
         AddAssetText(layeredDataStorage, StormModType.Custom, "CustomId", "custom.dds");
 
         // act
-        bool result = layeredDataStorage.TryGetFirstAssetTextById("DoesNotExist", out string? value);
+        bool result = layeredDataStorage.Texts.TryGetFirstAssetTextById("DoesNotExist", out string? value);
 
         // assert
         result.Should().BeFalse();
@@ -1619,7 +1619,7 @@ internal sealed class LayeredDataStorageTests
         AddAssetText(layeredDataStorage, StormModType.Base, "AlarakPortrait", "alarak.dds");
 
         // act
-        bool result = layeredDataStorage.TryGetFirstAssetTextById("alarakportrait", out string? value);
+        bool result = layeredDataStorage.Texts.TryGetFirstAssetTextById("alarakportrait", out string? value);
 
         // assert
         result.Should().BeFalse();
@@ -1634,7 +1634,7 @@ internal sealed class LayeredDataStorageTests
         AddAssetText(layeredDataStorage, StormModType.Base, "AlarakPortrait", "alarak.dds");
 
         // act
-        bool result = layeredDataStorage.TryGetFirstAssetTextById(ReadOnlySpan<char>.Empty, out string? value);
+        bool result = layeredDataStorage.Texts.TryGetFirstAssetTextById(ReadOnlySpan<char>.Empty, out string? value);
 
         // assert
         result.Should().BeFalse();
@@ -1649,7 +1649,7 @@ internal sealed class LayeredDataStorageTests
         AddAssetText(layeredDataStorage, StormModType.Base, "AlarakPortrait", "alarak.dds");
 
         // act
-        bool result = layeredDataStorage.TryGetFirstAssetTextById("@AlarakPortrait".AsSpan(1), out string? value);
+        bool result = layeredDataStorage.Texts.TryGetFirstAssetTextById("@AlarakPortrait".AsSpan(1), out string? value);
 
         // assert
         result.Should().BeTrue();
@@ -1664,7 +1664,7 @@ internal sealed class LayeredDataStorageTests
         AddAssetText(layeredDataStorage, StormModType.Base, "AlarakPortrait", string.Empty);
 
         // act
-        bool result = layeredDataStorage.TryGetFirstAssetTextById("AlarakPortrait", out string? value);
+        bool result = layeredDataStorage.Texts.TryGetFirstAssetTextById("AlarakPortrait", out string? value);
 
         // assert
         result.Should().BeTrue();
@@ -1680,7 +1680,7 @@ internal sealed class LayeredDataStorageTests
         AddAssetText(layeredDataStorage, StormModType.Map, "AlarakPortrait", "map.dds");
 
         // act
-        bool result = layeredDataStorage.TryGetFirstAssetTextById("AlarakPortrait", out string? value);
+        bool result = layeredDataStorage.Texts.TryGetFirstAssetTextById("AlarakPortrait", out string? value);
 
         // assert
         result.Should().BeTrue();
@@ -1696,7 +1696,7 @@ internal sealed class LayeredDataStorageTests
         AddAssetText(layeredDataStorage, StormModType.Custom, "AlarakPortrait", "custom.dds");
 
         // act
-        bool result = layeredDataStorage.TryGetFirstAssetTextById("AlarakPortrait", out string? value);
+        bool result = layeredDataStorage.Texts.TryGetFirstAssetTextById("AlarakPortrait", out string? value);
 
         // assert
         result.Should().BeTrue();
@@ -1712,7 +1712,7 @@ internal sealed class LayeredDataStorageTests
         AddAssetText(layeredDataStorage, StormModType.Custom, "AlarakPortrait", "custom.dds");
 
         // act
-        bool result = layeredDataStorage.TryGetFirstAssetTextById("AlarakPortrait", out string? value);
+        bool result = layeredDataStorage.Texts.TryGetFirstAssetTextById("AlarakPortrait", out string? value);
 
         // assert
         result.Should().BeTrue();
@@ -1729,7 +1729,7 @@ internal sealed class LayeredDataStorageTests
         AddAssetText(layeredDataStorage, StormModType.Custom, "AlarakPortrait", "custom.dds");
 
         // act
-        bool result = layeredDataStorage.TryGetFirstAssetTextById("AlarakPortrait", out string? value);
+        bool result = layeredDataStorage.Texts.TryGetFirstAssetTextById("AlarakPortrait", out string? value);
 
         // assert
         result.Should().BeTrue();
@@ -1745,7 +1745,7 @@ internal sealed class LayeredDataStorageTests
         AddAssetText(layeredDataStorage, StormModType.Custom, "AlarakPortrait", string.Empty);
 
         // act
-        bool result = layeredDataStorage.TryGetFirstAssetTextById("AlarakPortrait", out string? value);
+        bool result = layeredDataStorage.Texts.TryGetFirstAssetTextById("AlarakPortrait", out string? value);
 
         // assert
         result.Should().BeTrue();
@@ -1762,7 +1762,7 @@ internal sealed class LayeredDataStorageTests
         AddAssetText(layeredDataStorage, StormModType.Custom, "AnotherId", "custom.dds");
 
         // act
-        bool result = layeredDataStorage.TryGetFirstAssetTextById("AlarakPortrait", out string? value);
+        bool result = layeredDataStorage.Texts.TryGetFirstAssetTextById("AlarakPortrait", out string? value);
 
         // assert
         result.Should().BeTrue();
@@ -1780,7 +1780,7 @@ internal sealed class LayeredDataStorageTests
         StormXmlStyleConstantElement expected = AddStyleConstantElement(layeredDataStorage, stormModType, """<Constant name="ColorGray" val="a7a7a7" />""");
 
         // act
-        StormXmlStyleConstantElement? result = layeredDataStorage.GetStormXmlStyleConstantElementByName("ColorGray", out bool isCopy);
+        StormXmlStyleConstantElement? result = layeredDataStorage.Styles.GetStormXmlStyleConstantElementByName("ColorGray", out bool isCopy);
 
         // assert
         result.Should().BeSameAs(expected);
@@ -1795,7 +1795,7 @@ internal sealed class LayeredDataStorageTests
         AddStyleConstantElement(layeredDataStorage, StormModType.Base, """<Constant name="ColorGray" val="a7a7a7" />""");
 
         // act
-        StormXmlStyleConstantElement? result = layeredDataStorage.GetStormXmlStyleConstantElementByName("ColorWhite", out bool isCopy);
+        StormXmlStyleConstantElement? result = layeredDataStorage.Styles.GetStormXmlStyleConstantElementByName("ColorWhite", out bool isCopy);
 
         // assert
         result.Should().BeNull();
@@ -1810,7 +1810,7 @@ internal sealed class LayeredDataStorageTests
         AddStyleConstantElement(layeredDataStorage, StormModType.Base, """<Constant name="ColorGray" val="a7a7a7" />""");
 
         // act
-        StormXmlStyleConstantElement? result = layeredDataStorage.GetStormXmlStyleConstantElementByName("colorgray");
+        StormXmlStyleConstantElement? result = layeredDataStorage.Styles.GetStormXmlStyleConstantElementByName("colorgray");
 
         // assert
         result.Should().BeNull();
@@ -1826,7 +1826,7 @@ internal sealed class LayeredDataStorageTests
         StormXmlStyleConstantElement customElement = AddStyleConstantElement(layeredDataStorage, StormModType.Custom, """<Constant name="ColorGray" val="333333" />""");
 
         // act
-        StormXmlStyleConstantElement? result = layeredDataStorage.GetStormXmlStyleConstantElementByName("ColorGray", out bool isCopy);
+        StormXmlStyleConstantElement? result = layeredDataStorage.Styles.GetStormXmlStyleConstantElementByName("ColorGray", out bool isCopy);
 
         // assert
         result.Should().NotBeNull();
@@ -1851,7 +1851,7 @@ internal sealed class LayeredDataStorageTests
         StormXmlStyleElement expected = AddStyleElement(layeredDataStorage, stormModType, """<Style name="ReticleEnemy" template="Storm_Tutorial_Reticle_Text" />""");
 
         // act
-        StormXmlStyleElement? result = layeredDataStorage.GetStormXmlStyleElementByName("ReticleEnemy", out bool isCopy);
+        StormXmlStyleElement? result = layeredDataStorage.Styles.GetStormXmlStyleElementByName("ReticleEnemy", out bool isCopy);
 
         // assert
         result.Should().BeSameAs(expected);
@@ -1866,7 +1866,7 @@ internal sealed class LayeredDataStorageTests
         AddStyleElement(layeredDataStorage, StormModType.Base, """<Style name="ReticleEnemy" />""");
 
         // act
-        StormXmlStyleElement? result = layeredDataStorage.GetStormXmlStyleElementByName("ReticleAlly", out bool isCopy);
+        StormXmlStyleElement? result = layeredDataStorage.Styles.GetStormXmlStyleElementByName("ReticleAlly", out bool isCopy);
 
         // assert
         result.Should().BeNull();
@@ -1881,7 +1881,7 @@ internal sealed class LayeredDataStorageTests
         AddStyleElement(layeredDataStorage, StormModType.Base, """<Style name="ReticleEnemy" />""");
 
         // act
-        StormXmlStyleElement? result = layeredDataStorage.GetStormXmlStyleElementByName("reticleenemy");
+        StormXmlStyleElement? result = layeredDataStorage.Styles.GetStormXmlStyleElementByName("reticleenemy");
 
         // assert
         result.Should().BeNull();
@@ -1897,7 +1897,7 @@ internal sealed class LayeredDataStorageTests
         StormXmlStyleElement customElement = AddStyleElement(layeredDataStorage, StormModType.Custom, """<Style name="ReticleEnemy" textcolor="255,0,0,255" />""");
 
         // act
-        StormXmlStyleElement? result = layeredDataStorage.GetStormXmlStyleElementByName("ReticleEnemy", out bool isCopy);
+        StormXmlStyleElement? result = layeredDataStorage.Styles.GetStormXmlStyleElementByName("ReticleEnemy", out bool isCopy);
 
         // assert
         result.Should().NotBeNull();
@@ -1923,8 +1923,8 @@ internal sealed class LayeredDataStorageTests
         AddStyleElement(layeredDataStorage, StormModType.Custom, """<Style name="ReticleEnemy" textcolor="255,0,0,255" />""");
 
         // act
-        StormXmlStyleElement? first = layeredDataStorage.GetStormXmlStyleElementByName("ReticleEnemy");
-        StormXmlStyleElement? second = layeredDataStorage.GetStormXmlStyleElementByName("ReticleEnemy");
+        StormXmlStyleElement? first = layeredDataStorage.Styles.GetStormXmlStyleElementByName("ReticleEnemy");
+        StormXmlStyleElement? second = layeredDataStorage.Styles.GetStormXmlStyleElementByName("ReticleEnemy");
 
         // assert
         first.Should().NotBeNull();
@@ -1943,7 +1943,7 @@ internal sealed class LayeredDataStorageTests
         StormFile expected = AddAssetFile(layeredDataStorage, stormModType, Path.Join("assets", "textures", "storm_ui_icon_abathur.dds"));
 
         // act
-        bool result = layeredDataStorage.TryGetFirstAssetFileByRelativePath(Path.Join("assets", "textures", "storm_ui_icon_abathur.dds"), out StormFile? stormFile);
+        bool result = layeredDataStorage.Files.TryGetFirstAssetFileByRelativePath(Path.Join("assets", "textures", "storm_ui_icon_abathur.dds"), out StormFile? stormFile);
 
         // assert
         result.Should().BeTrue();
@@ -1957,7 +1957,7 @@ internal sealed class LayeredDataStorageTests
         LayeredDataStorage layeredDataStorage = new();
 
         // act
-        bool result = layeredDataStorage.TryGetFirstAssetFileByRelativePath(Path.Join("assets", "textures", "storm_ui_icon_abathur.dds"), out StormFile? stormFile);
+        bool result = layeredDataStorage.Files.TryGetFirstAssetFileByRelativePath(Path.Join("assets", "textures", "storm_ui_icon_abathur.dds"), out StormFile? stormFile);
 
         // assert
         result.Should().BeFalse();
@@ -1972,7 +1972,7 @@ internal sealed class LayeredDataStorageTests
         AddAssetFile(layeredDataStorage, StormModType.Base, Path.Join("assets", "textures", "storm_ui_icon_abathur.dds"));
 
         // act
-        bool result = layeredDataStorage.TryGetFirstAssetFileByRelativePath(Path.Join("assets", "textures", "storm_ui_icon_alarak.dds"), out StormFile? stormFile);
+        bool result = layeredDataStorage.Files.TryGetFirstAssetFileByRelativePath(Path.Join("assets", "textures", "storm_ui_icon_alarak.dds"), out StormFile? stormFile);
 
         // assert
         result.Should().BeFalse();
@@ -1987,7 +1987,7 @@ internal sealed class LayeredDataStorageTests
         AddAssetFile(layeredDataStorage, StormModType.Base, Path.Join("assets", "textures", "storm_ui_icon_abathur.dds"));
 
         // act
-        bool result = layeredDataStorage.TryGetFirstAssetFileByRelativePath(string.Empty, out StormFile? stormFile);
+        bool result = layeredDataStorage.Files.TryGetFirstAssetFileByRelativePath(string.Empty, out StormFile? stormFile);
 
         // assert
         result.Should().BeFalse();
@@ -2005,7 +2005,7 @@ internal sealed class LayeredDataStorageTests
         StormFile expected = AddAssetFile(layeredDataStorage, StormModType.Base, Path.Join("assets", "textures", "storm_ui_icon_abathur.dds"));
 
         // act
-        bool result = layeredDataStorage.TryGetFirstAssetFileByRelativePath(relativePath, out StormFile? stormFile);
+        bool result = layeredDataStorage.Files.TryGetFirstAssetFileByRelativePath(relativePath, out StormFile? stormFile);
 
         // assert
         result.Should().BeTrue();
@@ -2022,7 +2022,7 @@ internal sealed class LayeredDataStorageTests
         StormFile expected = AddAssetFile(layeredDataStorage, StormModType.Base, relativePath);
 
         // act
-        bool result = layeredDataStorage.TryGetFirstAssetFileByRelativePath(relativePath.ToUpperInvariant(), out StormFile? stormFile);
+        bool result = layeredDataStorage.Files.TryGetFirstAssetFileByRelativePath(relativePath.ToUpperInvariant(), out StormFile? stormFile);
 
         // assert
         result.Should().BeTrue();
@@ -2040,7 +2040,7 @@ internal sealed class LayeredDataStorageTests
         ReadOnlySpan<char> relativePath = value.AsSpan(13, @"Assets\Textures\storm_ui_icon_abathur.dds".Length);
 
         // act
-        bool result = layeredDataStorage.TryGetFirstAssetFileByRelativePath(relativePath, out StormFile? stormFile);
+        bool result = layeredDataStorage.Files.TryGetFirstAssetFileByRelativePath(relativePath, out StormFile? stormFile);
 
         // assert
         result.Should().BeTrue();
@@ -2058,7 +2058,7 @@ internal sealed class LayeredDataStorageTests
         StormFile mapFile = AddAssetFile(layeredDataStorage, StormModType.Map, relativePath);
 
         // act
-        bool result = layeredDataStorage.TryGetFirstAssetFileByRelativePath(relativePath, out StormFile? stormFile);
+        bool result = layeredDataStorage.Files.TryGetFirstAssetFileByRelativePath(relativePath, out StormFile? stormFile);
 
         // assert
         result.Should().BeTrue();
@@ -2077,7 +2077,7 @@ internal sealed class LayeredDataStorageTests
         StormFile customFile = AddAssetFile(layeredDataStorage, StormModType.Custom, relativePath);
 
         // act
-        bool result = layeredDataStorage.TryGetFirstAssetFileByRelativePath(relativePath, out StormFile? stormFile);
+        bool result = layeredDataStorage.Files.TryGetFirstAssetFileByRelativePath(relativePath, out StormFile? stormFile);
 
         // assert
         result.Should().BeTrue();
@@ -2094,7 +2094,7 @@ internal sealed class LayeredDataStorageTests
         AddStormLayoutFile(layeredDataStorage, StormModType.Base, relativePath);
 
         // act
-        bool result = layeredDataStorage.TryGetFirstAssetFileByRelativePath(relativePath, out _);
+        bool result = layeredDataStorage.Files.TryGetFirstAssetFileByRelativePath(relativePath, out _);
 
         // assert
         result.Should().BeFalse();
@@ -2111,7 +2111,7 @@ internal sealed class LayeredDataStorageTests
         StormFile expected = AddStormLayoutFile(layeredDataStorage, stormModType, Path.Join("ui", "layout", "hero", "herotalents.stormlayout"));
 
         // act
-        bool result = layeredDataStorage.TryGetFirstStormLayoutFileByRelativePath(Path.Join("ui", "layout", "hero", "herotalents.stormlayout"), out StormFile? stormFile);
+        bool result = layeredDataStorage.Files.TryGetFirstStormLayoutFileByRelativePath(Path.Join("ui", "layout", "hero", "herotalents.stormlayout"), out StormFile? stormFile);
 
         // assert
         result.Should().BeTrue();
@@ -2126,7 +2126,7 @@ internal sealed class LayeredDataStorageTests
         AddStormLayoutFile(layeredDataStorage, StormModType.Base, Path.Join("ui", "layout", "hero", "herotalents.stormlayout"));
 
         // act
-        bool result = layeredDataStorage.TryGetFirstStormLayoutFileByRelativePath(Path.Join("ui", "layout", "hero", "heroselect.stormlayout"), out StormFile? stormFile);
+        bool result = layeredDataStorage.Files.TryGetFirstStormLayoutFileByRelativePath(Path.Join("ui", "layout", "hero", "heroselect.stormlayout"), out StormFile? stormFile);
 
         // assert
         result.Should().BeFalse();
@@ -2143,7 +2143,7 @@ internal sealed class LayeredDataStorageTests
         StormFile expected = AddStormLayoutFile(layeredDataStorage, StormModType.Base, Path.Join("ui", "layout", "hero", "herotalents.stormlayout"));
 
         // act
-        bool result = layeredDataStorage.TryGetFirstStormLayoutFileByRelativePath(relativePath, out StormFile? stormFile);
+        bool result = layeredDataStorage.Files.TryGetFirstStormLayoutFileByRelativePath(relativePath, out StormFile? stormFile);
 
         // assert
         result.Should().BeTrue();
@@ -2162,7 +2162,7 @@ internal sealed class LayeredDataStorageTests
         StormFile customFile = AddStormLayoutFile(layeredDataStorage, StormModType.Custom, relativePath);
 
         // act
-        bool result = layeredDataStorage.TryGetFirstStormLayoutFileByRelativePath(relativePath, out StormFile? stormFile);
+        bool result = layeredDataStorage.Files.TryGetFirstStormLayoutFileByRelativePath(relativePath, out StormFile? stormFile);
 
         // assert
         result.Should().BeTrue();

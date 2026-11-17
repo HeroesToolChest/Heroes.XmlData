@@ -211,7 +211,7 @@ internal sealed class StormXmlFileParser
         // should be a non-const element
         if (indexOfConstant == 0)
         {
-            if (_layeredDataStorage.TryGetFirstStormXmlConstElementById(value, out StormXmlConstElement? stormXmlConstElement))
+            if (_layeredDataStorage.Elements.TryGetFirstStormXmlConstElementById(value, out StormXmlConstElement? stormXmlConstElement))
             {
                 return stormXmlConstElement.Value;
             }
@@ -222,7 +222,7 @@ internal sealed class StormXmlFileParser
 
     private string GetAssetTextValue(string value)
     {
-        if (_layeredDataStorage.TryGetFirstAssetTextById(value.AsSpan(1), out string? stringValue))
+        if (_layeredDataStorage.Texts.TryGetFirstAssetTextById(value.AsSpan(1), out string? stringValue))
             return stringValue;
 
         return string.Empty;

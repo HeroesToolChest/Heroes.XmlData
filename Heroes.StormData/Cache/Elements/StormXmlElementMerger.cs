@@ -2,11 +2,11 @@
 
 internal class StormXmlElementMerger
 {
-    private readonly LayeredDataStorage _layeredDataStorage;
+    private readonly LayeredElementCache _layeredElementCache;
 
-    public StormXmlElementMerger(LayeredDataStorage layeredDataStorage)
+    public StormXmlElementMerger(LayeredElementCache layeredElementCache)
     {
-        _layeredDataStorage = layeredDataStorage;
+        _layeredElementCache = layeredElementCache;
     }
 
     /// <summary>
@@ -47,7 +47,7 @@ internal class StormXmlElementMerger
         if (id.IsEmpty)
             return null;
 
-        StormXmlElement? stormXmlElement = _layeredDataStorage.GetStormXmlElementById(id, catalogName, out bool isElementCopy);
+        StormXmlElement? stormXmlElement = _layeredElementCache.GetStormXmlElementById(id, catalogName, out bool isElementCopy);
 
         if (stormXmlElement is null)
             return null;
@@ -71,7 +71,7 @@ internal class StormXmlElementMerger
     {
         isCopy = false;
 
-        StormXmlElement? stormXmlElement = _layeredDataStorage.GetStormXmlElementByClassElement(elementName, out bool isElementCopy);
+        StormXmlElement? stormXmlElement = _layeredElementCache.GetStormXmlElementByClassElement(elementName, out bool isElementCopy);
 
         if (stormXmlElement is null)
             return null;
@@ -97,9 +97,9 @@ internal class StormXmlElementMerger
 
     private StormXmlElement? GetBaseStormElement(ReadOnlySpan<char> elementName, out bool isCopy)
     {
-        if (_layeredDataStorage.TryGetFirstCatalogNameByElementName(elementName, out string? catalogName))
+        if (_layeredElementCache.TryGetFirstCatalogNameByElementName(elementName, out string? catalogName))
         {
-            return _layeredDataStorage.GetStormXmlElementByClassElement(catalogName, out isCopy);
+            return _layeredElementCache.GetStormXmlElementByClassElement(catalogName, out isCopy);
         }
 
         isCopy = false;

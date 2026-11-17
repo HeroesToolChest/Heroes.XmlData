@@ -7,7 +7,7 @@ public class MergedStormXmlElementCacheTests
     public void GetOrMerge_ElementHasParent_ReturnsMergedElement()
     {
         // arrange
-        MergedStormXmlElementCache cache = new(new StormXmlElementMerger(CreateStorage()));
+        MergedStormXmlElementCache cache = new(new StormXmlElementMerger(CreateStorage().Elements));
 
         // act
         StormXmlElement? result = cache.GetOrMerge("ChildDamage", "Effect", 0);
@@ -22,7 +22,7 @@ public class MergedStormXmlElementCacheTests
     public void GetOrMerge_SameVersion_ReturnsSameInstance()
     {
         // arrange
-        MergedStormXmlElementCache cache = new(new StormXmlElementMerger(CreateStorage()));
+        MergedStormXmlElementCache cache = new(new StormXmlElementMerger(CreateStorage().Elements));
 
         // act
         StormXmlElement? first = cache.GetOrMerge("ChildDamage", "Effect", 3);
@@ -37,7 +37,7 @@ public class MergedStormXmlElementCacheTests
     public void GetOrMerge_VersionChanged_ReturnsNewlyMergedInstance()
     {
         // arrange
-        MergedStormXmlElementCache cache = new(new StormXmlElementMerger(CreateStorage()));
+        MergedStormXmlElementCache cache = new(new StormXmlElementMerger(CreateStorage().Elements));
 
         // act
         StormXmlElement? first = cache.GetOrMerge("ChildDamage", "Effect", 3);
@@ -53,7 +53,7 @@ public class MergedStormXmlElementCacheTests
     public void GetOrMerge_VersionChanged_ClearsOtherCachedElements()
     {
         // arrange
-        MergedStormXmlElementCache cache = new(new StormXmlElementMerger(CreateStorage()));
+        MergedStormXmlElementCache cache = new(new StormXmlElementMerger(CreateStorage().Elements));
         StormXmlElement? before = cache.GetOrMerge("ChildDamage", "Effect", 3);
 
         // act
@@ -69,7 +69,7 @@ public class MergedStormXmlElementCacheTests
     {
         // arrange
         LayeredDataStorage layeredDataStorage = CreateStorage();
-        MergedStormXmlElementCache cache = new(new StormXmlElementMerger(layeredDataStorage));
+        MergedStormXmlElementCache cache = new(new StormXmlElementMerger(layeredDataStorage.Elements));
         StormXmlElement? before = cache.GetOrMerge("ChildDamage", "Effect", 0);
 
         layeredDataStorage.GetDataStorage(StormModType.Custom).AddElementWithId(
@@ -94,7 +94,7 @@ public class MergedStormXmlElementCacheTests
     {
         // arrange
         LayeredDataStorage layeredDataStorage = CreateStorage();
-        MergedStormXmlElementCache cache = new(new StormXmlElementMerger(layeredDataStorage));
+        MergedStormXmlElementCache cache = new(new StormXmlElementMerger(layeredDataStorage.Elements));
         StormXmlElement? before = cache.GetOrMerge("NewDamage", "Effect", 0);
 
         layeredDataStorage.GetDataStorage(StormModType.Custom).AddElementWithId(
@@ -120,7 +120,7 @@ public class MergedStormXmlElementCacheTests
     public void GetOrMerge_CatalogNameWithDifferentCasing_ReturnsSameInstance()
     {
         // arrange
-        MergedStormXmlElementCache cache = new(new StormXmlElementMerger(CreateStorage()));
+        MergedStormXmlElementCache cache = new(new StormXmlElementMerger(CreateStorage().Elements));
 
         // act
         StormXmlElement? first = cache.GetOrMerge("ChildDamage", "Effect", 0);
@@ -135,7 +135,7 @@ public class MergedStormXmlElementCacheTests
     public void GetOrMerge_IdWithDifferentCasing_ReturnsNull()
     {
         // arrange
-        MergedStormXmlElementCache cache = new(new StormXmlElementMerger(CreateStorage()));
+        MergedStormXmlElementCache cache = new(new StormXmlElementMerger(CreateStorage().Elements));
         cache.GetOrMerge("ChildDamage", "Effect", 0);
 
         // act
@@ -149,7 +149,7 @@ public class MergedStormXmlElementCacheTests
     public void Clear_AfterCaching_ReturnsNewlyMergedInstance()
     {
         // arrange
-        MergedStormXmlElementCache cache = new(new StormXmlElementMerger(CreateStorage()));
+        MergedStormXmlElementCache cache = new(new StormXmlElementMerger(CreateStorage().Elements));
         StormXmlElement? before = cache.GetOrMerge("ChildDamage", "Effect", 0);
 
         // act

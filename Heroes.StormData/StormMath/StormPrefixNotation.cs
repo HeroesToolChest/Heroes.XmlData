@@ -28,7 +28,7 @@ internal static class StormPrefixNotation
         }
         else if (firstChar == '$')
         {
-            if (layeredDataStorage.TryGetFirstStormXmlConstElementById(expression, out StormXmlConstElement? stormXmlConstElement))
+            if (layeredDataStorage.Elements.TryGetFirstStormXmlConstElementById(expression, out StormXmlConstElement? stormXmlConstElement))
                 return ParseConstValue(stormXmlConstElement.Value);
             else
                 return 0;

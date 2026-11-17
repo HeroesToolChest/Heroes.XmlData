@@ -164,7 +164,7 @@ public class StormModContainer
         if (element.Members.TryGetMember("LevelScalingArray", out StormXmlArray? levelScalingArray))
             _specificDataStorage.AddLevelScalingElementValue(levelScalingArray);
 
-        if (!_sourceContainer.LayeredDataStorage.TryGetFirstCatalogNameByElementName(element.ElementName, out string? existingCatalogName))
+        if (!_sourceContainer.LayeredDataStorage.Elements.TryGetFirstCatalogNameByElementName(element.ElementName, out string? existingCatalogName))
         {
             // TODO: more lookup
             existingCatalogName = string.Empty;

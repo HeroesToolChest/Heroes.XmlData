@@ -259,7 +259,7 @@ internal sealed class DataRefAttributeParser
     {
         scaling = 0;
 
-        IReadOnlyList<LevelScalingFieldValue>? scalingFieldValues = _layeredDataStorage.GetScalingFieldValuesById(entry, catalog);
+        IReadOnlyList<LevelScalingFieldValue>? scalingFieldValues = _layeredDataStorage.Elements.GetScalingFieldValuesById(entry, catalog);
         if (scalingFieldValues is null)
             return false;
 
