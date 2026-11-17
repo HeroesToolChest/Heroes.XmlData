@@ -63,8 +63,8 @@ public class HeroesLoader
     {
         //if (_baseStormModsLoaded is false)
         //{
-            _heroesSource.LoadStormMods();
-            //_heroesSource.LoadDepotCache();
+        _heroesSource.LoadStormMods();
+        //_heroesSource.LoadDepotCache();
         //}
 
         //_baseStormModsLoaded = true;
