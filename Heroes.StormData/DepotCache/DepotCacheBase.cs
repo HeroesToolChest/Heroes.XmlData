@@ -3,6 +3,9 @@
 internal abstract class DepotCacheBase<T> : IDepotCache
     where T : IHeroesSource
 {
+    private const string BnetPrefix = "bnet:";
+    private const string FilePrefix = "file:";
+
     private static readonly XmlReaderSettings _xmlReaderSettings = new()
     {
         IgnoreWhitespace = true,
@@ -57,7 +60,7 @@ internal abstract class DepotCacheBase<T> : IDepotCache
     /// <param name="filePath">The path of the file.</param>
     protected void AddS2MVFile(Stream s2mvFile, string filePath)
     {
-        S2MVProperties? s2mvProperties = LoadS2mvFile(s2mvFile);
+        S2MVProperties? s2mvProperties = LoadS2MVFile(s2mvFile);
         if (s2mvProperties is null)
             return;
 
@@ -73,7 +76,7 @@ internal abstract class DepotCacheBase<T> : IDepotCache
     /// <param name="filePath">The path of the file.</param>
     protected void AddS2maFile(Stream s2maFile, string filePath)
     {
-        S2MAProperties? s2maProperties = LoadS2maFile(s2maFile);
+        S2MAProperties? s2maProperties = LoadS2MAFile(s2maFile);
         if (s2maProperties is null)
             return;
 
@@ -82,14 +85,17 @@ internal abstract class DepotCacheBase<T> : IDepotCache
         Data.AddS2MA(filePath, s2maProperties);
     }
 
-    private static S2MVProperties? LoadS2mvFile(Stream s2mvFile)
+    private static S2MVProperties? LoadS2MVFile(Stream s2mvFile)
     {
         if (s2mvFile.Length <= 0 || s2mvFile.ReadByte() != '{')
             return null;
 
         s2mvFile.Position = 0;
 
-        using JsonDocument jsonDocument = JsonDocument.Parse(s2mvFile);
+        using JsonDocument? jsonDocument = TryParseJson(s2mvFile);
+        if (jsonDocument is null)
+            return null;
+
         JsonElement rootElement = jsonDocument.RootElement;
 
         if (!rootElement.TryGetProperty("MapInfo", out JsonElement mapInfoElement) ||
@@ -100,10 +106,10 @@ internal abstract class DepotCacheBase<T> : IDepotCache
             return null;
         }
 
-        if (!rootElement.TryGetProperty("DocInfo", out JsonElement docInfoElememt) ||
-            !docInfoElememt.TryGetProperty("Info", out JsonElement infoElement) ||
-            !docInfoElememt.TryGetProperty("Dependencies", out JsonElement dependenciesElement) ||
-            !docInfoElememt.TryGetProperty("ModifiableDependencies", out JsonElement modifiableDependenciesElement))
+        if (!rootElement.TryGetProperty("DocInfo", out JsonElement docInfoElement) ||
+            !docInfoElement.TryGetProperty("Info", out JsonElement infoElement) ||
+            !docInfoElement.TryGetProperty("Dependencies", out JsonElement dependenciesElement) ||
+            !docInfoElement.TryGetProperty("ModifiableDependencies", out JsonElement modifiableDependenciesElement))
         {
             return null;
         }
@@ -121,7 +127,7 @@ internal abstract class DepotCacheBase<T> : IDepotCache
             MapLink = mapLinkElement.GetString() ?? string.Empty,
             HeaderTitle = docInfoNameElement.GetProperty("enUS").GetString() ?? string.Empty,
             LoadingImage = PathNormalizer.NormalizePath(loadingElement.GetProperty("Image").GetString()),
-            MapSize = new MapSize(mapInfoSizeElement.GetProperty("x").GetInt32(), mapInfoSizeElement.GetProperty("y").GetInt32()),
+            MapSize = new MapSize(mapInfoSizeElement.GetProperty("x").GetDouble(), mapInfoSizeElement.GetProperty("y").GetDouble()),
             PreviewLargeImage = PathNormalizer.NormalizePath(propertiesElement.GetProperty("PreviewLargeImage").GetString()),
             CustomLayout = PathNormalizer.NormalizePath(loadingElement.GetProperty("CustomLayout").GetString()),
             CustomFrame = PathNormalizer.NormalizePath(loadingElement.GetProperty("CustomFrame").GetString()),
@@ -154,7 +160,19 @@ internal abstract class DepotCacheBase<T> : IDepotCache
         return s2mvProperties;
     }
 
-    private static S2MAProperties? LoadS2maFile(Stream s2maFile)
+    private static JsonDocument? TryParseJson(Stream stream)
+    {
+        try
+        {
+            return JsonDocument.Parse(stream);
+        }
+        catch (JsonException)
+        {
+            return null;
+        }
+    }
+
+    private static S2MAProperties? LoadS2MAFile(Stream s2maFile)
     {
         if (s2maFile.Length < 3 ||
             s2maFile.ReadByte() != 'M' ||
@@ -171,92 +189,134 @@ internal abstract class DepotCacheBase<T> : IDepotCache
         if (!mpqHeroesArchive.FileEntryExists("BankList.xml") || !mpqHeroesArchive.TryGetEntry("mapscript.galaxy", out MpqHeroesArchiveEntry? mapScriptEntry) || !mpqHeroesArchive.TryGetEntry(SourceConstants.DocumentInfoFile, out MpqHeroesArchiveEntry? documentInfoEntry))
             return null;
 
-        string? mapId = GetMapId(mpqHeroesArchive, mapScriptEntry.Value).Result;
+        XElement? documentInfoRoot;
 
-        using Stream documentInfoStream = mpqHeroesArchive.DecompressEntry(documentInfoEntry.Value);
-        using XmlReader xmlReader = XmlReader.Create(documentInfoStream, _xmlReaderSettings);
+        using (Stream documentInfoStream = mpqHeroesArchive.DecompressEntry(documentInfoEntry.Value))
+        {
+            documentInfoRoot = TryLoadXml(documentInfoStream)?.Root;
+        }
 
-        XDocument document = XDocument.Load(xmlReader, LoadOptions.None);
+        if (documentInfoRoot is null)
+            return null;
 
-        IEnumerable<XElement> dependencies = document.Root?.Element("Dependencies")!.Elements() ?? [];
-        IEnumerable<XElement> modifiableDependencies = document.Root?.Element("ModifiableDependencies")!.Elements() ?? [];
+        List<MapDependency> mapDependencies = [];
+
+        foreach (XElement dependencyElement in documentInfoRoot.Element("Dependencies")?.Elements() ?? [])
+        {
+            // a dependency that can't be parsed would change the dependency key, so the map would not match its s2mv file
+            if (!TryParseMapDependency(dependencyElement.Value, SourceConstants.DefaultModsDirectory, out MapDependency? mapDependency))
+                return null;
+
+            mapDependencies.Add(mapDependency);
+        }
+
+        IEnumerable<XElement> modifiableDependencyElements = documentInfoRoot.Element("ModifiableDependencies")?.Elements() ?? [];
 
         return new S2MAProperties()
         {
-            DocInfoIconFile = PathNormalizer.NormalizePath(document.Root?.Element("Icon")?.Value),
-            MapId = mapId,
-            MapDependencies = [.. MapDependency.GetMapDependencies(dependencies, SourceConstants.DefaultModsDirectory)],
-            ModifiableDependencies = [.. GetMapModifiableDependencies(modifiableDependencies, SourceConstants.DefaultModsDirectory)],
+            DocInfoIconFile = PathNormalizer.NormalizePath(documentInfoRoot.Element("Icon")?.Value),
+            MapId = GetMapId(mpqHeroesArchive, mapScriptEntry.Value),
+            MapDependencies = mapDependencies,
+            ModifiableDependencies = [.. modifiableDependencyElements.Select(x => PathNormalizer.NormalizePath(x.Value, SourceConstants.DefaultModsDirectory))],
         };
     }
 
-    private static async Task<string?> GetMapId(MpqHeroesArchive mpqHeroesArchive, MpqHeroesArchiveEntry mapScriptEntry)
+    /// <summary>
+    /// Parses a dependency value in the format <c>bnet:&lt;name&gt;/&lt;major&gt;.&lt;minor&gt;/&lt;namespace&gt;,file:&lt;path&gt;</c>.
+    /// </summary>
+    /// <param name="value">The dependency value.</param>
+    /// <param name="modsDirectory">The mods directory, which is removed from the start of the file path.</param>
+    /// <param name="mapDependency">The parsed <see cref="MapDependency"/>, or <see langword="null"/> if <paramref name="value"/> is not in the expected format.</param>
+    /// <returns><see langword="true"/> if <paramref name="value"/> was parsed; otherwise <see langword="false"/>.</returns>
+    private static bool TryParseMapDependency(ReadOnlySpan<char> value, string modsDirectory, [NotNullWhen(true)] out MapDependency? mapDependency)
     {
-        using Stream stream = mpqHeroesArchive.DecompressEntry(mapScriptEntry);
+        mapDependency = null;
 
-        PipeReader reader = PipeReader.Create(stream);
+        // bnet:<name>/<major>.<minor>/<namespace>,file:<path>
+        Span<Range> valueParts = stackalloc Range[2];
+        if (value.Split(valueParts, ',') != 2)
+            return false;
 
-        while (true)
+        ReadOnlySpan<char> bnetSpan = value[valueParts[0]];
+        ReadOnlySpan<char> fileSpan = value[valueParts[1]];
+
+        if (!bnetSpan.StartsWith(BnetPrefix, StringComparison.OrdinalIgnoreCase) || !fileSpan.StartsWith(FilePrefix, StringComparison.OrdinalIgnoreCase))
+            return false;
+
+        bnetSpan = bnetSpan[BnetPrefix.Length..];
+
+        // <name>/<major>.<minor>/<namespace>
+        Span<Range> bnetParts = stackalloc Range[4];
+        if (bnetSpan.Split(bnetParts, '/') != 3)
+            return false;
+
+        ReadOnlySpan<char> bnetName = bnetSpan[bnetParts[0]];
+        ReadOnlySpan<char> bnetVersion = bnetSpan[bnetParts[1]];
+        int indexOfVersionDot = bnetVersion.IndexOf('.');
+
+        if (bnetName.IsEmpty ||
+            indexOfVersionDot < 0 ||
+            !int.TryParse(bnetVersion[..indexOfVersionDot], NumberStyles.Integer, CultureInfo.InvariantCulture, out int bnetVersionMajor) ||
+            !int.TryParse(bnetVersion[(indexOfVersionDot + 1)..], NumberStyles.Integer, CultureInfo.InvariantCulture, out int bnetVersionMinor) ||
+            !int.TryParse(bnetSpan[bnetParts[2]], NumberStyles.Integer, CultureInfo.InvariantCulture, out int bnetNamespace))
         {
-            ReadResult result = await reader.ReadAsync();
-            ReadOnlySequence<byte> buffer = result.Buffer;
-
-            while (TryReadLine(ref buffer, out ReadOnlySequence<byte> line))
-            {
-                SequenceReader<byte> sequenceReader = new(line);
-
-                if (!sequenceReader.TryReadTo(out ReadOnlySequence<byte> keyBytes, (byte)'='))
-                    continue;
-
-                ReadOnlySequence<byte> valueBytes = line.Slice(sequenceReader.Position);
-
-                string variable = Encoding.UTF8.GetString(keyBytes);
-                if (!variable.Contains("mAPMapStringID", StringComparison.OrdinalIgnoreCase))
-                    continue;
-
-                string value = Encoding.UTF8.GetString(valueBytes);
-
-                return value.Trim([' ', '"', ';']).ToString();
-            }
-
-            reader.AdvanceTo(buffer.Start, buffer.End);
-
-            if (result.IsCompleted)
-                break;
-        }
-
-        await reader.CompleteAsync();
-
-        return null;
-    }
-
-    private static IEnumerable<string> GetMapModifiableDependencies(IEnumerable<XElement> modifiableDependencies, string modsDirectory)
-    {
-        foreach (XElement valueElement in modifiableDependencies)
-        {
-            yield return PathNormalizer.NormalizePath(valueElement.Value, modsDirectory);
-        }
-    }
-
-    private static bool TryReadLine(ref ReadOnlySequence<byte> buffer, out ReadOnlySequence<byte> line)
-    {
-        SequencePosition? position = buffer.PositionOf((byte)'\n');
-
-        if (position is null)
-        {
-            line = default;
             return false;
         }
 
-        line = buffer.Slice(0, position.Value);
-
-        if (!line.IsEmpty && line.Slice(line.Length - 1, 1).FirstSpan[0] == (byte)'\r')
+        mapDependency = new MapDependency()
         {
-            line = line.Slice(0, line.Length - 1);
-        }
-
-        buffer = buffer.Slice(buffer.GetPosition(1, position.Value));
+            BnetName = bnetName.ToString(),
+            BnetVersionMajor = bnetVersionMajor,
+            BnetVersionMinor = bnetVersionMinor,
+            BnetNamespace = bnetNamespace,
+            LocalFile = PathNormalizer.NormalizePath(fileSpan[FilePrefix.Length..], modsDirectory),
+        };
 
         return true;
+    }
+
+    private static XDocument? TryLoadXml(Stream stream)
+    {
+        try
+        {
+            using XmlReader xmlReader = XmlReader.Create(stream, _xmlReaderSettings);
+
+            return XDocument.Load(xmlReader, LoadOptions.None);
+        }
+        catch (XmlException)
+        {
+            return null;
+        }
+    }
+
+    // finds the value assigned to the mAPMapStringID variable, e.g. libCore_gv_mAPMapStringID = "BraxisHoldout";
+    private static string? GetMapId(MpqHeroesArchive mpqHeroesArchive, MpqHeroesArchiveEntry mapScriptEntry)
+    {
+        using Stream stream = mpqHeroesArchive.DecompressEntry(mapScriptEntry);
+        using StreamReader reader = new(stream, Encoding.UTF8);
+
+        while (reader.ReadLine() is string line)
+        {
+            ReadOnlySpan<char> lineSpan = line.AsSpan().TrimStart();
+            if (lineSpan.StartsWith("//", StringComparison.Ordinal))
+                continue;
+
+            int indexOfEquals = lineSpan.IndexOf('=');
+
+            // skip lines without an assignment, and comparisons such as ==, !=, <= and >=
+            if (indexOfEquals < 1 ||
+                (indexOfEquals + 1 < lineSpan.Length && lineSpan[indexOfEquals + 1] == '=') ||
+                lineSpan[indexOfEquals - 1] is '!' or '<' or '>')
+            {
+                continue;
+            }
+
+            if (!lineSpan[..indexOfEquals].TrimEnd().EndsWith("mAPMapStringID", StringComparison.OrdinalIgnoreCase))
+                continue;
+
+            return lineSpan[(indexOfEquals + 1)..].Trim([' ', '\t', '"', ';']).ToString();
+        }
+
+        return null;
     }
 }
