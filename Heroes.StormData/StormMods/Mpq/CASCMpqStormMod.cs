@@ -2,23 +2,17 @@
 
 internal sealed class CASCMpqStormMod : MpqStormModBase<ICASCHeroesSource>
 {
-    public CASCMpqStormMod(ICASCHeroesSource heroesSource, string path, StormModType stormModType)
-        : base(heroesSource, path, stormModType)
+    public CASCMpqStormMod(ICASCHeroesSource heroesSource, string directoryPath, StormModType stormModType)
+        : base(heroesSource, directoryPath, stormModType)
     {
     }
 
-    protected override void LoadStormLayoutDirectory()
+    protected override bool TryOpenMpqFile([NotNullWhen(true)] out Stream? stream)
     {
-        throw new NotImplementedException();
+        stream = HeroesSource.CASCHeroesStorage.CASCHandlerWrapper.OpenFile(DirectoryPath);
+
+        return stream is not null;
     }
 
-    protected override IStormMod GetStormMod(string path, StormModType stormModType)
-    {
-        throw new NotImplementedException();
-    }
-
-    protected override void LoadAssetsDirectory()
-    {
-        throw new NotImplementedException();
-    }
+    protected override IStormMod GetStormMod(string path, StormModType stormModType) => HeroesSource.StormModFactory.CreateCASCStormMod(HeroesSource, path, stormModType);
 }

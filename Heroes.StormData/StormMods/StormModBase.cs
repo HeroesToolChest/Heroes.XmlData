@@ -125,7 +125,7 @@ internal abstract class StormModBase<T> : IStormMod
         LoadIncludesStormMods();
     }
 
-    public IReadOnlyList<MapDependency> GetMapDependencies()
+    public virtual IReadOnlyList<MapDependency> GetMapDependencies()
     {
         if (!TryGetFile(DocumentInfoPath, out Stream? stream))
             return [];

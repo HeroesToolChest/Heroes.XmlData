@@ -1,5 +1,3 @@
-using Heroes.StormData.DepotCache.Maps;
-
 namespace Heroes.StormData.StormMods.Tests;
 
 [TestClass]

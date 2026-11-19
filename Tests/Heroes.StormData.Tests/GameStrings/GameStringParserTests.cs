@@ -1,5 +1,4 @@
-﻿using Heroes.LocaleText;
-using System.Runtime.CompilerServices;
+﻿using System.Runtime.CompilerServices;
 
 namespace Heroes.StormData.GameStrings.Tests;
 

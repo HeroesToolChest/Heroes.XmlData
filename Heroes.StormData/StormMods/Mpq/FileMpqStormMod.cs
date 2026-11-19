@@ -4,24 +4,28 @@ internal sealed class FileMpqStormMod : MpqStormModBase<IFileHeroesSource>
 {
     private readonly IFileSystem _fileSystem;
 
-    public FileMpqStormMod(IFileSystem fileSystem, IFileHeroesSource heroesSource, string path, StormModType stormModType)
-        : base(heroesSource, path, stormModType)
+    public FileMpqStormMod(IFileSystem fileSystem, IFileHeroesSource heroesSource, string directoryPath, StormModType stormModType)
+        : base(heroesSource, directoryPath, stormModType)
     {
         _fileSystem = fileSystem;
     }
 
-    protected override IStormMod GetStormMod(string path, StormModType stormModType)
+    protected override bool TryOpenMpqFile([NotNullWhen(true)] out Stream? stream)
     {
-        throw new NotImplementedException();
+        // open the file directly instead of checking if it exists first
+        try
+        {
+            stream = _fileSystem.File.OpenRead(DirectoryPath);
+
+            return true;
+        }
+        catch (Exception ex) when (ex is FileNotFoundException or DirectoryNotFoundException)
+        {
+            stream = null;
+
+            return false;
+        }
     }
 
-    protected override void LoadAssetsDirectory()
-    {
-        throw new NotImplementedException();
-    }
-
-    protected override void LoadStormLayoutDirectory()
-    {
-        throw new NotImplementedException();
-    }
+    protected override IStormMod GetStormMod(string path, StormModType stormModType) => HeroesSource.StormModFactory.CreateFileStormMod(HeroesSource, path, stormModType);
 }

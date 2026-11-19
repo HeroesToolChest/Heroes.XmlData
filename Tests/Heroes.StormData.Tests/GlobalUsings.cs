@@ -1,7 +1,9 @@
 ﻿global using AwesomeAssertions;
+global using Heroes.LocaleText;
 global using Heroes.StormData.Cache;
 global using Heroes.StormData.Cache.Elements;
 global using Heroes.StormData.Cache.Styles;
+global using Heroes.StormData.DepotCache.Maps;
 global using Heroes.StormData.Exceptions;
 global using Heroes.StormData.Source;
 global using Heroes.StormData.StormMods;

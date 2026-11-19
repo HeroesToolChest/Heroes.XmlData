@@ -1,6 +1,3 @@
-using Heroes.LocaleText;
-using Heroes.StormData.DepotCache.Maps;
-
 namespace Heroes.StormData.DepotCache.Tests;
 
 [TestClass]
