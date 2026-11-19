@@ -22,9 +22,6 @@ internal abstract class HeroesSourceBase : IHeroesSource
 
     public IStormModFactory StormModFactory { get; }
 
-    // created on first use so the derived class has finished constructing (e.g. CASCHeroesSource sets its storage after the base constructor)
-    public IDepotCache DepotCache => _depotCache ??= CreateDepotCache();
-
     public void LoadStormMods()
     {
         foreach (IStormMod stormMod in _stormMods)
@@ -37,12 +34,31 @@ internal abstract class HeroesSourceBase : IHeroesSource
 
     public void LoadDepotCache()
     {
-        DepotCache.LoadDepotCache();
+        _depotCache ??= CreateDepotCache();
+        _depotCache.LoadDepotCache();
     }
 
     public void LoadGamestrings(StormLocale stormLocale)
     {
 
+    }
+
+    public void LoadStormMapMod(string mapTitle)
+    {
+        if (_depotCache is null)
+            return;
+
+        _stormMapMods.Clear();
+        SourceContainer.ClearStormMapMods();
+
+        if (!_depotCache.Data.S2MAPropertiesByTitle.TryGetValue(mapTitle, out S2MAProperties? s2maProperties))
+            return;
+
+        IStormMod mapRootMod = GetMpqStormMod(mapTitle, s2maProperties.DirectoryPath, StormModType.Map);
+
+        StormMapModResolver stormMapModResolver = new(localFile => GetStormMod(Path.Join(ModsDirectoryPath, localFile), StormModType.Map));
+
+        _stormMapMods.AddRange(stormMapModResolver.Resolve(mapRootMod, s2maProperties.MapDependencies));
     }
 
     /// <summary>
@@ -52,6 +68,8 @@ internal abstract class HeroesSourceBase : IHeroesSource
     /// <param name="stormModType">The type of the <c>stormmod</c>.</param>
     /// <returns>The <see cref="IStormMod"/> instance.</returns>
     protected abstract IStormMod GetStormMod(string directoryPath, StormModType stormModType);
+
+    protected abstract IStormMod GetMpqStormMod(string name, string directoryPath, StormModType stormModType);
 
     /// <summary>
     /// Creates the <see cref="IDepotCache"/> for this source.

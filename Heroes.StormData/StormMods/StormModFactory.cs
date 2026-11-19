@@ -36,10 +36,10 @@ internal sealed class StormModFactory : IStormModFactory
         return new FileMpqStormMod(_fileSystem, heroesSource, directoryPath, stormModType);
     }
 
-    //public IStormMod CreateFileMpqStormMod(IFileHeroesSource heroesSource, string name, string directoryPath, StormModType stormModType)
-    //{
-    //    return new FileMpqStormMod(heroesSource, name, directoryPath, stormModType);
-    //}
+    public IStormMod CreateFileMpqStormMod(IFileHeroesSource heroesSource, string name, string directoryPath, StormModType stormModType)
+    {
+        return new FileMpqStormMod(heroesSource, name, directoryPath, stormModType);
+    }
 
     public IStormMod CreateCASCMpqStormMod(ICASCHeroesSource heroesSource, string directoryPath, StormModType stormModType)
     {

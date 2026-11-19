@@ -64,7 +64,7 @@ public class HeroesLoader
         //if (_baseStormModsLoaded is false)
         //{
         _heroesSource.LoadStormMods();
-        //_heroesSource.LoadDepotCache();
+        _heroesSource.LoadDepotCache();
         //}
 
         //_baseStormModsLoaded = true;
@@ -72,6 +72,21 @@ public class HeroesLoader
         return this;
     }
 
+    public HeroesLoader LoadMapMod(string mapTitle)
+    {
+       // LoadBaseStormMods();
+
+       // if (LoadedMapTitle.Equals(mapTitle, StringComparison.OrdinalIgnoreCase) is false)
+        //{
+       //     _loadedMapTitle = mapTitle;
+            _heroesSource.LoadStormMapMod(mapTitle);
+
+        //    if (HeroesData.HeroesLocalization is not null)
+        //        LoadGameStrings(HeroesData.HeroesLocalization.Value);
+        //}
+
+        return this;
+    }
     private static HeroesLoader LoadAsCASCInternal(CASCConfig cascConfig, HttpClient httpClient, IProgressReporter? progressReporter = null)
     {
         CASCConfig.ThrowOnFileNotFound = true;

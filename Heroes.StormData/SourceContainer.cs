@@ -12,7 +12,7 @@ internal class SourceContainer
     public SourceContainer()
     {
         LayeredDataStorage = new LayeredDataStorage();
-        StormXmlFileParser = new StormXmlFileParser(LayeredDataStorage);
+        StormXmlFileParser = new StormXmlFileParser(LayeredDataStorage.Elements, LayeredDataStorage.Texts);
 
         AddDefaults();
     }
@@ -76,11 +76,33 @@ internal class SourceContainer
         }
     }
 
+    public void ClearStormMapMods()
+    {
+        ClearStormMapContainers();
+        //StormMapCache.Clear();
+    }
+
     private void AddDefaults()
     {
         using XmlReader reader = XmlReader.Create(new StringReader(StormDefaultData.DefaultXml));
 
         foreach (StormXmlElement element in StormXmlFileParser.Parse(reader, StormDefaultData.StormFile))
             LayeredDataStorage.GetDataStorage(StormModType.Base).AddElementWithNoId(element);
+    }
+
+    private void ClearStormMapContainers()
+    {
+        //// stormmap mods are always at the end (or before customs) and grouped together
+        //for (int i = StormModStorages.Count - 1; i >= 0; i--)
+        //{
+        //    if (_loadedMapMods < 1)
+        //        break;
+
+        //    if (StormModStorages[i].StormModType == StormModType.Map)
+        //    {
+        //        StormModStorages.RemoveAt(i);
+        //        _loadedMapMods--;
+        //    }
+        //}
     }
 }

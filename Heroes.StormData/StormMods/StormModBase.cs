@@ -49,6 +49,7 @@ internal abstract class StormModBase<T> : IStormMod
         LayoutDirectoryPath = Path.Combine(BaseStormDataPath, SourceConstants.UiDirectory, SourceConstants.LayoutDirectory);
         AssetsDirectoryPath = Path.Combine(DirectoryPath, SourceConstants.BaseStormAssetsDirectory, SourceConstants.AssetsDirectory);
         FontStylesFilePath = Path.Combine(BaseStormDataPath, SourceConstants.UiDirectory, SourceConstants.FontStylesFile);
+        DocumentInfoPath = Path.Combine(DirectoryPath, SourceConstants.DocumentInfoFile);
     }
 
     public string Name { get; }
@@ -103,6 +104,11 @@ internal abstract class StormModBase<T> : IStormMod
     /// </summary>
     protected virtual string FontStylesFilePath { get; }
 
+    /// <summary>
+    /// Gets the <c>documentinfo</c> file path.
+    /// </summary>
+    protected virtual string DocumentInfoPath { get; }
+
     [DebuggerBrowsable(DebuggerBrowsableState.Never)]
     private string DebuggerDisplay => $"{{{GetType().Name}, Name = \"{Name}\", ModType = {ModType}, Path = \"{RelativeStormModPath}\"}}";
 
@@ -117,6 +123,18 @@ internal abstract class StormModBase<T> : IStormMod
         LoadGameDataXmlFile();
 
         LoadIncludesStormMods();
+    }
+
+    public IReadOnlyList<MapDependency> GetMapDependencies()
+    {
+        if (!TryGetFile(DocumentInfoPath, out Stream? stream))
+            return [];
+
+        // the stream is closed by the reader
+        if (!S2MAFileParser.TryReadDocumentInfo(stream, out _, out List<MapDependency> mapDependencies, out _))
+            return [];
+
+        return mapDependencies;
     }
 
     /// <summary>

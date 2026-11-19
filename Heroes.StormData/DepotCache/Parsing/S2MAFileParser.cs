@@ -68,12 +68,12 @@ internal static class S2MAFileParser
     /// Reads the <c>Icon</c>, <c>Dependencies</c> and <c>ModifiableDependencies</c> elements of a <c>documentinfo</c> file.
     /// Only the first of each element under the root is used.
     /// </summary>
-    /// <param name="stream">The stream of the <c>documentinfo</c> file.</param>
+    /// <param name="stream">The stream of the <c>documentinfo</c> file. It is closed when this method returns.</param>
     /// <param name="iconFile">The value of the <c>Icon</c> element, or <see langword="null"/> if there is none.</param>
     /// <param name="mapDependencies">The parsed values of the <c>Dependencies</c> child elements.</param>
     /// <param name="modifiableDependencies">The normalized values of the <c>ModifiableDependencies</c> child elements.</param>
     /// <returns><see langword="false"/> if the file is not valid xml or a dependency could not be parsed; otherwise <see langword="true"/>.</returns>
-    private static bool TryReadDocumentInfo(Stream stream, out string? iconFile, out List<MapDependency> mapDependencies, out List<string> modifiableDependencies)
+    public static bool TryReadDocumentInfo(Stream stream, out string? iconFile, out List<MapDependency> mapDependencies, out List<string> modifiableDependencies)
     {
         iconFile = null;
         mapDependencies = [];

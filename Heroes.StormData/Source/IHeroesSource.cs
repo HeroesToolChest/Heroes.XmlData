@@ -14,10 +14,9 @@ internal interface IHeroesSource
 
     IStormModFactory StormModFactory { get; }
 
-    /// <summary>
-    /// Gets the depot cache, which holds the map data found in the <c>depotcache</c> directory.
-    /// </summary>
-    IDepotCache DepotCache { get; }
-
     void LoadStormMods();
+
+    void LoadDepotCache();
+
+    void LoadStormMapMod(string mapTitle);
 }

@@ -27,5 +27,11 @@ internal interface IStormMod
     /// </summary>
     StormModContainer ModContainer { get; }
 
+    /// <summary>
+    /// Reads the dependencies listed in this <c>stormmod's</c> <c>documentinfo</c> file.
+    /// </summary>
+    /// <returns>The dependencies, or an empty list if there is no <c>documentinfo</c> file or it could not be read.</returns>
+    IReadOnlyList<MapDependency> GetMapDependencies();
+
     void LoadStormFiles();
 }

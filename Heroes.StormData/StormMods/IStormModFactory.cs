@@ -6,7 +6,7 @@ internal interface IStormModFactory
 
     IStormMod CreateCASCStormMod(ICASCHeroesSource heroesSource, string directoryPath, StormModType stormModType);
 
-    //IStormMod CreateFileMpqStormMod(IFileHeroesSource heroesSource, string name, string directoryPath, StormModType stormModType);
+    IStormMod CreateFileMpqStormMod(IFileHeroesSource heroesSource, string name, string directoryPath, StormModType stormModType);
 
     IStormMod CreateFileMpqStormMod(IFileHeroesSource heroesSource, string directoryPath, StormModType stormModType);
 

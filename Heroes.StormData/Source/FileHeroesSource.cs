@@ -9,5 +9,7 @@ internal sealed class FileHeroesSource : HeroesSourceBase, IFileHeroesSource
 
     protected override IStormMod GetStormMod(string directoryPath, StormModType stormModType) => StormModFactory.CreateFileStormMod(this, directoryPath, stormModType);
 
+    protected override IStormMod GetMpqStormMod(string name, string directoryPath, StormModType stormModType) => StormModFactory.CreateFileMpqStormMod(this, name, directoryPath, stormModType);
+
     protected override IDepotCache CreateDepotCache() => new FileDepotCache(this);
 }
