@@ -82,6 +82,19 @@ internal sealed class LayeredDataStorage
     }
 
     /// <summary>
+    /// Removes all the data from the <see cref="DataStorage"/> of the specified <see cref="StormModType"/> and the cached merged elements.
+    /// The other data storages are not changed.
+    /// </summary>
+    /// <param name="stormModType">The type of the <c>stormmod</c>.</param>
+    public void ClearDataStorage(StormModType stormModType)
+    {
+        GetDataStorage(stormModType).Clear();
+
+        // the merged elements may include the removed elements. The version change would clear them on the next lookup, but this releases them now.
+        _mergedStormXmlElementCache.Clear();
+    }
+
+    /// <summary>
     /// Clears the cached merged elements from <see cref="GetMergedStormXmlElementById(ReadOnlySpan{char}, ReadOnlySpan{char})"/>.
     /// </summary>
     public void ClearMergedStormXmlElementCache()

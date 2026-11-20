@@ -140,17 +140,6 @@ internal abstract class MpqStormModBase<T> : StormModBase<T>
 
         try
         {
-            //// the archive needs to seek, which a CASC stream may not support
-            //if (!stream.CanSeek)
-            //{
-            //    MemoryStream memoryStream = new();
-            //    using (stream)
-            //        stream.CopyTo(memoryStream);
-
-            //    memoryStream.Position = 0;
-            //    stream = memoryStream;
-            //}
-
             // the stream is disposed when the archive is disposed
             _mpqHeroesArchive = MpqHeroesFile.Open(stream);
         }

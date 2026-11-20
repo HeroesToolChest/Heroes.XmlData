@@ -199,6 +199,70 @@ internal sealed class LayeredDataStorageTests
         after.Members.GetMember("Kind").Value.RawValue.Should().Be("Spell");
     }
 
+    [TestMethod]
+    public void ClearDataStorage_Map_RemovesMapDataOnly()
+    {
+        // arrange
+        LayeredDataStorage layeredDataStorage = new();
+        layeredDataStorage.GetDataStorage(StormModType.Base).AddConstElement(CreateStormXmlConstElement("$Base"));
+        layeredDataStorage.GetDataStorage(StormModType.Map).AddConstElement(CreateStormXmlConstElement("$Map"));
+        layeredDataStorage.GetDataStorage(StormModType.Custom).AddConstElement(CreateStormXmlConstElement("$Custom"));
+
+        // act
+        layeredDataStorage.ClearDataStorage(StormModType.Map);
+
+        // assert
+        layeredDataStorage.GetDataStorage(StormModType.Base).ElementCache.StormXmlConstElementById.Dictionary.Keys.Should().Equal("$Base");
+        layeredDataStorage.GetDataStorage(StormModType.Map).ElementCache.StormXmlConstElementById.Dictionary.Should().BeEmpty();
+        layeredDataStorage.GetDataStorage(StormModType.Custom).ElementCache.StormXmlConstElementById.Dictionary.Keys.Should().Equal("$Custom");
+    }
+
+    [TestMethod]
+    public void ClearDataStorage_MapElementWasMerged_MergedElementNoLongerHasMapValues()
+    {
+        // arrange
+        LayeredDataStorage layeredDataStorage = CreateMergeableStorage();
+        layeredDataStorage.GetDataStorage(StormModType.Map).AddElementWithId(
+            XmlReaderHelper.GetStormXmlElement(
+                """
+                <CEffectDamage id="ChildDamage">
+                  <Amount value="999" />
+                </CEffectDamage>
+                """),
+            "Effect");
+
+        StormXmlElement? before = layeredDataStorage.GetMergedStormXmlElementById("ChildDamage", "Effect");
+
+        // act
+        layeredDataStorage.ClearDataStorage(StormModType.Map);
+        StormXmlElement? after = layeredDataStorage.GetMergedStormXmlElementById("ChildDamage", "Effect");
+
+        // assert
+        before!.Members.GetMember("Amount").Value.RawValue.Should().Be("999");
+        after.Should().NotBeSameAs(before);
+        after!.Members.GetMember("Amount").Value.RawValue.Should().Be("120");
+    }
+
+    [TestMethod]
+    public void ClearDataStorage_MapElementOnlyInMap_MergedElementIsNotFound()
+    {
+        // arrange
+        LayeredDataStorage layeredDataStorage = CreateMergeableStorage();
+        layeredDataStorage.GetDataStorage(StormModType.Map).AddElementWithId(
+            XmlReaderHelper.GetStormXmlElement("""<CEffectDamage id="MapDamage" />"""),
+            "Effect");
+
+        StormXmlElement? before = layeredDataStorage.GetMergedStormXmlElementById("MapDamage", "Effect");
+
+        // act
+        layeredDataStorage.ClearDataStorage(StormModType.Map);
+        StormXmlElement? after = layeredDataStorage.GetMergedStormXmlElementById("MapDamage", "Effect");
+
+        // assert
+        before.Should().NotBeNull();
+        after.Should().BeNull();
+    }
+
     // Effect,ChildDamage (Amount 120) with parent Effect,ParentDamage (Kind Spell), and Effect,OrphanDamage whose parent doesn't exist yet
     private static LayeredDataStorage CreateMergeableStorage()
     {

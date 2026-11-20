@@ -63,4 +63,17 @@ internal sealed class ElementCache
     /// </summary>
     public Dictionary<string, Dictionary<string, List<LevelScalingFieldValue>>.AlternateLookup<ReadOnlySpan<char>>>.AlternateLookup<ReadOnlySpan<char>> ScalingFieldValueByIdByCatalog { get; } =
         new Dictionary<string, Dictionary<string, List<LevelScalingFieldValue>>.AlternateLookup<ReadOnlySpan<char>>>(StringComparer.OrdinalIgnoreCase).GetAlternateLookup<ReadOnlySpan<char>>();
+
+    /// <summary>
+    /// Removes all the elements and lookups.
+    /// </summary>
+    public void Clear()
+    {
+        StormXmlConstElementById.Dictionary.Clear();
+        ClassElementsByCatalog.Clear();
+        CatalogByClassElement.Dictionary.Clear();
+        StormXmlElementByClassElement.Dictionary.Clear();
+        StormXmlElementsByIdByCatalog.Dictionary.Clear();
+        ScalingFieldValueByIdByCatalog.Dictionary.Clear();
+    }
 }

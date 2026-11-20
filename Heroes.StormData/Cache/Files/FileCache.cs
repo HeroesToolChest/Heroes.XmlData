@@ -16,4 +16,13 @@ internal sealed class FileCache
     /// </summary>
     public Dictionary<string, StormFile>.AlternateLookup<ReadOnlySpan<char>> AssetFilesByRelativePath { get; } =
         new Dictionary<string, StormFile>(StringComparer.OrdinalIgnoreCase).GetAlternateLookup<ReadOnlySpan<char>>();
+
+    /// <summary>
+    /// Removes all the files.
+    /// </summary>
+    public void Clear()
+    {
+        StormLayoutFilesByRelativePath.Dictionary.Clear();
+        AssetFilesByRelativePath.Dictionary.Clear();
+    }
 }

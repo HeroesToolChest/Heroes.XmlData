@@ -22,4 +22,13 @@ internal sealed class StyleCache
     /// </summary>
     public Dictionary<string, StormXmlStyleElement>.AlternateLookup<ReadOnlySpan<char>> StormXmlStyleElementByName { get; } =
         new Dictionary<string, StormXmlStyleElement>(StringComparer.Ordinal).GetAlternateLookup<ReadOnlySpan<char>>();
+
+    /// <summary>
+    /// Removes all the style constant and style elements.
+    /// </summary>
+    public void Clear()
+    {
+        StormXmlStyleConstantElementByName.Dictionary.Clear();
+        StormXmlStyleElementByName.Dictionary.Clear();
+    }
 }

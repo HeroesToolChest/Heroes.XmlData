@@ -76,10 +76,14 @@ internal class SourceContainer
         }
     }
 
+    /// <summary>
+    /// Removes the <see cref="StormModType.Map"/> containers and all the data loaded into the map <see cref="DataStorage"/>.
+    /// The base and custom data are not changed.
+    /// </summary>
     public void ClearStormMapMods()
     {
         ClearStormMapContainers();
-        //StormMapCache.Clear();
+        LayeredDataStorage.ClearDataStorage(StormModType.Map);
     }
 
     private void AddDefaults()
@@ -92,17 +96,7 @@ internal class SourceContainer
 
     private void ClearStormMapContainers()
     {
-        //// stormmap mods are always at the end (or before customs) and grouped together
-        //for (int i = StormModStorages.Count - 1; i >= 0; i--)
-        //{
-        //    if (_loadedMapMods < 1)
-        //        break;
-
-        //    if (StormModStorages[i].StormModType == StormModType.Map)
-        //    {
-        //        StormModStorages.RemoveAt(i);
-        //        _loadedMapMods--;
-        //    }
-        //}
+        StormModContainers.RemoveAll(x => x.StormModType == StormModType.Map);
+        _loadedMapMods = 0;
     }
 }

@@ -16,4 +16,13 @@ internal sealed class TextCache
     /// </summary>
     public Dictionary<string, StringValue>.AlternateLookup<ReadOnlySpan<char>> AssetTextsById { get; } =
         new Dictionary<string, StringValue>(StringComparer.Ordinal).GetAlternateLookup<ReadOnlySpan<char>>();
+
+    /// <summary>
+    /// Removes all the gamestrings and assets text values.
+    /// </summary>
+    public void Clear()
+    {
+        GameStringsById.Dictionary.Clear();
+        AssetTextsById.Dictionary.Clear();
+    }
 }

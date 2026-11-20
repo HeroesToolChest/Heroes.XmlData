@@ -1,6 +1,4 @@
-﻿using Heroes.StormData.Cache.Strings;
-
-namespace Heroes.StormData.Xml.Parsing.Tests;
+﻿namespace Heroes.StormData.Xml.Parsing.Tests;
 
 [TestClass]
 public sealed class StormXmlFileParserTests

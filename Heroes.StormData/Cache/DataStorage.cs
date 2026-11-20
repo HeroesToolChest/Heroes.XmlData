@@ -1,5 +1,4 @@
-﻿
-using System.Runtime.InteropServices;
+﻿using System.Runtime.InteropServices;
 
 namespace Heroes.StormData.Cache;
 
@@ -154,6 +153,21 @@ internal sealed class DataStorage
                 }
             }
         }
+    }
+
+    /// <summary>
+    /// Removes all the data from the <see cref="ElementCache"/>, <see cref="TextCache"/>, <see cref="FileCache"/>, and <see cref="StyleCache"/>.
+    /// </summary>
+    public void Clear()
+    {
+        ElementCache.Clear();
+        TextCache.Clear();
+        FileCache.Clear();
+        StyleCache.Clear();
+
+        // the elements were removed, so the merged elements are out of date.
+        // the version only goes up (never reset), so the sum across the data storages can't land on an earlier value.
+        ElementsVersion++;
     }
 
     /// <summary>

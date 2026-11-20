@@ -1212,6 +1212,94 @@ public class DataStorageTests
         dataStorage.StyleCache.StormXmlStyleElementByName.Dictionary.Should().HaveCount(2);
     }
 
+    [TestMethod]
+    public void Clear_HasDataInEveryCache_RemovesAllData()
+    {
+        // arrange
+        DataStorage dataStorage = CreateDataStorageWithDataInEveryCache();
+
+        // act
+        dataStorage.Clear();
+
+        // assert
+        ElementCache elementCache = dataStorage.ElementCache;
+        elementCache.StormXmlConstElementById.Dictionary.Should().BeEmpty();
+        elementCache.ClassElementsByCatalog.Should().BeEmpty();
+        elementCache.CatalogByClassElement.Dictionary.Should().BeEmpty();
+        elementCache.StormXmlElementByClassElement.Dictionary.Should().BeEmpty();
+        elementCache.StormXmlElementsByIdByCatalog.Dictionary.Should().BeEmpty();
+        elementCache.ScalingFieldValueByIdByCatalog.Dictionary.Should().BeEmpty();
+
+        dataStorage.TextCache.GameStringsById.Dictionary.Should().BeEmpty();
+        dataStorage.TextCache.AssetTextsById.Dictionary.Should().BeEmpty();
+
+        dataStorage.FileCache.StormLayoutFilesByRelativePath.Dictionary.Should().BeEmpty();
+        dataStorage.FileCache.AssetFilesByRelativePath.Dictionary.Should().BeEmpty();
+
+        dataStorage.StyleCache.StormXmlStyleConstantElementByName.Dictionary.Should().BeEmpty();
+        dataStorage.StyleCache.StormXmlStyleElementByName.Dictionary.Should().BeEmpty();
+    }
+
+    [TestMethod]
+    public void Clear_HasElements_IncreasesElementsVersion()
+    {
+        // arrange
+        DataStorage dataStorage = CreateDataStorageWithDataInEveryCache();
+        int before = dataStorage.ElementsVersion;
+
+        // act
+        dataStorage.Clear();
+
+        // assert
+        dataStorage.ElementsVersion.Should().BeGreaterThan(before);
+    }
+
+    [TestMethod]
+    public void Clear_AfterClear_CanAddDataAgain()
+    {
+        // arrange
+        DataStorage dataStorage = CreateDataStorageWithDataInEveryCache();
+        dataStorage.Clear();
+
+        StormXmlConstElement element = CreateStormXmlConstElement("$First");
+
+        // act
+        dataStorage.AddConstElement(element);
+
+        // assert
+        dataStorage.ElementCache.StormXmlConstElementById.Dictionary.Should().ContainSingle().Which.Value.Should().BeSameAs(element);
+    }
+
+    private static DataStorage CreateDataStorageWithDataInEveryCache()
+    {
+        StormFile stormFile = new()
+        {
+            StormModName = "test",
+            RelativePath = "test.xml",
+            FullPath = "test.xml",
+        };
+
+        DataStorage dataStorage = new();
+        dataStorage.AddConstElement(CreateStormXmlConstElement("$Const"));
+        dataStorage.AddBaseClassCatalogName(CreateStormXmlElementWithNoId("CEffectDamage"), "Effect");
+        dataStorage.AddElementWithNoId(CreateStormXmlElementWithNoId("CEffectDamage"));
+        dataStorage.AddElementWithId(CreateStormXmlElement("CEffectDamage", "Damage"), "Effect");
+        dataStorage.AddLevelScalingElementValue(CreateLevelScalingArray(
+            $"""<LevelScalingArray>{CreateModificationsXml("Effect", "Damage", "Amount", "0.04")}</LevelScalingArray>"""));
+        dataStorage.AddStyleConstantElement(XmlReaderHelper.GetStormXmlStyleConstantElement("""<Constant name="ColorGray" val="a7a7a7" />"""));
+        dataStorage.AddStyleElement(XmlReaderHelper.GetStormXmlStyleElement("""<Style name="ReticleEnemy" />"""));
+        dataStorage.TextCache.GameStringsById.Dictionary.Add("Button/Name/Test", new StringValue("Test", stormFile));
+        dataStorage.TextCache.AssetTextsById.Dictionary.Add("Id1", new StringValue("Value", stormFile));
+        dataStorage.FileCache.StormLayoutFilesByRelativePath.Dictionary.Add(Path.Combine("ui", "layout", "test.stormlayout"), stormFile);
+        dataStorage.FileCache.AssetFilesByRelativePath.Dictionary.Add(Path.Combine("assets", "test.dds"), stormFile);
+
+        // make sure every cache has data, so the clear tests can't pass on empty caches
+        dataStorage.ElementCache.ScalingFieldValueByIdByCatalog.Dictionary.Should().NotBeEmpty();
+        dataStorage.ElementCache.StormXmlElementsByIdByCatalog.Dictionary.Should().NotBeEmpty();
+
+        return dataStorage;
+    }
+
     private static StormXmlConstElement CreateStormXmlConstElement(string id, string value = "1")
     {
         return XmlReaderHelper.GetStormXmlConstElement($"""<const id="{id}" value="{value}" />""");
