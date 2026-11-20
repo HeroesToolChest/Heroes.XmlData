@@ -2,8 +2,8 @@
 
 internal sealed class CASCMpqStormMod : MpqStormModBase<ICASCHeroesSource>
 {
-    public CASCMpqStormMod(ICASCHeroesSource heroesSource, string directoryPath, StormModType stormModType)
-        : base(heroesSource, directoryPath, stormModType)
+    public CASCMpqStormMod(ICASCHeroesSource heroesSource, string directoryPath, StormModType stormModType, string? name = null)
+        : base(heroesSource, directoryPath, stormModType, name)
     {
     }
 

@@ -25,10 +25,7 @@ internal sealed class CASCHeroesSource : HeroesSourceBase, ICASCHeroesSource
 
     protected override IStormMod GetStormMod(string directoryPath, StormModType stormModType) => StormModFactory.CreateCASCStormMod(this, directoryPath, stormModType);
 
-    protected override IStormMod GetMpqStormMod(string name, string directoryPath, StormModType stormModType)
-    {
-        throw new NotImplementedException();
-    }
+    protected override IStormMod GetMpqStormMod(string name, string directoryPath, StormModType stormModType) => StormModFactory.CreateCASCMpqStormMod(this, name, directoryPath, stormModType);
 
     protected override IDepotCache CreateDepotCache() => new CASCDepotCache(this);
 }

@@ -21,8 +21,9 @@ internal abstract class MpqStormModBase<T> : StormModBase<T>
     /// <param name="heroesSource">The source of the data.</param>
     /// <param name="directoryPath">The full path of the MPQ archive file.</param>
     /// <param name="stormModType">Type of the <c>stormmod</c>.</param>
-    protected MpqStormModBase(T heroesSource, string directoryPath, StormModType stormModType)
-        : base(heroesSource, directoryPath, stormModType)
+    /// <param name="name">The name of the <c>stormmod</c> (e.g. the map title). If <see langword="null"/>, the archive file name without its extension is used.</param>
+    protected MpqStormModBase(T heroesSource, string directoryPath, StormModType stormModType, string? name = null)
+        : base(heroesSource, directoryPath, stormModType, name)
     {
     }
 

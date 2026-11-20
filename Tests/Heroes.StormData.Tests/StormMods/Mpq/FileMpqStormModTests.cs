@@ -33,6 +33,31 @@ public sealed class FileMpqStormModTests
     }
 
     [TestMethod]
+    public void Constructor_HasName_SetsNameInsteadOfFileName()
+    {
+        // act
+        FileMpqStormMod fileMpqStormMod = new(_fileSystem, _heroesSource, _mapArchivePath, StormModType.Map, "Volskaya Foundry");
+
+        // assert
+        fileMpqStormMod.Name.Should().Be("Volskaya Foundry");
+        fileMpqStormMod.DirectoryPath.Should().Be(_mapArchivePath);
+    }
+
+    [TestMethod]
+    public void LoadStormFiles_HasName_StormFilesHaveName()
+    {
+        // arrange
+        AddTestArchive();
+        FileMpqStormMod fileMpqStormMod = new(_fileSystem, _heroesSource, _archivePath, StormModType.Base, "Test Map");
+
+        // act
+        fileMpqStormMod.LoadStormFiles();
+
+        // assert
+        fileMpqStormMod.ModContainer.LoadedXmlFiles.Should().ContainSingle().Which.StormModName.Should().Be("Test Map");
+    }
+
+    [TestMethod]
     public void LoadStormFiles_ArchiveDoesNotExist_LoadsNothing()
     {
         // arrange

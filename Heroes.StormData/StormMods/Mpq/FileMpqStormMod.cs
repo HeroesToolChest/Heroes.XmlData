@@ -4,8 +4,8 @@ internal sealed class FileMpqStormMod : MpqStormModBase<IFileHeroesSource>
 {
     private readonly IFileSystem _fileSystem;
 
-    public FileMpqStormMod(IFileSystem fileSystem, IFileHeroesSource heroesSource, string directoryPath, StormModType stormModType)
-        : base(heroesSource, directoryPath, stormModType)
+    public FileMpqStormMod(IFileSystem fileSystem, IFileHeroesSource heroesSource, string directoryPath, StormModType stormModType, string? name = null)
+        : base(heroesSource, directoryPath, stormModType, name)
     {
         _fileSystem = fileSystem;
     }

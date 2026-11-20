@@ -54,11 +54,19 @@ internal abstract class HeroesSourceBase : IHeroesSource
         if (!_depotCache.Data.S2MAPropertiesByTitle.TryGetValue(mapTitle, out S2MAProperties? s2maProperties))
             return;
 
-        IStormMod mapRootMod = GetMpqStormMod(mapTitle, s2maProperties.DirectoryPath, StormModType.Map);
+        IStormMod mapRootMod = GetMpqStormMod(mapTitle, Path.Join(ModsDirectoryPath, s2maProperties.DirectoryPath), StormModType.Map);
 
         StormMapModResolver stormMapModResolver = new(localFile => GetStormMod(Path.Join(ModsDirectoryPath, localFile), StormModType.Map));
 
         _stormMapMods.AddRange(stormMapModResolver.Resolve(mapRootMod, s2maProperties.MapDependencies));
+
+        // the resolver returns them in load order, dependencies first and the map root last
+        foreach (IStormMod stormMod in _stormMapMods)
+        {
+            SourceContainer.AddModContainer(stormMod.ModContainer);
+
+            stormMod.LoadStormFiles();
+        }
     }
 
     /// <summary>

@@ -30,7 +30,8 @@ internal abstract class StormModBase<T> : IStormMod
     /// <param name="heroesSource">The source of the data.</param>
     /// <param name="directoryPath">The full path of the <c>stormmod</c> directory. No trailing directory separator.</param>
     /// <param name="stormModType">Type of the <c>stormmod</c>.</param>
-    public StormModBase(T heroesSource, string directoryPath, StormModType stormModType)
+    /// <param name="name">The name of the <c>stormmod</c> (e.g. the map title). If <see langword="null"/>, the directory name without its extension is used.</param>
+    public StormModBase(T heroesSource, string directoryPath, StormModType stormModType, string? name = null)
     {
         DirectoryPath = directoryPath;
         ModType = stormModType;
@@ -38,7 +39,7 @@ internal abstract class StormModBase<T> : IStormMod
         HeroesSource = heroesSource;
         ModContainer = new StormModContainer(heroesSource.SourceContainer, ModType);
 
-        Name = Path.GetFileNameWithoutExtension(DirectoryPath);
+        Name = name ?? Path.GetFileNameWithoutExtension(DirectoryPath);
         RelativeStormModPath = Path.GetRelativePath(HeroesSource.ModsDirectoryPath, DirectoryPath);
 
         BaseStormDataPath = Path.Combine(DirectoryPath, SourceConstants.BaseStormDataDirectory);

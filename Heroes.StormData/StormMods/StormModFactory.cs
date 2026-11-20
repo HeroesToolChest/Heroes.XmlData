@@ -38,7 +38,7 @@ internal sealed class StormModFactory : IStormModFactory
 
     public IStormMod CreateFileMpqStormMod(IFileHeroesSource heroesSource, string name, string directoryPath, StormModType stormModType)
     {
-        return new FileMpqStormMod(heroesSource, name, directoryPath, stormModType);
+        return new FileMpqStormMod(_fileSystem, heroesSource, directoryPath, stormModType, name);
     }
 
     public IStormMod CreateCASCMpqStormMod(ICASCHeroesSource heroesSource, string directoryPath, StormModType stormModType)
@@ -46,8 +46,8 @@ internal sealed class StormModFactory : IStormModFactory
         return new CASCMpqStormMod(heroesSource, directoryPath, stormModType);
     }
 
-    //public IStormMod CreateCASCMpqStormMod(ICASCHeroesSource heroesSource, string name, string directoryPath, StormModType stormModType)
-    //{
-    //    return new CASCMpqStormMod(heroesSource, name, directoryPath, stormModType);
-    //}
+    public IStormMod CreateCASCMpqStormMod(ICASCHeroesSource heroesSource, string name, string directoryPath, StormModType stormModType)
+    {
+        return new CASCMpqStormMod(heroesSource, directoryPath, stormModType, name);
+    }
 }
