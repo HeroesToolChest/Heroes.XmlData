@@ -87,6 +87,93 @@ public sealed class HeroesSourceBaseTests
     }
 
     [TestMethod]
+    public void LoadStormMapMod_MapTitleFound_ReturnsTrue()
+    {
+        // arrange
+        AddVolskayaMap();
+        _heroesSource.LoadDepotCache();
+
+        // act
+        bool result = _heroesSource.LoadStormMapMod(MapTitle);
+
+        // assert
+        result.Should().BeTrue();
+    }
+
+    [TestMethod]
+    public void LoadStormMapMod_MapTitleNotFound_ReturnsFalse()
+    {
+        // arrange
+        AddVolskayaMap();
+        _heroesSource.LoadDepotCache();
+
+        // act
+        bool result = _heroesSource.LoadStormMapMod("Unknown Map");
+
+        // assert
+        result.Should().BeFalse();
+    }
+
+    [TestMethod]
+    public void LoadStormMapMod_MapTitleNotFoundWithMapLoaded_KeepsLoadedMap()
+    {
+        // arrange
+        AddVolskayaMap();
+        _heroesSource.LoadDepotCache();
+        _heroesSource.LoadStormMapMod(MapTitle);
+
+        List<StormModContainer> loadedContainers = [.. _heroesSource.SourceContainer.StormModContainers];
+
+        // act
+        _heroesSource.LoadStormMapMod("Unknown Map");
+
+        // assert
+        _heroesSource.SourceContainer.StormModContainers.Should().Equal(loadedContainers);
+    }
+
+    [TestMethod]
+    public void UnloadStormMapMod_MapLoaded_RemovesMapContainers()
+    {
+        // arrange
+        AddVolskayaMap();
+        _heroesSource.LoadDepotCache();
+        _heroesSource.LoadStormMapMod(MapTitle);
+
+        // act
+        _heroesSource.UnloadStormMapMod();
+
+        // assert
+        _heroesSource.SourceContainer.StormModContainers.Should().BeEmpty();
+    }
+
+    [TestMethod]
+    public void GetMapTitles_DepotCacheLoaded_ReturnsTitles()
+    {
+        // arrange
+        AddVolskayaMap();
+        _heroesSource.LoadDepotCache();
+
+        // act
+        IEnumerable<string> result = _heroesSource.GetMapTitles();
+
+        // assert
+        result.Should().ContainSingle().Which.Should().Be(MapTitle);
+    }
+
+    [TestMethod]
+    public void GetMapTitles_DepotCacheNotLoaded_ReturnsEmpty()
+    {
+        // arrange
+        AddVolskayaMap();
+
+        // act
+        IEnumerable<string> result = _heroesSource.GetMapTitles();
+
+        // assert
+        result.Should().BeEmpty();
+    }
+
+    [TestMethod]
     public void LoadGamestrings_HasBaseAndMapStormMods_LoadsGameStringsOfBaseThenMapStormMods()
     {
         // arrange

@@ -52,16 +52,12 @@ internal abstract class HeroesSourceBase : IHeroesSource
             stormMod.LoadStormGameStrings(stormLocale);
     }
 
-    public void LoadStormMapMod(string mapTitle)
+    public bool LoadStormMapMod(string mapTitle)
     {
-        if (_depotCache is null)
-            return;
+        if (_depotCache is null || !_depotCache.Data.S2MAPropertiesByTitle.TryGetValue(mapTitle, out S2MAProperties? s2maProperties))
+            return false;
 
-        _stormMapMods.Clear();
-        SourceContainer.ClearStormMapMods();
-
-        if (!_depotCache.Data.S2MAPropertiesByTitle.TryGetValue(mapTitle, out S2MAProperties? s2maProperties))
-            return;
+        UnloadStormMapMod();
 
         IStormMod mapRootMod = GetMpqStormMod(mapTitle, Path.Join(ModsDirectoryPath, s2maProperties.DirectoryPath), StormModType.Map);
 
@@ -76,7 +72,17 @@ internal abstract class HeroesSourceBase : IHeroesSource
 
             stormMod.LoadStormFiles();
         }
+
+        return true;
     }
+
+    public void UnloadStormMapMod()
+    {
+        _stormMapMods.Clear();
+        SourceContainer.ClearStormMapMods();
+    }
+
+    public IEnumerable<string> GetMapTitles() => _depotCache?.Data.S2MAPropertiesByTitle.Keys ?? Enumerable.Empty<string>();
 
     /// <summary>
     /// Gets the <see cref="IStormMod"/> for the specified directory path.
