@@ -6,7 +6,7 @@
 /// <remarks>
 /// The paths used by <see cref="StormModBase{T}"/> are full paths that start with <see cref="StormModBase{T}.DirectoryPath"/>, which is the path of the archive file.
 /// The part after it is the path of the file inside the archive.
-/// The archive is only open while <see cref="LoadStormFiles"/> or <see cref="GetMapDependencies"/> runs.
+/// The archive is only open while <see cref="LoadStormFiles"/>, <see cref="LoadStormGameStrings"/>, or <see cref="GetMapDependencies"/> runs.
 /// </remarks>
 /// <typeparam name="T">The type of the <see cref="IHeroesSource"/> source.</typeparam>
 internal abstract class MpqStormModBase<T> : StormModBase<T>
@@ -35,6 +35,22 @@ internal abstract class MpqStormModBase<T> : StormModBase<T>
         try
         {
             base.LoadStormFiles();
+        }
+        finally
+        {
+            if (openedArchive)
+                CloseArchive();
+        }
+    }
+
+    public override void LoadStormGameStrings(StormLocale stormLocale)
+    {
+        if (!TryOpenArchive(out bool openedArchive))
+            return;
+
+        try
+        {
+            base.LoadStormGameStrings(stormLocale);
         }
         finally
         {

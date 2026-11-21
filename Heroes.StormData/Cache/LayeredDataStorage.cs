@@ -95,6 +95,16 @@ internal sealed class LayeredDataStorage
     }
 
     /// <summary>
+    /// Removes all the gamestrings from the base, map, and custom data storages.
+    /// </summary>
+    public void ClearGameStrings()
+    {
+        _baseDataStorage.TextCache.ClearGameStrings();
+        _mapDataStorage.TextCache.ClearGameStrings();
+        _customDataStorage.TextCache.ClearGameStrings();
+    }
+
+    /// <summary>
     /// Clears the cached merged elements from <see cref="GetMergedStormXmlElementById(ReadOnlySpan{char}, ReadOnlySpan{char})"/>.
     /// </summary>
     public void ClearMergedStormXmlElementCache()

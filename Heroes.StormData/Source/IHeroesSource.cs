@@ -18,5 +18,11 @@ internal interface IHeroesSource
 
     void LoadDepotCache();
 
+    /// <summary>
+    /// Removes all the loaded gamestrings, then loads the gamestrings of a locale from the base, map, and custom <c>stormmods</c>.
+    /// </summary>
+    /// <param name="stormLocale">The locale of the gamestrings to load.</param>
+    void LoadGamestrings(StormLocale stormLocale);
+
     void LoadStormMapMod(string mapTitle);
 }

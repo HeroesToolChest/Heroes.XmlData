@@ -22,7 +22,15 @@ internal sealed class TextCache
     /// </summary>
     public void Clear()
     {
-        GameStringsById.Dictionary.Clear();
+        ClearGameStrings();
         AssetTextsById.Dictionary.Clear();
+    }
+
+    /// <summary>
+    /// Removes all the gamestrings. The assets text values are not changed.
+    /// </summary>
+    public void ClearGameStrings()
+    {
+        GameStringsById.Dictionary.Clear();
     }
 }

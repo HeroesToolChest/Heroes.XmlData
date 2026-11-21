@@ -89,6 +89,48 @@ public sealed class SourceContainerTests
         _sourceContainer.StormModContainers.Should().Equal(baseContainer, customContainer);
     }
 
+    [TestMethod]
+    public void ClearGamestrings_HasTextsInEveryLayer_RemovesOnlyGameStrings()
+    {
+        // arrange
+        LayeredDataStorage layeredDataStorage = _sourceContainer.LayeredDataStorage;
+        StormFile stormFile = StormFileHelper.CreateStormFile();
+
+        foreach (StormModType stormModType in new[] { StormModType.Base, StormModType.Map, StormModType.Custom })
+        {
+            TextCache textCache = layeredDataStorage.GetDataStorage(stormModType).TextCache;
+            textCache.GameStringsById.Dictionary[$"{stormModType}GameString"] = new StringValue("gamestring", stormFile);
+            textCache.AssetTextsById.Dictionary[$"{stormModType}AssetText"] = new StringValue("asset", stormFile);
+        }
+
+        // act
+        _sourceContainer.ClearGamestrings();
+
+        // assert
+        foreach (StormModType stormModType in new[] { StormModType.Base, StormModType.Map, StormModType.Custom })
+        {
+            TextCache textCache = layeredDataStorage.GetDataStorage(stormModType).TextCache;
+            textCache.GameStringsById.Dictionary.Should().BeEmpty();
+            textCache.AssetTextsById.Dictionary.Keys.Should().Equal($"{stormModType}AssetText");
+        }
+    }
+
+    [TestMethod]
+    public void ClearGamestrings_HasContainers_KeepsContainers()
+    {
+        // arrange
+        StormModContainer baseContainer = AddContainer(StormModType.Base);
+        StormModContainer mapContainer = AddContainer(StormModType.Map);
+        StormModContainer customContainer = AddContainer(StormModType.Custom);
+
+        // act
+        _sourceContainer.ClearGamestrings();
+
+        // assert
+        _sourceContainer.StormModContainers.Should().Equal(baseContainer, mapContainer, customContainer);
+        _sourceContainer.StormModContainers.Should().AllSatisfy(x => x.LoadedGameStringFiles.Should().BeEmpty());
+    }
+
     private static StormXmlConstElement CreateStormXmlConstElement(string id) =>
         XmlReaderHelper.GetStormXmlConstElement($"""<const id="{id}" value="1" />""");
 

@@ -126,6 +126,15 @@ internal abstract class StormModBase<T> : IStormMod
         LoadIncludesStormMods();
     }
 
+    public virtual void LoadStormGameStrings(StormLocale stormLocale)
+    {
+        LoadGameStringFile(stormLocale);
+
+        // same order as LoadStormFiles, this stormmod first, then the included stormmods
+        foreach (IStormMod stormMod in _includesStormModsCache)
+            stormMod.LoadStormGameStrings(stormLocale);
+    }
+
     public virtual IReadOnlyList<MapDependency> GetMapDependencies()
     {
         if (!TryGetFile(DocumentInfoPath, out Stream? stream))
@@ -189,6 +198,14 @@ internal abstract class StormModBase<T> : IStormMod
     protected abstract IStormMod GetStormMod(string path, StormModType stormModType);
 
     /// <summary>
+    /// Gets the <c>gamestrings.txt</c> file path of a locale (e.g. <c>enus.stormdata\localizeddata\gamestrings.txt</c>).
+    /// </summary>
+    /// <param name="stormLocale">The locale of the gamestrings.</param>
+    /// <returns>The full path of the <c>gamestrings.txt</c> file.</returns>
+    protected virtual string GetGameStringFilePath(StormLocale stormLocale) =>
+        Path.Combine(DirectoryPath, GetLocaleStormDataDirectory(stormLocale), SourceConstants.LocalizedDataDirectory, SourceConstants.GameStringFile);
+
+    /// <summary>
     /// Reads the value of an attribute from each sibling element with the specified name, starting from the first one found.
     /// Elements without the attribute, or with an empty value, are skipped.
     /// </summary>
@@ -225,6 +242,8 @@ internal abstract class StormModBase<T> : IStormMod
     // match the chars in _directorySeparatorChars
     private static bool IsDirectorySeparator(char value) => value == Path.DirectorySeparatorChar || value == Path.AltDirectorySeparatorChar;
 
+    private static string GetLocaleStormDataDirectory(StormLocale stormLocale) => $"{stormLocale.ToString().ToLowerInvariant()}.stormdata";
+
     private void LoadFontStylesFile()
     {
         if (!TryCreateXmlReader(FontStylesFilePath, out XmlReader? xmlReader))
@@ -241,6 +260,17 @@ internal abstract class StormModBase<T> : IStormMod
 
         using (stream)
             ModContainer.LoadAssetsTextFile(stream, CreateStormFile(AssetsTextFilePath));
+    }
+
+    private void LoadGameStringFile(StormLocale stormLocale)
+    {
+        string gameStringFilePath = GetGameStringFilePath(stormLocale);
+
+        if (!TryGetFile(gameStringFilePath, out Stream? stream))
+            return;
+
+        using (stream)
+            ModContainer.LoadGameStringFile(stream, CreateStormFile(gameStringFilePath));
     }
 
     /// <summary>
@@ -288,7 +318,7 @@ internal abstract class StormModBase<T> : IStormMod
     }
 
     /// <summary>
-    /// Loads an XML file into the <see cref="ModContainer"/>. If the file does not exist, it is added as a not found file.
+    /// Loads an XML file into the <see cref="ModContainer"/>.
     /// </summary>
     /// <param name="path">The full path of the XML file.</param>
     private void AddXmlFile(string path)
@@ -296,10 +326,7 @@ internal abstract class StormModBase<T> : IStormMod
         StormFile stormFile = CreateStormFile(path);
 
         if (!TryCreateXmlReader(path, out XmlReader? xmlReader))
-        {
-            ModContainer.AddFileNotFound(stormFile);
             return;
-        }
 
         using (xmlReader)
             ModContainer.LoadXmlFile(xmlReader, stormFile);

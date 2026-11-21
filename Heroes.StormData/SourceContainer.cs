@@ -77,8 +77,18 @@ internal class SourceContainer
     }
 
     /// <summary>
+    /// Removes the gamestrings from all the <see cref="StormModContainers"/> and from the base, map, and custom <see cref="DataStorage"/>.
+    /// </summary>
+    public void ClearGamestrings()
+    {
+        foreach (StormModContainer stormModContainer in StormModContainers)
+            stormModContainer.ClearGameStrings();
+
+        LayeredDataStorage.ClearGameStrings();
+    }
+
+    /// <summary>
     /// Removes the <see cref="StormModType.Map"/> containers and all the data loaded into the map <see cref="DataStorage"/>.
-    /// The base and custom data are not changed.
     /// </summary>
     public void ClearStormMapMods()
     {

@@ -86,6 +86,48 @@ public sealed class HeroesSourceBaseTests
         _heroesSource.SourceContainer.StormModContainers.Should().BeEmpty();
     }
 
+    [TestMethod]
+    public void LoadGamestrings_HasBaseAndMapStormMods_LoadsGameStringsOfBaseThenMapStormMods()
+    {
+        // arrange
+        AddVolskayaMap();
+        _heroesSource.LoadDepotCache();
+        _heroesSource.LoadStormMapMod(MapTitle);
+
+        IStormMod coreStormMod = _heroesSource.StormModsByDirectoryPath[Path.Combine(_modsDirectoryPath, "core.stormmod")];
+        IStormMod heroesStormMod = _heroesSource.StormModsByDirectoryPath[Path.Combine(_modsDirectoryPath, "heroes.stormmod")];
+        IStormMod heroesDataStormMod = _heroesSource.StormModsByDirectoryPath[Path.Combine(_modsDirectoryPath, "heroesdata.stormmod")];
+        IStormMod dependencyStormMod = _heroesSource.StormModsByDirectoryPath[Path.Join(_modsDirectoryPath, _dependencyLocalFile)];
+        IStormMod mapRootStormMod = _heroesSource.MapRootStormMod!;
+
+        // act
+        _heroesSource.LoadGamestrings(StormLocale.DEDE);
+
+        // assert
+        Received.InOrder(() =>
+        {
+            coreStormMod.LoadStormGameStrings(StormLocale.DEDE);
+            heroesStormMod.LoadStormGameStrings(StormLocale.DEDE);
+            heroesDataStormMod.LoadStormGameStrings(StormLocale.DEDE);
+            dependencyStormMod.LoadStormGameStrings(StormLocale.DEDE);
+            mapRootStormMod.LoadStormGameStrings(StormLocale.DEDE);
+        });
+    }
+
+    [TestMethod]
+    public void LoadGamestrings_HasLoadedGameStrings_ClearsThemFirst()
+    {
+        // arrange
+        TextCache textCache = _heroesSource.SourceContainer.LayeredDataStorage.GetDataStorage(StormModType.Base).TextCache;
+        textCache.GameStringsById.Dictionary["id1"] = new StringValue("value1", StormFileHelper.CreateStormFile());
+
+        // act
+        _heroesSource.LoadGamestrings(StormLocale.ENUS);
+
+        // assert
+        textCache.GameStringsById.Dictionary.Should().BeEmpty();
+    }
+
     private void AddVolskayaMap()
     {
         _depotCacheData.S2MAPropertiesByTitle.Add(MapTitle, new S2MAProperties()

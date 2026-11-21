@@ -87,6 +87,17 @@ public class HeroesLoader
 
         return this;
     }
+
+    public HeroesLoader LoadGameStrings(StormLocale localization = StormLocale.ENUS)
+    {
+        //LoadBaseStormMods();
+
+        //HeroesData.SetHeroesLocalization(localization);
+        _heroesSource.LoadGamestrings(localization);
+
+        return this;
+    }
+
     private static HeroesLoader LoadAsCASCInternal(CASCConfig cascConfig, HttpClient httpClient, IProgressReporter? progressReporter = null)
     {
         CASCConfig.ThrowOnFileNotFound = true;

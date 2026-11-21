@@ -160,7 +160,7 @@ internal sealed class FileStormModTests
 
         // assert
         GetDataStorage(StormModType.Base).ElementCache.StormXmlConstElementById.Dictionary.Should().BeEmpty();
-        fileStormMod.ModContainer.NotFoundFiles.Should().BeEmpty();
+        fileStormMod.ModContainer.LoadedXmlFiles.Should().BeEmpty();
     }
 
     [TestMethod]
@@ -419,11 +419,10 @@ internal sealed class FileStormModTests
             .Which.Should().BeEquivalentTo(ExpectedStormFile(layoutFilePath));
         modContainer.LoadedAssetFiles.Should().ContainSingle()
             .Which.Should().BeEquivalentTo(ExpectedStormFile(assetFilePath));
-        modContainer.NotFoundFiles.Should().BeEmpty();
     }
 
     [TestMethod]
-    public void LoadStormFiles_GameDataXmlFileCatalogFileDoesNotExist_AddsToNotFoundFiles()
+    public void LoadStormFiles_GameDataXmlFileCatalogFileDoesNotExist_DoesNotAddToLoadedXmlFiles()
     {
         // arrange
         _fileSystem.AddFile(Path.Combine(_baseStormDataPath, "GameData.xml"), new MockFileData(
@@ -439,26 +438,127 @@ internal sealed class FileStormModTests
         fileStormMod.LoadStormFiles();
 
         // assert
-        fileStormMod.ModContainer.NotFoundFiles.Should().ContainSingle()
-            .Which.Should().BeEquivalentTo(ExpectedStormFile(Path.Combine(_baseStormDataPath, "gamedata", "heroes", "missingdata.xml")));
         fileStormMod.ModContainer.LoadedXmlFiles.Should().BeEmpty();
     }
 
     [TestMethod]
-    public void ModContainer_FileLists_AreReadOnlyCollections()
+    public void LoadStormGameStrings_GameStringFileExists_AddsGameStrings()
     {
         // arrange
+        string filePath = Path.Combine(_stormModDirectoryPath, "enus.stormdata", "localizeddata", "gamestrings.txt");
+        _fileSystem.AddFile(Path.Combine(_stormModDirectoryPath, "enUS.StormData", "LocalizedData", "GameStrings.txt"), new MockFileData("Button/Name/Id1=Value1\nButton/Name/Empty="));
+
         FileStormMod fileStormMod = CreateFileStormMod();
 
         // act
-        StormModContainer modContainer = fileStormMod.ModContainer;
+        fileStormMod.LoadStormGameStrings(StormLocale.ENUS);
 
         // assert
-        modContainer.NotFoundFiles.Should().BeOfType<System.Collections.ObjectModel.ReadOnlyCollection<StormFile>>();
-        modContainer.LoadedXmlFiles.Should().BeOfType<System.Collections.ObjectModel.ReadOnlyCollection<StormFile>>();
-        modContainer.LoadedAssetsTextFiles.Should().BeOfType<System.Collections.ObjectModel.ReadOnlyCollection<StormFile>>();
-        modContainer.LoadedAssetFiles.Should().BeOfType<System.Collections.ObjectModel.ReadOnlyCollection<StormFile>>();
-        modContainer.LoadedStormLayoutFiles.Should().BeOfType<System.Collections.ObjectModel.ReadOnlyCollection<StormFile>>();
+        var gameStrings = GetDataStorage(StormModType.Base).TextCache.GameStringsById.Dictionary;
+        gameStrings.Should().HaveCount(2);
+        gameStrings["Button/Name/Id1"].Value.Should().Be("Value1");
+        gameStrings["Button/Name/Id1"].StormFile.Should().BeEquivalentTo(ExpectedStormFile(filePath));
+        gameStrings["Button/Name/Empty"].Value.Should().BeEmpty();
+
+        fileStormMod.ModContainer.LoadedGameStringFiles.Should().ContainSingle()
+            .Which.Should().BeEquivalentTo(ExpectedStormFile(filePath));
+    }
+
+    [TestMethod]
+    public void LoadStormGameStrings_OnlyOtherLocaleExists_LoadsNothing()
+    {
+        // arrange
+        _fileSystem.AddFile(Path.Combine(_stormModDirectoryPath, "dede.stormdata", "localizeddata", "gamestrings.txt"), new MockFileData("id1=Wert"));
+
+        FileStormMod fileStormMod = CreateFileStormMod();
+
+        // act
+        fileStormMod.LoadStormGameStrings(StormLocale.ENUS);
+
+        // assert
+        GetDataStorage(StormModType.Base).TextCache.GameStringsById.Dictionary.Should().BeEmpty();
+        fileStormMod.ModContainer.LoadedGameStringFiles.Should().BeEmpty();
+    }
+
+    [TestMethod]
+    [DataRow(StormModType.Base)]
+    [DataRow(StormModType.Map)]
+    [DataRow(StormModType.Custom)]
+    public void LoadStormGameStrings_StormModType_LoadsIntoMatchingDataStorageOnly(StormModType stormModType)
+    {
+        // arrange
+        _fileSystem.AddFile(Path.Combine(_stormModDirectoryPath, "enus.stormdata", "localizeddata", "gamestrings.txt"), new MockFileData("id1=value1"));
+
+        FileStormMod fileStormMod = CreateFileStormMod(stormModType);
+
+        // act
+        fileStormMod.LoadStormGameStrings(StormLocale.ENUS);
+
+        // assert
+        foreach (StormModType otherStormModType in Enum.GetValues<StormModType>())
+        {
+            var gameStrings = GetDataStorage(otherStormModType).TextCache.GameStringsById.Dictionary;
+
+            if (otherStormModType == stormModType)
+                gameStrings.Keys.Should().Equal("id1");
+            else
+                gameStrings.Should().BeEmpty();
+        }
+    }
+
+    [TestMethod]
+    public void LoadStormGameStrings_HasIncludedStormMods_LoadsTheirGameStringsAfterOwn()
+    {
+        // arrange
+        IStormMod coreStormMod = CreateIncludedStormMod();
+        IStormMod heroesStormMod = CreateIncludedStormMod();
+
+        _stormModFactory.CreateFileStormMod(_heroesSource, Path.Combine(_modsDirectoryPath, "core.stormmod"), StormModType.Base).Returns(coreStormMod);
+        _stormModFactory.CreateFileStormMod(_heroesSource, Path.Combine(_modsDirectoryPath, "heroes.stormmod"), StormModType.Base).Returns(heroesStormMod);
+
+        _fileSystem.AddFile(Path.Combine(_baseStormDataPath, "Includes.xml"), new MockFileData(
+            """
+            <Includes>
+              <Path value="Mods/Core.StormMod" />
+              <Path value="Mods/Heroes.StormMod" />
+            </Includes>
+            """));
+
+        FileStormMod fileStormMod = CreateFileStormMod();
+        fileStormMod.LoadStormFiles();
+
+        // act
+        fileStormMod.LoadStormGameStrings(StormLocale.KOKR);
+
+        // assert
+        coreStormMod.Received(1).LoadStormGameStrings(StormLocale.KOKR);
+        heroesStormMod.Received(1).LoadStormGameStrings(StormLocale.KOKR);
+
+        Received.InOrder(() =>
+        {
+            coreStormMod.LoadStormGameStrings(StormLocale.KOKR);
+            heroesStormMod.LoadStormGameStrings(StormLocale.KOKR);
+        });
+    }
+
+    [TestMethod]
+    public void LoadStormGameStrings_StormFilesNotLoaded_DoesNotLoadIncludedStormMods()
+    {
+        // arrange
+        _fileSystem.AddFile(Path.Combine(_baseStormDataPath, "Includes.xml"), new MockFileData(
+            """
+            <Includes>
+              <Path value="Mods/Core.StormMod" />
+            </Includes>
+            """));
+
+        FileStormMod fileStormMod = CreateFileStormMod();
+
+        // act
+        fileStormMod.LoadStormGameStrings(StormLocale.ENUS);
+
+        // assert
+        _stormModFactory.ReceivedCalls().Should().BeEmpty();
     }
 
     private static string CreateConstXml(string constId) =>

@@ -34,4 +34,11 @@ internal interface IStormMod
     IReadOnlyList<MapDependency> GetMapDependencies();
 
     void LoadStormFiles();
+
+    /// <summary>
+    /// Loads the <c>gamestrings.txt</c> file of a locale into the <see cref="ModContainer"/>, then the gamestrings of the included <c>stormmods</c>
+    /// (the ones loaded from the <c>includes.xml</c> file by <see cref="LoadStormFiles"/>).
+    /// </summary>
+    /// <param name="stormLocale">The locale of the gamestrings to load.</param>
+    void LoadStormGameStrings(StormLocale stormLocale);
 }

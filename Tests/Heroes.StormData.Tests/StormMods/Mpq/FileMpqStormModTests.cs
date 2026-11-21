@@ -72,7 +72,6 @@ public sealed class FileMpqStormModTests
         modContainer.LoadedAssetsTextFiles.Should().BeEmpty();
         modContainer.LoadedAssetFiles.Should().BeEmpty();
         modContainer.LoadedStormLayoutFiles.Should().BeEmpty();
-        modContainer.NotFoundFiles.Should().BeEmpty();
         _stormModFactory.ReceivedCalls().Should().BeEmpty();
     }
 
@@ -90,7 +89,6 @@ public sealed class FileMpqStormModTests
         string expectedFilePath = Path.Combine(_archivePath, "Base.StormData", "GameData", "ActorData.xml");
 
         fileMpqStormMod.ModContainer.LoadedXmlFiles.Should().ContainSingle().Which.Should().BeEquivalentTo(ExpectedStormFile(expectedFilePath));
-        fileMpqStormMod.ModContainer.NotFoundFiles.Should().BeEmpty();
     }
 
     [TestMethod]
@@ -169,6 +167,39 @@ public sealed class FileMpqStormModTests
         fileMpqStormMod.ModContainer.LoadedXmlFiles.Should().ContainSingle();
         fileMpqStormMod.ModContainer.LoadedStormLayoutFiles.Should().HaveCount(2);
         fileMpqStormMod.ModContainer.LoadedAssetFiles.Should().HaveCount(2);
+    }
+
+    [TestMethod]
+    public void LoadStormGameStrings_MapArchiveHasGameStrings_OpensArchiveAndAddsGameStrings()
+    {
+        // arrange
+        _fileSystem.AddFile(_mapArchivePath, new MockFileData(File.ReadAllBytes(Path.Join("TestFiles", "DepotCache", "8d554.s2ma"))));
+        FileMpqStormMod fileMpqStormMod = CreateFileMpqStormMod(_mapArchivePath, StormModType.Map);
+
+        // act
+        fileMpqStormMod.LoadStormGameStrings(StormLocale.ENUS);
+
+        // assert
+        string expectedFilePath = Path.Combine(_mapArchivePath, "enus.stormdata", "localizeddata", "gamestrings.txt");
+
+        fileMpqStormMod.ModContainer.LoadedGameStringFiles.Should().ContainSingle()
+            .Which.FullPath.Should().Be(expectedFilePath);
+        GetDataStorage(StormModType.Map).TextCache.GameStringsById.Dictionary.Should().NotBeEmpty();
+        GetDataStorage(StormModType.Base).TextCache.GameStringsById.Dictionary.Should().BeEmpty();
+    }
+
+    [TestMethod]
+    public void LoadStormGameStrings_ArchiveDoesNotExist_LoadsNothing()
+    {
+        // arrange
+        FileMpqStormMod fileMpqStormMod = CreateFileMpqStormMod(_mapArchivePath, StormModType.Map);
+
+        // act
+        fileMpqStormMod.LoadStormGameStrings(StormLocale.ENUS);
+
+        // assert
+        fileMpqStormMod.ModContainer.LoadedGameStringFiles.Should().BeEmpty();
+        GetDataStorage(StormModType.Map).TextCache.GameStringsById.Dictionary.Should().BeEmpty();
     }
 
     [TestMethod]

@@ -40,7 +40,16 @@ internal abstract class HeroesSourceBase : IHeroesSource
 
     public void LoadGamestrings(StormLocale stormLocale)
     {
+        SourceContainer.ClearGamestrings();
 
+        foreach (IStormMod stormMod in _stormMods)
+            stormMod.LoadStormGameStrings(stormLocale);
+
+        foreach (IStormMod stormMod in _stormMapMods)
+            stormMod.LoadStormGameStrings(stormLocale);
+
+        foreach (IStormMod stormMod in _stormCustomMods)
+            stormMod.LoadStormGameStrings(stormLocale);
     }
 
     public void LoadStormMapMod(string mapTitle)

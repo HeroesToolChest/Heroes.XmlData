@@ -1,6 +1,4 @@
-﻿using System.Text;
-
-namespace Heroes.StormData;
+﻿namespace Heroes.StormData;
 
 /// <summary>
 /// Represents a container for a specific <c>stormmod</c> and its associated files and elements.
@@ -12,12 +10,12 @@ public class StormModContainer
     private readonly StormXmlFileParser _xmlParser;
     private readonly DataStorage _specificDataStorage;
 
-    private readonly List<StormFile> _notFoundFilesList = [];
     private readonly List<StormFile> _loadedXmlFilesList = [];
     private readonly List<StormFile> _loadedFontStylesFilesList = [];
     private readonly List<StormFile> _loadedAssetsTextFilesList = [];
     private readonly List<StormFile> _loadedAssetFilesList = [];
     private readonly List<StormFile> _loadedStormLayoutFilesList = [];
+    private readonly List<StormFile> _loadedGameStringFilesList = [];
 
     internal StormModContainer(SourceContainer sourceContainer, StormModType stormModType)
     {
@@ -27,11 +25,11 @@ public class StormModContainer
         _specificDataStorage = _sourceContainer.LayeredDataStorage.GetDataStorage(StormModType);
         _xmlParser = _sourceContainer.StormXmlFileParser;
 
-        NotFoundFiles = _notFoundFilesList.AsReadOnly();
         LoadedXmlFiles = _loadedXmlFilesList.AsReadOnly();
         LoadedAssetsTextFiles = _loadedAssetsTextFilesList.AsReadOnly();
         LoadedAssetFiles = _loadedAssetFilesList.AsReadOnly();
         LoadedStormLayoutFiles = _loadedStormLayoutFilesList.AsReadOnly();
+        LoadedGameStringFiles = _loadedGameStringFilesList.AsReadOnly();
     }
 
     /// <summary>
@@ -39,11 +37,6 @@ public class StormModContainer
     /// or <see cref="StormModType.Custom"/>) that this container loads its data into.
     /// </summary>
     public StormModType StormModType { get; }
-
-    /// <summary>
-    /// Gets the required files that were not found, such as the XML files listed in a <c>gamedata.xml</c> file.
-    /// </summary>
-    public IReadOnlyList<StormFile> NotFoundFiles { get; }
 
     /// <summary>
     /// Gets the XML files that were loaded, in the order they were loaded.
@@ -64,6 +57,11 @@ public class StormModContainer
     /// Gets the <c>.stormlayout</c> files that were added.
     /// </summary>
     public IReadOnlyList<StormFile> LoadedStormLayoutFiles { get; }
+
+    /// <summary>
+    /// Gets the <c>gamestrings.txt</c> files that were loaded.
+    /// </summary>
+    public IReadOnlyList<StormFile> LoadedGameStringFiles { get; }
 
     internal void LoadXmlFile(XmlReader xmlReader, StormFile stormFile)
     {
@@ -100,15 +98,15 @@ public class StormModContainer
     {
         _loadedAssetsTextFilesList.Add(stormFile);
 
-        using KeyValueTextReader reader = new(stream);
+        LoadKeyValueTextFile(stream, stormFile, _specificDataStorage.TextCache.AssetTextsById.Dictionary);
+    }
 
-        while (reader.TryRead(out ReadOnlySpan<byte> key, out ReadOnlySpan<byte> value))
-        {
-            string id = Encoding.UTF8.GetString(key);
-            string text = value.IsEmpty ? string.Empty : Encoding.UTF8.GetString(value);
+    // gamestrings.txt
+    internal void LoadGameStringFile(Stream stream, StormFile stormFile)
+    {
+        _loadedGameStringFilesList.Add(stormFile);
 
-            _specificDataStorage.TextCache.AssetTextsById.Dictionary[id] = new StringValue(text, stormFile);
-        }
+        LoadKeyValueTextFile(stream, stormFile, _specificDataStorage.TextCache.GameStringsById.Dictionary);
     }
 
     internal void AddAssetFile(string relativePath, StormFile stormFile)
@@ -123,9 +121,33 @@ public class StormModContainer
         _specificDataStorage.FileCache.StormLayoutFilesByRelativePath.Dictionary[relativePath] = stormFile;
     }
 
-    internal void AddFileNotFound(StormFile stormFile)
+    /// <summary>
+    /// Removes the loaded <c>gamestrings.txt</c> files from this container.
+    /// The gamestrings themselves are in the shared <see cref="DataStorage"/>, which is cleared by <see cref="SourceContainer.ClearGamestrings"/>.
+    /// </summary>
+    internal void ClearGameStrings()
     {
-        _notFoundFilesList.Add(stormFile);
+        _loadedGameStringFilesList.Clear();
+    }
+
+    /// <summary>
+    /// Reads the <c>id=value</c> lines of a text file (<c>assets.txt</c> or <c>gamestrings.txt</c>) into a dictionary.
+    /// A later line with the same <c>id</c> replaces the earlier value. A line with no <c>=</c> is added with an empty value.
+    /// </summary>
+    /// <param name="stream">The stream of the file.</param>
+    /// <param name="stormFile">The file the values are from.</param>
+    /// <param name="valuesById">The dictionary to add the values to.</param>
+    private static void LoadKeyValueTextFile(Stream stream, StormFile stormFile, Dictionary<string, StringValue> valuesById)
+    {
+        using KeyValueTextReader reader = new(stream);
+
+        while (reader.TryRead(out ReadOnlySpan<byte> key, out ReadOnlySpan<byte> value))
+        {
+            string id = Encoding.UTF8.GetString(key);
+            string text = value.IsEmpty ? string.Empty : Encoding.UTF8.GetString(value);
+
+            valuesById[id] = new StringValue(text, stormFile);
+        }
     }
 
     private static string? GetCatalogNameFromFileName(StormXmlElement element)
@@ -149,7 +171,7 @@ public class StormModContainer
         string? catalogName = GetCatalogNameFromFileName(element);
 
         // base class catalog name check
-        if (!string.IsNullOrWhiteSpace(catalogName) && element.ElementName.AsSpan(1).StartsWith(catalogName, StringComparison.OrdinalIgnoreCase))
+        if (!string.IsNullOrWhiteSpace(catalogName) && element.ElementName.StartsWith(catalogName, StringComparison.OrdinalIgnoreCase))
         {
             _specificDataStorage.AddBaseClassCatalogName(element, catalogName);
         }
