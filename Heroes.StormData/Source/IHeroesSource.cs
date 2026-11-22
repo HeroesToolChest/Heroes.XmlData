@@ -14,6 +14,11 @@ internal interface IHeroesSource
 
     IStormModFactory StormModFactory { get; }
 
+    /// <summary>
+    /// Gets the <c>stormmods</c> of the loaded map in load order, the dependencies first and the map's own <c>stormmod</c> last. Empty if no map is loaded.
+    /// </summary>
+    IReadOnlyList<IStormMod> StormMapMods { get; }
+
     void LoadStormMods();
 
     void LoadDepotCache();

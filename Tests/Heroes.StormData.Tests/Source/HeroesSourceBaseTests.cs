@@ -1,4 +1,4 @@
-﻿namespace Heroes.StormData.Source.Tests;
+namespace Heroes.StormData.Source.Tests;
 
 [TestClass]
 public sealed class HeroesSourceBaseTests
@@ -55,6 +55,37 @@ public sealed class HeroesSourceBaseTests
         });
 
         _heroesSource.SourceContainer.StormModContainers.Should().Equal(dependencyStormMod.ModContainer, mapRootStormMod.ModContainer);
+    }
+
+    [TestMethod]
+    public void StormMapMods_MapLoaded_ReturnsDependenciesThenMapRoot()
+    {
+        // arrange
+        AddVolskayaMap();
+        _heroesSource.LoadDepotCache();
+
+        // act
+        _heroesSource.LoadStormMapMod(MapTitle);
+
+        // assert
+        IStormMod dependencyStormMod = _heroesSource.StormModsByDirectoryPath[Path.Join(_modsDirectoryPath, _dependencyLocalFile)];
+
+        _heroesSource.StormMapMods.Should().Equal(dependencyStormMod, _heroesSource.MapRootStormMod!);
+    }
+
+    [TestMethod]
+    public void StormMapMods_MapUnloaded_ReturnsEmpty()
+    {
+        // arrange
+        AddVolskayaMap();
+        _heroesSource.LoadDepotCache();
+        _heroesSource.LoadStormMapMod(MapTitle);
+
+        // act
+        _heroesSource.UnloadStormMapMod();
+
+        // assert
+        _heroesSource.StormMapMods.Should().BeEmpty();
     }
 
     [TestMethod]

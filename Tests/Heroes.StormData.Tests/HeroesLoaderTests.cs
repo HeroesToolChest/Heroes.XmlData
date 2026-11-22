@@ -564,7 +564,7 @@ public sealed class HeroesLoaderTests
         HeroesLoader heroesLoader = HeroesLoader.LoadWithInternal(_heroesSource);
 
         // act
-        List<string> result = heroesLoader.GetMapTitles().ToList();
+        List<string> result = [.. heroesLoader.GetMapTitles()];
 
         // assert
         result.Should().Equal(MapTitle);
@@ -590,6 +590,48 @@ public sealed class HeroesLoaderTests
         // assert
         _heroesSource.Received(1).LoadDepotCache();
         _heroesSource.Received(1).LoadStormMods();
+    }
+
+    [TestMethod]
+    public void GetLoadedStormMapDependencies_MapLoaded_ReturnsNamesAndRelativePathsInLoadOrder()
+    {
+        // arrange
+        IStormMod dependencyStormMod = Substitute.For<IStormMod>();
+        dependencyStormMod.Name.Returns("volskayasound");
+        dependencyStormMod.RelativeStormModPath.Returns(Path.Combine("heroesmapmods", "battlegroundmapmods", "volskayasound.stormmod"));
+
+        IStormMod mapRootStormMod = Substitute.For<IStormMod>();
+        mapRootStormMod.Name.Returns(MapTitle);
+        mapRootStormMod.RelativeStormModPath.Returns(Path.Combine("core.stormmod", "base.stormdata", "depotcache", "8d", "55", "8d554.s2ma"));
+
+        _heroesSource.StormMapMods.Returns([dependencyStormMod, mapRootStormMod]);
+
+        HeroesLoader heroesLoader = HeroesLoader.LoadWithInternal(_heroesSource);
+
+        // act
+        IReadOnlyList<StormMapDependency> result = heroesLoader.GetLoadedStormMapDependencies();
+
+        // assert
+        result.Should().BeEquivalentTo(
+            [
+                new StormMapDependency() { Name = "volskayasound", DirectoryPath = Path.Combine("heroesmapmods", "battlegroundmapmods", "volskayasound.stormmod") },
+                new StormMapDependency() { Name = MapTitle, DirectoryPath = Path.Combine("core.stormmod", "base.stormdata", "depotcache", "8d", "55", "8d554.s2ma") },
+            ],
+            options => options.WithStrictOrdering());
+    }
+
+    [TestMethod]
+    public void GetLoadedStormMapDependencies_NoMapLoaded_ReturnsEmpty()
+    {
+        // arrange
+        _heroesSource.StormMapMods.Returns([]);
+        HeroesLoader heroesLoader = HeroesLoader.LoadWithInternal(_heroesSource);
+
+        // act
+        IReadOnlyList<StormMapDependency> result = heroesLoader.GetLoadedStormMapDependencies();
+
+        // assert
+        result.Should().BeEmpty();
     }
 
     [TestMethod]

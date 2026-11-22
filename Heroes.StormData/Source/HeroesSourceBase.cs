@@ -22,6 +22,8 @@ internal abstract class HeroesSourceBase : IHeroesSource
 
     public IStormModFactory StormModFactory { get; }
 
+    public IReadOnlyList<IStormMod> StormMapMods => _stormMapMods;
+
     public void LoadStormMods()
     {
         foreach (IStormMod stormMod in _stormMods)

@@ -344,6 +344,22 @@ public class HeroesLoader
         };
     }
 
+    /// <summary>
+    /// Gets the <c>stormmods</c> of the currently loaded <c>mapmod</c>, in the order they were loaded.
+    /// The map's dependencies come first and the map's own <c>stormmod</c> is last.
+    /// </summary>
+    /// <returns>The loaded <c>mapmod</c>'s <c>stormmods</c>, or an empty collection if no <c>mapmod</c> is loaded.</returns>
+    public IReadOnlyList<StormMapDependency> GetLoadedStormMapDependencies()
+    {
+        return _heroesSource.StormMapMods
+            .Select(x => new StormMapDependency()
+            {
+                Name = x.Name,
+                DirectoryPath = x.RelativeStormModPath,
+            })
+            .ToList();
+    }
+
     internal static HeroesLoader LoadWithInternal(IHeroesSource heroesSource, HeroesLoaderOptions? options = null, ModsInfoFile? modsInfoFile = null)
     {
         return Create(new HeroesLoader(heroesSource, modsInfoFile), options);
