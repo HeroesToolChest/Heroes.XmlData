@@ -36,6 +36,7 @@ public class HeroesLoader
     {
         _heroesSource = heroesSource;
 
+        RootDirectory = heroesSource.ModsDirectoryPath;
         ModsInfoFile = modsInfoFile;
         HeroesVersion = modsInfoFile?.Version;
         IsPtr = modsInfoFile?.IsPtr ?? false;
@@ -45,9 +46,18 @@ public class HeroesLoader
     {
         _heroesSource = heroesSource;
 
+        RootDirectory = heroesSource.ModsDirectoryPath;
         HeroesVersion = cascConfig.VersionName;
         IsPtr = cascConfig.Product == ProductPtrName;
     }
+
+    /// <summary>
+    /// Gets the root directory, the <c>mods</c> directory.
+    /// <para>
+    /// For a file source, this is the directory that was given. For a CASC source, this is the <c>mods</c> directory relative to the root of the CASC storage.
+    /// </para>
+    /// </summary>
+    public string RootDirectory { get; }
 
     /// <summary>
     /// Gets the version of the loaded Heroes of the Storm data, or <see langword="null"/> if it is unknown.

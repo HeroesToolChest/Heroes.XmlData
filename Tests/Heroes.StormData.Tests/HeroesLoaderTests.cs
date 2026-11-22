@@ -261,6 +261,20 @@ public sealed class HeroesLoaderTests
     }
 
     [TestMethod]
+    public void LoadWithInternal_SourceHasModsDirectoryPath_SetsRootDirectory()
+    {
+        // arrange
+        string modsDirectoryPath = MockUnixSupport.Path(@"C:\Heroes\mods");
+        _heroesSource.ModsDirectoryPath.Returns(modsDirectoryPath);
+
+        // act
+        HeroesLoader heroesLoader = HeroesLoader.LoadWithInternal(_heroesSource);
+
+        // assert
+        heroesLoader.RootDirectory.Should().Be(modsDirectoryPath);
+    }
+
+    [TestMethod]
     public void LoadWithInternal_WithModsInfoFile_SetsVersionAndIsPtr()
     {
         // arrange
