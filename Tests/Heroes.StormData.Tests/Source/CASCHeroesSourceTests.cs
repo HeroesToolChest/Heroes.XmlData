@@ -263,6 +263,88 @@ public sealed class CASCHeroesSourceTests
         _stormModFactory.DidNotReceiveWithAnyArgs().CreateCASCMpqStormMod(default!, default!, default!, default);
     }
 
+    [TestMethod]
+    [DataRow("core.stormmod/base.stormdata/gamedata.xml")]
+    [DataRow("Mods/Core.StormMod/Base.StormData/GameData.xml")]
+    public void FileExists_PathRelativeOrStartingWithMods_ChecksPathUnderModsDirectory(string path)
+    {
+        // arrange
+        string expectedPath = Path.Combine(ModsDirectory, "core.stormmod", "base.stormdata", "gamedata.xml");
+        _cascHeroesStorage.CASCHandlerWrapper.FileExists(expectedPath).Returns(true);
+
+        CASCHeroesSource cascHeroesSource = CreateCASCHeroesSource();
+
+        // act
+        bool result = cascHeroesSource.FileExists(path, null);
+
+        // assert
+        result.Should().BeTrue();
+    }
+
+    [TestMethod]
+    public void FileExists_FileNotFound_ReturnsFalse()
+    {
+        // arrange
+        CASCHeroesSource cascHeroesSource = CreateCASCHeroesSource();
+
+        // act
+        bool result = cascHeroesSource.FileExists("core.stormmod/missing.xml", null);
+
+        // assert
+        result.Should().BeFalse();
+    }
+
+    [TestMethod]
+    public void GetFile_FileExists_ReturnsStream()
+    {
+        // arrange
+        string expectedPath = Path.Combine(ModsDirectory, "core.stormmod", "base.stormdata", "gamedata.xml");
+        using MemoryStream fileStream = new([1, 2, 3]);
+
+        _cascHeroesStorage.CASCHandlerWrapper.FileExists(expectedPath).Returns(true);
+        _cascHeroesStorage.CASCHandlerWrapper.OpenFile(expectedPath).Returns(fileStream);
+
+        CASCHeroesSource cascHeroesSource = CreateCASCHeroesSource();
+
+        // act
+        Stream result = cascHeroesSource.GetFile("mods/core.stormmod/base.stormdata/gamedata.xml", null);
+
+        // assert
+        result.Should().BeSameAs(fileStream);
+    }
+
+    [TestMethod]
+    public void GetFile_FileNotFound_ThrowsExceptionWithoutOpeningFile()
+    {
+        // arrange
+        CASCHeroesSource cascHeroesSource = CreateCASCHeroesSource();
+
+        // act
+        Action act = () => cascHeroesSource.GetFile("core.stormmod/missing.xml", null);
+
+        // assert
+        act.Should().Throw<FileNotFoundException>();
+        _cascHeroesStorage.CASCHandlerWrapper.DidNotReceiveWithAnyArgs().OpenFile(default!);
+    }
+
+    [TestMethod]
+    public void GetFile_MpqEntryInCASCFile_ReturnsEntryContent()
+    {
+        // arrange
+        string archivePath = Path.Combine(ModsDirectory, "heroesmapmods", "test.stormmap");
+
+        _cascHeroesStorage.CASCHandlerWrapper.FileExists(archivePath).Returns(true);
+        _cascHeroesStorage.CASCHandlerWrapper.OpenFile(archivePath).Returns(_ => new MemoryStream(File.ReadAllBytes(Path.Join("TestFiles", "Mpq", "test.s2ma"))));
+
+        CASCHeroesSource cascHeroesSource = CreateCASCHeroesSource();
+
+        // act
+        using Stream result = cascHeroesSource.GetFile(archivePath, "Base.StormData/GameData/ActorData.xml");
+
+        // assert
+        new StreamReader(result).ReadToEnd().Should().Contain("<Catalog");
+    }
+
     private CASCHeroesSource CreateCASCHeroesSource() => new(ModsDirectory, _stormModFactory, _cascHeroesStorage);
 
     /// <summary>

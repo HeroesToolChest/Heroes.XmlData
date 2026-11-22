@@ -1,4 +1,4 @@
-﻿namespace Heroes.StormData.Source;
+namespace Heroes.StormData.Source;
 
 internal sealed class CASCHeroesSource : HeroesSourceBase, ICASCHeroesSource
 {
@@ -28,4 +28,21 @@ internal sealed class CASCHeroesSource : HeroesSourceBase, ICASCHeroesSource
     protected override IStormMod GetMpqStormMod(string name, string directoryPath, StormModType stormModType) => StormModFactory.CreateCASCMpqStormMod(this, name, directoryPath, stormModType);
 
     protected override IDepotCache CreateDepotCache() => new CASCDepotCache(this);
+
+    protected override bool FileExistsCore(string fullPath) => CASCHeroesStorage.CASCHandlerWrapper.FileExists(fullPath);
+
+    protected override bool TryOpenFile(string fullPath, [NotNullWhen(true)] out Stream? stream)
+    {
+        stream = null;
+
+        ICASCHandlerWrapper cascHandlerWrapper = CASCHeroesStorage.CASCHandlerWrapper;
+
+        // check first, otherwise OpenFile throws a FileNotFoundException for a missing file
+        if (!cascHandlerWrapper.FileExists(fullPath))
+            return false;
+
+        stream = cascHandlerWrapper.OpenFile(fullPath);
+
+        return stream is not null;
+    }
 }

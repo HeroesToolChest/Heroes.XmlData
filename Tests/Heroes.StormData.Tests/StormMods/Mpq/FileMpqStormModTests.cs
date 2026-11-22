@@ -1,4 +1,4 @@
-﻿namespace Heroes.StormData.StormMods.Mpq.Tests;
+namespace Heroes.StormData.StormMods.Mpq.Tests;
 
 [TestClass]
 public sealed class FileMpqStormModTests
@@ -89,6 +89,24 @@ public sealed class FileMpqStormModTests
         string expectedFilePath = Path.Combine(_archivePath, "Base.StormData", "GameData", "ActorData.xml");
 
         fileMpqStormMod.ModContainer.LoadedXmlFiles.Should().ContainSingle().Which.Should().BeEquivalentTo(ExpectedStormFile(expectedFilePath));
+    }
+
+    [TestMethod]
+    public void LoadStormFiles_HasArchive_StormFilesHaveMpqFileAndEntryPaths()
+    {
+        // arrange
+        AddTestArchive();
+        FileMpqStormMod fileMpqStormMod = CreateFileMpqStormMod(_archivePath);
+
+        // act
+        fileMpqStormMod.LoadStormFiles();
+
+        // assert
+        StormFile stormFile = fileMpqStormMod.ModContainer.LoadedXmlFiles.Should().ContainSingle().Subject;
+
+        stormFile.IsInMpqArchive.Should().BeTrue();
+        stormFile.MpqFilePath.Should().Be(_archivePath);
+        stormFile.MpqEntryPath.Should().Be(Path.Combine("Base.StormData", "GameData", "ActorData.xml"));
     }
 
     [TestMethod]

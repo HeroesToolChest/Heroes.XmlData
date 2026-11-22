@@ -73,6 +73,25 @@ internal sealed class FileStormModTests
     }
 
     [TestMethod]
+    public void LoadStormFiles_GameDataDirectoryHasXmlFiles_StormFileIsNotInMpqArchive()
+    {
+        // arrange
+        AddConstXmlFile(Path.Combine(_gameDataDirectoryPath, "AbilData.xml"), "$AbilConst");
+
+        FileStormMod fileStormMod = CreateFileStormMod();
+
+        // act
+        fileStormMod.LoadStormFiles();
+
+        // assert
+        StormFile stormFile = fileStormMod.ModContainer.LoadedXmlFiles.Should().ContainSingle().Subject;
+
+        stormFile.IsInMpqArchive.Should().BeFalse();
+        stormFile.MpqFilePath.Should().BeNull();
+        stormFile.MpqEntryPath.Should().BeNull();
+    }
+
+    [TestMethod]
     public void LoadStormFiles_GameDataDirectoryHasXmlFiles_StormFileHasModNameAndFilePath()
     {
         // arrange

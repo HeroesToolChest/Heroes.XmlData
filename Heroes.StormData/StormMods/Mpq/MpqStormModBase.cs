@@ -27,6 +27,8 @@ internal abstract class MpqStormModBase<T> : StormModBase<T>
     {
     }
 
+    protected override bool IsMpqArchive => true;
+
     public override void LoadStormFiles()
     {
         if (!TryOpenArchive(out bool openedArchive))

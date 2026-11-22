@@ -393,6 +393,134 @@ public sealed class HeroesLoaderTests
     }
 
     [TestMethod]
+    public void FileExists_Path_ReturnsSourceResult()
+    {
+        // arrange
+        _heroesSource.FileExists("core.stormmod/gamedata.xml", null).Returns(true);
+        HeroesLoader heroesLoader = HeroesLoader.LoadWithInternal(_heroesSource);
+
+        // act
+        bool result = heroesLoader.FileExists("core.stormmod/gamedata.xml");
+
+        // assert
+        result.Should().BeTrue();
+    }
+
+    [TestMethod]
+    [DataRow(null)]
+    [DataRow("")]
+    [DataRow(" ")]
+    public void FileExists_NullOrWhiteSpacePath_ReturnsFalseWithoutCallingSource(string? path)
+    {
+        // arrange
+        HeroesLoader heroesLoader = HeroesLoader.LoadWithInternal(_heroesSource);
+
+        // act
+        bool result = heroesLoader.FileExists(path);
+
+        // assert
+        result.Should().BeFalse();
+        _heroesSource.DidNotReceiveWithAnyArgs().FileExists(default!, default);
+    }
+
+    [TestMethod]
+    public void FileExists_NullLiteral_ReturnsFalse()
+    {
+        // arrange
+        HeroesLoader heroesLoader = HeroesLoader.LoadWithInternal(_heroesSource);
+
+        // act
+        bool result = heroesLoader.FileExists(null);
+
+        // assert
+        result.Should().BeFalse();
+        _heroesSource.DidNotReceiveWithAnyArgs().FileExists(default!, default);
+    }
+
+    [TestMethod]
+    public void FileExists_StormFileInMpqArchive_ChecksEntryInArchive()
+    {
+        // arrange
+        StormFile stormFile = CreateMpqStormFile();
+        _heroesSource.FileExists(stormFile.MpqFilePath!, stormFile.MpqEntryPath).Returns(true);
+
+        HeroesLoader heroesLoader = HeroesLoader.LoadWithInternal(_heroesSource);
+
+        // act
+        bool result = heroesLoader.FileExists(stormFile);
+
+        // assert
+        result.Should().BeTrue();
+        _heroesSource.DidNotReceive().FileExists(stormFile.FullPath, Arg.Any<string?>());
+    }
+
+    [TestMethod]
+    public void FileExists_StormFileNotInMpqArchive_ChecksFullPath()
+    {
+        // arrange
+        StormFile stormFile = StormFileHelper.CreateStormFile();
+        _heroesSource.FileExists(stormFile.FullPath, null).Returns(true);
+
+        HeroesLoader heroesLoader = HeroesLoader.LoadWithInternal(_heroesSource);
+
+        // act
+        bool result = heroesLoader.FileExists(stormFile);
+
+        // assert
+        result.Should().BeTrue();
+    }
+
+    [TestMethod]
+    public void GetFile_Path_ReturnsSourceStream()
+    {
+        // arrange
+        using MemoryStream stream = new();
+        _heroesSource.GetFile("core.stormmod/gamedata.xml", null).Returns(stream);
+
+        HeroesLoader heroesLoader = HeroesLoader.LoadWithInternal(_heroesSource);
+
+        // act
+        Stream result = heroesLoader.GetFile("core.stormmod/gamedata.xml");
+
+        // assert
+        result.Should().BeSameAs(stream);
+    }
+
+    [TestMethod]
+    public void GetFile_StormFileInMpqArchive_OpensEntryInArchive()
+    {
+        // arrange
+        using MemoryStream stream = new();
+        StormFile stormFile = CreateMpqStormFile();
+        _heroesSource.GetFile(stormFile.MpqFilePath!, stormFile.MpqEntryPath).Returns(stream);
+
+        HeroesLoader heroesLoader = HeroesLoader.LoadWithInternal(_heroesSource);
+
+        // act
+        Stream result = heroesLoader.GetFile(stormFile);
+
+        // assert
+        result.Should().BeSameAs(stream);
+    }
+
+    [TestMethod]
+    public void GetFile_StormFileNotInMpqArchive_OpensFullPath()
+    {
+        // arrange
+        using MemoryStream stream = new();
+        StormFile stormFile = StormFileHelper.CreateStormFile();
+        _heroesSource.GetFile(stormFile.FullPath, null).Returns(stream);
+
+        HeroesLoader heroesLoader = HeroesLoader.LoadWithInternal(_heroesSource);
+
+        // act
+        Stream result = heroesLoader.GetFile(stormFile);
+
+        // assert
+        result.Should().BeSameAs(stream);
+    }
+
+    [TestMethod]
     public void IsStormMapModLoaded_NoMapLoaded_ReturnsFalse()
     {
         // act
@@ -787,6 +915,15 @@ public sealed class HeroesLoaderTests
             _heroesSource.LoadGamestrings(StormLocale.ENUS);
         });
     }
+
+    private static StormFile CreateMpqStormFile() => new()
+    {
+        StormModName = "test",
+        RelativePath = Path.Combine("heroesmapmods", "test.stormmap", "base.stormdata", "gamedata.xml"),
+        FullPath = Path.Combine("mods", "heroesmapmods", "test.stormmap", "base.stormdata", "gamedata.xml"),
+        MpqFilePath = Path.Combine("mods", "heroesmapmods", "test.stormmap"),
+        MpqEntryPath = Path.Combine("base.stormdata", "gamedata.xml"),
+    };
 
     private void SetS2MAProperties(string mapTitle, S2MAProperties s2maProperties)
     {

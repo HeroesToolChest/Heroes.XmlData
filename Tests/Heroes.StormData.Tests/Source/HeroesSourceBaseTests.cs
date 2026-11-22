@@ -1,3 +1,6 @@
+using Heroes.MpqTool;
+using System.Diagnostics.CodeAnalysis;
+
 namespace Heroes.StormData.Source.Tests;
 
 [TestClass]
@@ -275,6 +278,38 @@ public sealed class HeroesSourceBaseTests
         textCache.GameStringsById.Dictionary.Should().BeEmpty();
     }
 
+    [TestMethod]
+    [DataRow(16)]
+    [DataRow(64)]
+    public void FileExists_MpqEntryInFileThatIsNotMpqArchive_ReturnsFalseAndClosesFile(int fileLength)
+    {
+        // arrange
+        MemoryStream file = new(new byte[fileLength]);
+        _heroesSource.OpenedFile = file;
+
+        // act
+        bool result = _heroesSource.FileExists("file.s2ma", "entry.xml");
+
+        // assert
+        result.Should().BeFalse();
+        file.CanRead.Should().BeFalse();
+    }
+
+    [TestMethod]
+    public void GetFile_MpqEntryInFileThatIsNotMpqArchive_ThrowsExceptionAndClosesFile()
+    {
+        // arrange
+        MemoryStream file = new(new byte[64]);
+        _heroesSource.OpenedFile = file;
+
+        // act
+        Action act = () => _heroesSource.GetFile("file.s2ma", "entry.xml");
+
+        // assert
+        act.Should().Throw<MpqHeroesToolException>();
+        file.CanRead.Should().BeFalse();
+    }
+
     private void AddVolskayaMap()
     {
         _depotCacheData.S2MAPropertiesByTitle.Add(MapTitle, new S2MAProperties()
@@ -313,6 +348,11 @@ public sealed class HeroesSourceBaseTests
 
         public IStormMod? MapRootStormMod { get; private set; }
 
+        /// <summary>
+        /// Gets or sets the stream returned for any file that is opened, or <see langword="null"/> for no file.
+        /// </summary>
+        public Stream? OpenedFile { get; set; }
+
         protected override IStormMod GetStormMod(string directoryPath, StormModType stormModType)
         {
             // also called by the base constructor, which runs after this class's property initializers
@@ -331,6 +371,14 @@ public sealed class HeroesSourceBaseTests
         }
 
         protected override IDepotCache CreateDepotCache() => _depotCache;
+
+        protected override bool FileExistsCore(string fullPath) => false;
+
+        protected override bool TryOpenFile(string fullPath, [NotNullWhen(true)] out Stream? stream)
+        {
+            stream = OpenedFile;
+            return stream is not null;
+        }
 
         private IStormMod CreateStormMod(string directoryPath, StormModType stormModType)
         {

@@ -110,6 +110,11 @@ internal abstract class StormModBase<T> : IStormMod
     /// </summary>
     protected virtual string DocumentInfoPath { get; }
 
+    /// <summary>
+    /// Gets a value indicating whether the <see cref="DirectoryPath"/> is an MPQ archive file instead of a directory.
+    /// </summary>
+    protected virtual bool IsMpqArchive => false;
+
     [DebuggerBrowsable(DebuggerBrowsableState.Never)]
     private string DebuggerDisplay => $"{{{GetType().Name}, Name = \"{Name}\", ModType = {ModType}, Path = \"{RelativeStormModPath}\"}}";
 
@@ -397,12 +402,28 @@ internal abstract class StormModBase<T> : IStormMod
     /// </summary>
     /// <param name="filePath">The full path of the file.</param>
     /// <returns>The <see cref="StormFile"/> with a path relative to the <c>mods</c> directory and the full path.</returns>
-    private StormFile CreateStormFile(string filePath) => new()
+    private StormFile CreateStormFile(string filePath)
     {
-        StormModName = Name,
-        RelativePath = GetRelativePath(filePath),
-        FullPath = filePath,
-    };
+        string? mpqEntryPath = null;
+
+        // for an MPQ archive, the DirectoryPath is the archive file and the rest of the path is the entry inside it
+        if (IsMpqArchive &&
+            filePath.Length > DirectoryPath.Length + 1 &&
+            filePath.StartsWith(DirectoryPath, StringComparison.Ordinal) &&
+            IsDirectorySeparator(filePath[DirectoryPath.Length]))
+        {
+            mpqEntryPath = filePath[(DirectoryPath.Length + 1)..];
+        }
+
+        return new()
+        {
+            StormModName = Name,
+            RelativePath = GetRelativePath(filePath),
+            FullPath = filePath,
+            MpqFilePath = mpqEntryPath is null ? null : DirectoryPath,
+            MpqEntryPath = mpqEntryPath,
+        };
+    }
 
     /// <summary>
     /// Gets the path of a file relative to the <c>mods</c> directory.

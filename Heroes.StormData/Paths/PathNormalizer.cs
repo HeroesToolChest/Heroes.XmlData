@@ -51,17 +51,13 @@ internal sealed class PathNormalizer
         }
     }
 
-    private static char NormalizeChar(char value) => IsSeparator(value) ? Path.DirectorySeparatorChar : char.ToLowerInvariant(value);
-
-    private static bool IsSeparator(char value) => value is '/' or '\\';
-
     /// <summary>
     /// Gets the number of characters at the start of <paramref name="filePath"/> taken up by <paramref name="directory"/>, including any separators that follow it.
     /// </summary>
     /// <param name="filePath">A file path.</param>
     /// <param name="directory">The directory to match.</param>
     /// <returns>The length of the matched prefix, or 0 if <paramref name="filePath"/> does not start with <paramref name="directory"/>.</returns>
-    private static int GetDirectoryPrefixLength(ReadOnlySpan<char> filePath, ReadOnlySpan<char> directory)
+    public static int GetDirectoryPrefixLength(ReadOnlySpan<char> filePath, ReadOnlySpan<char> directory)
     {
         directory = directory.TrimEnd(['/', '\\']);
 
@@ -85,4 +81,8 @@ internal sealed class PathNormalizer
 
         return prefixLength;
     }
+
+    private static char NormalizeChar(char value) => IsSeparator(value) ? Path.DirectorySeparatorChar : char.ToLowerInvariant(value);
+
+    private static bool IsSeparator(char value) => value is '/' or '\\';
 }
