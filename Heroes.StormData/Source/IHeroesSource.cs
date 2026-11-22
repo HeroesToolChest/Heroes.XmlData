@@ -42,4 +42,12 @@ internal interface IHeroesSource
     /// </summary>
     /// <returns>A collection of map titles.</returns>
     IEnumerable<string> GetMapTitles();
+
+    /// <summary>
+    /// Gets the <see cref="S2MAProperties"/> of a map from the depot cache. Only maps that have a matching <see cref="S2MVProperties"/> are found.
+    /// </summary>
+    /// <param name="mapTitle">The map's title (enUS). Is case-insensitive.</param>
+    /// <param name="s2maProperties">When this method returns, contains the <see cref="S2MAProperties"/> of the map, if found; otherwise, <see langword="null"/>.</param>
+    /// <returns><see langword="true"/> if the map was found; otherwise <see langword="false"/>, which is always the case until the depot cache is loaded.</returns>
+    bool TryGetS2MAProperties(string mapTitle, [NotNullWhen(true)] out S2MAProperties? s2maProperties);
 }

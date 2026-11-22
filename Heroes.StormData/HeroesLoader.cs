@@ -382,11 +382,11 @@ public class HeroesLoader
         if (!_heroesSource.TryGetS2MAProperties(mapTitle, out S2MAProperties? s2maProperties))
             return false;
 
-        string title = s2maProperties.S2MVProperties?.HeaderTitle ?? mapTitle;
+        string headerTitle = s2maProperties.S2MVProperties?.HeaderTitle ?? mapTitle;
 
         try
         {
-            if (!_heroesSource.LoadStormMapMod(title))
+            if (!_heroesSource.LoadStormMapMod(headerTitle))
                 return false;
         }
         catch
@@ -398,7 +398,7 @@ public class HeroesLoader
             throw;
         }
 
-        LoadedMapTitle = title;
+        LoadedMapTitle = headerTitle;
         mapChanged = true;
 
         return true;

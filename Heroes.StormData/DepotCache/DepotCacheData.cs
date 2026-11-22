@@ -22,6 +22,9 @@ internal sealed class DepotCacheData
 
     /// <summary>
     /// Gets the <see cref="S2MAProperties"/> that have a matching <see cref="S2MVProperties"/>, by the map title.
+    /// <para>
+    /// The key is the map title (<c>enUS</c>) and is case-insensitive.
+    /// </para>
     /// </summary>
     public Dictionary<string, S2MAProperties> S2MAPropertiesByTitle { get; } = new(StringComparer.OrdinalIgnoreCase);
 

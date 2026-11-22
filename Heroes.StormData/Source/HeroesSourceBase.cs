@@ -1,4 +1,4 @@
-﻿namespace Heroes.StormData.Source;
+namespace Heroes.StormData.Source;
 
 internal abstract class HeroesSourceBase : IHeroesSource
 {
@@ -54,7 +54,7 @@ internal abstract class HeroesSourceBase : IHeroesSource
 
     public bool LoadStormMapMod(string mapTitle)
     {
-        if (_depotCache is null || !_depotCache.Data.S2MAPropertiesByTitle.TryGetValue(mapTitle, out S2MAProperties? s2maProperties))
+        if (!TryGetS2MAProperties(mapTitle, out S2MAProperties? s2maProperties))
             return false;
 
         UnloadStormMapMod();
@@ -83,6 +83,17 @@ internal abstract class HeroesSourceBase : IHeroesSource
     }
 
     public IEnumerable<string> GetMapTitles() => _depotCache?.Data.S2MAPropertiesByTitle.Keys ?? Enumerable.Empty<string>();
+
+    public bool TryGetS2MAProperties(string mapTitle, [NotNullWhen(true)] out S2MAProperties? s2maProperties)
+    {
+        if (_depotCache is null)
+        {
+            s2maProperties = null;
+            return false;
+        }
+
+        return _depotCache.Data.S2MAPropertiesByTitle.TryGetValue(mapTitle, out s2maProperties);
+    }
 
     /// <summary>
     /// Gets the <see cref="IStormMod"/> for the specified directory path.

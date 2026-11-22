@@ -1,4 +1,4 @@
-﻿namespace Heroes.StormData.DepotCache.Maps;
+namespace Heroes.StormData.DepotCache.Maps;
 
 /// <summary>
 /// S2MV properties extracted from s2mv files which are json files.
@@ -12,7 +12,7 @@ internal sealed class S2MVProperties : S2MapPropertiesBase
     public string MapLink { get; init; } = string.Empty;
 
     /// <summary>
-    /// Gets the map name in enUS. This is more unique than <see cref="MapLink"/>.
+    /// Gets the map name in <c>enUS</c>. This is more unique than <see cref="MapLink"/>.
     /// </summary>
     // UsedStrings:DocInfo/Name:enUS
     public string HeaderTitle { get; init; } = string.Empty;
