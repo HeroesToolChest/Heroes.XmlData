@@ -1,4 +1,4 @@
-﻿namespace Heroes.StormData;
+namespace Heroes.StormData;
 
 /// <summary>
 /// Class to load the heroes data from a given source.
@@ -32,7 +32,7 @@ public class HeroesLoader
     public bool IsStormModsLoaded { get; private set; }
 
     /// <summary>
-    /// Gets the title of the currently loaded map mod, or <see langword="null"/> if no map mod is loaded.
+    /// Gets the title of the currently loaded <c>mapmod</c>, or <see langword="null"/> if no <c>mapmod</c> is loaded.
     /// </summary>
     public string? LoadedMapTitle { get; private set; }
 
@@ -106,7 +106,7 @@ public class HeroesLoader
     }
 
     /// <summary>
-    /// <para>Loads the base <c>stormmods</c>, then the map mod and gamestrings described by <paramref name="options"/>, in that order.</para>
+    /// <para>Loads the base <c>stormmods</c>, then the <c>mapmod</c> and gamestrings described by <paramref name="options"/>, in that order.</para>
     /// <para>
     /// Compared to calling <see cref="LoadMapMod(string)"/> and <see cref="LoadGameStrings(StormLocale)"/> separately,
     /// the gamestrings are loaded at most once, even when both the map and the locale change.
@@ -146,15 +146,18 @@ public class HeroesLoader
     }
 
     /// <summary>
-    /// Loads a map mod, replacing the currently loaded one. Only one can be loaded at a time.
+    /// Loads a <c>mapmod</c>, replacing the currently loaded one.
+    /// <para>
+    /// Only one can be loaded at a time.
     /// Loads the base <c>stormmods</c> if they are not already loaded.
     /// If gamestrings are loaded, they are reloaded to include the map's gamestrings.
+    /// </para>
     /// </summary>
     /// <param name="mapTitle">
     /// <para>A map's title. Can be found from <see cref="GetMapTitles"/>. Is case-insensitive.</para>
-    /// <para>Only enUS maps titles are accepted.</para>
+    /// <para>Only <c>enUS</c> maps titles are accepted.</para>
     /// </param>
-    /// <returns><see langword="true"/> if the map is loaded; <see langword="false"/> if the map was not found, in which case the current map mod stays loaded.</returns>
+    /// <returns><see langword="true"/> if the map is loaded; <see langword="false"/> if the map was not found, in which case the current <c>mapmod</c> stays loaded.</returns>
     public bool LoadMapMod(string mapTitle)
     {
         LoadStormMods();
@@ -169,9 +172,9 @@ public class HeroesLoader
     }
 
     /// <summary>
-    /// Unloads the current map mod, including its gamestrings.
+    /// Unloads the current <c>mapmod</c>, including its gamestrings.
     /// </summary>
-    /// <returns><see langword="true"/> if a map mod was unloaded; <see langword="false"/> if no map mod was loaded.</returns>
+    /// <returns><see langword="true"/> if a <c>mapmod</c> was unloaded; <see langword="false"/> if no <c>mapmod</c> was loaded.</returns>
     public bool UnloadMapMod()
     {
         if (LoadedMapTitle is null)
@@ -185,8 +188,10 @@ public class HeroesLoader
 
     /// <summary>
     /// Loads the gamestrings of a locale from the base and map <c>stormmods</c>, replacing the currently loaded gamestrings.
+    /// <para>
     /// Only one locale can be loaded at a time. Does nothing if the locale is already loaded.
     /// Loads the base <c>stormmods</c> if they are not already loaded.
+    /// </para>
     /// </summary>
     /// <param name="localization">The <see cref="StormLocale"/>.</param>
     public void LoadGameStrings(StormLocale localization = StormLocale.ENUS)
@@ -200,8 +205,10 @@ public class HeroesLoader
     }
 
     /// <summary>
-    /// Gets a collection of the map titles (enUS) to be used for <see cref="LoadMapMod(string)"/>.
+    /// Gets a collection of the map titles (<c>enUS</c>) to be used for <see cref="LoadMapMod(string)"/>.
+    /// <para>
     /// This is empty until the base <c>stormmods</c> are loaded.
+    /// </para>
     /// </summary>
     /// <returns>A collection of map titles.</returns>
     public IEnumerable<string> GetMapTitles()

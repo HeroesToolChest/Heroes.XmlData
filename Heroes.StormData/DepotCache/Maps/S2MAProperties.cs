@@ -1,7 +1,7 @@
-﻿namespace Heroes.StormData.DepotCache.Maps;
+namespace Heroes.StormData.DepotCache.Maps;
 
 /// <summary>
-/// S2MA are the map mod files. These are in mpq format.
+/// S2MA are the <c>mapmod</c> files. These are in mpq format.
 /// </summary>
 internal sealed class S2MAProperties : S2MapPropertiesBase
 {

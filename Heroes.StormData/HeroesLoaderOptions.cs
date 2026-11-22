@@ -7,8 +7,8 @@ namespace Heroes.StormData;
 public sealed class HeroesLoaderOptions
 {
     /// <summary>
-    /// <para>Gets the title (enUS) of the map mod to load. Is case-insensitive. Can be found from <see cref="HeroesLoader.GetMapTitles"/>.</para>
-    /// <para>If <see langword="null"/>, the currently loaded map mod (if any) is left unchanged.</para>
+    /// <para>Gets the title (<c>enUS</c>) of the <c>mapmod</c> to load. Is case-insensitive. Can be found from <see cref="HeroesLoader.GetMapTitles"/>.</para>
+    /// <para>If <see langword="null"/>, the currently loaded <c>mapmod</c> (if any) is left unchanged.</para>
     /// </summary>
     public string? MapTitle { get; init; }
 
