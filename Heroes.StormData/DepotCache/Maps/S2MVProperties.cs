@@ -36,5 +36,6 @@ internal sealed class S2MVProperties : S2MapPropertiesBase
     public string CustomLayout { get; init; } = string.Empty;
 
     // MapInfo:Properties:Loading:CustomFrame
+    // a reference to a frame in the CustomLayout file, not a file path, so it is kept as is (not normalized)
     public string CustomFrame { get; init; } = string.Empty;
 }

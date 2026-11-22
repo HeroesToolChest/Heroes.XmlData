@@ -84,7 +84,7 @@ internal static class S2MVFileParser
             MapSize = new MapSize(mapInfoSizeElement.GetProperty("x").GetDouble(), mapInfoSizeElement.GetProperty("y").GetDouble()),
             PreviewLargeImage = PathNormalizer.NormalizePath(propertiesElement.GetProperty("PreviewLargeImage").GetString()),
             CustomLayout = PathNormalizer.NormalizePath(loadingElement.GetProperty("CustomLayout").GetString()),
-            CustomFrame = PathNormalizer.NormalizePath(loadingElement.GetProperty("CustomFrame").GetString()),
+            CustomFrame = loadingElement.GetProperty("CustomFrame").GetString() ?? string.Empty,
             DocInfoIconFile = PathNormalizer.NormalizePath(infoElement.GetProperty("IconFile").GetString()),
         };
 

@@ -174,6 +174,35 @@ public sealed class HeroesSourceBaseTests
     }
 
     [TestMethod]
+    public void TryGetS2MAProperties_DepotCacheLoadedDifferentCase_ReturnsProperties()
+    {
+        // arrange
+        AddVolskayaMap();
+        _heroesSource.LoadDepotCache();
+
+        // act
+        bool result = _heroesSource.TryGetS2MAProperties(MapTitle.ToUpperInvariant(), out S2MAProperties? s2maProperties);
+
+        // assert
+        result.Should().BeTrue();
+        s2maProperties.Should().BeSameAs(_depotCacheData.S2MAPropertiesByTitle[MapTitle]);
+    }
+
+    [TestMethod]
+    public void TryGetS2MAProperties_DepotCacheNotLoaded_ReturnsFalse()
+    {
+        // arrange
+        AddVolskayaMap();
+
+        // act
+        bool result = _heroesSource.TryGetS2MAProperties(MapTitle, out S2MAProperties? s2maProperties);
+
+        // assert
+        result.Should().BeFalse();
+        s2maProperties.Should().BeNull();
+    }
+
+    [TestMethod]
     public void LoadGamestrings_HasBaseAndMapStormMods_LoadsGameStringsOfBaseThenMapStormMods()
     {
         // arrange

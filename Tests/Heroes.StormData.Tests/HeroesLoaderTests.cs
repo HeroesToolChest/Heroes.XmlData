@@ -375,6 +375,162 @@ public sealed class HeroesLoaderTests
     }
 
     [TestMethod]
+    public void GetStormMap_NothingLoaded_LoadsOnlyDepotCacheFirst()
+    {
+        // arrange
+        SetS2MAProperties(MapTitle, new S2MAProperties() { S2MVProperties = new S2MVProperties() { HeaderTitle = MapTitle } });
+        HeroesLoader heroesLoader = HeroesLoader.LoadWithInternal(_heroesSource);
+
+        // act
+        StormMap? result = heroesLoader.GetStormMap(MapTitle);
+
+        // assert
+        result.Should().NotBeNull();
+        Received.InOrder(() =>
+        {
+            _heroesSource.LoadDepotCache();
+            _heroesSource.TryGetS2MAProperties(MapTitle, out Arg.Any<S2MAProperties?>());
+        });
+        _heroesSource.DidNotReceive().LoadStormMods();
+        heroesLoader.IsStormModsLoaded.Should().BeFalse();
+    }
+
+    [TestMethod]
+    public void GetMapTitles_NothingLoaded_LoadsOnlyDepotCacheFirst()
+    {
+        // arrange
+        _heroesSource.GetMapTitles().Returns([MapTitle]);
+        HeroesLoader heroesLoader = HeroesLoader.LoadWithInternal(_heroesSource);
+
+        // act
+        List<string> result = heroesLoader.GetMapTitles().ToList();
+
+        // assert
+        result.Should().Equal(MapTitle);
+        Received.InOrder(() =>
+        {
+            _heroesSource.LoadDepotCache();
+            _heroesSource.GetMapTitles();
+        });
+        _heroesSource.DidNotReceive().LoadStormMods();
+    }
+
+    [TestMethod]
+    public void GetStormMap_CalledThenLoadStormMods_LoadsDepotCacheOnce()
+    {
+        // arrange
+        HeroesLoader heroesLoader = HeroesLoader.LoadWithInternal(_heroesSource);
+
+        // act
+        heroesLoader.GetStormMap(MapTitle);
+        heroesLoader.GetMapTitles();
+        heroesLoader.LoadStormMods();
+
+        // assert
+        _heroesSource.Received(1).LoadDepotCache();
+        _heroesSource.Received(1).LoadStormMods();
+    }
+
+    [TestMethod]
+    public void GetStormMap_MapNotFound_ReturnsNull()
+    {
+        // arrange
+        HeroesLoader heroesLoader = HeroesLoader.LoadWithInternal(_heroesSource);
+
+        // act
+        StormMap? result = heroesLoader.GetStormMap("Unknown Map");
+
+        // assert
+        result.Should().BeNull();
+    }
+
+    [TestMethod]
+    public void GetStormMap_NoS2MVProperties_ReturnsNull()
+    {
+        // arrange
+        SetS2MAProperties(MapTitle, new S2MAProperties());
+        HeroesLoader heroesLoader = HeroesLoader.LoadWithInternal(_heroesSource);
+
+        // act
+        StormMap? result = heroesLoader.GetStormMap(MapTitle);
+
+        // assert
+        result.Should().BeNull();
+    }
+
+    [TestMethod]
+    public void GetStormMap_MapFound_ReturnsMapFromS2MAAndS2MVProperties()
+    {
+        // arrange
+        SetS2MAProperties(MapTitle, new S2MAProperties()
+        {
+            MapId = "Volskaya",
+            DirectoryPath = Path.Combine("core.stormmod", "base.stormdata", "depotcache", "8d", "55", "8d554.s2ma"),
+            S2MVProperties = new S2MVProperties()
+            {
+                HeaderTitle = MapTitle,
+                NameByStormLocale = new Dictionary<StormLocale, string>()
+                {
+                    [StormLocale.ENUS] = MapTitle,
+                    [StormLocale.FRFR] = "La fonderie Volskaya",
+                },
+                MapLink = "VolskayaLink",
+                MapSize = new MapSize(184, 160),
+                PreviewLargeImage = "preview.dds",
+                LoadingImage = "loading.dds",
+                CustomLayout = Path.Combine("ui", "layout", "loading.stormlayout"),
+                CustomFrame = "LoadingScreen/Frame",
+                DirectoryPath = Path.Combine("core.stormmod", "base.stormdata", "depotcache", "94", "a0", "94a00.s2mv"),
+            },
+        });
+
+        HeroesLoader heroesLoader = HeroesLoader.LoadWithInternal(_heroesSource);
+
+        // act
+        StormMap? result = heroesLoader.GetStormMap(MapTitle);
+
+        // assert
+        result.Should().BeEquivalentTo(new StormMap()
+        {
+            Name = MapTitle,
+            NameByLocale = new Dictionary<StormLocale, string>()
+            {
+                [StormLocale.ENUS] = MapTitle,
+                [StormLocale.FRFR] = "La fonderie Volskaya",
+            },
+            MapId = "Volskaya",
+            MapLink = "VolskayaLink",
+            MapSize = (184, 160),
+            ReplayPreviewImagePath = "preview.dds",
+            LoadingScreenImagePath = "loading.dds",
+            LayoutFilePath = Path.Combine("ui", "layout", "loading.stormlayout"),
+            LayoutLoadingScreenFrame = "LoadingScreen/Frame",
+            S2MAFilePath = Path.Combine("core.stormmod", "base.stormdata", "depotcache", "8d", "55", "8d554.s2ma"),
+            S2MVFilePath = Path.Combine("core.stormmod", "base.stormdata", "depotcache", "94", "a0", "94a00.s2mv"),
+        });
+    }
+
+    [TestMethod]
+    public void GetStormMap_MapTitleInDifferentCase_NameIsTheMapsTitle()
+    {
+        // arrange
+        SetS2MAProperties(MapTitle.ToLowerInvariant(), new S2MAProperties()
+        {
+            S2MVProperties = new S2MVProperties() { HeaderTitle = MapTitle },
+        });
+
+        HeroesLoader heroesLoader = HeroesLoader.LoadWithInternal(_heroesSource);
+
+        // act
+        StormMap? result = heroesLoader.GetStormMap(MapTitle.ToLowerInvariant());
+
+        // assert
+        result.Should().NotBeNull();
+        result.Name.Should().Be(MapTitle);
+        result.MapId.Should().BeEmpty();
+    }
+
+    [TestMethod]
     public void LoadGameStrings_StormModsNotLoaded_LoadsStormModsFirst()
     {
         // arrange
@@ -389,6 +545,15 @@ public sealed class HeroesLoaderTests
             _heroesSource.LoadStormMods();
             _heroesSource.LoadDepotCache();
             _heroesSource.LoadGamestrings(StormLocale.ENUS);
+        });
+    }
+
+    private void SetS2MAProperties(string mapTitle, S2MAProperties s2maProperties)
+    {
+        _heroesSource.TryGetS2MAProperties(mapTitle, out Arg.Any<S2MAProperties?>()).Returns(x =>
+        {
+            x[1] = s2maProperties;
+            return true;
         });
     }
 }

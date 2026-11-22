@@ -83,7 +83,7 @@ internal sealed class FileDepotCacheTests
         volskaya.MapSize.Should().Be(new MapSize(248, 208));
         volskaya.PreviewLargeImage.Should().Be(Path.Combine("assets", "textures", "storm_ui_homescreenbackground_volskaya.dds"));
         volskaya.CustomLayout.Should().Be(Path.Combine("ui", "layout", "loadingscreens", "volskaya_loading.stormlayout"));
-        volskaya.CustomFrame.Should().Be(Path.Combine("volskaya_loading", "screenmaploading_volskaya"));
+        volskaya.CustomFrame.Should().Be("Volskaya_Loading/ScreenMapLoading_Volskaya");
         volskaya.MapDependencies.Should().ContainSingle().Which.Should().Be(new MapDependency()
         {
             BnetName = "Volskaya Sound",
@@ -112,7 +112,7 @@ internal sealed class FileDepotCacheTests
         cursedHollow.MapSize.Should().Be(new MapSize(256, 216));
         cursedHollow.PreviewLargeImage.Should().Be("replayspreviewimage.tga");
         cursedHollow.CustomLayout.Should().Be(Path.Combine("ui", "layout", "loadingscreens", "cursedhollow_loading.stormlayout"));
-        cursedHollow.CustomFrame.Should().Be(Path.Combine("cursedhollow_loading", "screenmaploading_cursedhollow"));
+        cursedHollow.CustomFrame.Should().Be("CursedHollow_Loading/ScreenMapLoading_CursedHollow");
         cursedHollow.MapDependencies.Should().ContainSingle().Which.Should().Be(new MapDependency()
         {
             BnetName = "Cursed Hollow (Mod)",

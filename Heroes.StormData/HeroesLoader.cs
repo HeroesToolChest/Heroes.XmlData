@@ -32,6 +32,8 @@ public class HeroesLoader
 
     private readonly IHeroesSource _heroesSource;
 
+    private bool _isDepotCacheLoaded;
+
     private HeroesLoader(IHeroesSource heroesSource, ModsInfoFile? modsInfoFile)
     {
         _heroesSource = heroesSource;
@@ -212,7 +214,7 @@ public class HeroesLoader
             return;
 
         _heroesSource.LoadStormMods();
-        _heroesSource.LoadDepotCache();
+        EnsureDepotCacheLoaded();
 
         IsStormModsLoaded = true;
     }
@@ -279,13 +281,48 @@ public class HeroesLoader
     /// <summary>
     /// Gets a collection of the map titles (<c>enUS</c>) to be used for <see cref="LoadMapMod(string)"/>.
     /// <para>
-    /// This is empty until the base <c>stormmods</c> are loaded.
+    /// Loads the depot cache (the map files) if it is not already loaded. The base <c>stormmods</c> are not loaded.
     /// </para>
     /// </summary>
     /// <returns>A collection of map titles.</returns>
     public IEnumerable<string> GetMapTitles()
     {
+        EnsureDepotCacheLoaded();
+
         return _heroesSource.GetMapTitles();
+    }
+
+    /// <summary>
+    /// Gets a map's data from the <c>.s2ma</c> and <c>.s2mv</c> files. Does not contain data from the xml or gamestring files.
+    /// <para>
+    /// Loads the depot cache (the map files) if it is not already loaded. The base <c>stormmods</c> are not loaded.
+    /// </para>
+    /// </summary>
+    /// <param name="mapTitle">A map's title (<c>enUS</c>). Can be found from <see cref="GetMapTitles"/>. Is case-insensitive.</param>
+    /// <returns>Map data for the specified map or <see langword="null"/> if the map was not found.</returns>
+    public StormMap? GetStormMap(string mapTitle)
+    {
+        ArgumentNullException.ThrowIfNull(mapTitle);
+
+        EnsureDepotCacheLoaded();
+
+        if (!_heroesSource.TryGetS2MAProperties(mapTitle, out S2MAProperties? s2maProperties) || s2maProperties.S2MVProperties is not S2MVProperties s2mvProperties)
+            return null;
+
+        return new StormMap()
+        {
+            Name = s2mvProperties.HeaderTitle,
+            NameByLocale = s2mvProperties.NameByStormLocale.AsReadOnly(),
+            MapId = s2maProperties.MapId ?? string.Empty,
+            MapLink = s2mvProperties.MapLink,
+            MapSize = (s2mvProperties.MapSize.Width, s2mvProperties.MapSize.Height),
+            ReplayPreviewImagePath = s2mvProperties.PreviewLargeImage,
+            LoadingScreenImagePath = s2mvProperties.LoadingImage,
+            LayoutFilePath = s2mvProperties.CustomLayout,
+            LayoutLoadingScreenFrame = s2mvProperties.CustomFrame,
+            S2MAFilePath = s2maProperties.DirectoryPath,
+            S2MVFilePath = s2mvProperties.DirectoryPath,
+        };
     }
 
     internal static HeroesLoader LoadWithInternal(IHeroesSource heroesSource, HeroesLoaderOptions? options = null, ModsInfoFile? modsInfoFile = null)
@@ -329,6 +366,15 @@ public class HeroesLoader
         mapChanged = true;
 
         return true;
+    }
+
+    private void EnsureDepotCacheLoaded()
+    {
+        if (_isDepotCacheLoaded)
+            return;
+
+        _heroesSource.LoadDepotCache();
+        _isDepotCacheLoaded = true;
     }
 
     private void LoadGameStringsCore(StormLocale localization)
