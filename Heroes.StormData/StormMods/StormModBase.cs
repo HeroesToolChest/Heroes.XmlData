@@ -1,4 +1,4 @@
-﻿namespace Heroes.StormData.StormMods;
+namespace Heroes.StormData.StormMods;
 
 /// <summary>
 /// Represents a base class for a <c>stormmod</c> directory.
@@ -23,6 +23,9 @@ internal abstract class StormModBase<T> : IStormMod
     private static readonly char[] _directorySeparatorChars = [Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar];
 
     private readonly List<IStormMod> _includesStormModsCache = [];
+
+    // the full paths of the XML files added by LoadStormFiles, the casing can differ between the directory and the gamedata.xml file
+    private readonly HashSet<string> _addedXmlFilePaths = new(StringComparer.OrdinalIgnoreCase);
 
     /// <summary>
     /// Initializes a new instance of the <see cref="StormModBase{T}"/> class.
@@ -120,6 +123,8 @@ internal abstract class StormModBase<T> : IStormMod
 
     public virtual void LoadStormFiles()
     {
+        _addedXmlFilePaths.Clear();
+
         LoadFontStylesFile();
         LoadStormLayoutDirectory();
         LoadAssetsDirectory();
@@ -280,6 +285,7 @@ internal abstract class StormModBase<T> : IStormMod
 
     /// <summary>
     /// Loads and adds the XML files listed in the <c>gamedata.xml</c> file. Only the files in the <c>gamedata</c> directory are added.
+    /// Files that were already added (such as those directly in the <c>gamedata</c> directory) are skipped.
     /// </summary>
     private void LoadGameDataXmlFile()
     {
@@ -323,11 +329,15 @@ internal abstract class StormModBase<T> : IStormMod
     }
 
     /// <summary>
-    /// Loads an XML file into the <see cref="ModContainer"/>.
+    /// Loads an XML file into the <see cref="ModContainer"/>, unless it was already added.
     /// </summary>
     /// <param name="path">The full path of the XML file.</param>
     private void AddXmlFile(string path)
     {
+        // the gamedata.xml file also lists files directly in the gamedata directory, which were already loaded
+        if (!_addedXmlFilePaths.Add(path))
+            return;
+
         StormFile stormFile = CreateStormFile(path);
 
         if (!TryCreateXmlReader(path, out XmlReader? xmlReader))

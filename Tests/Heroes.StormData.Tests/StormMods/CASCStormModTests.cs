@@ -139,6 +139,30 @@ public sealed class CASCStormModTests
     }
 
     [TestMethod]
+    public void LoadStormFiles_GameDataXmlFileListsFileInGameDataDirectory_LoadsItOnce()
+    {
+        // arrange
+        AddConstXmlFile(Path.Combine(_baseStormDataPath, "GameData", "AbilData.xml"), "$AbilConst");
+
+        AddCASCFile(
+            Path.Combine(_baseStormDataPath, "GameData.xml"),
+            """
+            <Includes>
+              <Catalog path="GameData/AbilData.xml" />
+            </Includes>
+            """);
+
+        CASCStormMod cascStormMod = CreateCASCStormMod();
+
+        // act
+        cascStormMod.LoadStormFiles();
+
+        // assert
+        cascStormMod.ModContainer.LoadedXmlFiles.Should().ContainSingle().Which.FullPath.Should().Be(Path.Combine(_gameDataDirectoryPath, "AbilData.xml"));
+        GetDataStorage(StormModType.Base).ElementCache.StormXmlConstElementById.Dictionary["$AbilConst"].StormFiles.Should().ContainSingle();
+    }
+
+    [TestMethod]
     public void LoadStormFiles_GameDataXmlFileHasCatalogs_LoadsCatalogFilesFromGameDataDirectory()
     {
         // arrange

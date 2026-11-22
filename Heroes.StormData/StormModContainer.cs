@@ -1,4 +1,4 @@
-﻿namespace Heroes.StormData;
+namespace Heroes.StormData;
 
 /// <summary>
 /// Represents a container for a specific <c>stormmod</c> and its associated files and elements.

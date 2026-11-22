@@ -184,6 +184,71 @@ internal sealed class FileStormModTests
     }
 
     [TestMethod]
+    public void LoadStormFiles_GameDataXmlFileListsFileInGameDataDirectory_LoadsItOnce()
+    {
+        // arrange
+        // the file is found by the directory with the casing on disk and listed in the gamedata.xml file with a different casing
+        string filePath = Path.Combine(_gameDataDirectoryPath, "AbilData.xml");
+        AddConstXmlFile(filePath, "$AbilConst");
+
+        _fileSystem.AddFile(Path.Combine(_baseStormDataPath, "GameData.xml"), new MockFileData(
+            """
+            <Includes>
+              <Catalog path="GameData/AbilData.xml" />
+            </Includes>
+            """));
+
+        FileStormMod fileStormMod = CreateFileStormMod();
+
+        // act
+        fileStormMod.LoadStormFiles();
+
+        // assert
+        fileStormMod.ModContainer.LoadedXmlFiles.Should().ContainSingle().Which.FullPath.Should().Be(filePath);
+        GetDataStorage(StormModType.Base).ElementCache.StormXmlConstElementById.Dictionary["$AbilConst"].StormFiles.Should().ContainSingle();
+    }
+
+    [TestMethod]
+    public void LoadStormFiles_GameDataXmlFileListsCatalogTwice_LoadsItOnce()
+    {
+        // arrange
+        AddConstXmlFile(Path.Combine(_gameDataDirectoryPath, "Heroes", "HeroData.xml"), "$HeroConst");
+
+        _fileSystem.AddFile(Path.Combine(_baseStormDataPath, "GameData.xml"), new MockFileData(
+            """
+            <Includes>
+              <Catalog path="GameData/Heroes/HeroData.xml" />
+              <Catalog path="GameData\HEROES\HeroData.xml" />
+            </Includes>
+            """));
+
+        FileStormMod fileStormMod = CreateFileStormMod();
+
+        // act
+        fileStormMod.LoadStormFiles();
+
+        // assert
+        fileStormMod.ModContainer.LoadedXmlFiles.Should().ContainSingle();
+    }
+
+    [TestMethod]
+    public void LoadStormFiles_CalledAgain_LoadsXmlFilesAgain()
+    {
+        // arrange
+        AddConstXmlFile(Path.Combine(_gameDataDirectoryPath, "AbilData.xml"), "$AbilConst");
+
+        FileStormMod fileStormMod = CreateFileStormMod();
+        fileStormMod.LoadStormFiles();
+
+        // act
+        fileStormMod.LoadStormFiles();
+
+        // assert
+        // the files already added are only tracked within one call
+        fileStormMod.ModContainer.LoadedXmlFiles.Should().HaveCount(2);
+    }
+
+    [TestMethod]
     public void LoadStormFiles_GameDataSubdirectoryAndNonXmlFiles_DoesNotLoadThem()
     {
         // arrange
