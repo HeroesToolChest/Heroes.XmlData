@@ -90,6 +90,12 @@ public class HeroesLoader
     public bool IsStormModsLoaded { get; private set; }
 
     /// <summary>
+    /// Gets a value indicating whether a <c>mapmod</c> is currently loaded.
+    /// </summary>
+    [MemberNotNullWhen(true, nameof(LoadedMapTitle))]
+    public bool IsStormMapModLoaded => LoadedMapTitle is not null;
+
+    /// <summary>
     /// Gets the title of the currently loaded <c>mapmod</c>, or <see langword="null"/> if no <c>mapmod</c> is loaded.
     /// </summary>
     public string? LoadedMapTitle { get; private set; }

@@ -393,6 +393,43 @@ public sealed class HeroesLoaderTests
     }
 
     [TestMethod]
+    public void IsStormMapModLoaded_NoMapLoaded_ReturnsFalse()
+    {
+        // act
+        HeroesLoader heroesLoader = HeroesLoader.LoadWithInternal(_heroesSource);
+
+        // assert
+        heroesLoader.IsStormMapModLoaded.Should().BeFalse();
+    }
+
+    [TestMethod]
+    public void IsStormMapModLoaded_MapLoaded_ReturnsTrue()
+    {
+        // arrange
+        HeroesLoader heroesLoader = HeroesLoader.LoadWithInternal(_heroesSource);
+
+        // act
+        heroesLoader.LoadMapMod(MapTitle);
+
+        // assert
+        heroesLoader.IsStormMapModLoaded.Should().BeTrue();
+    }
+
+    [TestMethod]
+    public void IsStormMapModLoaded_MapUnloaded_ReturnsFalse()
+    {
+        // arrange
+        HeroesLoader heroesLoader = HeroesLoader.LoadWithInternal(_heroesSource);
+        heroesLoader.LoadMapMod(MapTitle);
+
+        // act
+        heroesLoader.UnloadMapMod();
+
+        // assert
+        heroesLoader.IsStormMapModLoaded.Should().BeFalse();
+    }
+
+    [TestMethod]
     public void UnloadMapMod_NoMapLoaded_ReturnsFalse()
     {
         // arrange
