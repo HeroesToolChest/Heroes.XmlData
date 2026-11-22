@@ -151,6 +151,10 @@ public class HeroesLoader
     /// <exception cref="DirectoryNotFoundException"><paramref name="rootDirectory"/> does not exist.</exception>
     /// <exception cref="HeroesStormDataException"><see cref="HeroesLoaderOptions.MapTitle"/> was not found.</exception>
     /// <exception cref="JsonException">The <c>hdp.info</c> file is not valid JSON.</exception>
+    /// <remarks>
+    /// On Linux and macOS, all the files and directories in <paramref name="rootDirectory"/> must have lowercase names, because their paths are looked up in lowercase.
+    /// The <paramref name="rootDirectory"/> path itself is used as is.
+    /// </remarks>
     public static HeroesLoader LoadWithFile(string rootDirectory, ModsInfoFile? modsInfoFile = null, HeroesLoaderOptions? options = null)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(rootDirectory);
