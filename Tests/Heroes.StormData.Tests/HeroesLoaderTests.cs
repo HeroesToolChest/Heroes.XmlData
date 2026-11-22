@@ -261,6 +261,106 @@ public sealed class HeroesLoaderTests
     }
 
     [TestMethod]
+    public void LoadWithInternal_WithModsInfoFile_SetsVersionAndIsPtr()
+    {
+        // arrange
+        ModsInfoFile modsInfoFile = new()
+        {
+            Version = "2.55.13.95301",
+            IsPtr = true,
+        };
+
+        // act
+        HeroesLoader heroesLoader = HeroesLoader.LoadWithInternal(_heroesSource, modsInfoFile: modsInfoFile);
+
+        // assert
+        heroesLoader.ModsInfoFile.Should().BeSameAs(modsInfoFile);
+        heroesLoader.HeroesVersion.Should().Be("2.55.13.95301");
+        heroesLoader.IsPtr.Should().BeTrue();
+    }
+
+    [TestMethod]
+    public void LoadWithInternal_NoModsInfoFile_VersionIsNullAndIsNotPtr()
+    {
+        // act
+        HeroesLoader heroesLoader = HeroesLoader.LoadWithInternal(_heroesSource);
+
+        // assert
+        heroesLoader.ModsInfoFile.Should().BeNull();
+        heroesLoader.HeroesVersion.Should().BeNull();
+        heroesLoader.IsPtr.Should().BeFalse();
+    }
+
+    [TestMethod]
+    public void GetModsInfoFile_FileDoesNotExist_ReturnsNull()
+    {
+        // arrange
+        MockFileSystem fileSystem = new();
+
+        // act
+        ModsInfoFile? result = HeroesLoader.GetModsInfoFile(fileSystem, MockUnixSupport.Path(@"C:\Heroes\mods"));
+
+        // assert
+        result.Should().BeNull();
+    }
+
+    [TestMethod]
+    public void GetModsInfoFile_FileExistsWithNoVersionProperty_PropertiesAreDefault()
+    {
+        // arrange
+        string rootDirectory = MockUnixSupport.Path(@"C:\Heroes\mods");
+        MockFileSystem fileSystem = new(new Dictionary<string, MockFileData>()
+        {
+            [Path.Join(rootDirectory, HeroesLoader.ModsHdpInfoFileName)] = new MockFileData(
+                """
+                {
+                  "property": "value"
+                }
+                """),
+        });
+
+        // act
+        ModsInfoFile? result = HeroesLoader.GetModsInfoFile(fileSystem, rootDirectory);
+
+        // assert
+        result.Should().NotBeNull();
+        result.Version.Should().BeNull();
+        result.IsPtr.Should().BeFalse();
+        result.HdpVersion.Should().BeEmpty();
+    }
+
+    [TestMethod]
+    public void GetModsInfoFile_FileExistsWithProperties_ReturnsProperties()
+    {
+        // arrange
+        string rootDirectory = MockUnixSupport.Path(@"C:\Heroes\mods");
+        MockFileSystem fileSystem = new(new Dictionary<string, MockFileData>()
+        {
+            [Path.Join(rootDirectory, HeroesLoader.ModsHdpInfoFileName)] = new MockFileData(
+                """
+                {
+                  // some comment
+                  "version": "2.55.13.95301",
+                  "isPtr": true,
+                  "customproperty": "customvalue",
+                  "hdpVersion": "5.12.64",
+                  "extractedDate": "2024-06-01T12:34:56Z"
+                }
+                """),
+        });
+
+        // act
+        ModsInfoFile? result = HeroesLoader.GetModsInfoFile(fileSystem, rootDirectory);
+
+        // assert
+        result.Should().NotBeNull();
+        result.Version.Should().Be("2.55.13.95301");
+        result.IsPtr.Should().BeTrue();
+        result.HdpVersion.Should().Be("5.12.64");
+        result.ExtractedDate.Should().Be(new DateTimeOffset(2024, 6, 1, 12, 34, 56, TimeSpan.Zero));
+    }
+
+    [TestMethod]
     public void LoadGameStrings_StormModsNotLoaded_LoadsStormModsFirst()
     {
         // arrange

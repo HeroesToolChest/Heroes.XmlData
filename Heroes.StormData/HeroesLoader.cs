@@ -19,12 +19,57 @@ public class HeroesLoader
     /// </summary>
     public const string ProductPtrName = "herot";
 
+    /// <summary>
+    /// The name of the <c>hdp.info</c> file in a local <c>mods</c> directory.
+    /// </summary>
+    public const string ModsHdpInfoFileName = "hdp.info";
+
+    private static readonly JsonSerializerOptions _modsInfoFileJsonSerializerOptions = new()
+    {
+        PropertyNameCaseInsensitive = true,
+        ReadCommentHandling = JsonCommentHandling.Skip,
+    };
+
     private readonly IHeroesSource _heroesSource;
 
-    private HeroesLoader(IHeroesSource heroesSource)
+    private HeroesLoader(IHeroesSource heroesSource, ModsInfoFile? modsInfoFile)
     {
         _heroesSource = heroesSource;
+
+        ModsInfoFile = modsInfoFile;
+        HeroesVersion = modsInfoFile?.Version;
+        IsPtr = modsInfoFile?.IsPtr ?? false;
     }
+
+    private HeroesLoader(IHeroesSource heroesSource, CASCConfig cascConfig)
+    {
+        _heroesSource = heroesSource;
+
+        HeroesVersion = cascConfig.VersionName;
+        IsPtr = cascConfig.Product == ProductPtrName;
+    }
+
+    /// <summary>
+    /// Gets the version of the loaded Heroes of the Storm data, or <see langword="null"/> if it is unknown.
+    /// <para>
+    /// For a CASC source, this is from the <see cref="CASCConfig"/>. For a file source, this is from the <see cref="ModsInfoFile"/>.
+    /// </para>
+    /// </summary>
+    public string? HeroesVersion { get; }
+
+    /// <summary>
+    /// Gets a value indicating whether the data is from the PTR.
+    /// <para>
+    /// For a CASC source, this is from the <see cref="CASCConfig"/>. For a file source, this is from the <see cref="ModsInfoFile"/>,
+    /// and is <see langword="false"/> if there is none.
+    /// </para>
+    /// </summary>
+    public bool IsPtr { get; }
+
+    /// <summary>
+    /// Gets the <c>hdp.info</c> file properties of a file source, or <see langword="null"/> if there is none or the source is CASC.
+    /// </summary>
+    public ModsInfoFile? ModsInfoFile { get; }
 
     /// <summary>
     /// Gets a value indicating whether the base <c>stormmods</c> have been loaded.
@@ -65,17 +110,34 @@ public class HeroesLoader
     }
 
     /// <summary>
+    /// Gets the properties from the <c>hdp.info</c> file of a local <c>mods</c> directory.
+    /// </summary>
+    /// <param name="rootDirectory">The root directory path, usually the <c>mods</c> directory.</param>
+    /// <returns>The <see cref="StormData.ModsInfoFile"/> or <see langword="null"/> if the file was not found.</returns>
+    /// <exception cref="JsonException">The file is not valid JSON.</exception>
+    public static ModsInfoFile? GetModsInfoFile(string rootDirectory)
+    {
+        return GetModsInfoFile(new FileSystem(), rootDirectory);
+    }
+
+    /// <summary>
     /// Gets an instance of the <see cref="HeroesLoader"/> class. Sets the source of the data to be loaded from an extracted file source.
     /// </summary>
     /// <param name="rootDirectory">The root directory path, usually the <c>mods</c> directory.</param>
+    /// <param name="modsInfoFile">
+    /// The properties of the extracted file source. If <see langword="null"/>, they are read from the <c>hdp.info</c> file in <paramref name="rootDirectory"/>, if it exists.
+    /// </param>
     /// <param name="options">If not <see langword="null"/>, the data is loaded as described by <see cref="Load(HeroesLoaderOptions)"/>. Otherwise nothing is loaded yet.</param>
     /// <returns>A <see cref="HeroesLoader"/> instance.</returns>
     /// <exception cref="HeroesStormDataException"><see cref="HeroesLoaderOptions.MapTitle"/> was not found.</exception>
-    public static HeroesLoader LoadWithFile(string rootDirectory, HeroesLoaderOptions? options = null)
+    /// <exception cref="JsonException">The <c>hdp.info</c> file is not valid JSON.</exception>
+    public static HeroesLoader LoadWithFile(string rootDirectory, ModsInfoFile? modsInfoFile = null, HeroesLoaderOptions? options = null)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(rootDirectory);
 
-        return Create(new FileHeroesSource(rootDirectory, new StormModFactory()), options);
+        modsInfoFile ??= GetModsInfoFile(rootDirectory);
+
+        return Create(new HeroesLoader(new FileHeroesSource(rootDirectory, new StormModFactory()), modsInfoFile), options);
     }
 
     /// <summary>
@@ -102,7 +164,7 @@ public class HeroesLoader
 
         CASCHeroesSource cascHeroesSource = new(SourceConstants.DefaultModsDirectory, new StormModFactory(), new CASCHeroesStorage(cascHandler, cascFolderRoot));
 
-        return Create(cascHeroesSource, options);
+        return Create(new HeroesLoader(cascHeroesSource, cascConfig), options);
     }
 
     /// <summary>
@@ -216,15 +278,25 @@ public class HeroesLoader
         return _heroesSource.GetMapTitles();
     }
 
-    internal static HeroesLoader LoadWithInternal(IHeroesSource heroesSource, HeroesLoaderOptions? options = null)
+    internal static HeroesLoader LoadWithInternal(IHeroesSource heroesSource, HeroesLoaderOptions? options = null, ModsInfoFile? modsInfoFile = null)
     {
-        return Create(heroesSource, options);
+        return Create(new HeroesLoader(heroesSource, modsInfoFile), options);
     }
 
-    private static HeroesLoader Create(IHeroesSource heroesSource, HeroesLoaderOptions? options)
+    internal static ModsInfoFile? GetModsInfoFile(IFileSystem fileSystem, string rootDirectory)
     {
-        HeroesLoader heroesLoader = new(heroesSource);
+        string infoFilePath = fileSystem.Path.Join(rootDirectory, ModsHdpInfoFileName);
 
+        if (!fileSystem.File.Exists(infoFilePath))
+            return null;
+
+        using FileSystemStream fileStream = fileSystem.File.OpenRead(infoFilePath);
+
+        return JsonSerializer.Deserialize<ModsInfoFile>(fileStream, _modsInfoFileJsonSerializerOptions);
+    }
+
+    private static HeroesLoader Create(HeroesLoader heroesLoader, HeroesLoaderOptions? options)
+    {
         if (options is not null)
             heroesLoader.Load(options);
 
