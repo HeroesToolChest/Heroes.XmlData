@@ -177,6 +177,36 @@ internal sealed class FileDepotCacheTests
     }
 
     [TestMethod]
+    public void LoadDepotCache_ModsDirectoryNotNamedMods_DirectoryPathsAreRelativeToIt()
+    {
+        // arrange
+        string modsDirectoryPath = MockUnixSupport.Path(@"C:\Heroes\hots_data");
+        string depotCacheDirectoryPath = Path.Combine(modsDirectoryPath, "core.stormmod", "base.stormdata", "depotcache");
+
+        _heroesSource.ModsDirectoryPath.Returns(modsDirectoryPath);
+
+        foreach (string fileName in new[] { VolskayaS2MVFile, VolskayaS2MAFile })
+        {
+            _fileSystem.AddFile(
+                Path.Combine([depotCacheDirectoryPath, .. GetSubDirectories(fileName), fileName]),
+                new MockFileData(File.ReadAllBytes(Path.Combine(_testFilesDirectoryPath, fileName))));
+        }
+
+        FileDepotCache fileDepotCache = new(_fileSystem, _heroesSource);
+
+        // act
+        fileDepotCache.LoadDepotCache();
+
+        // assert
+        DepotCacheData data = fileDepotCache.Data;
+
+        S2MAProperties volskaya = data.S2MAPropertiesByTitle.Should().ContainKey("Volskaya Foundry").WhoseValue;
+        volskaya.DirectoryPath.Should().Be(GetExpectedDirectoryPath(VolskayaS2MAFile));
+        volskaya.S2MVProperties!.DirectoryPath.Should().Be(GetExpectedDirectoryPath(VolskayaS2MVFile));
+        volskaya.MapDependencies.Should().ContainSingle().Which.LocalFile.Should().Be(Path.Combine("heroesmapmods", "battlegroundmapmods", "volskayasound.stormmod"));
+    }
+
+    [TestMethod]
     public void LoadDepotCache_S2MAWithMatchingS2MV_LinksS2MVAndAddsByTitle()
     {
         // arrange

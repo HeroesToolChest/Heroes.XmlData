@@ -357,6 +357,58 @@ internal sealed class FileStormModTests
     }
 
     [TestMethod]
+    public void LoadStormFiles_ModsDirectoryNotNamedMods_IncludedStormModsAreUnderIt()
+    {
+        // arrange
+        string modsDirectoryPath = MockUnixSupport.Path(@"C:\Heroes\hots_data");
+        string stormModDirectoryPath = Path.Combine(modsDirectoryPath, "heroesdata.stormmod");
+
+        _heroesSource.ModsDirectoryPath.Returns(modsDirectoryPath);
+
+        IStormMod coreStormMod = CreateIncludedStormMod();
+        _stormModFactory.CreateFileStormMod(_heroesSource, Path.Combine(modsDirectoryPath, "core.stormmod"), StormModType.Base).Returns(coreStormMod);
+
+        _fileSystem.AddFile(Path.Combine(stormModDirectoryPath, "base.stormdata", "Includes.xml"), new MockFileData(
+            """
+            <?xml version="1.0" encoding="utf-8"?>
+            <Includes>
+              <Path value="Mods/Core.StormMod" />
+            </Includes>
+            """));
+
+        FileStormMod fileStormMod = new(_fileSystem, _heroesSource, stormModDirectoryPath, StormModType.Base);
+
+        // act
+        fileStormMod.LoadStormFiles();
+
+        // assert
+        _stormModFactory.Received(1).CreateFileStormMod(_heroesSource, Path.Combine(modsDirectoryPath, "core.stormmod"), StormModType.Base);
+        coreStormMod.Received(1).LoadStormFiles();
+    }
+
+    [TestMethod]
+    public void LoadStormFiles_ModsDirectoryNotNamedMods_StormFileRelativePathsAreRelativeToIt()
+    {
+        // arrange
+        string modsDirectoryPath = MockUnixSupport.Path(@"C:\Heroes\hots_data");
+        string stormModDirectoryPath = Path.Combine(modsDirectoryPath, "heroesdata.stormmod");
+        string xmlFilePath = Path.Combine(stormModDirectoryPath, "base.stormdata", "GameData", "test.xml");
+
+        _heroesSource.ModsDirectoryPath.Returns(modsDirectoryPath);
+
+        AddConstXmlFile(xmlFilePath, "$Const1");
+
+        FileStormMod fileStormMod = new(_fileSystem, _heroesSource, stormModDirectoryPath, StormModType.Base);
+
+        // act
+        fileStormMod.LoadStormFiles();
+
+        // assert
+        fileStormMod.RelativeStormModPath.Should().Be("heroesdata.stormmod");
+        fileStormMod.ModContainer.LoadedXmlFiles.Should().ContainSingle().Which.RelativePath.Should().Be(Path.Combine("heroesdata.stormmod", "base.stormdata", "GameData", "test.xml"));
+    }
+
+    [TestMethod]
     public void LoadStormFiles_IncludedStormModCreatedByFactory_LoadsItsFilesFromSameFileSystem()
     {
         // arrange
