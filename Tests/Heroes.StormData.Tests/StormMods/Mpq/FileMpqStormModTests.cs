@@ -1,3 +1,6 @@
+using Heroes.MpqTool;
+using System.IO.Abstractions;
+
 namespace Heroes.StormData.StormMods.Mpq.Tests;
 
 [TestClass]
@@ -110,6 +113,137 @@ public sealed class FileMpqStormModTests
     }
 
     [TestMethod]
+    public void LoadStormFiles_HasArchive_EveryStormFileHasMpqFileAndEntryPaths()
+    {
+        // arrange
+        AddTestArchive();
+        FileMpqStormMod fileMpqStormMod = CreateFileMpqStormMod(_archivePath);
+
+        // act
+        fileMpqStormMod.LoadStormFiles();
+
+        // assert
+        StormModContainer modContainer = fileMpqStormMod.ModContainer;
+        List<StormFile> stormFiles = [.. modContainer.LoadedXmlFiles, .. modContainer.LoadedAssetsTextFiles, .. modContainer.LoadedStormLayoutFiles, .. modContainer.LoadedAssetFiles];
+
+        stormFiles.Should().HaveCount(6).And.AllSatisfy(stormFile =>
+        {
+            stormFile.MpqFilePath.Should().Be(_archivePath);
+            stormFile.MpqEntryPath.Should().Be(stormFile.FullPath[(_archivePath.Length + 1)..]);
+        });
+    }
+
+    [TestMethod]
+    public void LoadStormFiles_GameDataSubdirectoryAndNoGameDataXmlFile_DoesNotLoadSubdirectoryFiles()
+    {
+        // arrange
+        // the archive has Base.StormData\GameData\Other\BehaviorData.xml, but no gamedata.xml file that lists it
+        AddTestArchive();
+        FileMpqStormMod fileMpqStormMod = CreateFileMpqStormMod(_archivePath);
+
+        // act
+        fileMpqStormMod.LoadStormFiles();
+
+        // assert
+        fileMpqStormMod.ModContainer.LoadedXmlFiles.Should().NotContain(x => x.FullPath.Contains("BehaviorData", StringComparison.OrdinalIgnoreCase));
+    }
+
+    [TestMethod]
+    public void LoadStormFiles_MapStormModType_LoadsIntoMapDataStorageOnly()
+    {
+        // arrange
+        AddTestArchive();
+        FileMpqStormMod fileMpqStormMod = CreateFileMpqStormMod(_archivePath, StormModType.Map);
+
+        // act
+        fileMpqStormMod.LoadStormFiles();
+
+        // assert
+        DataStorage mapDataStorage = GetDataStorage(StormModType.Map);
+        mapDataStorage.TextCache.AssetTextsById.Dictionary.Should().ContainKey("id1");
+        mapDataStorage.FileCache.StormLayoutFilesByRelativePath.Dictionary.Should().HaveCount(2);
+        mapDataStorage.FileCache.AssetFilesByRelativePath.Dictionary.Should().HaveCount(2);
+
+        DataStorage baseDataStorage = GetDataStorage(StormModType.Base);
+        baseDataStorage.TextCache.AssetTextsById.Dictionary.Should().BeEmpty();
+        baseDataStorage.FileCache.StormLayoutFilesByRelativePath.Dictionary.Should().BeEmpty();
+        baseDataStorage.FileCache.AssetFilesByRelativePath.Dictionary.Should().BeEmpty();
+    }
+
+    [TestMethod]
+    [DataRow(nameof(FileMpqStormMod.LoadStormFiles))]
+    [DataRow(nameof(FileMpqStormMod.LoadStormGameStrings))]
+    [DataRow(nameof(FileMpqStormMod.GetMapDependencies))]
+    public void Method_HasArchive_ClosesArchiveFileWhenDone(string methodName)
+    {
+        // arrange
+        // the mock file system does not track open files, so a real file is used
+        DirectoryInfo modsDirectory = Directory.CreateTempSubdirectory(nameof(FileMpqStormModTests));
+
+        try
+        {
+            string archivePath = Path.Combine(modsDirectory.FullName, "test.s2ma");
+            File.Copy(Path.Join("TestFiles", "Mpq", "test.s2ma"), archivePath);
+
+            _heroesSource.ModsDirectoryPath.Returns(modsDirectory.FullName);
+            FileMpqStormMod fileMpqStormMod = new(new FileSystem(), _heroesSource, archivePath, StormModType.Base);
+
+            // act
+            switch (methodName)
+            {
+                case nameof(FileMpqStormMod.LoadStormFiles):
+                    fileMpqStormMod.LoadStormFiles();
+                    break;
+                case nameof(FileMpqStormMod.LoadStormGameStrings):
+                    fileMpqStormMod.LoadStormGameStrings(StormLocale.ENUS);
+                    break;
+                default:
+                    fileMpqStormMod.GetMapDependencies();
+                    break;
+            }
+
+            // assert
+            // opening the file without sharing fails if the archive still has it open
+            Action act = () => File.Open(archivePath, FileMode.Open, FileAccess.ReadWrite, FileShare.None).Dispose();
+            act.Should().NotThrow();
+        }
+        finally
+        {
+            modsDirectory.Delete(true);
+        }
+    }
+
+    [TestMethod]
+    public void LoadStormFiles_FileIsNotMpqArchive_ThrowsExceptionAndClosesFile()
+    {
+        // arrange
+        // the mock file system does not track open files, so a real file is used
+        DirectoryInfo modsDirectory = Directory.CreateTempSubdirectory(nameof(FileMpqStormModTests));
+
+        try
+        {
+            string archivePath = Path.Combine(modsDirectory.FullName, "test.s2ma");
+            File.WriteAllBytes(archivePath, new byte[64]);
+
+            _heroesSource.ModsDirectoryPath.Returns(modsDirectory.FullName);
+            FileMpqStormMod fileMpqStormMod = new(new FileSystem(), _heroesSource, archivePath, StormModType.Base);
+
+            // act
+            Action act = fileMpqStormMod.LoadStormFiles;
+
+            // assert
+            act.Should().Throw<MpqHeroesToolException>();
+
+            Action openFile = () => File.Open(archivePath, FileMode.Open, FileAccess.ReadWrite, FileShare.None).Dispose();
+            openFile.Should().NotThrow();
+        }
+        finally
+        {
+            modsDirectory.Delete(true);
+        }
+    }
+
+    [TestMethod]
     public void LoadStormFiles_HasArchive_AddsAssetTexts()
     {
         // arrange
@@ -204,6 +338,26 @@ public sealed class FileMpqStormModTests
             .Which.FullPath.Should().Be(expectedFilePath);
         GetDataStorage(StormModType.Map).TextCache.GameStringsById.Dictionary.Should().NotBeEmpty();
         GetDataStorage(StormModType.Base).TextCache.GameStringsById.Dictionary.Should().BeEmpty();
+    }
+
+    [TestMethod]
+    public void LoadStormGameStrings_CalledAfterLoadStormFiles_ReopensArchiveAndAddsGameStringsWithMpqPaths()
+    {
+        // arrange
+        AddTestArchive();
+        FileMpqStormMod fileMpqStormMod = CreateFileMpqStormMod(_archivePath);
+        fileMpqStormMod.LoadStormFiles();
+
+        // act
+        fileMpqStormMod.LoadStormGameStrings(StormLocale.ENUS);
+
+        // assert
+        StormFile stormFile = fileMpqStormMod.ModContainer.LoadedGameStringFiles.Should().ContainSingle().Subject;
+
+        stormFile.FullPath.Should().Be(Path.Combine(_archivePath, "enus.stormdata", "localizeddata", "gamestrings.txt"));
+        stormFile.MpqFilePath.Should().Be(_archivePath);
+        stormFile.MpqEntryPath.Should().Be(Path.Combine("enus.stormdata", "localizeddata", "gamestrings.txt"));
+        GetDataStorage(StormModType.Base).TextCache.GameStringsById.Dictionary.Should().ContainKey("DocInfo/Name");
     }
 
     [TestMethod]

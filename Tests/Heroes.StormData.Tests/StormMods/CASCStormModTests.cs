@@ -49,6 +49,20 @@ public sealed class CASCStormModTests
     }
 
     [TestMethod]
+    public void Constructor_NestedStormModDirectoryPath_NameIsDirectoryNameAndRelativePathIncludesParents()
+    {
+        // arrange
+        string stormModDirectoryPath = Path.Combine(ModsDirectory, "heroesmapmods", "battlegroundmapmods", "volskayasound.stormmod");
+
+        // act
+        CASCStormMod cascStormMod = new(_heroesSource, stormModDirectoryPath, StormModType.Map);
+
+        // assert
+        cascStormMod.Name.Should().Be("volskayasound");
+        cascStormMod.RelativeStormModPath.Should().Be(Path.Combine("heroesmapmods", "battlegroundmapmods", "volskayasound.stormmod"));
+    }
+
+    [TestMethod]
     public void LoadStormFiles_StormModNotInCASC_LoadsNothingAndDoesNotThrow()
     {
         // arrange
@@ -103,6 +117,25 @@ public sealed class CASCStormModTests
         StormXmlConstElement constElement = GetDataStorage(StormModType.Base).ElementCache.StormXmlConstElementById.Dictionary["$AbilConst"];
         constElement.StormFiles.Should().ContainSingle()
             .Which.Should().BeEquivalentTo(ExpectedStormFile(Path.Combine(_gameDataDirectoryPath, "AbilData.xml")));
+    }
+
+    [TestMethod]
+    public void LoadStormFiles_GameDataDirectoryHasXmlFiles_StormFileIsNotInMpqArchive()
+    {
+        // arrange
+        AddConstXmlFile(Path.Combine(_baseStormDataPath, "GameData", "AbilData.xml"), "$AbilConst");
+
+        CASCStormMod cascStormMod = CreateCASCStormMod();
+
+        // act
+        cascStormMod.LoadStormFiles();
+
+        // assert
+        StormFile stormFile = cascStormMod.ModContainer.LoadedXmlFiles.Should().ContainSingle().Subject;
+
+        stormFile.IsInMpqArchive.Should().BeFalse();
+        stormFile.MpqFilePath.Should().BeNull();
+        stormFile.MpqEntryPath.Should().BeNull();
     }
 
     [TestMethod]
@@ -190,6 +223,30 @@ public sealed class CASCStormModTests
         // assert
         GetDataStorage(StormModType.Base).ElementCache.StormXmlConstElementById.Dictionary.Keys.Should().BeEquivalentTo("$HeroConst", "$AbathurConst");
         cascStormMod.ModContainer.LoadedXmlFiles.Should().HaveCount(2);
+    }
+
+    [TestMethod]
+    public void LoadStormFiles_GameDataXmlFileCatalogInDirectoryStartingWithGameData_DoesNotLoadFile()
+    {
+        // arrange
+        AddConstXmlFile(Path.Combine(_baseStormDataPath, "GameDataExtra", "ExtraData.xml"), "$ExtraConst");
+
+        AddCASCFile(
+            Path.Combine(_baseStormDataPath, "GameData.xml"),
+            """
+            <Includes>
+              <Catalog path="GameDataExtra/ExtraData.xml" />
+            </Includes>
+            """);
+
+        CASCStormMod cascStormMod = CreateCASCStormMod();
+
+        // act
+        cascStormMod.LoadStormFiles();
+
+        // assert
+        cascStormMod.ModContainer.LoadedXmlFiles.Should().BeEmpty();
+        _cascHandlerWrapper.OpenedFiles.Should().NotContain(x => x.Contains("ExtraData", StringComparison.OrdinalIgnoreCase));
     }
 
     [TestMethod]
@@ -289,6 +346,38 @@ public sealed class CASCStormModTests
             Path.Combine("assets", "textures", "portrait.dds"));
         assetFiles[Path.Combine("assets", "icon.dds")].Should().BeEquivalentTo(ExpectedStormFile(Path.Combine(assetsDirectoryPath, "Icon.DDS")));
         assetFiles[Path.Combine("assets", "textures", "portrait.dds")].Should().BeEquivalentTo(ExpectedStormFile(Path.Combine(assetsDirectoryPath, "Textures", "Portrait.dds")));
+    }
+
+    [TestMethod]
+    public void LoadStormFiles_LayoutAndAssetFilesInSubfolders_LoadedInCaseInsensitivePathOrder()
+    {
+        // arrange
+        // the files of a folder are found before the files of its subfolders, but are loaded in full path order
+        AddCASCFile(Path.Combine(_baseStormDataPath, "UI", "Layout", "Z.stormlayout"), string.Empty);
+        AddCASCFile(Path.Combine(_baseStormDataPath, "UI", "Layout", "b.stormlayout"), string.Empty);
+        AddCASCFile(Path.Combine(_baseStormDataPath, "UI", "Layout", "Heroes", "A.stormlayout"), string.Empty);
+
+        AddCASCFile(Path.Combine(_stormModDirectoryPath, "base.stormassets", "Assets", "Z.dds"), string.Empty);
+        AddCASCFile(Path.Combine(_stormModDirectoryPath, "base.stormassets", "Assets", "b.dds"), string.Empty);
+        AddCASCFile(Path.Combine(_stormModDirectoryPath, "base.stormassets", "Assets", "Textures", "A.dds"), string.Empty);
+
+        CASCStormMod cascStormMod = CreateCASCStormMod();
+
+        // act
+        cascStormMod.LoadStormFiles();
+
+        // assert
+        string layoutDirectoryPath = Path.Combine(_baseStormDataPath, "ui", "layout");
+        string assetsDirectoryPath = Path.Combine(_stormModDirectoryPath, "base.stormassets", "assets");
+
+        cascStormMod.ModContainer.LoadedStormLayoutFiles.Select(x => x.FullPath).Should().Equal(
+            Path.Combine(layoutDirectoryPath, "b.stormlayout"),
+            Path.Combine(layoutDirectoryPath, "Heroes", "A.stormlayout"),
+            Path.Combine(layoutDirectoryPath, "Z.stormlayout"));
+        cascStormMod.ModContainer.LoadedAssetFiles.Select(x => x.FullPath).Should().Equal(
+            Path.Combine(assetsDirectoryPath, "b.dds"),
+            Path.Combine(assetsDirectoryPath, "Textures", "A.dds"),
+            Path.Combine(assetsDirectoryPath, "Z.dds"));
     }
 
     [TestMethod]
@@ -472,6 +561,53 @@ public sealed class CASCStormModTests
     }
 
     [TestMethod]
+    [DataRow(StormModType.Base)]
+    [DataRow(StormModType.Map)]
+    [DataRow(StormModType.Custom)]
+    public void LoadStormGameStrings_StormModType_LoadsIntoMatchingDataStorageOnly(StormModType stormModType)
+    {
+        // arrange
+        AddCASCFile(Path.Combine(_stormModDirectoryPath, "enus.stormdata", "localizeddata", "gamestrings.txt"), "id1=value1");
+
+        CASCStormMod cascStormMod = CreateCASCStormMod(stormModType);
+
+        // act
+        cascStormMod.LoadStormGameStrings(StormLocale.ENUS);
+
+        // assert
+        foreach (StormModType otherStormModType in Enum.GetValues<StormModType>())
+        {
+            var gameStrings = GetDataStorage(otherStormModType).TextCache.GameStringsById.Dictionary;
+
+            if (otherStormModType == stormModType)
+                gameStrings.Keys.Should().Equal("id1");
+            else
+                gameStrings.Should().BeEmpty();
+        }
+    }
+
+    [TestMethod]
+    public void LoadStormGameStrings_StormFilesNotLoaded_DoesNotLoadIncludedStormMods()
+    {
+        // arrange
+        AddCASCFile(
+            Path.Combine(_baseStormDataPath, "Includes.xml"),
+            """
+            <Includes>
+              <Path value="Mods/Core.StormMod" />
+            </Includes>
+            """);
+
+        CASCStormMod cascStormMod = CreateCASCStormMod();
+
+        // act
+        cascStormMod.LoadStormGameStrings(StormLocale.ENUS);
+
+        // assert
+        _stormModFactory.ReceivedCalls().Should().BeEmpty();
+    }
+
+    [TestMethod]
     public void LoadStormGameStrings_HasIncludedStormMods_LoadsTheirGameStringsAfterOwn()
     {
         // arrange
@@ -509,6 +645,64 @@ public sealed class CASCStormModTests
     {
         // arrange
         CASCStormMod cascStormMod = CreateCASCStormMod();
+
+        // act
+        IReadOnlyList<MapDependency> result = cascStormMod.GetMapDependencies();
+
+        // assert
+        result.Should().BeEmpty();
+    }
+
+    [TestMethod]
+    public void GetMapDependencies_DocumentInfoHasDependencies_ReturnsDependencies()
+    {
+        // arrange
+        AddCASCFile(
+            Path.Combine(_stormModDirectoryPath, "DocumentInfo"),
+            """
+            <?xml version="1.0" encoding="utf-8"?>
+            <DocInfo>
+                <Dependencies>
+                    <Value>bnet:Volskaya Mechanics/0.0/1145,file:Mods\heroesmapmods/battlegroundmapmods/volskayamechanics.stormmod</Value>
+                    <Value>bnet:Heroes Data/1.2/999,file:Mods/HeroesData.StormMod</Value>
+                </Dependencies>
+            </DocInfo>
+            """);
+
+        CASCStormMod cascStormMod = CreateCASCStormMod(StormModType.Map);
+
+        // act
+        IReadOnlyList<MapDependency> result = cascStormMod.GetMapDependencies();
+
+        // assert
+        result.Should().Equal(
+            new MapDependency()
+            {
+                BnetName = "Volskaya Mechanics",
+                BnetVersionMajor = 0,
+                BnetVersionMinor = 0,
+                BnetNamespace = 1145,
+                LocalFile = Path.Combine("heroesmapmods", "battlegroundmapmods", "volskayamechanics.stormmod"),
+            },
+            new MapDependency()
+            {
+                BnetName = "Heroes Data",
+                BnetVersionMajor = 1,
+                BnetVersionMinor = 2,
+                BnetNamespace = 999,
+                LocalFile = "heroesdata.stormmod",
+            });
+    }
+
+    [TestMethod]
+    [DataRow("not xml")]
+    [DataRow("<DocInfo><Dependencies><Value>not a dependency</Value></Dependencies></DocInfo>")]
+    public void GetMapDependencies_DocumentInfoCannotBeRead_ReturnsEmpty(string documentInfo)
+    {
+        // arrange
+        AddCASCFile(Path.Combine(_stormModDirectoryPath, "documentinfo"), documentInfo);
+
+        CASCStormMod cascStormMod = CreateCASCStormMod(StormModType.Map);
 
         // act
         IReadOnlyList<MapDependency> result = cascStormMod.GetMapDependencies();

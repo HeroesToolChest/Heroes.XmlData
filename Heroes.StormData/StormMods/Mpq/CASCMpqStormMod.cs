@@ -1,4 +1,4 @@
-﻿namespace Heroes.StormData.StormMods.Mpq;
+namespace Heroes.StormData.StormMods.Mpq;
 
 internal sealed class CASCMpqStormMod : MpqStormModBase<ICASCHeroesSource>
 {
@@ -9,7 +9,15 @@ internal sealed class CASCMpqStormMod : MpqStormModBase<ICASCHeroesSource>
 
     protected override bool TryOpenMpqFile([NotNullWhen(true)] out Stream? stream)
     {
-        stream = HeroesSource.CASCHeroesStorage.CASCHandlerWrapper.OpenFile(DirectoryPath);
+        stream = null;
+
+        ICASCHandlerWrapper cascHandlerWrapper = HeroesSource.CASCHeroesStorage.CASCHandlerWrapper;
+
+        // check first, otherwise OpenFile throws a FileNotFoundException for a missing file (CASCConfig.ThrowOnFileNotFound)
+        if (!cascHandlerWrapper.FileExists(DirectoryPath))
+            return false;
+
+        stream = cascHandlerWrapper.OpenFile(DirectoryPath);
 
         return stream is not null;
     }
