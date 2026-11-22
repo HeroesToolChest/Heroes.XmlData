@@ -1,12 +1,15 @@
-﻿global using AwesomeAssertions;
+global using AwesomeAssertions;
+global using CASCLib;
 global using Heroes.LocaleText;
 global using Heroes.StormData.Cache;
 global using Heroes.StormData.Cache.Elements;
 global using Heroes.StormData.Cache.Strings;
 global using Heroes.StormData.Cache.Styles;
+global using Heroes.StormData.CASC;
 global using Heroes.StormData.DepotCache;
 global using Heroes.StormData.DepotCache.Maps;
 global using Heroes.StormData.Exceptions;
+global using Heroes.StormData.Extensions;
 global using Heroes.StormData.Source;
 global using Heroes.StormData.StormMods;
 global using Heroes.StormData.StormMods.Mpq;

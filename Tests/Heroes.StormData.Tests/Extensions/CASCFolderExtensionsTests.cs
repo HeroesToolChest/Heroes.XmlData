@@ -1,5 +1,3 @@
-﻿using CASCLib;
-
 namespace Heroes.StormData.Extensions.Tests;
 
 [TestClass]
