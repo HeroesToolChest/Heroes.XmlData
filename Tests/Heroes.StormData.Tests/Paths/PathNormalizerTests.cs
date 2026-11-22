@@ -215,4 +215,77 @@ public sealed class PathNormalizerTests
         // assert
         buffer.ToString().Should().Be($"ü{_directorySeperatorChar}é{_directorySeperatorChar}ñ"); // ü/é/ñ
     }
+
+    [TestMethod]
+    [DataRow("mods/core.stormmod/gamedata.xml", "mods", "core.stormmod/gamedata.xml")]
+    [DataRow("MODS\\Core.StormMod", "mods", "Core.StormMod")]
+    [DataRow("mods/core.stormmod", "Mods\\", "core.stormmod")]
+    [DataRow("mods/core.stormmod", "mods//", "core.stormmod")]
+    [DataRow("hots_data/core.stormmod", "hots_data", "core.stormmod")]
+    [DataRow("C:\\Games\\Heroes\\mods\\core.stormmod", "C:/Games/Heroes/mods", "core.stormmod")]
+    [DataRow("C:/Games/Heroes/mods/core.stormmod", "c:\\games\\heroes\\mods\\", "core.stormmod")]
+    public void GetDirectoryPrefixLength_StartsWithDirectory_ReturnsLengthOfDirectoryAndSeparator(string filePath, string directory, string expectedRemainder)
+    {
+        // act
+        int result = PathNormalizer.GetDirectoryPrefixLength(filePath, directory);
+
+        // assert
+        filePath[result..].Should().Be(expectedRemainder);
+    }
+
+    [TestMethod]
+    [DataRow("mods//core.stormmod", "core.stormmod")]
+    [DataRow("mods/\\/core.stormmod", "core.stormmod")]
+    public void GetDirectoryPrefixLength_MultipleSeparatorsAfterDirectory_AllSeparatorsIncluded(string filePath, string expectedRemainder)
+    {
+        // act
+        int result = PathNormalizer.GetDirectoryPrefixLength(filePath, "mods");
+
+        // assert
+        filePath[result..].Should().Be(expectedRemainder);
+    }
+
+    [TestMethod]
+    [DataRow("mods", 4)]
+    [DataRow("MODS", 4)]
+    [DataRow("mods/", 5)]
+    [DataRow("mods\\\\", 6)]
+    public void GetDirectoryPrefixLength_PathIsDirectory_ReturnsWholePathLength(string filePath, int expected)
+    {
+        // act
+        int result = PathNormalizer.GetDirectoryPrefixLength(filePath, "mods");
+
+        // assert
+        result.Should().Be(expected);
+    }
+
+    [TestMethod]
+    [DataRow("modsdata/abildata.xml", "mods")]
+    [DataRow("mods.stormmod/abildata.xml", "mods")]
+    [DataRow("gamedata/mods/abildata.xml", "mods")]
+    [DataRow("mod", "mods")]
+    [DataRow("", "mods")]
+    [DataRow("C:\\Games\\Heroes\\modsdata\\core.stormmod", "C:\\Games\\Heroes\\mods")]
+    [DataRow("D:\\Games\\Heroes\\mods\\core.stormmod", "C:\\Games\\Heroes\\mods")]
+    public void GetDirectoryPrefixLength_DoesNotStartWithDirectoryAsWholeSegment_ReturnsZero(string filePath, string directory)
+    {
+        // act
+        int result = PathNormalizer.GetDirectoryPrefixLength(filePath, directory);
+
+        // assert
+        result.Should().Be(0);
+    }
+
+    [TestMethod]
+    [DataRow("")]
+    [DataRow("/")]
+    [DataRow("\\\\")]
+    public void GetDirectoryPrefixLength_EmptyDirectory_ReturnsZero(string directory)
+    {
+        // act
+        int result = PathNormalizer.GetDirectoryPrefixLength("/mods/abildata.xml", directory);
+
+        // assert
+        result.Should().Be(0);
+    }
 }

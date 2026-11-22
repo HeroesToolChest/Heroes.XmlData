@@ -38,6 +38,20 @@ internal sealed class FileStormModTests
     }
 
     [TestMethod]
+    public void Constructor_NestedStormModDirectoryPath_NameIsDirectoryNameAndRelativePathIncludesParents()
+    {
+        // arrange
+        string stormModDirectoryPath = Path.Combine(_modsDirectoryPath, "heroesmapmods", "battlegroundmapmods", "volskayasound.stormmod");
+
+        // act
+        FileStormMod fileStormMod = new(_fileSystem, _heroesSource, stormModDirectoryPath, StormModType.Map);
+
+        // assert
+        fileStormMod.Name.Should().Be("volskayasound");
+        fileStormMod.RelativeStormModPath.Should().Be(Path.Combine("heroesmapmods", "battlegroundmapmods", "volskayasound.stormmod"));
+    }
+
+    [TestMethod]
     public void LoadStormFiles_StormModDirectoryDoesNotExist_LoadsNothing()
     {
         // arrange
@@ -112,6 +126,61 @@ internal sealed class FileStormModTests
                 RelativePath = Path.Combine("heroesdata.stormmod", "base.stormdata", "GameData", "AbilData.xml"),
                 FullPath = filePath,
             });
+    }
+
+    [TestMethod]
+    public void LoadStormFiles_GameDataDirectoryFileNamesDifferInCase_LoadedInCaseInsensitiveOrder()
+    {
+        // arrange
+        // an ordinal sort would put "B.xml" before "a.xml"
+        string upperCaseFilePath = Path.Combine(_gameDataDirectoryPath, "B.xml");
+        string lowerCaseFilePath = Path.Combine(_gameDataDirectoryPath, "a.xml");
+        string lastFilePath = Path.Combine(_gameDataDirectoryPath, "c.xml");
+
+        AddConstXmlFile(lastFilePath, "$CConst");
+        AddConstXmlFile(upperCaseFilePath, "$BConst");
+        AddConstXmlFile(lowerCaseFilePath, "$AConst");
+
+        FileStormMod fileStormMod = CreateFileStormMod();
+
+        // act
+        fileStormMod.LoadStormFiles();
+
+        // assert
+        fileStormMod.ModContainer.LoadedXmlFiles.Select(x => x.FullPath).Should().Equal(lowerCaseFilePath, upperCaseFilePath, lastFilePath);
+    }
+
+    [TestMethod]
+    public void LoadStormFiles_GameDataDirectoryAndGameDataXmlFile_DirectoryFilesLoadedFirstThenCatalogsInListedOrder()
+    {
+        // arrange
+        string directoryFilePath = Path.Combine(_gameDataDirectoryPath, "ZoneData.xml");
+        string firstCatalogFilePath = Path.Combine(_gameDataDirectoryPath, "Heroes", "ZaryaData.xml");
+        string secondCatalogFilePath = Path.Combine(_gameDataDirectoryPath, "Heroes", "AbathurData.xml");
+
+        AddConstXmlFile(directoryFilePath, "$ZoneConst");
+        AddConstXmlFile(firstCatalogFilePath, "$ZaryaConst");
+        AddConstXmlFile(secondCatalogFilePath, "$AbathurConst");
+
+        _fileSystem.AddFile(Path.Combine(_baseStormDataPath, "GameData.xml"), new MockFileData(
+            """
+            <Includes>
+              <Catalog path="GameData/Heroes/ZaryaData.xml" />
+              <Catalog path="GameData/Heroes/AbathurData.xml" />
+            </Includes>
+            """));
+
+        FileStormMod fileStormMod = CreateFileStormMod();
+
+        // act
+        fileStormMod.LoadStormFiles();
+
+        // assert
+        // the catalog file paths are built from the normalized (lowercase) path in the gamedata.xml file
+        fileStormMod.ModContainer.LoadedXmlFiles.Select(x => x.FullPath).Should().Equal(
+            directoryFilePath,
+            Path.Combine(_baseStormDataPath, "gamedata", "heroes", "zaryadata.xml"),
+            Path.Combine(_baseStormDataPath, "gamedata", "heroes", "abathurdata.xml"));
     }
 
     [TestMethod]
@@ -311,6 +380,58 @@ internal sealed class FileStormModTests
             Path.Combine("assets", "textures", "portrait.dds"));
         assetFiles[Path.Combine("assets", "icon.dds")].Should().BeEquivalentTo(ExpectedStormFile(rootFilePath));
         assetFiles[Path.Combine("assets", "textures", "portrait.dds")].Should().BeEquivalentTo(ExpectedStormFile(nestedFilePath));
+    }
+
+    [TestMethod]
+    public void LoadStormFiles_LayoutAndAssetFileNamesDifferInCase_LoadedInCaseInsensitiveOrder()
+    {
+        // arrange
+        // an ordinal sort would put the upper case names first
+        string layoutDirectoryPath = Path.Combine(_baseStormDataPath, "UI", "Layout");
+        string firstLayoutFilePath = Path.Combine(layoutDirectoryPath, "a.stormlayout");
+        string secondLayoutFilePath = Path.Combine(layoutDirectoryPath, "B.stormlayout");
+
+        string assetsDirectoryPath = Path.Combine(_stormModDirectoryPath, "base.stormassets", "Assets");
+        string firstAssetFilePath = Path.Combine(assetsDirectoryPath, "a.dds");
+        string secondAssetFilePath = Path.Combine(assetsDirectoryPath, "B.dds");
+
+        _fileSystem.AddFile(secondLayoutFilePath, new MockFileData(string.Empty));
+        _fileSystem.AddFile(firstLayoutFilePath, new MockFileData(string.Empty));
+        _fileSystem.AddFile(secondAssetFilePath, new MockFileData(string.Empty));
+        _fileSystem.AddFile(firstAssetFilePath, new MockFileData(string.Empty));
+
+        FileStormMod fileStormMod = CreateFileStormMod();
+
+        // act
+        fileStormMod.LoadStormFiles();
+
+        // assert
+        fileStormMod.ModContainer.LoadedStormLayoutFiles.Select(x => x.FullPath).Should().Equal(firstLayoutFilePath, secondLayoutFilePath);
+        fileStormMod.ModContainer.LoadedAssetFiles.Select(x => x.FullPath).Should().Equal(firstAssetFilePath, secondAssetFilePath);
+    }
+
+    [TestMethod]
+    public void LoadStormFiles_ParentDirectoriesNamedBaseStormDataAndBaseStormAssets_AddsLayoutAndAssetFiles()
+    {
+        // arrange
+        // the base.stormdata and base.stormassets names are only searched for inside the stormmod directory
+        string modsDirectoryPath = MockUnixSupport.Path(@"C:\base.stormdata\base.stormassets\mods");
+        string stormModDirectoryPath = Path.Combine(modsDirectoryPath, "heroesdata.stormmod");
+
+        _heroesSource.ModsDirectoryPath.Returns(modsDirectoryPath);
+
+        _fileSystem.AddFile(Path.Combine(stormModDirectoryPath, "base.stormdata", "UI", "Layout", "GameUI.stormlayout"), new MockFileData(string.Empty));
+        _fileSystem.AddFile(Path.Combine(stormModDirectoryPath, "base.stormassets", "Assets", "Icon.dds"), new MockFileData(string.Empty));
+
+        FileStormMod fileStormMod = new(_fileSystem, _heroesSource, stormModDirectoryPath, StormModType.Base);
+
+        // act
+        fileStormMod.LoadStormFiles();
+
+        // assert
+        DataStorage dataStorage = GetDataStorage(StormModType.Base);
+        dataStorage.FileCache.StormLayoutFilesByRelativePath.Dictionary.Keys.Should().Equal(Path.Combine("ui", "layout", "gameui.stormlayout"));
+        dataStorage.FileCache.AssetFilesByRelativePath.Dictionary.Keys.Should().Equal(Path.Combine("assets", "icon.dds"));
     }
 
     [TestMethod]
@@ -630,6 +751,102 @@ internal sealed class FileStormModTests
 
         // assert
         _stormModFactory.ReceivedCalls().Should().BeEmpty();
+    }
+
+    [TestMethod]
+    public void GetMapDependencies_DocumentInfoHasDependencies_ReturnsDependencies()
+    {
+        // arrange
+        _fileSystem.AddFile(Path.Combine(_stormModDirectoryPath, "documentinfo"), new MockFileData(
+            """
+            <?xml version="1.0" encoding="utf-8"?>
+            <DocInfo>
+                <Dependencies>
+                    <Value>bnet:Volskaya Mechanics/0.0/1145,file:Mods\heroesmapmods/battlegroundmapmods/volskayamechanics.stormmod</Value>
+                    <Value>bnet:Heroes Data/1.2/999,file:Mods/HeroesData.StormMod</Value>
+                </Dependencies>
+                <ModifiableDependencies>
+                    <Value>Mods/HeroesData.StormMod</Value>
+                </ModifiableDependencies>
+            </DocInfo>
+            """));
+
+        FileStormMod fileStormMod = CreateFileStormMod(StormModType.Map);
+
+        // act
+        IReadOnlyList<MapDependency> result = fileStormMod.GetMapDependencies();
+
+        // assert
+        result.Should().Equal(
+            new MapDependency()
+            {
+                BnetName = "Volskaya Mechanics",
+                BnetVersionMajor = 0,
+                BnetVersionMinor = 0,
+                BnetNamespace = 1145,
+                LocalFile = Path.Combine("heroesmapmods", "battlegroundmapmods", "volskayamechanics.stormmod"),
+            },
+            new MapDependency()
+            {
+                BnetName = "Heroes Data",
+                BnetVersionMajor = 1,
+                BnetVersionMinor = 2,
+                BnetNamespace = 999,
+                LocalFile = "heroesdata.stormmod",
+            });
+    }
+
+    [TestMethod]
+    public void GetMapDependencies_DocumentInfoHasNoDependencies_ReturnsEmpty()
+    {
+        // arrange
+        _fileSystem.AddFile(Path.Combine(_stormModDirectoryPath, "documentinfo"), new MockFileData(
+            """
+            <?xml version="1.0" encoding="utf-8"?>
+            <DocInfo>
+                <Flags>
+                    <Value>PreloadNoTrigger</Value>
+                </Flags>
+            </DocInfo>
+            """));
+
+        FileStormMod fileStormMod = CreateFileStormMod(StormModType.Map);
+
+        // act
+        IReadOnlyList<MapDependency> result = fileStormMod.GetMapDependencies();
+
+        // assert
+        result.Should().BeEmpty();
+    }
+
+    [TestMethod]
+    public void GetMapDependencies_NoDocumentInfoFile_ReturnsEmpty()
+    {
+        // arrange
+        FileStormMod fileStormMod = CreateFileStormMod(StormModType.Map);
+
+        // act
+        IReadOnlyList<MapDependency> result = fileStormMod.GetMapDependencies();
+
+        // assert
+        result.Should().BeEmpty();
+    }
+
+    [TestMethod]
+    [DataRow("not xml")]
+    [DataRow("<DocInfo><Dependencies><Value>not a dependency</Value></Dependencies></DocInfo>")]
+    public void GetMapDependencies_DocumentInfoCannotBeRead_ReturnsEmpty(string documentInfo)
+    {
+        // arrange
+        _fileSystem.AddFile(Path.Combine(_stormModDirectoryPath, "documentinfo"), new MockFileData(documentInfo));
+
+        FileStormMod fileStormMod = CreateFileStormMod(StormModType.Map);
+
+        // act
+        IReadOnlyList<MapDependency> result = fileStormMod.GetMapDependencies();
+
+        // assert
+        result.Should().BeEmpty();
     }
 
     private static string CreateConstXml(string constId) =>
