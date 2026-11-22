@@ -11,6 +11,167 @@ public sealed class HeroesLoaderTests
     public HeroesLoaderTests()
     {
         _heroesSource.LoadStormMapMod(Arg.Is<string>(x => x == MapTitle || x == OtherMapTitle)).Returns(true);
+
+        SetS2MAProperties(MapTitle, new S2MAProperties() { S2MVProperties = new S2MVProperties() { HeaderTitle = MapTitle } });
+        SetS2MAProperties(OtherMapTitle, new S2MAProperties() { S2MVProperties = new S2MVProperties() { HeaderTitle = OtherMapTitle } });
+    }
+
+    [TestMethod]
+    public void LoadWithFile_RootDirectoryDoesNotExist_ThrowsException()
+    {
+        // arrange
+        string rootDirectory = Path.Combine(Path.GetTempPath(), nameof(HeroesLoaderTests), Guid.NewGuid().ToString("N"));
+
+        // act
+        Action act = () => HeroesLoader.LoadWithFile(rootDirectory);
+
+        // assert
+        act.Should().Throw<DirectoryNotFoundException>();
+    }
+
+    [TestMethod]
+    public void LoadMapMod_MapTitleInDifferentCase_LoadedMapTitleIsTheMapsTitle()
+    {
+        // arrange
+        string lowerCaseTitle = MapTitle.ToLowerInvariant();
+        SetS2MAProperties(lowerCaseTitle, new S2MAProperties() { S2MVProperties = new S2MVProperties() { HeaderTitle = MapTitle } });
+
+        HeroesLoader heroesLoader = HeroesLoader.LoadWithInternal(_heroesSource);
+
+        // act
+        bool result = heroesLoader.LoadMapMod(lowerCaseTitle);
+
+        // assert
+        result.Should().BeTrue();
+        heroesLoader.LoadedMapTitle.Should().Be(MapTitle);
+        _heroesSource.Received(1).LoadStormMapMod(MapTitle);
+    }
+
+    [TestMethod]
+    public void LoadMapMod_SourceThrows_UnloadsMapAndClearsLoadedMapTitle()
+    {
+        // arrange
+        HeroesLoader heroesLoader = HeroesLoader.LoadWithInternal(_heroesSource);
+        heroesLoader.LoadMapMod(MapTitle);
+
+        _heroesSource.LoadStormMapMod(OtherMapTitle).Returns(_ => throw new IOException("failed"));
+
+        // act
+        Action act = () => heroesLoader.LoadMapMod(OtherMapTitle);
+
+        // assert
+        act.Should().Throw<IOException>();
+        heroesLoader.LoadedMapTitle.Should().BeNull();
+        _heroesSource.Received(1).UnloadStormMapMod();
+    }
+
+    [TestMethod]
+    public void LoadMapMod_SourceThrewForPreviousMap_PreviousMapCanBeLoadedAgain()
+    {
+        // arrange
+        HeroesLoader heroesLoader = HeroesLoader.LoadWithInternal(_heroesSource);
+        heroesLoader.LoadMapMod(MapTitle);
+
+        _heroesSource.LoadStormMapMod(OtherMapTitle).Returns(_ => throw new IOException("failed"));
+
+        try
+        {
+            heroesLoader.LoadMapMod(OtherMapTitle);
+        }
+        catch (IOException)
+        {
+        }
+
+        // act
+        bool result = heroesLoader.LoadMapMod(MapTitle);
+
+        // assert
+        result.Should().BeTrue();
+        _heroesSource.Received(2).LoadStormMapMod(MapTitle);
+        heroesLoader.LoadedMapTitle.Should().Be(MapTitle);
+    }
+
+    [TestMethod]
+    public void LoadStormMods_SourceThrows_LaterLoadsThrowInvalidOperationException()
+    {
+        // arrange
+        _heroesSource.When(x => x.LoadStormMods()).Do(_ => throw new IOException("failed"));
+        HeroesLoader heroesLoader = HeroesLoader.LoadWithInternal(_heroesSource);
+
+        heroesLoader.Invoking(x => x.LoadStormMods()).Should().Throw<IOException>();
+
+        // act and assert
+        heroesLoader.Invoking(x => x.LoadStormMods()).Should().Throw<InvalidOperationException>();
+        heroesLoader.Invoking(x => x.LoadMapMod(MapTitle)).Should().Throw<InvalidOperationException>();
+        heroesLoader.Invoking(x => x.LoadGameStrings(StormLocale.ENUS)).Should().Throw<InvalidOperationException>();
+        heroesLoader.Invoking(x => x.Load(new HeroesLoaderOptions())).Should().Throw<InvalidOperationException>();
+
+        _heroesSource.Received(1).LoadStormMods();
+        heroesLoader.IsStormModsLoaded.Should().BeFalse();
+    }
+
+    [TestMethod]
+    public void LoadStormMods_SourceThrows_MapQueriesAndUnloadStillWork()
+    {
+        // arrange
+        _heroesSource.When(x => x.LoadStormMods()).Do(_ => throw new IOException("failed"));
+        _heroesSource.GetMapTitles().Returns([MapTitle]);
+        HeroesLoader heroesLoader = HeroesLoader.LoadWithInternal(_heroesSource);
+
+        heroesLoader.Invoking(x => x.LoadStormMods()).Should().Throw<IOException>();
+
+        // act and assert
+        heroesLoader.GetMapTitles().Should().Equal(MapTitle);
+        heroesLoader.GetStormMap(MapTitle).Should().NotBeNull();
+        heroesLoader.UnloadMapMod().Should().BeFalse();
+    }
+
+    [TestMethod]
+    public void LoadStormMods_DepotCacheThrows_RetryLoadsOnlyDepotCache()
+    {
+        // arrange
+        int depotCacheCalls = 0;
+        _heroesSource.When(x => x.LoadDepotCache()).Do(_ =>
+        {
+            if (++depotCacheCalls == 1)
+                throw new IOException("failed");
+        });
+
+        HeroesLoader heroesLoader = HeroesLoader.LoadWithInternal(_heroesSource);
+        heroesLoader.Invoking(x => x.LoadStormMods()).Should().Throw<IOException>();
+
+        // act
+        heroesLoader.LoadStormMods();
+
+        // assert
+        _heroesSource.Received(1).LoadStormMods();
+        _heroesSource.Received(2).LoadDepotCache();
+        heroesLoader.IsStormModsLoaded.Should().BeTrue();
+    }
+
+    [TestMethod]
+    public void LoadGameStrings_SourceThrows_GameStringsLocaleIsNullAndRetryLoads()
+    {
+        // arrange
+        HeroesLoader heroesLoader = HeroesLoader.LoadWithInternal(_heroesSource);
+        heroesLoader.LoadGameStrings(StormLocale.ENUS);
+
+        int calls = 0;
+        _heroesSource.When(x => x.LoadGamestrings(StormLocale.DEDE)).Do(_ =>
+        {
+            if (++calls == 1)
+                throw new IOException("failed");
+        });
+
+        heroesLoader.Invoking(x => x.LoadGameStrings(StormLocale.DEDE)).Should().Throw<IOException>();
+        heroesLoader.GameStringsLocale.Should().BeNull();
+
+        // act
+        heroesLoader.LoadGameStrings(StormLocale.DEDE);
+
+        // assert
+        heroesLoader.GameStringsLocale.Should().Be(StormLocale.DEDE);
+        _heroesSource.Received(2).LoadGamestrings(StormLocale.DEDE);
     }
 
     [TestMethod]

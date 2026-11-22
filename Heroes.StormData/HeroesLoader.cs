@@ -33,6 +33,7 @@ public class HeroesLoader
     private readonly IHeroesSource _heroesSource;
 
     private bool _isDepotCacheLoaded;
+    private bool _stormModsLoadFailed;
 
     private HeroesLoader(IHeroesSource heroesSource, ModsInfoFile? modsInfoFile)
     {
@@ -141,11 +142,15 @@ public class HeroesLoader
     /// </param>
     /// <param name="options">If not <see langword="null"/>, the data is loaded as described by <see cref="Load(HeroesLoaderOptions)"/>. Otherwise nothing is loaded yet.</param>
     /// <returns>A <see cref="HeroesLoader"/> instance.</returns>
+    /// <exception cref="DirectoryNotFoundException"><paramref name="rootDirectory"/> does not exist.</exception>
     /// <exception cref="HeroesStormDataException"><see cref="HeroesLoaderOptions.MapTitle"/> was not found.</exception>
     /// <exception cref="JsonException">The <c>hdp.info</c> file is not valid JSON.</exception>
     public static HeroesLoader LoadWithFile(string rootDirectory, ModsInfoFile? modsInfoFile = null, HeroesLoaderOptions? options = null)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(rootDirectory);
+
+        if (!Directory.Exists(rootDirectory))
+            throw new DirectoryNotFoundException($"The root directory was not found: {rootDirectory}");
 
         modsInfoFile ??= GetModsInfoFile(rootDirectory);
 
@@ -161,16 +166,13 @@ public class HeroesLoader
     /// <param name="options">If not <see langword="null"/>, the data is loaded as described by <see cref="Load(HeroesLoaderOptions)"/>. Otherwise nothing is loaded yet.</param>
     /// <returns>A <see cref="HeroesLoader"/> instance.</returns>
     /// <exception cref="HeroesStormDataException"><see cref="HeroesLoaderOptions.MapTitle"/> was not found.</exception>
-    public static HeroesLoader LoadWithCASC(CASCConfig cascConfig, HttpClient httpClient, IProgressReporter? progressReporter = null, HeroesLoaderOptions? options = null)
+    public static HeroesLoader LoadWithCASC(CASCConfig cascConfig, HttpClient httpClient, ProgressReporter? progressReporter = null, HeroesLoaderOptions? options = null)
     {
         ArgumentNullException.ThrowIfNull(cascConfig);
         ArgumentNullException.ThrowIfNull(httpClient);
 
-        CASCConfig.ThrowOnFileNotFound = true;
-        CASCConfig.ThrowOnMissingDecryptionKey = true;
-
-        CASCHandler cascHandler = CASCHandler.OpenStorage(cascConfig, httpClient: httpClient, worker: (ProgressReporter?)progressReporter);
-        cascHandler.Root.LoadListFile(string.Empty, (ProgressReporter?)progressReporter);
+        CASCHandler cascHandler = CASCHandler.OpenStorage(cascConfig, httpClient: httpClient, worker: progressReporter);
+        cascHandler.Root.LoadListFile(string.Empty, progressReporter);
 
         CASCFolder cascFolderRoot = cascHandler.Root.SetFlags(LocaleFlags.All);
 
@@ -208,15 +210,32 @@ public class HeroesLoader
     /// <summary>
     /// Loads the base <c>stormmods</c> and the depot cache. Does nothing if they are already loaded.
     /// </summary>
+    /// <remarks>
+    /// The base <c>stormmods</c> cannot be loaded again after a failed attempt (it would add their data a second time),
+    /// so if this throws, this and the other load methods throw an <see cref="InvalidOperationException"/> afterwards. Create a new <see cref="HeroesLoader"/> instead.
+    /// </remarks>
+    /// <exception cref="InvalidOperationException">A previous attempt to load the base <c>stormmods</c> failed.</exception>
     public void LoadStormMods()
     {
-        if (IsStormModsLoaded)
-            return;
+        if (!IsStormModsLoaded)
+        {
+            if (_stormModsLoadFailed)
+                throw new InvalidOperationException($"A previous attempt to load the base stormmods failed. Create a new {nameof(HeroesLoader)} instance.");
 
-        _heroesSource.LoadStormMods();
+            try
+            {
+                _heroesSource.LoadStormMods();
+            }
+            catch
+            {
+                _stormModsLoadFailed = true;
+                throw;
+            }
+
+            IsStormModsLoaded = true;
+        }
+
         EnsureDepotCacheLoaded();
-
-        IsStormModsLoaded = true;
     }
 
     /// <summary>
@@ -359,10 +378,27 @@ public class HeroesLoader
         if (string.Equals(LoadedMapTitle, mapTitle, StringComparison.OrdinalIgnoreCase))
             return true;
 
-        if (!_heroesSource.LoadStormMapMod(mapTitle))
+        // use the map's own title, so LoadedMapTitle does not depend on the casing that was passed in
+        if (!_heroesSource.TryGetS2MAProperties(mapTitle, out S2MAProperties? s2maProperties))
             return false;
 
-        LoadedMapTitle = mapTitle;
+        string title = s2maProperties.S2MVProperties?.HeaderTitle ?? mapTitle;
+
+        try
+        {
+            if (!_heroesSource.LoadStormMapMod(title))
+                return false;
+        }
+        catch
+        {
+            // the previous map was already unloaded and the new one may be partially loaded, so remove what is there
+            _heroesSource.UnloadStormMapMod();
+            LoadedMapTitle = null;
+
+            throw;
+        }
+
+        LoadedMapTitle = title;
         mapChanged = true;
 
         return true;
@@ -379,6 +415,9 @@ public class HeroesLoader
 
     private void LoadGameStringsCore(StormLocale localization)
     {
+        // cleared first, so a failed load is not seen as loaded, it is safe to call again as it clears all gamestrings before loading
+        GameStringsLocale = null;
+
         _heroesSource.LoadGamestrings(localization);
         GameStringsLocale = localization;
     }
