@@ -14,6 +14,10 @@ namespace Heroes.StormData;
 /// must not be called at the same time as each other. The file methods (<see cref="FileExists(string?, string?)"/>, <see cref="GetFile(string, string?)"/>,
 /// <see cref="TryGetFile(string?, string?, out Stream?)"/>, and their overloads) only read from the source, so they can be called from more than one thread.
 /// </para>
+/// <para>
+/// For a CASC source, the caller opens the storage with <see cref="OpenCASCStorage(CASCConfig, HttpClient, ProgressReporter?)"/>, owns it, and disposes of it.
+/// An instance only reads from it, so it must not be used after the storage is disposed.
+/// </para>
 /// </remarks>
 public sealed class HeroesLoader
 {
@@ -138,6 +142,38 @@ public sealed class HeroesLoader
     }
 
     /// <summary>
+    /// Opens a CASC storage, locally or online, to pass to <see cref="LoadWithCASC(CASCHandler, HeroesLoaderOptions?)"/>.
+    /// </summary>
+    /// <param name="cascConfig">The <see cref="CASCConfig"/> to determine on how to load data from the data files.</param>
+    /// <param name="httpClient">An instance of <see cref="HttpClient"/>. Needed for both local and online.</param>
+    /// <param name="progressReporter">Used to report the progress of opening the CASC storage.</param>
+    /// <returns>
+    /// The opened CASC storage, with its file names loaded. The caller owns it: a local storage keeps its data files open until it is disposed,
+    /// so dispose of it when done with the <see cref="HeroesLoader"/> instances that use it.
+    /// </returns>
+    /// <exception cref="ArgumentNullException"><paramref name="cascConfig"/> or <paramref name="httpClient"/> is <see langword="null"/>.</exception>
+    public static CASCHandler OpenCASCStorage(CASCConfig cascConfig, HttpClient httpClient, ProgressReporter? progressReporter = null)
+    {
+        ArgumentNullException.ThrowIfNull(cascConfig);
+        ArgumentNullException.ThrowIfNull(httpClient);
+
+        CASCHandler cascHandler = CASCHandler.OpenStorage(cascConfig, httpClient: httpClient, worker: progressReporter);
+
+        try
+        {
+            cascHandler.Root.LoadListFile(string.Empty, progressReporter);
+        }
+        catch
+        {
+            // the caller never gets the handler, so close it here
+            cascHandler.Dispose();
+            throw;
+        }
+
+        return cascHandler;
+    }
+
+    /// <summary>
     /// Gets the properties from the <c>hdp.info</c> file of a local <c>mods</c> directory.
     /// </summary>
     /// <param name="rootDirectory">The root directory path, usually the <c>mods</c> directory.</param>
@@ -195,37 +231,42 @@ public sealed class HeroesLoader
     }
 
     /// <summary>
-    /// Gets an instance of the <see cref="HeroesLoader"/> class. Sets the source of data to be loaded locally or online.
+    /// Gets an instance of the <see cref="HeroesLoader"/> class. Sets the source of data to be loaded from a CASC storage, locally or online.
     /// </summary>
-    /// <param name="cascConfig">The <see cref="CASCConfig"/> to determine on how to load data from the data files.</param>
-    /// <param name="httpClient">An instance of <see cref="HttpClient"/>. Needed for both local and online.</param>
-    /// <param name="progressReporter">Used to report the progress of opening the CASC storage.</param>
+    /// <param name="cascHandler">
+    /// The opened CASC storage, from <see cref="OpenCASCStorage(CASCConfig, HttpClient, ProgressReporter?)"/>.
+    /// The caller owns it: dispose of it when done with the returned <see cref="HeroesLoader"/>, not before.
+    /// </param>
     /// <param name="options">
     /// If not <see langword="null"/>, the data is loaded as described by <see cref="Load(HeroesLoaderOptions)"/>. Otherwise nothing is loaded yet.
-    /// They are checked before the CASC storage is opened, except whether <see cref="HeroesLoaderOptions.MapTitle"/> exists, which needs the storage.
+    /// They are checked before anything is read from the storage, except whether <see cref="HeroesLoaderOptions.MapTitle"/> exists, which needs the storage.
     /// </param>
-    /// <returns>A <see cref="HeroesLoader"/> instance.</returns>
-    /// <exception cref="ArgumentNullException"><paramref name="cascConfig"/> or <paramref name="httpClient"/> is <see langword="null"/>.</exception>
+    /// <returns>A <see cref="HeroesLoader"/> instance that reads from <paramref name="cascHandler"/>.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="cascHandler"/> is <see langword="null"/>.</exception>
     /// <exception cref="ArgumentException"><see cref="HeroesLoaderOptions.MapTitle"/> is empty or white space.</exception>
     /// <exception cref="ArgumentOutOfRangeException"><see cref="HeroesLoaderOptions.GameStringsLocale"/> is not a defined <see cref="StormLocale"/> value.</exception>
     /// <exception cref="KeyNotFoundException"><see cref="HeroesLoaderOptions.MapTitle"/> was not found.</exception>
-    public static HeroesLoader LoadWithCASC(CASCConfig cascConfig, HttpClient httpClient, ProgressReporter? progressReporter = null, HeroesLoaderOptions? options = null)
+    /// <remarks>
+    /// The returned instance does not dispose <paramref name="cascHandler"/>, including when this throws.
+    /// After <paramref name="cascHandler"/> is disposed, the methods that read from a local storage throw an <see cref="ObjectDisposedException"/>.
+    /// <code>
+    /// using CASCHandler cascHandler = HeroesLoader.OpenCASCStorage(cascConfig, httpClient);
+    /// HeroesLoader heroesLoader = HeroesLoader.LoadWithCASC(cascHandler);
+    /// </code>
+    /// </remarks>
+    public static HeroesLoader LoadWithCASC(CASCHandler cascHandler, HeroesLoaderOptions? options = null)
     {
-        ArgumentNullException.ThrowIfNull(cascConfig);
-        ArgumentNullException.ThrowIfNull(httpClient);
+        ArgumentNullException.ThrowIfNull(cascHandler);
 
-        // checked before the storage is opened, which can take a while
+        // checked before the storage tree is built, which can take a while
         if (options is not null)
             ThrowIfOptionsNotValid(options);
-
-        CASCHandler cascHandler = CASCHandler.OpenStorage(cascConfig, httpClient: httpClient, worker: progressReporter);
-        cascHandler.Root.LoadListFile(string.Empty, progressReporter);
 
         CASCFolder cascFolderRoot = cascHandler.Root.SetFlags(LocaleFlags.All);
 
         CASCHeroesSource cascHeroesSource = new(SourceConstants.DefaultModsDirectory, new StormModFactory(), new CASCHeroesStorage(cascHandler, cascFolderRoot));
 
-        return Create(new HeroesLoader(cascHeroesSource, cascConfig), options);
+        return Create(new HeroesLoader(cascHeroesSource, cascHandler.Config), options);
     }
 
     /// <summary>

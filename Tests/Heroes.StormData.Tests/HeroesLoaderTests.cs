@@ -104,6 +104,29 @@ public sealed class HeroesLoaderTests
     }
 
     [TestMethod]
+    public void LoadWithCASC_CASCHandlerIsNull_ThrowsArgumentNullException()
+    {
+        // act
+        Action act = () => HeroesLoader.LoadWithCASC(null!);
+
+        // assert
+        act.Should().Throw<ArgumentNullException>().WithParameterName("cascHandler");
+    }
+
+    [TestMethod]
+    public void OpenCASCStorage_CASCConfigIsNull_ThrowsArgumentNullException()
+    {
+        // arrange
+        using HttpClient httpClient = new();
+
+        // act
+        Action act = () => HeroesLoader.OpenCASCStorage(null!, httpClient);
+
+        // assert
+        act.Should().Throw<ArgumentNullException>().WithParameterName("cascConfig");
+    }
+
+    [TestMethod]
     public void LoadMapMod_MapTitleInDifferentCase_LoadedMapTitleIsTheMapsTitle()
     {
         // arrange
