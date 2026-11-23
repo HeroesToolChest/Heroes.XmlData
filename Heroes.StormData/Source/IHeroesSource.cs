@@ -25,9 +25,10 @@ internal interface IHeroesSource
 
     /// <summary>
     /// Removes all the loaded gamestrings, then loads the gamestrings of a locale from the base, map, and custom <c>stormmods</c>.
+    /// If loading throws, all the gamestrings are removed again, so none from part of the locale are left.
     /// </summary>
     /// <param name="stormLocale">The locale of the gamestrings to load.</param>
-    void LoadGamestrings(StormLocale stormLocale);
+    void LoadGameStrings(StormLocale stormLocale);
 
     /// <summary>
     /// Unloads the current map <c>stormmods</c>, then loads the map <c>stormmods</c> of the given map title.

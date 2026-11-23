@@ -40,18 +40,27 @@ internal abstract class HeroesSourceBase : IHeroesSource
         _depotCache.LoadDepotCache();
     }
 
-    public void LoadGamestrings(StormLocale stormLocale)
+    public void LoadGameStrings(StormLocale stormLocale)
     {
-        SourceContainer.ClearGamestrings();
+        SourceContainer.ClearGameStrings();
 
-        foreach (IStormMod stormMod in _stormMods)
-            stormMod.LoadStormGameStrings(stormLocale);
+        try
+        {
+            foreach (IStormMod stormMod in _stormMods)
+                stormMod.LoadStormGameStrings(stormLocale);
 
-        foreach (IStormMod stormMod in _stormMapMods)
-            stormMod.LoadStormGameStrings(stormLocale);
+            foreach (IStormMod stormMod in _stormMapMods)
+                stormMod.LoadStormGameStrings(stormLocale);
 
-        foreach (IStormMod stormMod in _stormCustomMods)
-            stormMod.LoadStormGameStrings(stormLocale);
+            foreach (IStormMod stormMod in _stormCustomMods)
+                stormMod.LoadStormGameStrings(stormLocale);
+        }
+        catch
+        {
+            // the gamestrings that were loaded before the failure are only part of the locale, so none are kept
+            SourceContainer.ClearGameStrings();
+            throw;
+        }
     }
 
     public bool LoadStormMapMod(string mapTitle)

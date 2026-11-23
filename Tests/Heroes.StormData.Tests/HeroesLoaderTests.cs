@@ -156,7 +156,7 @@ public sealed class HeroesLoaderTests
         heroesLoader.LoadGameStrings(StormLocale.ENUS);
 
         int calls = 0;
-        _heroesSource.When(x => x.LoadGamestrings(StormLocale.DEDE)).Do(_ =>
+        _heroesSource.When(x => x.LoadGameStrings(StormLocale.DEDE)).Do(_ =>
         {
             if (++calls == 1)
                 throw new IOException("failed");
@@ -170,7 +170,7 @@ public sealed class HeroesLoaderTests
 
         // assert
         heroesLoader.GameStringsLocale.Should().Be(StormLocale.DEDE);
-        _heroesSource.Received(2).LoadGamestrings(StormLocale.DEDE);
+        _heroesSource.Received(2).LoadGameStrings(StormLocale.DEDE);
     }
 
     [TestMethod]
@@ -200,10 +200,10 @@ public sealed class HeroesLoaderTests
             _heroesSource.LoadStormMods();
             _heroesSource.LoadDepotCache();
             _heroesSource.LoadStormMapMod(MapTitle);
-            _heroesSource.LoadGamestrings(StormLocale.DEDE);
+            _heroesSource.LoadGameStrings(StormLocale.DEDE);
         });
 
-        _heroesSource.Received(1).LoadGamestrings(Arg.Any<StormLocale>());
+        _heroesSource.Received(1).LoadGameStrings(Arg.Any<StormLocale>());
         heroesLoader.LoadedMapTitle.Should().Be(MapTitle);
         heroesLoader.GameStringsLocale.Should().Be(StormLocale.DEDE);
     }
@@ -232,8 +232,8 @@ public sealed class HeroesLoaderTests
         heroesLoader.Load(new HeroesLoaderOptions() { MapTitle = OtherMapTitle, GameStringsLocale = StormLocale.DEDE });
 
         // assert
-        _heroesSource.Received(1).LoadGamestrings(Arg.Any<StormLocale>());
-        _heroesSource.Received(1).LoadGamestrings(StormLocale.DEDE);
+        _heroesSource.Received(1).LoadGameStrings(Arg.Any<StormLocale>());
+        _heroesSource.Received(1).LoadGameStrings(StormLocale.DEDE);
     }
 
     [TestMethod]
@@ -247,7 +247,7 @@ public sealed class HeroesLoaderTests
         heroesLoader.Load(new HeroesLoaderOptions() { MapTitle = OtherMapTitle });
 
         // assert
-        _heroesSource.Received(1).LoadGamestrings(StormLocale.FRFR);
+        _heroesSource.Received(1).LoadGameStrings(StormLocale.FRFR);
     }
 
     [TestMethod]
@@ -441,7 +441,7 @@ public sealed class HeroesLoaderTests
         Received.InOrder(() =>
         {
             _heroesSource.LoadStormMapMod(MapTitle);
-            _heroesSource.LoadGamestrings(StormLocale.KOKR);
+            _heroesSource.LoadGameStrings(StormLocale.KOKR);
         });
     }
 
@@ -479,7 +479,7 @@ public sealed class HeroesLoaderTests
         Received.InOrder(() =>
         {
             _heroesSource.LoadStormMapMod(MapTitle);
-            _heroesSource.LoadGamestrings(StormLocale.KOKR);
+            _heroesSource.LoadGameStrings(StormLocale.KOKR);
         });
     }
 
@@ -493,7 +493,7 @@ public sealed class HeroesLoaderTests
         heroesLoader.LoadMapMod(MapTitle);
 
         // assert
-        _heroesSource.DidNotReceive().LoadGamestrings(Arg.Any<StormLocale>());
+        _heroesSource.DidNotReceive().LoadGameStrings(Arg.Any<StormLocale>());
     }
 
     [TestMethod]
@@ -798,6 +798,37 @@ public sealed class HeroesLoaderTests
     }
 
     [TestMethod]
+    public void UnloadMapMod_GameStringsLoaded_DoesNotReloadGameStringsAndKeepsLocale()
+    {
+        // arrange
+        HeroesLoader heroesLoader = HeroesLoader.LoadWithInternal(_heroesSource, new HeroesLoaderOptions() { MapTitle = MapTitle, GameStringsLocale = StormLocale.KOKR });
+        _heroesSource.ClearReceivedCalls();
+
+        // act
+        heroesLoader.UnloadMapMod();
+
+        // assert
+        _heroesSource.DidNotReceive().LoadGameStrings(Arg.Any<StormLocale>());
+        heroesLoader.GameStringsLocale.Should().Be(StormLocale.KOKR);
+    }
+
+    [TestMethod]
+    public void UnloadMapMod_ThenSameMapLoaded_LoadsMapAgain()
+    {
+        // arrange
+        HeroesLoader heroesLoader = HeroesLoader.LoadWithInternal(_heroesSource);
+        heroesLoader.LoadMapMod(MapTitle);
+        heroesLoader.UnloadMapMod();
+
+        // act
+        heroesLoader.LoadMapMod(MapTitle);
+
+        // assert
+        _heroesSource.Received(2).LoadStormMapMod(MapTitle);
+        heroesLoader.LoadedMapTitle.Should().Be(MapTitle);
+    }
+
+    [TestMethod]
     public void UnloadMapMod_NoMapLoaded_ReturnsFalse()
     {
         // arrange
@@ -822,8 +853,54 @@ public sealed class HeroesLoaderTests
         heroesLoader.LoadGameStrings(StormLocale.ENUS);
 
         // assert
-        _heroesSource.Received(1).LoadGamestrings(StormLocale.ENUS);
+        _heroesSource.Received(1).LoadGameStrings(StormLocale.ENUS);
         heroesLoader.GameStringsLocale.Should().Be(StormLocale.ENUS);
+    }
+
+    [TestMethod]
+    public void LoadGameStrings_UndefinedLocale_ThrowsArgumentOutOfRangeExceptionWithoutLoading()
+    {
+        // arrange
+        HeroesLoader heroesLoader = HeroesLoader.LoadWithInternal(_heroesSource);
+
+        // act
+        Action act = () => heroesLoader.LoadGameStrings((StormLocale)999);
+
+        // assert
+        act.Should().Throw<ArgumentOutOfRangeException>().WithParameterName("locale");
+        _heroesSource.DidNotReceive().LoadStormMods();
+        _heroesSource.DidNotReceive().LoadGameStrings(Arg.Any<StormLocale>());
+    }
+
+    [TestMethod]
+    public void LoadGameStrings_EveryDefinedLocale_Loads()
+    {
+        // arrange
+        HeroesLoader heroesLoader = HeroesLoader.LoadWithInternal(_heroesSource);
+
+        foreach (StormLocale locale in Enum.GetValues<StormLocale>())
+        {
+            // act
+            heroesLoader.LoadGameStrings(locale);
+
+            // assert
+            heroesLoader.GameStringsLocale.Should().Be(locale);
+        }
+    }
+
+    [TestMethod]
+    public void Load_UndefinedGameStringsLocale_ThrowsArgumentOutOfRangeExceptionWithoutLoading()
+    {
+        // arrange
+        HeroesLoader heroesLoader = HeroesLoader.LoadWithInternal(_heroesSource);
+
+        // act
+        Action act = () => heroesLoader.Load(new HeroesLoaderOptions() { MapTitle = MapTitle, GameStringsLocale = (StormLocale)999 });
+
+        // assert
+        act.Should().Throw<ArgumentOutOfRangeException>().WithParameterName("options");
+        _heroesSource.DidNotReceive().LoadStormMods();
+        _heroesSource.DidNotReceive().LoadStormMapMod(Arg.Any<string>());
     }
 
     [TestMethod]
@@ -1331,7 +1408,7 @@ public sealed class HeroesLoaderTests
         {
             _heroesSource.LoadStormMods();
             _heroesSource.LoadDepotCache();
-            _heroesSource.LoadGamestrings(StormLocale.ENUS);
+            _heroesSource.LoadGameStrings(StormLocale.ENUS);
         });
     }
 

@@ -557,7 +557,7 @@ public sealed class StormModContainerTests
         stormModContainer.LoadGameStringFile(stream, StormFileHelper.CreateStormFile());
 
         // act
-        _sourceContainer.ClearGamestrings();
+        _sourceContainer.ClearGameStrings();
 
         // assert
         stormModContainer.LoadedGameStringFiles.Should().BeEmpty();

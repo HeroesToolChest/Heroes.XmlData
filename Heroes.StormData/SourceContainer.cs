@@ -1,4 +1,4 @@
-﻿namespace Heroes.StormData;
+namespace Heroes.StormData;
 
 /// <summary>
 /// Holds the data across all the <c>stormmods</c>.
@@ -79,7 +79,7 @@ internal class SourceContainer
     /// <summary>
     /// Removes the gamestrings from all the <see cref="StormModContainers"/> and from the base, map, and custom <see cref="DataStorage"/>.
     /// </summary>
-    public void ClearGamestrings()
+    public void ClearGameStrings()
     {
         foreach (StormModContainer stormModContainer in StormModContainers)
             stormModContainer.ClearGameStrings();

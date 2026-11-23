@@ -123,7 +123,7 @@ public class StormModContainer
 
     /// <summary>
     /// Removes the loaded <c>gamestrings.txt</c> files from this container.
-    /// The gamestrings themselves are in the shared <see cref="DataStorage"/>, which is cleared by <see cref="SourceContainer.ClearGamestrings"/>.
+    /// The gamestrings themselves are in the shared <see cref="DataStorage"/>, which is cleared by <see cref="SourceContainer.ClearGameStrings"/>.
     /// </summary>
     internal void ClearGameStrings()
     {

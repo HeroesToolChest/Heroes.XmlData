@@ -148,6 +148,7 @@ public class HeroesLoader
     /// </param>
     /// <param name="options">If not <see langword="null"/>, the data is loaded as described by <see cref="Load(HeroesLoaderOptions)"/>. Otherwise nothing is loaded yet.</param>
     /// <returns>A <see cref="HeroesLoader"/> instance.</returns>
+    /// <exception cref="ArgumentOutOfRangeException"><see cref="HeroesLoaderOptions.GameStringsLocale"/> is not a defined <see cref="StormLocale"/> value.</exception>
     /// <exception cref="DirectoryNotFoundException"><paramref name="rootDirectory"/> does not exist.</exception>
     /// <exception cref="KeyNotFoundException"><see cref="HeroesLoaderOptions.MapTitle"/> was not found.</exception>
     /// <exception cref="JsonException">The <c>hdp.info</c> file is not valid JSON.</exception>
@@ -175,6 +176,7 @@ public class HeroesLoader
     /// <param name="progressReporter">Used to report the progress of opening the CASC storage.</param>
     /// <param name="options">If not <see langword="null"/>, the data is loaded as described by <see cref="Load(HeroesLoaderOptions)"/>. Otherwise nothing is loaded yet.</param>
     /// <returns>A <see cref="HeroesLoader"/> instance.</returns>
+    /// <exception cref="ArgumentOutOfRangeException"><see cref="HeroesLoaderOptions.GameStringsLocale"/> is not a defined <see cref="StormLocale"/> value.</exception>
     /// <exception cref="KeyNotFoundException"><see cref="HeroesLoaderOptions.MapTitle"/> was not found.</exception>
     public static HeroesLoader LoadWithCASC(CASCConfig cascConfig, HttpClient httpClient, ProgressReporter? progressReporter = null, HeroesLoaderOptions? options = null)
     {
@@ -199,10 +201,14 @@ public class HeroesLoader
     /// </para>
     /// </summary>
     /// <param name="options">What should be loaded.</param>
+    /// <exception cref="ArgumentOutOfRangeException"><see cref="HeroesLoaderOptions.GameStringsLocale"/> is not a defined <see cref="StormLocale"/> value.</exception>
     /// <exception cref="KeyNotFoundException"><see cref="HeroesLoaderOptions.MapTitle"/> was not found.</exception>
     public void Load(HeroesLoaderOptions options)
     {
         ArgumentNullException.ThrowIfNull(options);
+
+        if (options.GameStringsLocale is StormLocale optionsLocale)
+            ThrowIfLocaleNotDefined(optionsLocale, nameof(options));
 
         LoadStormMods();
 
@@ -303,7 +309,11 @@ public class HeroesLoader
     }
 
     /// <summary>
-    /// Unloads the current <c>mapmod</c>, including its gamestrings.
+    /// Unloads the current <c>mapmod</c>, removing all of its data (the xml, file, style, <c>assets.txt</c>, and gamestring data).
+    /// <para>
+    /// The base <c>stormmods</c> data stays loaded, including any values the map had overridden.
+    /// The base gamestrings and <see cref="GameStringsLocale"/> are not changed, and nothing is reloaded.
+    /// </para>
     /// </summary>
     /// <returns><see langword="true"/> if a <c>mapmod</c> was unloaded; <see langword="false"/> if no <c>mapmod</c> was loaded.</returns>
     public bool UnloadMapMod()
@@ -324,15 +334,22 @@ public class HeroesLoader
     /// Loads the base <c>stormmods</c> if they are not already loaded.
     /// </para>
     /// </summary>
-    /// <param name="localization">The <see cref="StormLocale"/>.</param>
-    public void LoadGameStrings(StormLocale localization = StormLocale.ENUS)
+    /// <param name="locale">The locale of the gamestrings to load.</param>
+    /// <remarks>
+    /// A <c>stormmod</c> that does not have a <c>gamestrings.txt</c> file for the locale is skipped.
+    /// If this throws while loading, all the gamestrings are removed and <see cref="GameStringsLocale"/> is <see langword="null"/>, so it can be called again.
+    /// </remarks>
+    /// <exception cref="ArgumentOutOfRangeException"><paramref name="locale"/> is not a defined <see cref="StormLocale"/> value.</exception>
+    public void LoadGameStrings(StormLocale locale = StormLocale.ENUS)
     {
+        ThrowIfLocaleNotDefined(locale, nameof(locale));
+
         LoadStormMods();
 
-        if (GameStringsLocale == localization)
+        if (GameStringsLocale == locale)
             return;
 
-        LoadGameStringsCore(localization);
+        LoadGameStringsCore(locale);
     }
 
     /// <summary>
@@ -599,6 +616,12 @@ public class HeroesLoader
         ? (stormFile.MpqFilePath, stormFile.MpqEntryPath)
         : (stormFile.FullPath, null);
 
+    private static void ThrowIfLocaleNotDefined(StormLocale locale, string paramName)
+    {
+        if (!Enum.IsDefined(locale))
+            throw new ArgumentOutOfRangeException(paramName, locale, $"The value is not a defined {nameof(StormLocale)}.");
+    }
+
     private bool TryLoadMapModCore(string mapTitle, out bool mapChanged)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(mapTitle);
@@ -664,12 +687,12 @@ public class HeroesLoader
         return true;
     }
 
-    private void LoadGameStringsCore(StormLocale localization)
+    private void LoadGameStringsCore(StormLocale locale)
     {
         // cleared first, so a failed load is not seen as loaded, it is safe to call again as it clears all gamestrings before loading
         GameStringsLocale = null;
 
-        _heroesSource.LoadGamestrings(localization);
-        GameStringsLocale = localization;
+        _heroesSource.LoadGameStrings(locale);
+        GameStringsLocale = locale;
     }
 }

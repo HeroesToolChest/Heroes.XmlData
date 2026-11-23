@@ -236,7 +236,7 @@ public sealed class HeroesSourceBaseTests
     }
 
     [TestMethod]
-    public void LoadGamestrings_HasBaseAndMapStormMods_LoadsGameStringsOfBaseThenMapStormMods()
+    public void LoadGameStrings_HasBaseAndMapStormMods_LoadsGameStringsOfBaseThenMapStormMods()
     {
         // arrange
         AddVolskayaMap();
@@ -250,7 +250,7 @@ public sealed class HeroesSourceBaseTests
         IStormMod mapRootStormMod = _heroesSource.MapRootStormMod!;
 
         // act
-        _heroesSource.LoadGamestrings(StormLocale.DEDE);
+        _heroesSource.LoadGameStrings(StormLocale.DEDE);
 
         // assert
         Received.InOrder(() =>
@@ -264,17 +264,39 @@ public sealed class HeroesSourceBaseTests
     }
 
     [TestMethod]
-    public void LoadGamestrings_HasLoadedGameStrings_ClearsThemFirst()
+    public void LoadGameStrings_HasLoadedGameStrings_ClearsThemFirst()
     {
         // arrange
         TextCache textCache = _heroesSource.SourceContainer.LayeredDataStorage.GetDataStorage(StormModType.Base).TextCache;
         textCache.GameStringsById.Dictionary["id1"] = new StringValue("value1", StormFileHelper.CreateStormFile());
 
         // act
-        _heroesSource.LoadGamestrings(StormLocale.ENUS);
+        _heroesSource.LoadGameStrings(StormLocale.ENUS);
 
         // assert
         textCache.GameStringsById.Dictionary.Should().BeEmpty();
+    }
+
+    [TestMethod]
+    public void LoadGameStrings_StormModThrows_RemovesGameStringsLoadedBeforeIt()
+    {
+        // arrange
+        TextCache textCache = _heroesSource.SourceContainer.LayeredDataStorage.GetDataStorage(StormModType.Base).TextCache;
+
+        IStormMod coreStormMod = _heroesSource.StormModsByDirectoryPath[Path.Combine(_modsDirectoryPath, "core.stormmod")];
+        IStormMod heroesStormMod = _heroesSource.StormModsByDirectoryPath[Path.Combine(_modsDirectoryPath, "heroes.stormmod")];
+        IStormMod heroesDataStormMod = _heroesSource.StormModsByDirectoryPath[Path.Combine(_modsDirectoryPath, "heroesdata.stormmod")];
+
+        coreStormMod.When(x => x.LoadStormGameStrings(StormLocale.DEDE)).Do(_ => textCache.GameStringsById.Dictionary["id1"] = new StringValue("value1", StormFileHelper.CreateStormFile()));
+        heroesStormMod.When(x => x.LoadStormGameStrings(StormLocale.DEDE)).Do(_ => throw new IOException("failed"));
+
+        // act
+        Action act = () => _heroesSource.LoadGameStrings(StormLocale.DEDE);
+
+        // assert
+        act.Should().Throw<IOException>();
+        textCache.GameStringsById.Dictionary.Should().BeEmpty();
+        heroesDataStormMod.DidNotReceive().LoadStormGameStrings(Arg.Any<StormLocale>());
     }
 
     [TestMethod]

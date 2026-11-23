@@ -1,4 +1,4 @@
-﻿namespace Heroes.StormData.Tests;
+namespace Heroes.StormData.Tests;
 
 [TestClass]
 public sealed class SourceContainerTests
@@ -90,7 +90,7 @@ public sealed class SourceContainerTests
     }
 
     [TestMethod]
-    public void ClearGamestrings_HasTextsInEveryLayer_RemovesOnlyGameStrings()
+    public void ClearGameStrings_HasTextsInEveryLayer_RemovesOnlyGameStrings()
     {
         // arrange
         LayeredDataStorage layeredDataStorage = _sourceContainer.LayeredDataStorage;
@@ -104,7 +104,7 @@ public sealed class SourceContainerTests
         }
 
         // act
-        _sourceContainer.ClearGamestrings();
+        _sourceContainer.ClearGameStrings();
 
         // assert
         foreach (StormModType stormModType in new[] { StormModType.Base, StormModType.Map, StormModType.Custom })
@@ -116,7 +116,7 @@ public sealed class SourceContainerTests
     }
 
     [TestMethod]
-    public void ClearGamestrings_HasContainers_KeepsContainers()
+    public void ClearGameStrings_HasContainers_KeepsContainers()
     {
         // arrange
         StormModContainer baseContainer = AddContainer(StormModType.Base);
@@ -124,7 +124,7 @@ public sealed class SourceContainerTests
         StormModContainer customContainer = AddContainer(StormModType.Custom);
 
         // act
-        _sourceContainer.ClearGamestrings();
+        _sourceContainer.ClearGameStrings();
 
         // assert
         _sourceContainer.StormModContainers.Should().Equal(baseContainer, mapContainer, customContainer);
