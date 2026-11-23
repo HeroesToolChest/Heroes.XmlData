@@ -149,7 +149,7 @@ public class HeroesLoader
     /// <param name="options">If not <see langword="null"/>, the data is loaded as described by <see cref="Load(HeroesLoaderOptions)"/>. Otherwise nothing is loaded yet.</param>
     /// <returns>A <see cref="HeroesLoader"/> instance.</returns>
     /// <exception cref="DirectoryNotFoundException"><paramref name="rootDirectory"/> does not exist.</exception>
-    /// <exception cref="HeroesStormDataException"><see cref="HeroesLoaderOptions.MapTitle"/> was not found.</exception>
+    /// <exception cref="KeyNotFoundException"><see cref="HeroesLoaderOptions.MapTitle"/> was not found.</exception>
     /// <exception cref="JsonException">The <c>hdp.info</c> file is not valid JSON.</exception>
     /// <remarks>
     /// On Linux and macOS, all the files and directories in <paramref name="rootDirectory"/> must have lowercase names, because their paths are looked up in lowercase.
@@ -175,7 +175,7 @@ public class HeroesLoader
     /// <param name="progressReporter">Used to report the progress of opening the CASC storage.</param>
     /// <param name="options">If not <see langword="null"/>, the data is loaded as described by <see cref="Load(HeroesLoaderOptions)"/>. Otherwise nothing is loaded yet.</param>
     /// <returns>A <see cref="HeroesLoader"/> instance.</returns>
-    /// <exception cref="HeroesStormDataException"><see cref="HeroesLoaderOptions.MapTitle"/> was not found.</exception>
+    /// <exception cref="KeyNotFoundException"><see cref="HeroesLoaderOptions.MapTitle"/> was not found.</exception>
     public static HeroesLoader LoadWithCASC(CASCConfig cascConfig, HttpClient httpClient, ProgressReporter? progressReporter = null, HeroesLoaderOptions? options = null)
     {
         ArgumentNullException.ThrowIfNull(cascConfig);
@@ -199,7 +199,7 @@ public class HeroesLoader
     /// </para>
     /// </summary>
     /// <param name="options">What should be loaded.</param>
-    /// <exception cref="HeroesStormDataException"><see cref="HeroesLoaderOptions.MapTitle"/> was not found.</exception>
+    /// <exception cref="KeyNotFoundException"><see cref="HeroesLoaderOptions.MapTitle"/> was not found.</exception>
     public void Load(HeroesLoaderOptions options)
     {
         ArgumentNullException.ThrowIfNull(options);
@@ -209,7 +209,7 @@ public class HeroesLoader
         bool mapChanged = false;
 
         if (options.MapTitle is not null && !TryLoadMapModCore(options.MapTitle, out mapChanged))
-            throw new HeroesStormDataException($"Map title '{options.MapTitle}' was not found.");
+            throw new KeyNotFoundException($"Could not find the map: {options.MapTitle}");
 
         StormLocale? locale = options.GameStringsLocale ?? GameStringsLocale;
 
@@ -260,9 +260,37 @@ public class HeroesLoader
     /// <para>A map's title. Can be found from <see cref="GetMapTitles"/>. Is case-insensitive.</para>
     /// <para>Only <c>enUS</c> maps titles are accepted.</para>
     /// </param>
-    /// <returns><see langword="true"/> if the map is loaded; <see langword="false"/> if the map was not found, in which case the current <c>mapmod</c> stays loaded.</returns>
-    public bool LoadMapMod(string mapTitle)
+    /// <exception cref="ArgumentException"><paramref name="mapTitle"/> is <see langword="null"/>, empty, or white space.</exception>
+    /// <exception cref="KeyNotFoundException">The map was not found. The current <c>mapmod</c> stays loaded.</exception>
+    public void LoadMapMod(string mapTitle)
     {
+        ArgumentException.ThrowIfNullOrWhiteSpace(mapTitle);
+
+        if (!TryLoadMapMod(mapTitle))
+            throw new KeyNotFoundException($"Could not find the map: {mapTitle}");
+    }
+
+    /// <summary>
+    /// Loads a <c>mapmod</c>, replacing the currently loaded one.
+    /// <para>
+    /// Only one can be loaded at a time.
+    /// Loads the base <c>stormmods</c> if they are not already loaded.
+    /// If gamestrings are loaded, they are reloaded to include the map's gamestrings.
+    /// </para>
+    /// </summary>
+    /// <param name="mapTitle">
+    /// <para>A map's title. Can be found from <see cref="GetMapTitles"/>. Is case-insensitive.</para>
+    /// <para>Only <c>enUS</c> maps titles are accepted.</para>
+    /// </param>
+    /// <returns>
+    /// <see langword="true"/> if the map is loaded; <see langword="false"/> if the map was not found, in which case the current <c>mapmod</c> stays loaded.
+    /// Returns <see langword="false"/> without loading anything if <paramref name="mapTitle"/> is <see langword="null"/>, empty, or white space.
+    /// </returns>
+    public bool TryLoadMapMod(string? mapTitle)
+    {
+        if (string.IsNullOrWhiteSpace(mapTitle))
+            return false;
+
         LoadStormMods();
 
         if (!TryLoadMapModCore(mapTitle, out bool mapChanged))

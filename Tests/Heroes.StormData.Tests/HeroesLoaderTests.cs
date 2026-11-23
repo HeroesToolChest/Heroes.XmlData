@@ -39,10 +39,9 @@ public sealed class HeroesLoaderTests
         HeroesLoader heroesLoader = HeroesLoader.LoadWithInternal(_heroesSource);
 
         // act
-        bool result = heroesLoader.LoadMapMod(lowerCaseTitle);
+        heroesLoader.LoadMapMod(lowerCaseTitle);
 
         // assert
-        result.Should().BeTrue();
         heroesLoader.LoadedMapTitle.Should().Be(MapTitle);
         _heroesSource.Received(1).LoadStormMapMod(MapTitle);
     }
@@ -83,10 +82,9 @@ public sealed class HeroesLoaderTests
         }
 
         // act
-        bool result = heroesLoader.LoadMapMod(MapTitle);
+        heroesLoader.LoadMapMod(MapTitle);
 
         // assert
-        result.Should().BeTrue();
         _heroesSource.Received(2).LoadStormMapMod(MapTitle);
         heroesLoader.LoadedMapTitle.Should().Be(MapTitle);
     }
@@ -103,6 +101,7 @@ public sealed class HeroesLoaderTests
         // act and assert
         heroesLoader.Invoking(x => x.LoadStormMods()).Should().Throw<InvalidOperationException>();
         heroesLoader.Invoking(x => x.LoadMapMod(MapTitle)).Should().Throw<InvalidOperationException>();
+        heroesLoader.Invoking(x => x.TryLoadMapMod(MapTitle)).Should().Throw<InvalidOperationException>();
         heroesLoader.Invoking(x => x.LoadGameStrings(StormLocale.ENUS)).Should().Throw<InvalidOperationException>();
         heroesLoader.Invoking(x => x.Load(new HeroesLoaderOptions())).Should().Throw<InvalidOperationException>();
 
@@ -210,7 +209,7 @@ public sealed class HeroesLoaderTests
     }
 
     [TestMethod]
-    public void Load_MapTitleNotFound_ThrowsException()
+    public void Load_MapTitleNotFound_ThrowsKeyNotFoundException()
     {
         // arrange
         HeroesLoader heroesLoader = HeroesLoader.LoadWithInternal(_heroesSource);
@@ -219,7 +218,7 @@ public sealed class HeroesLoaderTests
         Action act = () => heroesLoader.Load(new HeroesLoaderOptions() { MapTitle = "Unknown Map" });
 
         // assert
-        act.Should().Throw<HeroesStormDataException>();
+        act.Should().Throw<KeyNotFoundException>().WithMessage("*Unknown Map*");
     }
 
     [TestMethod]
@@ -301,32 +300,50 @@ public sealed class HeroesLoaderTests
     }
 
     [TestMethod]
-    public void LoadMapMod_MapFound_ReturnsTrueAndSetsLoadedMapTitle()
+    public void LoadMapMod_MapFound_SetsLoadedMapTitle()
     {
         // arrange
         HeroesLoader heroesLoader = HeroesLoader.LoadWithInternal(_heroesSource);
 
         // act
-        bool result = heroesLoader.LoadMapMod(MapTitle);
+        heroesLoader.LoadMapMod(MapTitle);
 
         // assert
-        result.Should().BeTrue();
         heroesLoader.LoadedMapTitle.Should().Be(MapTitle);
     }
 
     [TestMethod]
-    public void LoadMapMod_MapNotFound_ReturnsFalseAndKeepsLoadedMapTitle()
+    public void LoadMapMod_MapNotFound_ThrowsKeyNotFoundExceptionAndKeepsLoadedMapTitle()
     {
         // arrange
         HeroesLoader heroesLoader = HeroesLoader.LoadWithInternal(_heroesSource);
         heroesLoader.LoadMapMod(MapTitle);
 
         // act
-        bool result = heroesLoader.LoadMapMod("Unknown Map");
+        Action act = () => heroesLoader.LoadMapMod("Unknown Map");
 
         // assert
-        result.Should().BeFalse();
+        act.Should().Throw<KeyNotFoundException>().WithMessage("*Unknown Map*");
         heroesLoader.LoadedMapTitle.Should().Be(MapTitle);
+        _heroesSource.DidNotReceive().UnloadStormMapMod();
+    }
+
+    [TestMethod]
+    [DataRow(null)]
+    [DataRow("")]
+    [DataRow(" ")]
+    public void LoadMapMod_NullOrWhiteSpaceMapTitle_ThrowsArgumentExceptionWithoutLoading(string? mapTitle)
+    {
+        // arrange
+        HeroesLoader heroesLoader = HeroesLoader.LoadWithInternal(_heroesSource);
+
+        // act
+        Action act = () => heroesLoader.LoadMapMod(mapTitle!);
+
+        // assert
+        act.Should().Throw<ArgumentException>().WithParameterName("mapTitle");
+        _heroesSource.DidNotReceive().LoadStormMods();
+        _heroesSource.DidNotReceive().LoadDepotCache();
     }
 
     [TestMethod]
@@ -337,11 +354,114 @@ public sealed class HeroesLoaderTests
         heroesLoader.LoadMapMod(MapTitle);
 
         // act
-        bool result = heroesLoader.LoadMapMod(MapTitle.ToUpperInvariant());
+        heroesLoader.LoadMapMod(MapTitle.ToUpperInvariant());
+
+        // assert
+        _heroesSource.Received(1).LoadStormMapMod(Arg.Any<string>());
+    }
+
+    [TestMethod]
+    public void TryLoadMapMod_MapFound_ReturnsTrueAndSetsLoadedMapTitle()
+    {
+        // arrange
+        HeroesLoader heroesLoader = HeroesLoader.LoadWithInternal(_heroesSource);
+
+        // act
+        bool result = heroesLoader.TryLoadMapMod(MapTitle);
 
         // assert
         result.Should().BeTrue();
-        _heroesSource.Received(1).LoadStormMapMod(Arg.Any<string>());
+        heroesLoader.LoadedMapTitle.Should().Be(MapTitle);
+    }
+
+    [TestMethod]
+    public void TryLoadMapMod_MapNotFound_ReturnsFalseAndKeepsLoadedMapTitle()
+    {
+        // arrange
+        HeroesLoader heroesLoader = HeroesLoader.LoadWithInternal(_heroesSource);
+        heroesLoader.LoadMapMod(MapTitle);
+
+        // act
+        bool result = heroesLoader.TryLoadMapMod("Unknown Map");
+
+        // assert
+        result.Should().BeFalse();
+        heroesLoader.LoadedMapTitle.Should().Be(MapTitle);
+        _heroesSource.DidNotReceive().UnloadStormMapMod();
+    }
+
+    [TestMethod]
+    [DataRow(null)]
+    [DataRow("")]
+    [DataRow(" ")]
+    public void TryLoadMapMod_NullOrWhiteSpaceMapTitle_ReturnsFalseWithoutLoading(string? mapTitle)
+    {
+        // arrange
+        HeroesLoader heroesLoader = HeroesLoader.LoadWithInternal(_heroesSource);
+
+        // act
+        bool result = heroesLoader.TryLoadMapMod(mapTitle);
+
+        // assert
+        result.Should().BeFalse();
+        _heroesSource.DidNotReceive().LoadStormMods();
+        _heroesSource.DidNotReceive().LoadDepotCache();
+    }
+
+    [TestMethod]
+    public void TryLoadMapMod_StormModsNotLoaded_LoadsStormModsFirst()
+    {
+        // arrange
+        HeroesLoader heroesLoader = HeroesLoader.LoadWithInternal(_heroesSource);
+
+        // act
+        heroesLoader.TryLoadMapMod(MapTitle);
+
+        // assert
+        Received.InOrder(() =>
+        {
+            _heroesSource.LoadStormMods();
+            _heroesSource.LoadDepotCache();
+            _heroesSource.LoadStormMapMod(MapTitle);
+        });
+    }
+
+    [TestMethod]
+    public void TryLoadMapMod_GameStringsLoaded_ReloadsGameStrings()
+    {
+        // arrange
+        HeroesLoader heroesLoader = HeroesLoader.LoadWithInternal(_heroesSource);
+        heroesLoader.LoadGameStrings(StormLocale.KOKR);
+        _heroesSource.ClearReceivedCalls();
+
+        // act
+        heroesLoader.TryLoadMapMod(MapTitle);
+
+        // assert
+        Received.InOrder(() =>
+        {
+            _heroesSource.LoadStormMapMod(MapTitle);
+            _heroesSource.LoadGamestrings(StormLocale.KOKR);
+        });
+    }
+
+    [TestMethod]
+    public void TryLoadMapMod_SourceThrows_ThrowsAndUnloadsMap()
+    {
+        // arrange
+        // only a map that is not found returns false, other failures still throw
+        HeroesLoader heroesLoader = HeroesLoader.LoadWithInternal(_heroesSource);
+        heroesLoader.LoadMapMod(MapTitle);
+
+        _heroesSource.LoadStormMapMod(OtherMapTitle).Returns(_ => throw new IOException("failed"));
+
+        // act
+        Action act = () => heroesLoader.TryLoadMapMod(OtherMapTitle);
+
+        // assert
+        act.Should().Throw<IOException>();
+        heroesLoader.LoadedMapTitle.Should().BeNull();
+        _heroesSource.Received(1).UnloadStormMapMod();
     }
 
     [TestMethod]
