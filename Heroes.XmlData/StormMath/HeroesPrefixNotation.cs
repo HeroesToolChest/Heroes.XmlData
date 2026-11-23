@@ -109,6 +109,12 @@ internal sealed class HeroesPrefixNotation
 
             return Math.Round(Evaluate(valueToBeRoundedSpan));
         }
+        else if (expression.StartsWith("floor", StringComparison.OrdinalIgnoreCase))
+        {
+            ReadOnlySpan<char> valueToBeFlooredSpan = expression[6..^1];  // removed floor( and )
+
+            return Math.Floor(Evaluate(valueToBeFlooredSpan));
+        }
         else if (expression.StartsWith("max", StringComparison.OrdinalIgnoreCase))
         {
             GetOperatorParameters(expression, out double firstParam, out double secondParam);
