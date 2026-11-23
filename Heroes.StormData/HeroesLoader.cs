@@ -1,13 +1,21 @@
 namespace Heroes.StormData;
 
 /// <summary>
-/// Class to load the heroes data from a given source.
+/// Loads the Heroes of the Storm data (the <c>stormmods</c>, a <c>mapmod</c>, and gamestrings) from extracted files (<see cref="LoadWithFile"/>)
+/// or from CASC storage (<see cref="LoadWithCASC"/>), and gives access to the source's files.
 /// </summary>
 /// <remarks>
+/// <para>
 /// The load methods only do work when the requested state differs from the current state, and they load
 /// whatever they depend on (such as the base <c>stormmods</c>) themselves, so they can be called in any order.
+/// </para>
+/// <para>
+/// This class is not thread-safe for loading: the load and unload methods, and the map methods (which may load the depot cache),
+/// must not be called at the same time as each other. The file methods (<see cref="FileExists(string?, string?)"/>, <see cref="GetFile(string, string?)"/>,
+/// <see cref="TryGetFile(string?, string?, out Stream?)"/>, and their overloads) only read from the source, so they can be called from more than one thread.
+/// </para>
 /// </remarks>
-public class HeroesLoader
+public sealed class HeroesLoader
 {
     /// <summary>
     /// The product name for Heroes of the Storm.
@@ -57,7 +65,8 @@ public class HeroesLoader
     /// <summary>
     /// Gets the root directory, the <c>mods</c> directory.
     /// <para>
-    /// For a file source, this is the directory that was given. For a CASC source, this is the <c>mods</c> directory relative to the root of the CASC storage.
+    /// For a file source, this is the full path of the directory that was given, without a trailing directory separator.
+    /// For a CASC source, this is the <c>mods</c> directory relative to the root of the CASC storage.
     /// </para>
     /// </summary>
     public string RootDirectory { get; }
@@ -108,7 +117,7 @@ public class HeroesLoader
     /// <summary>
     /// Helper method to get a <see cref="CASCConfig"/> from a local Heroes of the Storm directory.
     /// </summary>
-    /// <param name="pathToHeroesDirectory">The path to the Heroes of the storm directory.</param>
+    /// <param name="pathToHeroesDirectory">The path to the Heroes of the Storm directory.</param>
     /// <param name="loggerOptions">Logging options for the casclib.</param>
     /// <returns>A <see cref="CASCConfig"/> instance.</returns>
     public static CASCConfig GetCASCConfig(string pathToHeroesDirectory, ILoggerOptions? loggerOptions = null)
@@ -133,6 +142,7 @@ public class HeroesLoader
     /// </summary>
     /// <param name="rootDirectory">The root directory path, usually the <c>mods</c> directory.</param>
     /// <returns>The <see cref="StormData.ModsInfoFile"/> or <see langword="null"/> if the file was not found.</returns>
+    /// <exception cref="ArgumentException"><paramref name="rootDirectory"/> is <see langword="null"/>, empty, or white space.</exception>
     /// <exception cref="JsonException">The file is not valid JSON.</exception>
     public static ModsInfoFile? GetModsInfoFile(string rootDirectory)
     {
@@ -142,23 +152,39 @@ public class HeroesLoader
     /// <summary>
     /// Gets an instance of the <see cref="HeroesLoader"/> class. Sets the source of the data to be loaded from an extracted file source.
     /// </summary>
-    /// <param name="rootDirectory">The root directory path, usually the <c>mods</c> directory.</param>
+    /// <param name="rootDirectory">
+    /// The root directory path, usually the <c>mods</c> directory. A relative path is made a full path from the current directory, so the loader
+    /// does not depend on the current directory afterwards.
+    /// </param>
     /// <param name="modsInfoFile">
     /// The properties of the extracted file source. If <see langword="null"/>, they are read from the <c>hdp.info</c> file in <paramref name="rootDirectory"/>, if it exists.
     /// </param>
-    /// <param name="options">If not <see langword="null"/>, the data is loaded as described by <see cref="Load(HeroesLoaderOptions)"/>. Otherwise nothing is loaded yet.</param>
+    /// <param name="options">
+    /// If not <see langword="null"/>, the data is loaded as described by <see cref="Load(HeroesLoaderOptions)"/>. Otherwise nothing is loaded yet.
+    /// They are checked before <paramref name="rootDirectory"/> is used.
+    /// </param>
     /// <returns>A <see cref="HeroesLoader"/> instance.</returns>
+    /// <exception cref="ArgumentException">
+    /// <paramref name="rootDirectory"/> is <see langword="null"/>, empty, or white space, or <see cref="HeroesLoaderOptions.MapTitle"/> is empty or white space.
+    /// </exception>
     /// <exception cref="ArgumentOutOfRangeException"><see cref="HeroesLoaderOptions.GameStringsLocale"/> is not a defined <see cref="StormLocale"/> value.</exception>
     /// <exception cref="DirectoryNotFoundException"><paramref name="rootDirectory"/> does not exist.</exception>
     /// <exception cref="KeyNotFoundException"><see cref="HeroesLoaderOptions.MapTitle"/> was not found.</exception>
     /// <exception cref="JsonException">The <c>hdp.info</c> file is not valid JSON.</exception>
     /// <remarks>
     /// On Linux and macOS, all the files and directories in <paramref name="rootDirectory"/> must have lowercase names, because their paths are looked up in lowercase.
-    /// The <paramref name="rootDirectory"/> path itself is used as is.
+    /// The letter case of the <paramref name="rootDirectory"/> path itself is kept as given.
     /// </remarks>
     public static HeroesLoader LoadWithFile(string rootDirectory, ModsInfoFile? modsInfoFile = null, HeroesLoaderOptions? options = null)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(rootDirectory);
+
+        // checked before anything is opened
+        if (options is not null)
+            ThrowIfOptionsNotValid(options);
+
+        // a full path, so the loader does not depend on the current directory, which can change later
+        rootDirectory = Path.TrimEndingDirectorySeparator(Path.GetFullPath(rootDirectory));
 
         if (!Directory.Exists(rootDirectory))
             throw new DirectoryNotFoundException($"The root directory was not found: {rootDirectory}");
@@ -174,14 +200,23 @@ public class HeroesLoader
     /// <param name="cascConfig">The <see cref="CASCConfig"/> to determine on how to load data from the data files.</param>
     /// <param name="httpClient">An instance of <see cref="HttpClient"/>. Needed for both local and online.</param>
     /// <param name="progressReporter">Used to report the progress of opening the CASC storage.</param>
-    /// <param name="options">If not <see langword="null"/>, the data is loaded as described by <see cref="Load(HeroesLoaderOptions)"/>. Otherwise nothing is loaded yet.</param>
+    /// <param name="options">
+    /// If not <see langword="null"/>, the data is loaded as described by <see cref="Load(HeroesLoaderOptions)"/>. Otherwise nothing is loaded yet.
+    /// They are checked before the CASC storage is opened, except whether <see cref="HeroesLoaderOptions.MapTitle"/> exists, which needs the storage.
+    /// </param>
     /// <returns>A <see cref="HeroesLoader"/> instance.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="cascConfig"/> or <paramref name="httpClient"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentException"><see cref="HeroesLoaderOptions.MapTitle"/> is empty or white space.</exception>
     /// <exception cref="ArgumentOutOfRangeException"><see cref="HeroesLoaderOptions.GameStringsLocale"/> is not a defined <see cref="StormLocale"/> value.</exception>
     /// <exception cref="KeyNotFoundException"><see cref="HeroesLoaderOptions.MapTitle"/> was not found.</exception>
     public static HeroesLoader LoadWithCASC(CASCConfig cascConfig, HttpClient httpClient, ProgressReporter? progressReporter = null, HeroesLoaderOptions? options = null)
     {
         ArgumentNullException.ThrowIfNull(cascConfig);
         ArgumentNullException.ThrowIfNull(httpClient);
+
+        // checked before the storage is opened, which can take a while
+        if (options is not null)
+            ThrowIfOptionsNotValid(options);
 
         CASCHandler cascHandler = CASCHandler.OpenStorage(cascConfig, httpClient: httpClient, worker: progressReporter);
         cascHandler.Root.LoadListFile(string.Empty, progressReporter);
@@ -199,16 +234,27 @@ public class HeroesLoader
     /// Compared to calling <see cref="LoadMapMod(string)"/> and <see cref="LoadGameStrings(StormLocale)"/> separately,
     /// the gamestrings are loaded at most once, even when both the map and the locale change.
     /// </para>
+    /// <para>
+    /// The options are checked before anything is loaded, so a map that is not found does not load the base <c>stormmods</c>.
+    /// </para>
     /// </summary>
     /// <param name="options">What should be loaded.</param>
+    /// <remarks>
+    /// If loading the map's files throws, no map is loaded afterwards (the previous one was already unloaded).
+    /// If the map loads but loading the gamestrings throws, the map stays loaded and no gamestrings are loaded (<see cref="GameStringsLocale"/> is <see langword="null"/>).
+    /// </remarks>
+    /// <exception cref="ArgumentException"><see cref="HeroesLoaderOptions.MapTitle"/> is empty or white space.</exception>
     /// <exception cref="ArgumentOutOfRangeException"><see cref="HeroesLoaderOptions.GameStringsLocale"/> is not a defined <see cref="StormLocale"/> value.</exception>
     /// <exception cref="KeyNotFoundException"><see cref="HeroesLoaderOptions.MapTitle"/> was not found.</exception>
     public void Load(HeroesLoaderOptions options)
     {
         ArgumentNullException.ThrowIfNull(options);
 
-        if (options.GameStringsLocale is StormLocale optionsLocale)
-            ThrowIfLocaleNotDefined(optionsLocale, nameof(options));
+        ThrowIfOptionsNotValid(options);
+
+        // checked first, so nothing is loaded for a map that can't be. It only needs the depot cache.
+        if (options.MapTitle is not null && !IsLoadedMapTitle(options.MapTitle) && !StormMapExists(options.MapTitle))
+            throw new KeyNotFoundException($"Could not find the map: {options.MapTitle}");
 
         LoadStormMods();
 
@@ -224,34 +270,36 @@ public class HeroesLoader
     }
 
     /// <summary>
-    /// Loads the base <c>stormmods</c> and the depot cache. Does nothing if they are already loaded.
+    /// Loads the base <c>stormmods</c>. Does nothing if they are already loaded.
+    /// <para>
+    /// The depot cache (the map files) is not loaded. It is loaded the first time a map is needed, such as by <see cref="LoadMapMod(string)"/> or <see cref="GetMapTitles"/>.
+    /// </para>
     /// </summary>
     /// <remarks>
     /// The base <c>stormmods</c> cannot be loaded again after a failed attempt (it would add their data a second time),
-    /// so if this throws, this and the other load methods throw an <see cref="InvalidOperationException"/> afterwards. Create a new <see cref="HeroesLoader"/> instead.
+    /// so if this throws, this and the other methods that load the base <c>stormmods</c> throw an <see cref="InvalidOperationException"/> afterwards.
+    /// Create a new <see cref="HeroesLoader"/> instead. The methods that only use the depot cache, such as <see cref="GetMapTitles"/>, still work.
     /// </remarks>
     /// <exception cref="InvalidOperationException">A previous attempt to load the base <c>stormmods</c> failed.</exception>
     public void LoadStormMods()
     {
-        if (!IsStormModsLoaded)
+        if (IsStormModsLoaded)
+            return;
+
+        if (_stormModsLoadFailed)
+            throw new InvalidOperationException($"A previous attempt to load the base stormmods failed. Create a new {nameof(HeroesLoader)} instance.");
+
+        try
         {
-            if (_stormModsLoadFailed)
-                throw new InvalidOperationException($"A previous attempt to load the base stormmods failed. Create a new {nameof(HeroesLoader)} instance.");
-
-            try
-            {
-                _heroesSource.LoadStormMods();
-            }
-            catch
-            {
-                _stormModsLoadFailed = true;
-                throw;
-            }
-
-            IsStormModsLoaded = true;
+            _heroesSource.LoadStormMods();
+        }
+        catch
+        {
+            _stormModsLoadFailed = true;
+            throw;
         }
 
-        EnsureDepotCacheLoaded();
+        IsStormModsLoaded = true;
     }
 
     /// <summary>
@@ -264,8 +312,13 @@ public class HeroesLoader
     /// </summary>
     /// <param name="mapTitle">
     /// <para>A map's title. Can be found from <see cref="GetMapTitles"/>. Is case-insensitive.</para>
-    /// <para>Only <c>enUS</c> maps titles are accepted.</para>
+    /// <para>Only <c>enUS</c> map titles are accepted.</para>
     /// </param>
+    /// <remarks>
+    /// The title is looked up before the base <c>stormmods</c> are loaded, so a map that is not found does not load them.
+    /// If loading the map's files throws, no map is loaded afterwards (the previous one was already unloaded).
+    /// If the map loads but reloading the gamestrings throws, the map stays loaded and no gamestrings are loaded (<see cref="GameStringsLocale"/> is <see langword="null"/>).
+    /// </remarks>
     /// <exception cref="ArgumentException"><paramref name="mapTitle"/> is <see langword="null"/>, empty, or white space.</exception>
     /// <exception cref="KeyNotFoundException">The map was not found. The current <c>mapmod</c> stays loaded.</exception>
     public void LoadMapMod(string mapTitle)
@@ -286,15 +339,25 @@ public class HeroesLoader
     /// </summary>
     /// <param name="mapTitle">
     /// <para>A map's title. Can be found from <see cref="GetMapTitles"/>. Is case-insensitive.</para>
-    /// <para>Only <c>enUS</c> maps titles are accepted.</para>
+    /// <para>Only <c>enUS</c> map titles are accepted.</para>
     /// </param>
     /// <returns>
-    /// <see langword="true"/> if the map is loaded; <see langword="false"/> if the map was not found, in which case the current <c>mapmod</c> stays loaded.
+    /// <see langword="true"/> if the map is loaded; <see langword="false"/> if the map was not found, in which case the current <c>mapmod</c> stays loaded
+    /// and the base <c>stormmods</c> are not loaded.
     /// Returns <see langword="false"/> without loading anything if <paramref name="mapTitle"/> is <see langword="null"/>, empty, or white space.
     /// </returns>
+    /// <remarks>
+    /// Only a map that is not found returns <see langword="false"/>. Other failures still throw.
+    /// If loading the map's files throws, no map is loaded afterwards (the previous one was already unloaded).
+    /// If the map loads but reloading the gamestrings throws, the map stays loaded and no gamestrings are loaded (<see cref="GameStringsLocale"/> is <see langword="null"/>).
+    /// </remarks>
     public bool TryLoadMapMod(string? mapTitle)
     {
         if (string.IsNullOrWhiteSpace(mapTitle))
+            return false;
+
+        // checked first, so an unknown title does not load the base stormmods. It only needs the depot cache.
+        if (!IsLoadedMapTitle(mapTitle) && !StormMapExists(mapTitle))
             return false;
 
         LoadStormMods();
@@ -605,6 +668,9 @@ public class HeroesLoader
 
     internal static ModsInfoFile? GetModsInfoFile(IFileSystem fileSystem, string rootDirectory)
     {
+        // an empty path would read the file from the current directory
+        ArgumentException.ThrowIfNullOrWhiteSpace(rootDirectory);
+
         string infoFilePath = fileSystem.Path.Join(rootDirectory, ModsHdpInfoFileName);
 
         if (!fileSystem.File.Exists(infoFilePath))
@@ -638,20 +704,31 @@ public class HeroesLoader
             throw new ArgumentOutOfRangeException(paramName, locale, $"The value is not a defined {nameof(StormLocale)}.");
     }
 
+    // the checks that don't need anything loaded, so they can be done before a source is opened
+    private static void ThrowIfOptionsNotValid(HeroesLoaderOptions options)
+    {
+        if (options.GameStringsLocale is StormLocale locale)
+            ThrowIfLocaleNotDefined(locale, nameof(options));
+
+        if (options.MapTitle is not null && string.IsNullOrWhiteSpace(options.MapTitle))
+            throw new ArgumentException($"{nameof(HeroesLoaderOptions.MapTitle)} is empty or white space. Use null to keep the current map.", nameof(options));
+    }
+
     private bool TryLoadMapModCore(string mapTitle, out bool mapChanged)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(mapTitle);
 
         mapChanged = false;
 
-        if (string.Equals(LoadedMapTitle, mapTitle, StringComparison.OrdinalIgnoreCase))
+        if (IsLoadedMapTitle(mapTitle))
             return true;
 
-        // use the map's own title, so LoadedMapTitle does not depend on the casing that was passed in
-        if (!_heroesSource.TryGetS2MAProperties(mapTitle, out S2MAProperties? s2maProperties))
+        // loads the depot cache if needed, and finds the map the same way as the other map methods
+        if (!TryGetMapProperties(mapTitle, out _, out S2MVProperties? s2mvProperties))
             return false;
 
-        string headerTitle = s2maProperties.S2MVProperties?.HeaderTitle ?? mapTitle;
+        // use the map's own title, so LoadedMapTitle does not depend on the casing that was passed in
+        string headerTitle = s2mvProperties.HeaderTitle;
 
         try
         {
@@ -672,6 +749,9 @@ public class HeroesLoader
 
         return true;
     }
+
+    // the loaded map is not looked up again, so asking for it does nothing
+    private bool IsLoadedMapTitle(string mapTitle) => string.Equals(LoadedMapTitle, mapTitle, StringComparison.OrdinalIgnoreCase);
 
     private void EnsureDepotCacheLoaded()
     {

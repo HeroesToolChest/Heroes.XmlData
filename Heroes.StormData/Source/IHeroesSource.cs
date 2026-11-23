@@ -19,8 +19,16 @@ internal interface IHeroesSource
     /// </summary>
     IReadOnlyList<IStormMod> StormMapMods { get; }
 
+    /// <summary>
+    /// Adds the containers of the base <c>stormmods</c> (<c>core</c>, <c>heroes</c>, and <c>heroesdata</c>) and loads their files, in that order,
+    /// along with the <c>stormmods</c> they include. It must only be called once, because the data would be added a second time.
+    /// </summary>
     void LoadStormMods();
 
+    /// <summary>
+    /// Loads the map files (<c>.s2ma</c> and <c>.s2mv</c>) from the depot cache, replacing any that were loaded before.
+    /// It must be called before the map methods (<see cref="GetMapTitles"/>, <see cref="TryGetS2MAProperties"/>, and <see cref="LoadStormMapMod"/>) find any map.
+    /// </summary>
     void LoadDepotCache();
 
     /// <summary>
