@@ -51,6 +51,12 @@ internal static class StormPrefixNotation
 
             return Math.Round(Evaluate(layeredElementCache, valueToBeRoundedSpan));
         }
+        else if (expression.StartsWith("floor", StringComparison.OrdinalIgnoreCase))
+        {
+            ReadOnlySpan<char> valueToBeFlooredSpan = expression[6..^1];  // removed floor( and )
+
+            return Math.Floor(Evaluate(layeredElementCache, valueToBeFlooredSpan));
+        }
         else if (expression.StartsWith("max", StringComparison.OrdinalIgnoreCase))
         {
             GetParameters(layeredElementCache, expression, expression.IndexOf('('), out double firstParam, out double secondParam);

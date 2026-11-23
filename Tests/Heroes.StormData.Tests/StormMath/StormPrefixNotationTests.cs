@@ -29,6 +29,13 @@ public sealed class StormPrefixNotationTests
     [DataRow(5, "round(/(150 29))")]
     [DataRow(6, "round(5.5)")]
     [DataRow(4, "round(4.499)")]
+    [DataRow(5, "floor(5.172)")]
+    [DataRow(5, "floor(5.99)")]
+    [DataRow(48, "floor(/(6 0.125))")]
+    [DataRow(5, "floor(/(150 29))")]
+    [DataRow(-6, "floor(-5.5)")]
+    [DataRow(-5, "negate(floor(5.5))")]
+    [DataRow(31, "/(1488 floor(/(6 0.125)))")]
     public void Compute_ValidNumberExpressions_ReturnsValue(double expected, string expression)
     {
         // arrange
@@ -161,5 +168,31 @@ public sealed class StormPrefixNotationTests
 
         // assert
         result.Should().Be(-0.5);
+    }
+
+    [TestMethod]
+    public void Compute_WithConstantsInAFloorExpression_ReturnsValue()
+    {
+        // arrange
+        string expression = "floor(/($LucioSoundBarrierDecayDuration $LucioSoundBarrierDecayPeriod))";
+
+        LayeredDataStorage layeredDataStorage = new();
+        DataStorage dataStorage = layeredDataStorage.GetDataStorage(StormModType.Base);
+
+        dataStorage.AddConstElement(XmlReaderHelper.GetStormXmlConstElement(
+            """
+            <const id="$LucioSoundBarrierDecayDuration" value="6" />
+            """));
+
+        dataStorage.AddConstElement(XmlReaderHelper.GetStormXmlConstElement(
+            """
+            <const id="$LucioSoundBarrierDecayPeriod" value="0.125" />
+            """));
+
+        // act
+        double result = StormPrefixNotation.Compute(layeredDataStorage.Elements, expression);
+
+        // assert
+        result.Should().Be(48);
     }
 }
