@@ -182,28 +182,18 @@ public sealed class FileHeroesSourceTests
     }
 
     [TestMethod]
-    public void FileExists_MpqEntryInDirectory_ReturnsFalse()
+    [DataRow(null)]
+    [DataRow(MpqEntryPath)]
+    public void FileExists_PathIsDirectory_ReturnsFalse(string? mpqEntryPath)
     {
         // arrange
-        // the mock file system does not fail to open a directory like the real one does
-        DirectoryInfo modsDirectory = Directory.CreateTempSubdirectory(nameof(FileHeroesSourceTests));
+        FileHeroesSource fileHeroesSource = CreateFileHeroesSource();
 
-        try
-        {
-            modsDirectory.CreateSubdirectory("core.stormmod");
+        // act
+        bool result = fileHeroesSource.FileExists("core.stormmod", mpqEntryPath);
 
-            FileHeroesSource fileHeroesSource = new(new FileSystem(), modsDirectory.FullName, _stormModFactory);
-
-            // act
-            bool result = fileHeroesSource.FileExists("core.stormmod", MpqEntryPath);
-
-            // assert
-            result.Should().BeFalse();
-        }
-        finally
-        {
-            modsDirectory.Delete(true);
-        }
+        // assert
+        result.Should().BeFalse();
     }
 
     [TestMethod]
@@ -273,10 +263,148 @@ public sealed class FileHeroesSourceTests
     }
 
     [TestMethod]
-    public void GetFile_PathIsDirectory_ThrowsException()
+    public void GetFile_PathIsDirectory_ThrowsFileNotFoundException()
     {
         // arrange
-        // the mock file system does not fail to open a directory like the real one does
+        FileHeroesSource fileHeroesSource = CreateFileHeroesSource();
+
+        // act
+        Action act = () => fileHeroesSource.GetFile("core.stormmod", null);
+
+        // assert
+        act.Should().Throw<FileNotFoundException>();
+    }
+
+    [TestMethod]
+    public void GetFile_MpqEntryInFileThatIsNotMpqArchive_ThrowsFileNotFoundException()
+    {
+        // arrange
+        FileHeroesSource fileHeroesSource = CreateFileHeroesSource();
+
+        // act
+        Action act = () => fileHeroesSource.GetFile(_filePath, MpqEntryPath);
+
+        // assert
+        act.Should().Throw<FileNotFoundException>().Which.FileName.Should().Be(MpqEntryPath);
+    }
+
+    [TestMethod]
+    [DataRow("mods/Core.StormMod/Base.StormData/GameData.xml")]
+    [DataRow(@"core.stormmod\base.stormdata\gamedata.xml")]
+    public void TryGetFile_FileExists_ReturnsTrueAndContent(string path)
+    {
+        // arrange
+        FileHeroesSource fileHeroesSource = CreateFileHeroesSource();
+
+        // act
+        bool result = fileHeroesSource.TryGetFile(path, null, out Stream? stream);
+
+        // assert
+        result.Should().BeTrue();
+
+        using (stream)
+            new StreamReader(stream!).ReadToEnd().Should().Be("file content");
+    }
+
+    [TestMethod]
+    [DataRow("")]
+    [DataRow(" ")]
+    [DataRow("core.stormmod/missing.xml")]
+    [DataRow("missingdirectory/missing.xml")]
+    public void TryGetFile_FileNotFound_ReturnsFalse(string path)
+    {
+        // arrange
+        FileHeroesSource fileHeroesSource = CreateFileHeroesSource();
+
+        // act
+        bool result = fileHeroesSource.TryGetFile(path, null, out Stream? stream);
+
+        // assert
+        result.Should().BeFalse();
+        stream.Should().BeNull();
+    }
+
+    [TestMethod]
+    public void TryGetFile_MpqEntryExists_ReturnsTrueAndEntryContent()
+    {
+        // arrange
+        FileHeroesSource fileHeroesSource = CreateFileHeroesSource();
+
+        // act
+        bool result = fileHeroesSource.TryGetFile(_archivePath, @"base.stormdata\gamedata\actordata.xml", out Stream? stream);
+
+        // assert
+        result.Should().BeTrue();
+
+        using (stream)
+            new StreamReader(stream!).ReadToEnd().Should().Contain("<Catalog");
+    }
+
+    [TestMethod]
+    public void TryGetFile_MpqEntryNotFound_ReturnsFalse()
+    {
+        // arrange
+        FileHeroesSource fileHeroesSource = CreateFileHeroesSource();
+
+        // act
+        bool result = fileHeroesSource.TryGetFile(_archivePath, "base.stormdata/missing.xml", out Stream? stream);
+
+        // assert
+        result.Should().BeFalse();
+        stream.Should().BeNull();
+    }
+
+    [TestMethod]
+    public void TryGetFile_MpqFileNotFound_ReturnsFalse()
+    {
+        // arrange
+        FileHeroesSource fileHeroesSource = CreateFileHeroesSource();
+
+        // act
+        bool result = fileHeroesSource.TryGetFile(Path.Combine("heroesmapmods", "missing.stormmap"), MpqEntryPath, out Stream? stream);
+
+        // assert
+        result.Should().BeFalse();
+        stream.Should().BeNull();
+    }
+
+    [TestMethod]
+    public void TryGetFile_MpqEntryInFileThatIsNotMpqArchive_ReturnsFalse()
+    {
+        // arrange
+        FileHeroesSource fileHeroesSource = CreateFileHeroesSource();
+
+        // act
+        bool result = fileHeroesSource.TryGetFile(_filePath, MpqEntryPath, out Stream? stream);
+
+        // assert
+        result.Should().BeFalse();
+        stream.Should().BeNull();
+    }
+
+    [TestMethod]
+    [DataRow(null)]
+    [DataRow(MpqEntryPath)]
+    public void TryGetFile_PathIsDirectory_ReturnsFalse(string? mpqEntryPath)
+    {
+        // arrange
+        FileHeroesSource fileHeroesSource = CreateFileHeroesSource();
+
+        // act
+        bool result = fileHeroesSource.TryGetFile("core.stormmod", mpqEntryPath, out Stream? stream);
+
+        // assert
+        result.Should().BeFalse();
+        stream.Should().BeNull();
+    }
+
+    [TestMethod]
+    [DataRow(null)]
+    [DataRow(MpqEntryPath)]
+    public void TryGetFile_PathIsRealDirectory_ReturnsFalse(string? mpqEntryPath)
+    {
+        // arrange
+        // also checked with the real file system, where opening a directory throws an UnauthorizedAccessException
         DirectoryInfo modsDirectory = Directory.CreateTempSubdirectory(nameof(FileHeroesSourceTests));
 
         try
@@ -286,10 +414,11 @@ public sealed class FileHeroesSourceTests
             FileHeroesSource fileHeroesSource = new(new FileSystem(), modsDirectory.FullName, _stormModFactory);
 
             // act
-            Action act = () => fileHeroesSource.GetFile("core.stormmod", null);
+            bool result = fileHeroesSource.TryGetFile("core.stormmod", mpqEntryPath, out Stream? stream);
 
             // assert
-            act.Should().Throw<UnauthorizedAccessException>();
+            result.Should().BeFalse();
+            stream.Should().BeNull();
         }
         finally
         {

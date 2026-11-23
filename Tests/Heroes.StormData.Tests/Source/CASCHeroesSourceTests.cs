@@ -345,6 +345,62 @@ public sealed class CASCHeroesSourceTests
         new StreamReader(result).ReadToEnd().Should().Contain("<Catalog");
     }
 
+    [TestMethod]
+    public void TryGetFile_FileExists_ReturnsTrueAndStream()
+    {
+        // arrange
+        string expectedPath = Path.Combine(ModsDirectory, "core.stormmod", "base.stormdata", "gamedata.xml");
+        using MemoryStream fileStream = new([1, 2, 3]);
+
+        _cascHeroesStorage.CASCHandlerWrapper.FileExists(expectedPath).Returns(true);
+        _cascHeroesStorage.CASCHandlerWrapper.OpenFile(expectedPath).Returns(fileStream);
+
+        CASCHeroesSource cascHeroesSource = CreateCASCHeroesSource();
+
+        // act
+        bool result = cascHeroesSource.TryGetFile("mods/core.stormmod/base.stormdata/gamedata.xml", null, out Stream? stream);
+
+        // assert
+        result.Should().BeTrue();
+        stream.Should().BeSameAs(fileStream);
+    }
+
+    [TestMethod]
+    public void TryGetFile_FileNotFound_ReturnsFalseWithoutOpeningFile()
+    {
+        // arrange
+        CASCHeroesSource cascHeroesSource = CreateCASCHeroesSource();
+
+        // act
+        bool result = cascHeroesSource.TryGetFile("core.stormmod/missing.xml", null, out Stream? stream);
+
+        // assert
+        result.Should().BeFalse();
+        stream.Should().BeNull();
+        _cascHeroesStorage.CASCHandlerWrapper.DidNotReceiveWithAnyArgs().OpenFile(default!);
+    }
+
+    [TestMethod]
+    public void TryGetFile_MpqEntryInCASCFile_ReturnsTrueAndEntryContent()
+    {
+        // arrange
+        string archivePath = Path.Combine(ModsDirectory, "heroesmapmods", "test.stormmap");
+
+        _cascHeroesStorage.CASCHandlerWrapper.FileExists(archivePath).Returns(true);
+        _cascHeroesStorage.CASCHandlerWrapper.OpenFile(archivePath).Returns(_ => new MemoryStream(File.ReadAllBytes(Path.Join("TestFiles", "Mpq", "test.s2ma"))));
+
+        CASCHeroesSource cascHeroesSource = CreateCASCHeroesSource();
+
+        // act
+        bool result = cascHeroesSource.TryGetFile(archivePath, "Base.StormData/GameData/ActorData.xml", out Stream? stream);
+
+        // assert
+        result.Should().BeTrue();
+
+        using (stream)
+            new StreamReader(stream!).ReadToEnd().Should().Contain("<Catalog");
+    }
+
     private CASCHeroesSource CreateCASCHeroesSource() => new(ModsDirectory, _stormModFactory, _cascHeroesStorage);
 
     /// <summary>

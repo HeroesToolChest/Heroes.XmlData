@@ -1,4 +1,3 @@
-using Heroes.MpqTool;
 using System.Diagnostics.CodeAnalysis;
 
 namespace Heroes.StormData.Source.Tests;
@@ -296,18 +295,99 @@ public sealed class HeroesSourceBaseTests
     }
 
     [TestMethod]
-    public void GetFile_MpqEntryInFileThatIsNotMpqArchive_ThrowsExceptionAndClosesFile()
+    [DataRow(16)]
+    [DataRow(64)]
+    public void GetFile_MpqEntryInFileThatIsNotMpqArchive_ThrowsFileNotFoundExceptionAndClosesFile(int fileLength)
     {
         // arrange
-        MemoryStream file = new(new byte[64]);
+        MemoryStream file = new(new byte[fileLength]);
         _heroesSource.OpenedFile = file;
 
         // act
         Action act = () => _heroesSource.GetFile("file.s2ma", "entry.xml");
 
         // assert
-        act.Should().Throw<MpqHeroesToolException>();
+        act.Should().Throw<FileNotFoundException>().Which.FileName.Should().Be("entry.xml");
         file.CanRead.Should().BeFalse();
+    }
+
+    [TestMethod]
+    [DataRow(null)]
+    [DataRow("")]
+    [DataRow(" ")]
+    public void FileExistsAndTryGetFile_NullOrWhiteSpacePath_ReturnFalseWithoutOpeningFile(string? path)
+    {
+        // arrange
+        using MemoryStream file = new([1, 2, 3]);
+        _heroesSource.OpenedFile = file;
+
+        // act
+        bool fileExistsResult = _heroesSource.FileExists(path, null);
+        bool fileExistsWithEntryResult = _heroesSource.FileExists(path, "entry.xml");
+        bool tryGetFileResult = _heroesSource.TryGetFile(path, null, out Stream? stream);
+
+        // assert
+        fileExistsResult.Should().BeFalse();
+        fileExistsWithEntryResult.Should().BeFalse();
+        tryGetFileResult.Should().BeFalse();
+        stream.Should().BeNull();
+        file.CanRead.Should().BeTrue();
+    }
+
+    [TestMethod]
+    [DataRow(null)]
+    [DataRow("")]
+    [DataRow(" ")]
+    public void GetFile_NullOrWhiteSpacePath_ThrowsArgumentException(string? path)
+    {
+        // act
+        Action act = () => _heroesSource.GetFile(path!, null);
+
+        // assert
+        act.Should().Throw<ArgumentException>().Which.ParamName.Should().Be("path");
+    }
+
+    [TestMethod]
+    public void GetFile_FileNotFound_ThrowsFileNotFoundExceptionWithFullPath()
+    {
+        // act
+        Action act = () => _heroesSource.GetFile("mods/core.stormmod/missing.xml", null);
+
+        // assert
+        act.Should().Throw<FileNotFoundException>().Which.FileName.Should().Be(Path.Combine(_modsDirectoryPath, "core.stormmod", "missing.xml"));
+    }
+
+    [TestMethod]
+    [DataRow(16)]
+    [DataRow(64)]
+    public void TryGetFile_MpqEntryInFileThatIsNotMpqArchive_ReturnsFalseAndClosesFile(int fileLength)
+    {
+        // arrange
+        MemoryStream file = new(new byte[fileLength]);
+        _heroesSource.OpenedFile = file;
+
+        // act
+        bool result = _heroesSource.TryGetFile("file.s2ma", "entry.xml", out Stream? stream);
+
+        // assert
+        result.Should().BeFalse();
+        stream.Should().BeNull();
+        file.CanRead.Should().BeFalse();
+    }
+
+    [TestMethod]
+    public void TryGetFile_NoMpqEntryPath_ReturnsOpenedFile()
+    {
+        // arrange
+        using MemoryStream file = new([1, 2, 3]);
+        _heroesSource.OpenedFile = file;
+
+        // act
+        bool result = _heroesSource.TryGetFile("file.xml", string.Empty, out Stream? stream);
+
+        // assert
+        result.Should().BeTrue();
+        stream.Should().BeSameAs(file);
     }
 
     private void AddVolskayaMap()

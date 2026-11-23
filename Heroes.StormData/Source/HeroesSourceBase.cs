@@ -97,51 +97,63 @@ internal abstract class HeroesSourceBase : IHeroesSource
         return _depotCache.Data.S2MAPropertiesByTitle.TryGetValue(mapTitle, out s2maProperties);
     }
 
-    public bool FileExists(string path, string? mpqEntryPath)
+    public bool FileExists(string? path, string? mpqEntryPath)
     {
         if (string.IsNullOrWhiteSpace(path))
             return false;
 
         string fullPath = GetFullPath(path);
 
+        // checked without opening the file
         if (string.IsNullOrEmpty(mpqEntryPath))
             return FileExistsCore(fullPath);
 
-        try
-        {
-            if (!TryOpenFile(fullPath, out Stream? stream))
-                return false;
-
-            using MpqHeroesArchive mpqHeroesArchive = OpenMpqArchive(stream);
-
-            return mpqHeroesArchive.FileEntryExists(mpqEntryPath, true);
-        }
-        catch (Exception ex) when (ex is MpqHeroesToolException or EndOfStreamException or UnauthorizedAccessException)
-        {
-            // the file is not an MPQ archive that can be read, or the path is a directory
+        if (!TryOpenMpqArchive(fullPath, out MpqHeroesArchive? mpqHeroesArchive))
             return false;
-        }
+
+        using (mpqHeroesArchive)
+            return mpqHeroesArchive.FileEntryExists(mpqEntryPath, true);
     }
 
     public Stream GetFile(string path, string? mpqEntryPath)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(path);
 
-        string fullPath = GetFullPath(path);
-
-        if (!TryOpenFile(fullPath, out Stream? stream))
-            throw new FileNotFoundException($"Could not find file: {fullPath}", fullPath);
-
-        if (string.IsNullOrEmpty(mpqEntryPath))
+        if (TryGetFile(path, mpqEntryPath, out Stream? stream))
             return stream;
 
+        string fullPath = GetFullPath(path);
+
+        if (string.IsNullOrEmpty(mpqEntryPath))
+            throw new FileNotFoundException($"Could not find file: {fullPath}", fullPath);
+
+        throw new FileNotFoundException($"Could not find the entry '{mpqEntryPath}' in the MPQ archive file, or the file is not an MPQ archive: {fullPath}", mpqEntryPath);
+    }
+
+    public bool TryGetFile(string? path, string? mpqEntryPath, [NotNullWhen(true)] out Stream? stream)
+    {
+        stream = null;
+
+        if (string.IsNullOrWhiteSpace(path))
+            return false;
+
+        string fullPath = GetFullPath(path);
+
+        if (string.IsNullOrEmpty(mpqEntryPath))
+            return TryOpenFile(fullPath, out stream);
+
+        if (!TryOpenMpqArchive(fullPath, out MpqHeroesArchive? mpqHeroesArchive))
+            return false;
+
         // the decompressed entry does not depend on the archive
-        using MpqHeroesArchive mpqHeroesArchive = OpenMpqArchive(stream);
+        using (mpqHeroesArchive)
+        {
+            if (!mpqHeroesArchive.TryGetEntry(mpqEntryPath, out MpqHeroesArchiveEntry? entry, true))
+                return false;
 
-        if (!mpqHeroesArchive.TryGetEntry(mpqEntryPath, out MpqHeroesArchiveEntry? entry, true))
-            throw new FileNotFoundException($"Could not find the entry '{mpqEntryPath}' in the MPQ file: {fullPath}", mpqEntryPath);
-
-        return mpqHeroesArchive.DecompressEntry(entry.Value);
+            stream = mpqHeroesArchive.DecompressEntry(entry.Value);
+            return true;
+        }
     }
 
     /// <summary>
@@ -193,12 +205,37 @@ internal abstract class HeroesSourceBase : IHeroesSource
     /// <returns>The <see cref="IDepotCache"/> instance.</returns>
     protected abstract IDepotCache CreateDepotCache();
 
-    private static MpqHeroesArchive OpenMpqArchive(Stream stream)
+    private void AddStormMods()
     {
+        _stormMods.Add(GetStormMod(Path.Combine(ModsDirectoryPath, SourceConstants.CoreStormModDirectory), StormModType.Base));
+        _stormMods.Add(GetStormMod(Path.Combine(ModsDirectoryPath, SourceConstants.HeroesStormModDirectory), StormModType.Base));
+        _stormMods.Add(GetStormMod(Path.Combine(ModsDirectoryPath, SourceConstants.HeroesDataStormModDirectory), StormModType.Base));
+    }
+
+    /// <summary>
+    /// Opens a file as an MPQ archive. This is the one place where a file that is not an MPQ archive is treated as not found.
+    /// </summary>
+    /// <param name="fullPath">The full path of the file.</param>
+    /// <param name="mpqHeroesArchive">When this method returns, contains the opened archive, if the file exists and is an MPQ archive; otherwise, <see langword="null"/>.</param>
+    /// <returns><see langword="true"/> if the file exists and is an MPQ archive that can be read; otherwise <see langword="false"/>.</returns>
+    private bool TryOpenMpqArchive(string fullPath, [NotNullWhen(true)] out MpqHeroesArchive? mpqHeroesArchive)
+    {
+        mpqHeroesArchive = null;
+
+        if (!TryOpenFile(fullPath, out Stream? stream))
+            return false;
+
         try
         {
             // the stream is disposed when the archive is disposed
-            return MpqHeroesFile.Open(stream);
+            mpqHeroesArchive = MpqHeroesFile.Open(stream);
+            return true;
+        }
+        catch (Exception ex) when (ex is MpqHeroesToolException or EndOfStreamException)
+        {
+            // too short, or no MPQ header
+            stream.Dispose();
+            return false;
         }
         catch
         {
@@ -206,12 +243,5 @@ internal abstract class HeroesSourceBase : IHeroesSource
             stream.Dispose();
             throw;
         }
-    }
-
-    private void AddStormMods()
-    {
-        _stormMods.Add(GetStormMod(Path.Combine(ModsDirectoryPath, SourceConstants.CoreStormModDirectory), StormModType.Base));
-        _stormMods.Add(GetStormMod(Path.Combine(ModsDirectoryPath, SourceConstants.HeroesStormModDirectory), StormModType.Base));
-        _stormMods.Add(GetStormMod(Path.Combine(ModsDirectoryPath, SourceConstants.HeroesDataStormModDirectory), StormModType.Base));
     }
 }

@@ -65,10 +65,10 @@ internal interface IHeroesSource
     /// </param>
     /// <param name="mpqEntryPath">The path of an entry in the MPQ archive file at <paramref name="path"/>, or <see langword="null"/> or empty if <paramref name="path"/> is the file itself.</param>
     /// <returns>
-    /// <see langword="true"/> if the file exists; otherwise <see langword="false"/>, which includes a file at <paramref name="path"/>
-    /// that is not an MPQ archive that can be read when <paramref name="mpqEntryPath"/> is given.
+    /// <see langword="true"/> if the file exists; otherwise <see langword="false"/>, which includes <paramref name="path"/> being <see langword="null"/> or whitespace,
+    /// <paramref name="path"/> being a directory, and a file at <paramref name="path"/> that is not an MPQ archive when <paramref name="mpqEntryPath"/> is given.
     /// </returns>
-    bool FileExists(string path, string? mpqEntryPath);
+    bool FileExists(string? path, string? mpqEntryPath);
 
     /// <summary>
     /// Opens a file, or an entry in an MPQ archive file, for reading.
@@ -80,9 +80,24 @@ internal interface IHeroesSource
     /// <param name="mpqEntryPath">The path of an entry in the MPQ archive file at <paramref name="path"/>, or <see langword="null"/> or empty if <paramref name="path"/> is the file itself.</param>
     /// <returns>The <see cref="Stream"/> of the file.</returns>
     /// <exception cref="ArgumentException"><paramref name="path"/> is <see langword="null"/>, empty, or whitespace.</exception>
-    /// <exception cref="FileNotFoundException">The file, or the entry in the MPQ archive file, was not found.</exception>
-    /// <exception cref="UnauthorizedAccessException">For a file source, <paramref name="path"/> is a directory.</exception>
-    /// <exception cref="MpqHeroesToolException"><paramref name="mpqEntryPath"/> is given and the file is not an MPQ archive that can be read.</exception>
-    /// <exception cref="EndOfStreamException"><paramref name="mpqEntryPath"/> is given and the file is too short to be an MPQ archive.</exception>
+    /// <exception cref="FileNotFoundException">
+    /// The file was not found (in the same cases that <see cref="FileExists(string?, string?)"/> returns <see langword="false"/>).
+    /// </exception>
+    /// <exception cref="MpqHeroesToolException">The entry exists, but could not be decompressed.</exception>
     Stream GetFile(string path, string? mpqEntryPath);
+
+    /// <summary>
+    /// Opens a file, or an entry in an MPQ archive file, for reading, if it exists.
+    /// </summary>
+    /// <param name="path">
+    /// The file path, relative to the <c>mods</c> directory (it may start with <c>mods</c>) or starting with the <see cref="ModsDirectoryPath"/>.
+    /// For a file source, it may also be an absolute path.
+    /// </param>
+    /// <param name="mpqEntryPath">The path of an entry in the MPQ archive file at <paramref name="path"/>, or <see langword="null"/> or empty if <paramref name="path"/> is the file itself.</param>
+    /// <param name="stream">When this method returns, contains the <see cref="Stream"/> of the file, if it exists; otherwise, <see langword="null"/>.</param>
+    /// <returns>
+    /// <see langword="true"/> if the file exists; otherwise <see langword="false"/>, in the same cases as <see cref="FileExists(string?, string?)"/>.
+    /// </returns>
+    /// <exception cref="MpqHeroesToolException">The entry exists, but could not be decompressed.</exception>
+    bool TryGetFile(string? path, string? mpqEntryPath, [NotNullWhen(true)] out Stream? stream);
 }

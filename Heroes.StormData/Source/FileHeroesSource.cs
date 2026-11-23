@@ -34,6 +34,14 @@ internal sealed class FileHeroesSource : HeroesSourceBase, IFileHeroesSource
 
     protected override bool TryOpenFile(string fullPath, [NotNullWhen(true)] out Stream? stream)
     {
+        // a directory is not a file, opening it would throw an UnauthorizedAccessException, the same as a file that cannot be read
+        if (_fileSystem.Directory.Exists(fullPath))
+        {
+            stream = null;
+
+            return false;
+        }
+
         // open the file directly instead of checking if it exists first
         try
         {

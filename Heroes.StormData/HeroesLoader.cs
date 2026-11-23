@@ -382,16 +382,10 @@ public class HeroesLoader
     /// </param>
     /// <param name="mpqEntryPath">The path of an entry in the MPQ archive file at <paramref name="path"/> (e.g. a <c>.s2ma</c> file), or <see langword="null"/> if <paramref name="path"/> is the file itself.</param>
     /// <returns>
-    /// <see langword="true"/> if the file exists; otherwise <see langword="false"/>, which includes a file at <paramref name="path"/>
-    /// that is not an MPQ archive that can be read when <paramref name="mpqEntryPath"/> is given.
+    /// <see langword="true"/> if the file exists; otherwise <see langword="false"/>, which includes <paramref name="path"/> being <see langword="null"/> or whitespace,
+    /// <paramref name="path"/> being a directory, and a file at <paramref name="path"/> that is not an MPQ archive when <paramref name="mpqEntryPath"/> is given.
     /// </returns>
-    public bool FileExists(string? path, string? mpqEntryPath = null)
-    {
-        if (string.IsNullOrWhiteSpace(path))
-            return false;
-
-        return _heroesSource.FileExists(path, mpqEntryPath);
-    }
+    public bool FileExists(string? path, string? mpqEntryPath = null) => _heroesSource.FileExists(path, mpqEntryPath);
 
     /// <summary>
     /// Determines if a file exists. If the file is inside an MPQ archive, the entry in the archive is checked.
@@ -403,9 +397,9 @@ public class HeroesLoader
         if (stormFile is null)
             return false;
 
-        return stormFile.IsInMpqArchive
-            ? FileExists(stormFile.MpqFilePath, stormFile.MpqEntryPath)
-            : FileExists(stormFile.FullPath);
+        (string path, string? mpqEntryPath) = GetSourcePaths(stormFile);
+
+        return FileExists(path, mpqEntryPath);
     }
 
     /// <summary>
@@ -421,16 +415,11 @@ public class HeroesLoader
     /// <param name="mpqEntryPath">The path of an entry in the MPQ archive file at <paramref name="path"/> (e.g. a <c>.s2ma</c> file), or <see langword="null"/> if <paramref name="path"/> is the file itself.</param>
     /// <returns>The <see cref="Stream"/> of the file. The caller is responsible for disposing it.</returns>
     /// <exception cref="ArgumentException"><paramref name="path"/> is <see langword="null"/>, empty, or whitespace.</exception>
-    /// <exception cref="FileNotFoundException">The file, or the entry in the MPQ archive file, was not found.</exception>
-    /// <exception cref="UnauthorizedAccessException">For a file source, <paramref name="path"/> is a directory.</exception>
-    /// <exception cref="MpqHeroesToolException"><paramref name="mpqEntryPath"/> is given and the file is not an MPQ archive that can be read.</exception>
-    /// <exception cref="EndOfStreamException"><paramref name="mpqEntryPath"/> is given and the file is too short to be an MPQ archive.</exception>
-    public Stream GetFile(string path, string? mpqEntryPath = null)
-    {
-        ArgumentException.ThrowIfNullOrWhiteSpace(path);
-
-        return _heroesSource.GetFile(path, mpqEntryPath);
-    }
+    /// <exception cref="FileNotFoundException">
+    /// The file was not found (in the same cases that <see cref="FileExists(string?, string?)"/> returns <see langword="false"/>).
+    /// </exception>
+    /// <exception cref="MpqHeroesToolException">The entry in the MPQ archive file exists, but could not be decompressed.</exception>
+    public Stream GetFile(string path, string? mpqEntryPath = null) => _heroesSource.GetFile(path, mpqEntryPath);
 
     /// <summary>
     /// Opens a file for reading. If the file is inside an MPQ archive, the entry in the archive is opened.
@@ -439,13 +428,75 @@ public class HeroesLoader
     /// <returns>The <see cref="Stream"/> of the file. The caller is responsible for disposing it.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="stormFile"/> is <see langword="null"/>.</exception>
     /// <exception cref="FileNotFoundException">The file, or the entry in the MPQ archive file, was not found.</exception>
+    /// <exception cref="MpqHeroesToolException">The entry in the MPQ archive file exists, but could not be decompressed.</exception>
     public Stream GetFile(StormFile stormFile)
     {
         ArgumentNullException.ThrowIfNull(stormFile);
 
-        return stormFile.IsInMpqArchive
-            ? GetFile(stormFile.MpqFilePath, stormFile.MpqEntryPath)
-            : GetFile(stormFile.FullPath);
+        (string path, string? mpqEntryPath) = GetSourcePaths(stormFile);
+
+        return GetFile(path, mpqEntryPath);
+    }
+
+    /// <summary>
+    /// Opens a file for reading, if it exists.
+    /// </summary>
+    /// <param name="path">
+    /// <para>The file path.</para>
+    /// <para>
+    /// It should be relative to the <c>mods</c> directory (it may start with <c>mods</c>) or start with the <see cref="RootDirectory"/>.
+    /// For a file source, it may also be an absolute path.
+    /// </para>
+    /// </param>
+    /// <param name="stream">
+    /// When this method returns, contains the <see cref="Stream"/> of the file, if it exists; otherwise, <see langword="null"/>.
+    /// The caller is responsible for disposing it.
+    /// </param>
+    /// <returns><see langword="true"/> if the file exists; otherwise <see langword="false"/>.</returns>
+    public bool TryGetFile(string? path, [NotNullWhen(true)] out Stream? stream) => TryGetFile(path, null, out stream);
+
+    /// <summary>
+    /// Opens a file, or an entry in an MPQ archive file, for reading, if it exists.
+    /// </summary>
+    /// <param name="path">
+    /// <para>The file path.</para>
+    /// <para>
+    /// It should be relative to the <c>mods</c> directory (it may start with <c>mods</c>) or start with the <see cref="RootDirectory"/>.
+    /// For a file source, it may also be an absolute path.
+    /// </para>
+    /// </param>
+    /// <param name="mpqEntryPath">The path of an entry in the MPQ archive file at <paramref name="path"/> (e.g. a <c>.s2ma</c> file), or <see langword="null"/> if <paramref name="path"/> is the file itself.</param>
+    /// <param name="stream">
+    /// When this method returns, contains the <see cref="Stream"/> of the file, if it exists; otherwise, <see langword="null"/>.
+    /// The caller is responsible for disposing it.
+    /// </param>
+    /// <returns>
+    /// <see langword="true"/> if the file exists; otherwise <see langword="false"/>, in the same cases as <see cref="FileExists(string?, string?)"/>.
+    /// </returns>
+    /// <exception cref="MpqHeroesToolException">The entry in the MPQ archive file exists, but could not be decompressed.</exception>
+    public bool TryGetFile(string? path, string? mpqEntryPath, [NotNullWhen(true)] out Stream? stream) => _heroesSource.TryGetFile(path, mpqEntryPath, out stream);
+
+    /// <summary>
+    /// Opens a file for reading, if it exists. If the file is inside an MPQ archive, the entry in the archive is opened.
+    /// </summary>
+    /// <param name="stormFile">The file to open.</param>
+    /// <param name="stream">
+    /// When this method returns, contains the <see cref="Stream"/> of the file, if it exists; otherwise, <see langword="null"/>.
+    /// The caller is responsible for disposing it.
+    /// </param>
+    /// <returns><see langword="true"/> if the file exists; otherwise <see langword="false"/>, which includes <paramref name="stormFile"/> being <see langword="null"/>.</returns>
+    /// <exception cref="MpqHeroesToolException">The entry in the MPQ archive file exists, but could not be decompressed.</exception>
+    public bool TryGetFile(StormFile? stormFile, [NotNullWhen(true)] out Stream? stream)
+    {
+        if (stormFile is null)
+        {
+            stream = null;
+            return false;
+        }
+
+        (string path, string? mpqEntryPath) = GetSourcePaths(stormFile);
+
+        return TryGetFile(path, mpqEntryPath, out stream);
     }
 
     internal static HeroesLoader LoadWithInternal(IHeroesSource heroesSource, HeroesLoaderOptions? options = null, ModsInfoFile? modsInfoFile = null)
@@ -472,6 +523,15 @@ public class HeroesLoader
 
         return heroesLoader;
     }
+
+    /// <summary>
+    /// Gets the paths to pass to the source for a <see cref="StormFile"/>: the archive and the entry inside it, or the file itself.
+    /// </summary>
+    /// <param name="stormFile">The file.</param>
+    /// <returns>The path of the file, and the path of the entry if the file is inside an MPQ archive.</returns>
+    private static (string Path, string? MpqEntryPath) GetSourcePaths(StormFile stormFile) => stormFile.IsInMpqArchive
+        ? (stormFile.MpqFilePath, stormFile.MpqEntryPath)
+        : (stormFile.FullPath, null);
 
     private bool TryLoadMapModCore(string mapTitle, out bool mapChanged)
     {

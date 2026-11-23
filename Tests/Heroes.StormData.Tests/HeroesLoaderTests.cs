@@ -410,9 +410,10 @@ public sealed class HeroesLoaderTests
     [DataRow(null)]
     [DataRow("")]
     [DataRow(" ")]
-    public void FileExists_NullOrWhiteSpacePath_ReturnsFalseWithoutCallingSource(string? path)
+    public void FileExists_NullOrWhiteSpacePath_PassedToSource(string? path)
     {
         // arrange
+        // the source handles a null or whitespace path
         HeroesLoader heroesLoader = HeroesLoader.LoadWithInternal(_heroesSource);
 
         // act
@@ -420,7 +421,7 @@ public sealed class HeroesLoaderTests
 
         // assert
         result.Should().BeFalse();
-        _heroesSource.DidNotReceiveWithAnyArgs().FileExists(default!, default);
+        _heroesSource.Received(1).FileExists(path, null);
     }
 
     [TestMethod]
@@ -518,6 +519,125 @@ public sealed class HeroesLoaderTests
 
         // assert
         result.Should().BeSameAs(stream);
+    }
+
+    [TestMethod]
+    public void TryGetFile_Path_ReturnsSourceResultAndStream()
+    {
+        // arrange
+        using MemoryStream stream = new();
+        SetTryGetFile("core.stormmod/gamedata.xml", null, stream);
+
+        HeroesLoader heroesLoader = HeroesLoader.LoadWithInternal(_heroesSource);
+
+        // act
+        bool result = heroesLoader.TryGetFile("core.stormmod/gamedata.xml", out Stream? resultStream);
+
+        // assert
+        result.Should().BeTrue();
+        resultStream.Should().BeSameAs(stream);
+    }
+
+    [TestMethod]
+    public void TryGetFile_PathAndMpqEntryPath_PassesEntryPathToSource()
+    {
+        // arrange
+        using MemoryStream stream = new();
+        SetTryGetFile("heroesmapmods/test.stormmap", "base.stormdata/gamedata.xml", stream);
+
+        HeroesLoader heroesLoader = HeroesLoader.LoadWithInternal(_heroesSource);
+
+        // act
+        bool result = heroesLoader.TryGetFile("heroesmapmods/test.stormmap", "base.stormdata/gamedata.xml", out Stream? resultStream);
+
+        // assert
+        result.Should().BeTrue();
+        resultStream.Should().BeSameAs(stream);
+    }
+
+    [TestMethod]
+    public void TryGetFile_SourceDoesNotFindFile_ReturnsFalse()
+    {
+        // arrange
+        HeroesLoader heroesLoader = HeroesLoader.LoadWithInternal(_heroesSource);
+
+        // act
+        bool result = heroesLoader.TryGetFile("core.stormmod/missing.xml", out Stream? stream);
+
+        // assert
+        result.Should().BeFalse();
+        stream.Should().BeNull();
+    }
+
+    [TestMethod]
+    [DataRow(null)]
+    [DataRow("")]
+    [DataRow(" ")]
+    public void TryGetFile_NullOrWhiteSpacePath_PassedToSource(string? path)
+    {
+        // arrange
+        // the source handles a null or whitespace path
+        HeroesLoader heroesLoader = HeroesLoader.LoadWithInternal(_heroesSource);
+
+        // act
+        bool result = heroesLoader.TryGetFile(path, out Stream? stream);
+
+        // assert
+        result.Should().BeFalse();
+        stream.Should().BeNull();
+        _heroesSource.Received(1).TryGetFile(path, null, out Arg.Any<Stream?>());
+    }
+
+    [TestMethod]
+    public void TryGetFile_NullStormFile_ReturnsFalseWithoutCallingSource()
+    {
+        // arrange
+        HeroesLoader heroesLoader = HeroesLoader.LoadWithInternal(_heroesSource);
+
+        // act
+        bool result = heroesLoader.TryGetFile((StormFile?)null, out Stream? stream);
+
+        // assert
+        result.Should().BeFalse();
+        stream.Should().BeNull();
+        _heroesSource.DidNotReceiveWithAnyArgs().TryGetFile(default!, default, out _);
+    }
+
+    [TestMethod]
+    public void TryGetFile_StormFileInMpqArchive_OpensEntryInArchive()
+    {
+        // arrange
+        using MemoryStream stream = new();
+        StormFile stormFile = CreateMpqStormFile();
+        SetTryGetFile(stormFile.MpqFilePath!, stormFile.MpqEntryPath, stream);
+
+        HeroesLoader heroesLoader = HeroesLoader.LoadWithInternal(_heroesSource);
+
+        // act
+        bool result = heroesLoader.TryGetFile(stormFile, out Stream? resultStream);
+
+        // assert
+        result.Should().BeTrue();
+        resultStream.Should().BeSameAs(stream);
+        _heroesSource.DidNotReceive().TryGetFile(stormFile.FullPath, Arg.Any<string?>(), out Arg.Any<Stream?>());
+    }
+
+    [TestMethod]
+    public void TryGetFile_StormFileNotInMpqArchive_OpensFullPath()
+    {
+        // arrange
+        using MemoryStream stream = new();
+        StormFile stormFile = StormFileHelper.CreateStormFile();
+        SetTryGetFile(stormFile.FullPath, null, stream);
+
+        HeroesLoader heroesLoader = HeroesLoader.LoadWithInternal(_heroesSource);
+
+        // act
+        bool result = heroesLoader.TryGetFile(stormFile, out Stream? resultStream);
+
+        // assert
+        result.Should().BeTrue();
+        resultStream.Should().BeSameAs(stream);
     }
 
     [TestMethod]
@@ -924,6 +1044,15 @@ public sealed class HeroesLoaderTests
         MpqFilePath = Path.Combine("mods", "heroesmapmods", "test.stormmap"),
         MpqEntryPath = Path.Combine("base.stormdata", "gamedata.xml"),
     };
+
+    private void SetTryGetFile(string path, string? mpqEntryPath, Stream stream)
+    {
+        _heroesSource.TryGetFile(path, mpqEntryPath, out Arg.Any<Stream?>()).Returns(x =>
+        {
+            x[2] = stream;
+            return true;
+        });
+    }
 
     private void SetS2MAProperties(string mapTitle, S2MAProperties s2maProperties)
     {
