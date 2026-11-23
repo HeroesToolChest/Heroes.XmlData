@@ -447,7 +447,7 @@ public sealed class CASCStormModTests
             </Includes>
             """);
 
-        CASCStormMod cascStormMod = CreateCASCStormMod(StormModType.Map);
+        CASCStormMod cascStormMod = CreateCASCStormMod(StormModType.Base);
 
         // act
         cascStormMod.LoadStormFiles();
@@ -460,6 +460,35 @@ public sealed class CASCStormModTests
         coreStormMod.Received(1).LoadStormFiles();
         heroesStormMod.Received(1).LoadStormFiles();
         _sourceContainer.StormModContainers.Should().Equal(coreStormMod.ModContainer, heroesStormMod.ModContainer);
+    }
+
+    [TestMethod]
+    public void LoadStormFiles_MapStormModHasIncludesXmlFile_IncludedStormModsAreMapStormMods()
+    {
+        // arrange
+        IStormMod includedStormMod = CreateIncludedStormMod();
+
+        _stormModFactory.CreateCASCStormMod(_heroesSource, Path.Combine(ModsDirectory, "heroesmapmods", "battlegroundmapmods", "volskayasound.stormmod"), StormModType.Map).Returns(includedStormMod);
+
+        AddCASCFile(
+            Path.Combine(_baseStormDataPath, "Includes.xml"),
+            """
+            <?xml version="1.0" encoding="utf-8"?>
+            <Includes>
+              <Path value="Mods/HeroesMapMods/BattlegroundMapMods/VolskayaSound.StormMod" />
+            </Includes>
+            """);
+
+        CASCStormMod cascStormMod = CreateCASCStormMod(StormModType.Map);
+
+        // act
+        cascStormMod.LoadStormFiles();
+
+        // assert
+        _stormModFactory.ReceivedWithAnyArgs(1).CreateCASCStormMod(default!, default!, default);
+        _stormModFactory.Received(1).CreateCASCStormMod(_heroesSource, Path.Combine(ModsDirectory, "heroesmapmods", "battlegroundmapmods", "volskayasound.stormmod"), StormModType.Map);
+        includedStormMod.Received(1).LoadStormFiles();
+        _sourceContainer.StormModContainers.Should().Equal(includedStormMod.ModContainer);
     }
 
     [TestMethod]

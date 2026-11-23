@@ -547,7 +547,7 @@ internal sealed class FileStormModTests
             </Includes>
             """));
 
-        FileStormMod fileStormMod = CreateFileStormMod(StormModType.Map);
+        FileStormMod fileStormMod = CreateFileStormMod(StormModType.Base);
 
         // act
         fileStormMod.LoadStormFiles();
@@ -559,6 +559,35 @@ internal sealed class FileStormModTests
         coreStormMod.Received(1).LoadStormFiles();
         heroesStormMod.Received(1).LoadStormFiles();
         _sourceContainer.StormModContainers.Should().Equal(coreStormMod.ModContainer, heroesStormMod.ModContainer);
+    }
+
+    [TestMethod]
+    public void LoadStormFiles_MapStormModHasIncludesXmlFile_IncludedStormModsAreMapStormMods()
+    {
+        // arrange
+        // so they load into the map data layer and are removed when the map is unloaded
+        IStormMod includedStormMod = CreateIncludedStormMod();
+
+        _stormModFactory.CreateFileStormMod(_heroesSource, Path.Combine(_modsDirectoryPath, "heroesmapmods", "battlegroundmapmods", "volskayasound.stormmod"), StormModType.Map).Returns(includedStormMod);
+
+        _fileSystem.AddFile(Path.Combine(_baseStormDataPath, "Includes.xml"), new MockFileData(
+            """
+            <?xml version="1.0" encoding="utf-8"?>
+            <Includes>
+              <Path value="Mods/HeroesMapMods/BattlegroundMapMods/VolskayaSound.StormMod" />
+            </Includes>
+            """));
+
+        FileStormMod fileStormMod = CreateFileStormMod(StormModType.Map);
+
+        // act
+        fileStormMod.LoadStormFiles();
+
+        // assert
+        _stormModFactory.ReceivedWithAnyArgs(1).CreateFileStormMod(default!, default!, default);
+        _stormModFactory.Received(1).CreateFileStormMod(_heroesSource, Path.Combine(_modsDirectoryPath, "heroesmapmods", "battlegroundmapmods", "volskayasound.stormmod"), StormModType.Map);
+        includedStormMod.Received(1).LoadStormFiles();
+        _sourceContainer.StormModContainers.Should().Equal(includedStormMod.ModContainer);
     }
 
     [TestMethod]

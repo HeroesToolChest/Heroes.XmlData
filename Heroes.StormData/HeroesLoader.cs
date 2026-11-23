@@ -446,16 +446,25 @@ public class HeroesLoader
 
     /// <summary>
     /// Gets the <c>stormmods</c> of the currently loaded <c>mapmod</c>, in the order they were loaded.
-    /// The map's dependencies come first and the map's own <c>stormmod</c> is last.
+    /// The map's dependencies come first and the map's own <c>stormmod</c> is last, with <see cref="StormMapDependency.IsMap"/> set.
+    /// <para>
+    /// A <c>stormmod</c> that more than one dependency depends on is listed once, where it was loaded.
+    /// The <c>heroesdata.stormmod</c> is not listed, even if the map depends on it, because it is one of the base <c>stormmods</c>.
+    /// The <c>stormmods</c> included through an <c>includes.xml</c> file are not listed, but they are loaded and unloaded with the map.
+    /// </para>
     /// </summary>
-    /// <returns>The loaded <c>mapmod</c>'s <c>stormmods</c>, or an empty collection if no <c>mapmod</c> is loaded.</returns>
+    /// <returns>A new list of the loaded <c>mapmod</c>'s <c>stormmods</c>, or an empty list if no <c>mapmod</c> is loaded.</returns>
     public IReadOnlyList<StormMapDependency> GetLoadedStormMapDependencies()
     {
-        return _heroesSource.StormMapMods
-            .Select(x => new StormMapDependency()
+        IReadOnlyList<IStormMod> stormMapMods = _heroesSource.StormMapMods;
+
+        // the map root is always last
+        return stormMapMods
+            .Select((x, index) => new StormMapDependency()
             {
                 Name = x.Name,
-                DirectoryPath = x.RelativeStormModPath,
+                RelativePath = x.RelativeStormModPath,
+                IsMap = index == stormMapMods.Count - 1,
             })
             .ToList();
     }

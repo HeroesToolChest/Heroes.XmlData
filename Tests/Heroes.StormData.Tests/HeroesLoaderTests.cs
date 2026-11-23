@@ -1075,7 +1075,7 @@ public sealed class HeroesLoaderTests
     }
 
     [TestMethod]
-    public void GetLoadedStormMapDependencies_MapLoaded_ReturnsNamesAndRelativePathsInLoadOrder()
+    public void GetLoadedStormMapDependencies_MapLoaded_ReturnsNamesAndRelativePathsInLoadOrderWithMapLast()
     {
         // arrange
         IStormMod dependencyStormMod = Substitute.For<IStormMod>();
@@ -1094,12 +1094,31 @@ public sealed class HeroesLoaderTests
         IReadOnlyList<StormMapDependency> result = heroesLoader.GetLoadedStormMapDependencies();
 
         // assert
-        result.Should().BeEquivalentTo(
-            [
-                new StormMapDependency() { Name = "volskayasound", DirectoryPath = Path.Combine("heroesmapmods", "battlegroundmapmods", "volskayasound.stormmod") },
-                new StormMapDependency() { Name = MapTitle, DirectoryPath = Path.Combine("core.stormmod", "base.stormdata", "depotcache", "8d", "55", "8d554.s2ma") },
-            ],
-            options => options.WithStrictOrdering());
+        result.Should().Equal(
+            new StormMapDependency() { Name = "volskayasound", RelativePath = Path.Combine("heroesmapmods", "battlegroundmapmods", "volskayasound.stormmod"), IsMap = false },
+            new StormMapDependency() { Name = MapTitle, RelativePath = Path.Combine("core.stormmod", "base.stormdata", "depotcache", "8d", "55", "8d554.s2ma"), IsMap = true });
+    }
+
+    [TestMethod]
+    public void GetLoadedStormMapDependencies_CalledTwice_ReturnsNewListsWithEqualItems()
+    {
+        // arrange
+        IStormMod mapRootStormMod = Substitute.For<IStormMod>();
+        mapRootStormMod.Name.Returns(MapTitle);
+        mapRootStormMod.RelativeStormModPath.Returns(Path.Combine("core.stormmod", "base.stormdata", "depotcache", "8d", "55", "8d554.s2ma"));
+
+        _heroesSource.StormMapMods.Returns([mapRootStormMod]);
+
+        HeroesLoader heroesLoader = HeroesLoader.LoadWithInternal(_heroesSource);
+
+        // act
+        IReadOnlyList<StormMapDependency> first = heroesLoader.GetLoadedStormMapDependencies();
+        IReadOnlyList<StormMapDependency> second = heroesLoader.GetLoadedStormMapDependencies();
+
+        // assert
+        second.Should().NotBeSameAs(first);
+        second.Should().Equal(first);
+        second.Should().ContainSingle().Which.IsMap.Should().BeTrue();
     }
 
     [TestMethod]

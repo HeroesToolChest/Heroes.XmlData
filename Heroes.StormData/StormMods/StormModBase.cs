@@ -306,6 +306,7 @@ internal abstract class StormModBase<T> : IStormMod
 
     /// <summary>
     /// Loads the <c>stormmods</c> listed in the <c>includes.xml</c> file and adds their containers to the <see cref="SourceContainer"/>.
+    /// They have the same <see cref="StormModType"/> as this <c>stormmod</c>, so they load into the same data layer and are unloaded with it.
     /// </summary>
     private void LoadIncludesStormMods()
     {
@@ -318,7 +319,7 @@ internal abstract class StormModBase<T> : IStormMod
             {
                 string path = Path.Join(HeroesSource.ModsDirectoryPath, PathNormalizer.NormalizePath(pathValue, SourceConstants.DefaultModsDirectory));
 
-                IStormMod stormMod = GetStormMod(path, StormModType.Base);
+                IStormMod stormMod = GetStormMod(path, ModType);
 
                 _includesStormModsCache.Add(stormMod);
                 stormMod.LoadStormFiles();
