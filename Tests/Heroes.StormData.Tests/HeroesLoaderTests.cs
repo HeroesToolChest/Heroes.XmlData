@@ -828,7 +828,7 @@ public sealed class HeroesLoaderTests
         HeroesLoader heroesLoader = HeroesLoader.LoadWithInternal(_heroesSource);
 
         // act
-        StormMap? result = heroesLoader.GetStormMap(MapTitle);
+        StormMap result = heroesLoader.GetStormMap(MapTitle);
 
         // assert
         result.Should().NotBeNull();
@@ -920,30 +920,210 @@ public sealed class HeroesLoaderTests
     }
 
     [TestMethod]
-    public void GetStormMap_MapNotFound_ReturnsNull()
+    public void GetStormMap_MapNotFound_ThrowsKeyNotFoundException()
     {
         // arrange
         HeroesLoader heroesLoader = HeroesLoader.LoadWithInternal(_heroesSource);
 
         // act
-        StormMap? result = heroesLoader.GetStormMap("Unknown Map");
+        Action act = () => heroesLoader.GetStormMap("Unknown Map");
 
         // assert
-        result.Should().BeNull();
+        act.Should().Throw<KeyNotFoundException>().WithMessage("*Unknown Map*");
     }
 
     [TestMethod]
-    public void GetStormMap_NoS2MVProperties_ReturnsNull()
+    public void GetStormMap_NoS2MVProperties_ThrowsKeyNotFoundException()
     {
         // arrange
         SetS2MAProperties(MapTitle, new S2MAProperties());
         HeroesLoader heroesLoader = HeroesLoader.LoadWithInternal(_heroesSource);
 
         // act
-        StormMap? result = heroesLoader.GetStormMap(MapTitle);
+        Action act = () => heroesLoader.GetStormMap(MapTitle);
 
         // assert
-        result.Should().BeNull();
+        act.Should().Throw<KeyNotFoundException>();
+    }
+
+    [TestMethod]
+    [DataRow(null)]
+    [DataRow("")]
+    [DataRow(" ")]
+    public void GetStormMap_NullOrWhiteSpaceMapTitle_ThrowsArgumentException(string? mapTitle)
+    {
+        // arrange
+        HeroesLoader heroesLoader = HeroesLoader.LoadWithInternal(_heroesSource);
+
+        // act
+        Action act = () => heroesLoader.GetStormMap(mapTitle!);
+
+        // assert
+        act.Should().Throw<ArgumentException>().WithParameterName("mapTitle");
+        _heroesSource.DidNotReceive().LoadDepotCache();
+    }
+
+    [TestMethod]
+    public void StormMapExists_MapFound_ReturnsTrue()
+    {
+        // arrange
+        HeroesLoader heroesLoader = HeroesLoader.LoadWithInternal(_heroesSource);
+
+        // act
+        bool result = heroesLoader.StormMapExists(MapTitle);
+
+        // assert
+        result.Should().BeTrue();
+    }
+
+    [TestMethod]
+    public void StormMapExists_MapNotFound_ReturnsFalse()
+    {
+        // arrange
+        HeroesLoader heroesLoader = HeroesLoader.LoadWithInternal(_heroesSource);
+
+        // act
+        bool result = heroesLoader.StormMapExists("Unknown Map");
+
+        // assert
+        result.Should().BeFalse();
+    }
+
+    [TestMethod]
+    public void StormMapExists_NoS2MVProperties_ReturnsFalse()
+    {
+        // arrange
+        SetS2MAProperties(MapTitle, new S2MAProperties());
+        HeroesLoader heroesLoader = HeroesLoader.LoadWithInternal(_heroesSource);
+
+        // act
+        bool result = heroesLoader.StormMapExists(MapTitle);
+
+        // assert
+        result.Should().BeFalse();
+    }
+
+    [TestMethod]
+    [DataRow(null)]
+    [DataRow("")]
+    [DataRow(" ")]
+    public void StormMapExists_NullOrWhiteSpaceMapTitle_ReturnsFalseWithoutLoadingDepotCache(string? mapTitle)
+    {
+        // arrange
+        HeroesLoader heroesLoader = HeroesLoader.LoadWithInternal(_heroesSource);
+
+        // act
+        bool result = heroesLoader.StormMapExists(mapTitle);
+
+        // assert
+        result.Should().BeFalse();
+        _heroesSource.DidNotReceive().LoadDepotCache();
+    }
+
+    [TestMethod]
+    public void StormMapExists_NothingLoaded_LoadsOnlyDepotCacheFirst()
+    {
+        // arrange
+        HeroesLoader heroesLoader = HeroesLoader.LoadWithInternal(_heroesSource);
+
+        // act
+        heroesLoader.StormMapExists(MapTitle);
+
+        // assert
+        Received.InOrder(() =>
+        {
+            _heroesSource.LoadDepotCache();
+            _heroesSource.TryGetS2MAProperties(MapTitle, out Arg.Any<S2MAProperties?>());
+        });
+        _heroesSource.DidNotReceive().LoadStormMods();
+    }
+
+    [TestMethod]
+    public void TryGetStormMap_MapFound_ReturnsTrueAndMap()
+    {
+        // arrange
+        SetS2MAProperties(MapTitle, new S2MAProperties()
+        {
+            MapId = "Volskaya",
+            S2MVProperties = new S2MVProperties() { HeaderTitle = MapTitle },
+        });
+
+        HeroesLoader heroesLoader = HeroesLoader.LoadWithInternal(_heroesSource);
+
+        // act
+        bool result = heroesLoader.TryGetStormMap(MapTitle, out StormMap? stormMap);
+
+        // assert
+        result.Should().BeTrue();
+        stormMap.Should().NotBeNull();
+        stormMap.Name.Should().Be(MapTitle);
+        stormMap.MapId.Should().Be("Volskaya");
+    }
+
+    [TestMethod]
+    public void TryGetStormMap_MapNotFound_ReturnsFalse()
+    {
+        // arrange
+        HeroesLoader heroesLoader = HeroesLoader.LoadWithInternal(_heroesSource);
+
+        // act
+        bool result = heroesLoader.TryGetStormMap("Unknown Map", out StormMap? stormMap);
+
+        // assert
+        result.Should().BeFalse();
+        stormMap.Should().BeNull();
+    }
+
+    [TestMethod]
+    public void TryGetStormMap_NoS2MVProperties_ReturnsFalse()
+    {
+        // arrange
+        SetS2MAProperties(MapTitle, new S2MAProperties());
+        HeroesLoader heroesLoader = HeroesLoader.LoadWithInternal(_heroesSource);
+
+        // act
+        bool result = heroesLoader.TryGetStormMap(MapTitle, out StormMap? stormMap);
+
+        // assert
+        result.Should().BeFalse();
+        stormMap.Should().BeNull();
+    }
+
+    [TestMethod]
+    [DataRow(null)]
+    [DataRow("")]
+    [DataRow(" ")]
+    public void TryGetStormMap_NullOrWhiteSpaceMapTitle_ReturnsFalseWithoutLoadingDepotCache(string? mapTitle)
+    {
+        // arrange
+        HeroesLoader heroesLoader = HeroesLoader.LoadWithInternal(_heroesSource);
+
+        // act
+        bool result = heroesLoader.TryGetStormMap(mapTitle, out StormMap? stormMap);
+
+        // assert
+        result.Should().BeFalse();
+        stormMap.Should().BeNull();
+        _heroesSource.DidNotReceive().LoadDepotCache();
+    }
+
+    [TestMethod]
+    public void TryGetStormMap_MapTitleInDifferentCase_NameIsTheMapsTitle()
+    {
+        // arrange
+        SetS2MAProperties(MapTitle.ToLowerInvariant(), new S2MAProperties()
+        {
+            S2MVProperties = new S2MVProperties() { HeaderTitle = MapTitle },
+        });
+
+        HeroesLoader heroesLoader = HeroesLoader.LoadWithInternal(_heroesSource);
+
+        // act
+        bool result = heroesLoader.TryGetStormMap(MapTitle.ToLowerInvariant(), out StormMap? stormMap);
+
+        // assert
+        result.Should().BeTrue();
+        stormMap!.Name.Should().Be(MapTitle);
     }
 
     [TestMethod]
@@ -975,7 +1155,7 @@ public sealed class HeroesLoaderTests
         HeroesLoader heroesLoader = HeroesLoader.LoadWithInternal(_heroesSource);
 
         // act
-        StormMap? result = heroesLoader.GetStormMap(MapTitle);
+        StormMap result = heroesLoader.GetStormMap(MapTitle);
 
         // assert
         result.Should().BeEquivalentTo(new StormMap()
@@ -1010,10 +1190,9 @@ public sealed class HeroesLoaderTests
         HeroesLoader heroesLoader = HeroesLoader.LoadWithInternal(_heroesSource);
 
         // act
-        StormMap? result = heroesLoader.GetStormMap(MapTitle.ToLowerInvariant());
+        StormMap result = heroesLoader.GetStormMap(MapTitle.ToLowerInvariant());
 
         // assert
-        result.Should().NotBeNull();
         result.Name.Should().Be(MapTitle);
         result.MapId.Should().BeEmpty();
     }

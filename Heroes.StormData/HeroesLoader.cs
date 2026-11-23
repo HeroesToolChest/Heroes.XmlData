@@ -322,23 +322,59 @@ public class HeroesLoader
     }
 
     /// <summary>
+    /// Determines if a map exists.
+    /// <para>
+    /// Loads the depot cache (the map files) if it is not already loaded. The base <c>stormmods</c> are not loaded.
+    /// </para>
+    /// </summary>
+    /// <param name="mapTitle">A map's title (<c>enUS</c>). Can be found from <see cref="GetMapTitles"/>. Is case-insensitive.</param>
+    /// <returns>
+    /// <see langword="true"/> if the map exists; otherwise <see langword="false"/>.
+    /// Returns <see langword="false"/> if <paramref name="mapTitle"/> is <see langword="null"/>, empty, or white space.
+    /// </returns>
+    public bool StormMapExists(string? mapTitle) => TryGetMapProperties(mapTitle, out _, out _);
+
+    /// <summary>
     /// Gets a map's data from the <c>.s2ma</c> and <c>.s2mv</c> files. Does not contain data from the xml or gamestring files.
     /// <para>
     /// Loads the depot cache (the map files) if it is not already loaded. The base <c>stormmods</c> are not loaded.
     /// </para>
     /// </summary>
     /// <param name="mapTitle">A map's title (<c>enUS</c>). Can be found from <see cref="GetMapTitles"/>. Is case-insensitive.</param>
-    /// <returns>Map data for the specified map or <see langword="null"/> if the map was not found.</returns>
-    public StormMap? GetStormMap(string mapTitle)
+    /// <returns>Map data for the specified map.</returns>
+    /// <exception cref="ArgumentException"><paramref name="mapTitle"/> is <see langword="null"/>, empty, or white space.</exception>
+    /// <exception cref="KeyNotFoundException">The map was not found.</exception>
+    public StormMap GetStormMap(string mapTitle)
     {
-        ArgumentNullException.ThrowIfNull(mapTitle);
+        ArgumentException.ThrowIfNullOrWhiteSpace(mapTitle);
 
-        EnsureDepotCacheLoaded();
+        if (TryGetStormMap(mapTitle, out StormMap? stormMap))
+            return stormMap;
 
-        if (!_heroesSource.TryGetS2MAProperties(mapTitle, out S2MAProperties? s2maProperties) || s2maProperties.S2MVProperties is not S2MVProperties s2mvProperties)
-            return null;
+        throw new KeyNotFoundException($"Could not find the map: {mapTitle}");
+    }
 
-        return new StormMap()
+    /// <summary>
+    /// Gets a map's data from the <c>.s2ma</c> and <c>.s2mv</c> files. Does not contain data from the xml or gamestring files.
+    /// <para>
+    /// Loads the depot cache (the map files) if it is not already loaded. The base <c>stormmods</c> are not loaded.
+    /// </para>
+    /// </summary>
+    /// <param name="mapTitle">A map's title (<c>enUS</c>). Can be found from <see cref="GetMapTitles"/>. Is case-insensitive.</param>
+    /// <param name="stormMap">When this method returns, contains the map data, if the map was found; otherwise, <see langword="null"/>.</param>
+    /// <returns>
+    /// <see langword="true"/> if the map was found; otherwise <see langword="false"/>.
+    /// Returns <see langword="false"/> if <paramref name="mapTitle"/> is <see langword="null"/>, empty, or white space.
+    /// </returns>
+    public bool TryGetStormMap(string? mapTitle, [NotNullWhen(true)] out StormMap? stormMap)
+    {
+        if (!TryGetMapProperties(mapTitle, out S2MAProperties? s2maProperties, out S2MVProperties? s2mvProperties))
+        {
+            stormMap = null;
+            return false;
+        }
+
+        stormMap = new StormMap()
         {
             Name = s2mvProperties.HeaderTitle,
             NameByLocale = s2mvProperties.NameByStormLocale.AsReadOnly(),
@@ -352,6 +388,8 @@ public class HeroesLoader
             S2MAFilePath = s2maProperties.DirectoryPath,
             S2MVFilePath = s2mvProperties.DirectoryPath,
         };
+
+        return true;
     }
 
     /// <summary>
@@ -575,6 +613,27 @@ public class HeroesLoader
 
         _heroesSource.LoadDepotCache();
         _isDepotCacheLoaded = true;
+    }
+
+    private bool TryGetMapProperties(string? mapTitle, [NotNullWhen(true)] out S2MAProperties? s2maProperties, [NotNullWhen(true)] out S2MVProperties? s2mvProperties)
+    {
+        s2maProperties = null;
+        s2mvProperties = null;
+
+        if (string.IsNullOrWhiteSpace(mapTitle))
+            return false;
+
+        EnsureDepotCacheLoaded();
+
+        // a map is only found by its title when it has s2mv properties, the check is kept so all the map methods agree
+        if (!_heroesSource.TryGetS2MAProperties(mapTitle, out s2maProperties) || s2maProperties.S2MVProperties is null)
+        {
+            s2maProperties = null;
+            return false;
+        }
+
+        s2mvProperties = s2maProperties.S2MVProperties;
+        return true;
     }
 
     private void LoadGameStringsCore(StormLocale localization)
