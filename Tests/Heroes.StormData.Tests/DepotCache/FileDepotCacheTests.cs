@@ -322,6 +322,70 @@ internal sealed class FileDepotCacheTests
     }
 
     [TestMethod]
+    public void LoadDepotCache_TwoS2MAFilesWithSameTitle_KeepsTheOneWithTheFirstPath()
+    {
+        // arrange
+        // the later path is added first, so the files are not already in path order
+        AddTestFile(VolskayaS2MAFile, "ff001.s2ma");
+        AddTestFile(VolskayaS2MAFile);
+        AddTestFile(VolskayaS2MVFile);
+
+        FileDepotCache fileDepotCache = new(_fileSystem, _heroesSource);
+
+        // act
+        fileDepotCache.LoadDepotCache();
+
+        // assert
+        DepotCacheData data = fileDepotCache.Data;
+
+        data.S2MAProperties.Should().HaveCount(2);
+        data.S2MAPropertiesByTitle.Should().ContainSingle().Which.Value.DirectoryPath.Should().Be(GetExpectedDirectoryPath(VolskayaS2MAFile));
+    }
+
+    [TestMethod]
+    public void LoadDepotCache_TwoS2MVFilesWithSameDependencyKey_KeepsTheOneWithTheFirstPath()
+    {
+        // arrange
+        AddTestFile(VolskayaS2MVFile);
+        AddTestFile(VolskayaS2MVFile, "00001.s2mv");
+        AddTestFile(VolskayaS2MAFile);
+
+        FileDepotCache fileDepotCache = new(_fileSystem, _heroesSource);
+
+        // act
+        fileDepotCache.LoadDepotCache();
+
+        // assert
+        DepotCacheData data = fileDepotCache.Data;
+
+        data.S2MVFilePaths.Should().HaveCount(2);
+        data.S2MVPropertiesByDependencyKey.Should().ContainSingle().Which.Value.DirectoryPath.Should().Be(GetExpectedDirectoryPath("00001.s2mv"));
+        data.S2MAPropertiesByTitle.Should().ContainSingle().Which.Value.S2MVProperties!.DirectoryPath.Should().Be(GetExpectedDirectoryPath("00001.s2mv"));
+    }
+
+    [TestMethod]
+    [DataRow("")]
+    [DataRow(" ")]
+    public void LoadDepotCache_S2MVHasEmptyTitle_MapIsNotAddedByTitle(string title)
+    {
+        // arrange
+        string s2mvText = File.ReadAllText(Path.Combine(_testFilesDirectoryPath, VolskayaS2MVFile)).Replace("\"Volskaya Foundry\"", $"\"{title}\"", StringComparison.Ordinal);
+        _fileSystem.AddFile(Path.Combine([_depotCacheDirectoryPath, .. GetSubDirectories(VolskayaS2MVFile), VolskayaS2MVFile]), new MockFileData(s2mvText));
+        AddTestFile(VolskayaS2MAFile);
+
+        FileDepotCache fileDepotCache = new(_fileSystem, _heroesSource);
+
+        // act
+        fileDepotCache.LoadDepotCache();
+
+        // assert
+        DepotCacheData data = fileDepotCache.Data;
+
+        data.S2MAProperties.Should().ContainSingle().Which.S2MVProperties.Should().NotBeNull();
+        data.S2MAPropertiesByTitle.Should().BeEmpty();
+    }
+
+    [TestMethod]
     public void LoadDepotCache_CalledTwice_DataIsNotDuplicated()
     {
         // arrange
@@ -362,11 +426,14 @@ internal sealed class FileDepotCacheTests
     private static string GetExpectedDirectoryPath(string fileName) =>
         Path.Combine(["core.stormmod", "base.stormdata", "depotcache", .. GetSubDirectories(fileName), fileName]);
 
-    private string AddTestFile(string fileName)
+    private string AddTestFile(string fileName) => AddTestFile(fileName, fileName);
+
+    // adds a copy of a test file under another name, to make duplicates
+    private string AddTestFile(string testFileName, string fileName)
     {
         string filePath = Path.Combine([_depotCacheDirectoryPath, .. GetSubDirectories(fileName), fileName]);
 
-        _fileSystem.AddFile(filePath, new MockFileData(File.ReadAllBytes(Path.Combine(_testFilesDirectoryPath, fileName))));
+        _fileSystem.AddFile(filePath, new MockFileData(File.ReadAllBytes(Path.Combine(_testFilesDirectoryPath, testFileName))));
 
         return filePath;
     }

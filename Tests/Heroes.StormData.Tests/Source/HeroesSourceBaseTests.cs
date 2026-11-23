@@ -187,7 +187,7 @@ public sealed class HeroesSourceBaseTests
         _heroesSource.LoadDepotCache();
 
         // act
-        IEnumerable<string> result = _heroesSource.GetMapTitles();
+        IReadOnlyList<string> result = _heroesSource.GetMapTitles();
 
         // assert
         result.Should().ContainSingle().Which.Should().Be(MapTitle);
@@ -200,10 +200,43 @@ public sealed class HeroesSourceBaseTests
         AddVolskayaMap();
 
         // act
-        IEnumerable<string> result = _heroesSource.GetMapTitles();
+        IReadOnlyList<string> result = _heroesSource.GetMapTitles();
 
         // assert
         result.Should().BeEmpty();
+    }
+
+    [TestMethod]
+    public void GetMapTitles_TitlesAddedOutOfOrder_ReturnsThemSortedIgnoringCase()
+    {
+        // arrange
+        _depotCacheData.S2MAPropertiesByTitle.Add("Volskaya Foundry", new S2MAProperties());
+        _depotCacheData.S2MAPropertiesByTitle.Add("braxis Holdout", new S2MAProperties());
+        _depotCacheData.S2MAPropertiesByTitle.Add("Alterac Pass", new S2MAProperties());
+        _depotCacheData.S2MAPropertiesByTitle.Add("Cursed Hollow", new S2MAProperties());
+        _heroesSource.LoadDepotCache();
+
+        // act
+        IReadOnlyList<string> result = _heroesSource.GetMapTitles();
+
+        // assert
+        result.Should().Equal("Alterac Pass", "braxis Holdout", "Cursed Hollow", "Volskaya Foundry");
+    }
+
+    [TestMethod]
+    public void GetMapTitles_DepotCacheChangedAfterwards_ReturnedListDoesNotChange()
+    {
+        // arrange
+        AddVolskayaMap();
+        _heroesSource.LoadDepotCache();
+
+        IReadOnlyList<string> result = _heroesSource.GetMapTitles();
+
+        // act
+        _depotCacheData.S2MAPropertiesByTitle.Clear();
+
+        // assert
+        result.Should().Equal(MapTitle);
     }
 
     [TestMethod]

@@ -41,19 +41,11 @@ internal sealed class CASCDepotCache : DepotCacheBase<ICASCHeroesSource>
     }
 
     // the files are two folders deep, e.g. depotcache/<xx>/<xx>/<hash>.s2ma
-    private static IEnumerable<CASCFile> GetDepotCacheFiles(CASCFolder depotCacheFolder)
-    {
-        foreach (CASCFolder folder in depotCacheFolder.Folders.Values)
-        {
-            foreach (CASCFolder innerFolder in folder.Folders.Values)
-            {
-                foreach (CASCFile file in innerFolder.Files.Values)
-                {
-                    yield return file;
-                }
-            }
-        }
-    }
+    // sorted, so the first of any duplicates (which is the one kept) is the same every time
+    private static IEnumerable<CASCFile> GetDepotCacheFiles(CASCFolder depotCacheFolder) => depotCacheFolder.Folders.Values
+        .SelectMany(folder => folder.Folders.Values)
+        .SelectMany(innerFolder => innerFolder.Files.Values)
+        .OrderBy(file => file.FullName, StringComparer.OrdinalIgnoreCase);
 
     private Stream OpenFile(string fileName) =>
         HeroesSource.CASCHeroesStorage.CASCHandlerWrapper.OpenFile(fileName) ?? throw new HeroesStormDataException($"Could not open depot cache file: {fileName}");

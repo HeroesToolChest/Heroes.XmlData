@@ -7,6 +7,9 @@ internal sealed class DepotCacheData
 {
     /// <summary>
     /// Gets the <see cref="S2MVProperties"/> by their dependency key (<see cref="S2MapPropertiesBase.GetDependencyKey"/>). The key is used to match a <see cref="S2MAProperties"/> to its <see cref="S2MVProperties"/>.
+    /// <para>
+    /// If more than one <c>.s2mv</c> file has the same key, the first one added is kept.
+    /// </para>
     /// </summary>
     public Dictionary<string, S2MVProperties> S2MVPropertiesByDependencyKey { get; } = new(StringComparer.Ordinal);
 
@@ -24,6 +27,7 @@ internal sealed class DepotCacheData
     /// Gets the <see cref="S2MAProperties"/> that have a matching <see cref="S2MVProperties"/>, by the map title.
     /// <para>
     /// The key is the map title (<c>enUS</c>) and is case-insensitive.
+    /// If more than one map has the same title, the first one added is kept. Maps with an empty title are not added.
     /// </para>
     /// </summary>
     public Dictionary<string, S2MAProperties> S2MAPropertiesByTitle { get; } = new(StringComparer.OrdinalIgnoreCase);
@@ -40,7 +44,8 @@ internal sealed class DepotCacheData
     /// <param name="s2mvProperties">The properties loaded from the file.</param>
     public void AddS2MV(string filePath, S2MVProperties s2mvProperties)
     {
-        S2MVPropertiesByDependencyKey.Add(s2mvProperties.GetDependencyKey(), s2mvProperties);
+        // a duplicate would otherwise fail the whole depot cache load
+        S2MVPropertiesByDependencyKey.TryAdd(s2mvProperties.GetDependencyKey(), s2mvProperties);
         S2MVFilePaths.Add(filePath);
     }
 
@@ -58,8 +63,9 @@ internal sealed class DepotCacheData
         S2MAProperties.Add(s2maProperties);
         S2MAFilePaths.Add(filePath);
 
-        if (s2maProperties.S2MVProperties is not null)
-            S2MAPropertiesByTitle.Add(s2maProperties.S2MVProperties.HeaderTitle, s2maProperties);
+        // an empty title can't be looked up, and a duplicate would otherwise fail the whole depot cache load
+        if (s2maProperties.S2MVProperties is not null && !string.IsNullOrWhiteSpace(s2maProperties.S2MVProperties.HeaderTitle))
+            S2MAPropertiesByTitle.TryAdd(s2maProperties.S2MVProperties.HeaderTitle, s2maProperties);
     }
 
     /// <summary>

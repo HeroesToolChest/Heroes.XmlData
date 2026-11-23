@@ -353,13 +353,20 @@ public class HeroesLoader
     }
 
     /// <summary>
-    /// Gets a collection of the map titles (<c>enUS</c>) to be used for <see cref="LoadMapMod(string)"/>.
+    /// Gets the map titles (<c>enUS</c>) to be used for <see cref="LoadMapMod(string)"/>, <see cref="TryLoadMapMod(string?)"/>, and <see cref="GetStormMap(string)"/>.
     /// <para>
     /// Loads the depot cache (the map files) if it is not already loaded. The base <c>stormmods</c> are not loaded.
     /// </para>
     /// </summary>
-    /// <returns>A collection of map titles.</returns>
-    public IEnumerable<string> GetMapTitles()
+    /// <returns>
+    /// A new list of the map titles, sorted by <see cref="StringComparer.OrdinalIgnoreCase"/>, so the order is the same on every platform.
+    /// To check for a single title, use <see cref="StormMapExists(string?)"/>, which is case-insensitive.
+    /// </returns>
+    /// <remarks>
+    /// If more than one map has the same title, only one of them is listed, the one with the first <c>.s2ma</c> file path (ordinal, case-insensitive).
+    /// Maps with an empty title are not listed.
+    /// </remarks>
+    public IReadOnlyList<string> GetMapTitles()
     {
         EnsureDepotCacheLoaded();
 

@@ -1,4 +1,4 @@
-﻿namespace Heroes.StormData.DepotCache;
+namespace Heroes.StormData.DepotCache;
 
 internal sealed class FileDepotCache : DepotCacheBase<IFileHeroesSource>
 {
@@ -17,8 +17,9 @@ internal sealed class FileDepotCache : DepotCacheBase<IFileHeroesSource>
         if (!FileSystem.Directory.Exists(DepotCacheDirectoryPath))
             return;
 
-        IEnumerable<string> s2mvFilePaths = FileSystem.Directory.EnumerateFiles(DepotCacheDirectoryPath, "*.s2mv", SearchOption.AllDirectories);
-        IEnumerable<string> s2maFilePaths = FileSystem.Directory.EnumerateFiles(DepotCacheDirectoryPath, "*.s2ma", SearchOption.AllDirectories);
+        // sorted, so the first of any duplicates (which is the one kept) is the same on every platform
+        IEnumerable<string> s2mvFilePaths = FileSystem.Directory.EnumerateFiles(DepotCacheDirectoryPath, "*.s2mv", SearchOption.AllDirectories).Order(StringComparer.OrdinalIgnoreCase);
+        IEnumerable<string> s2maFilePaths = FileSystem.Directory.EnumerateFiles(DepotCacheDirectoryPath, "*.s2ma", SearchOption.AllDirectories).Order(StringComparer.OrdinalIgnoreCase);
 
         // find the s2mv files first
         foreach (string s2mvFilePath in s2mvFilePaths)

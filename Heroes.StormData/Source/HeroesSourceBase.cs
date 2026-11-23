@@ -93,7 +93,14 @@ internal abstract class HeroesSourceBase : IHeroesSource
         SourceContainer.ClearStormMapMods();
     }
 
-    public IEnumerable<string> GetMapTitles() => _depotCache?.Data.S2MAPropertiesByTitle.Keys ?? Enumerable.Empty<string>();
+    public IReadOnlyList<string> GetMapTitles()
+    {
+        if (_depotCache is null)
+            return [];
+
+        // a copy, so it does not change if the depot cache is loaded again. The dictionary's order depends on the order the files were found in.
+        return [.. _depotCache.Data.S2MAPropertiesByTitle.Keys.Order(StringComparer.OrdinalIgnoreCase)];
+    }
 
     public bool TryGetS2MAProperties(string mapTitle, [NotNullWhen(true)] out S2MAProperties? s2maProperties)
     {

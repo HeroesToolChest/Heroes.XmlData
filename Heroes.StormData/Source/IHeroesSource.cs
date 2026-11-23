@@ -34,7 +34,7 @@ internal interface IHeroesSource
     /// Unloads the current map <c>stormmods</c>, then loads the map <c>stormmods</c> of the given map title.
     /// The depot cache must be loaded first.
     /// </summary>
-    /// <param name="mapTitle">The map's title (enUS). Is not case-sensitive.</param>
+    /// <param name="mapTitle">The map's title (<c>enUS</c>). Is not case-sensitive.</param>
     /// <returns><see langword="true"/> if the map was found and loaded; otherwise <see langword="false"/> and the current map <c>stormmods</c> are left loaded.</returns>
     bool LoadStormMapMod(string mapTitle);
 
@@ -44,15 +44,15 @@ internal interface IHeroesSource
     void UnloadStormMapMod();
 
     /// <summary>
-    /// Gets the titles (enUS) of the maps found in the depot cache. This is empty until the depot cache is loaded.
+    /// Gets the titles (<c>enUS</c>) of the maps found in the depot cache, sorted by <see cref="StringComparer.OrdinalIgnoreCase"/>. This is empty until the depot cache is loaded.
     /// </summary>
-    /// <returns>A collection of map titles.</returns>
-    IEnumerable<string> GetMapTitles();
+    /// <returns>A new list of the map titles.</returns>
+    IReadOnlyList<string> GetMapTitles();
 
     /// <summary>
     /// Gets the <see cref="S2MAProperties"/> of a map from the depot cache. Only maps that have a matching <see cref="S2MVProperties"/> are found.
     /// </summary>
-    /// <param name="mapTitle">The map's title (enUS). Is case-insensitive.</param>
+    /// <param name="mapTitle">The map's title (<c>enUS</c>). Is case-insensitive.</param>
     /// <param name="s2maProperties">When this method returns, contains the <see cref="S2MAProperties"/> of the map, if found; otherwise, <see langword="null"/>.</param>
     /// <returns><see langword="true"/> if the map was found; otherwise <see langword="false"/>, which is always the case until the depot cache is loaded.</returns>
     bool TryGetS2MAProperties(string mapTitle, [NotNullWhen(true)] out S2MAProperties? s2maProperties);

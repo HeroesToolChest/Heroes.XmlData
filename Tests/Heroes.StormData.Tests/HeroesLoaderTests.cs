@@ -1046,7 +1046,7 @@ public sealed class HeroesLoaderTests
         HeroesLoader heroesLoader = HeroesLoader.LoadWithInternal(_heroesSource);
 
         // act
-        List<string> result = [.. heroesLoader.GetMapTitles()];
+        IReadOnlyList<string> result = heroesLoader.GetMapTitles();
 
         // assert
         result.Should().Equal(MapTitle);
