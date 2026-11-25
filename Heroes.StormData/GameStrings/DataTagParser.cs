@@ -162,8 +162,9 @@ internal sealed class DataTagParser
             {
                 ValueScale valueScale = _dataRefAttributeParser.Parse(attributes.Ref);
 
+                // the unrounded value is kept, since the game scales that value, not the rounded one shown in the tooltip
                 if (valueScale.Scaling.HasValue)
-                    return new ValueScale(Math.Round(valueScale.Value, attributes.Precision), Math.Round(valueScale.Scaling.Value, StormCalculator.MaxFractionalDigits));
+                    return new ValueScale(Math.Round(valueScale.Value, attributes.Precision), Math.Round(valueScale.Scaling.Value, StormCalculator.MaxFractionalDigits), valueScale.Value, attributes.Precision);
                 else
                     return new ValueScale(Math.Round(valueScale.Value, attributes.Precision));
             }

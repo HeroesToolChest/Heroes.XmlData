@@ -102,7 +102,7 @@ public sealed class GameStringParserTests
         string parsed = parser.ParseText(text, StormLocale.ENUS);
 
         // assert
-        parsed.Should().Be("After <c val=\"#TooltipNumbers\">0.5</c> seconds, deal <c val=\"#TooltipNumbers\">120<c val=\"#ColorGray\">~~0.04~~</c></c> damage to enemy Heroes in an area and Fear them for <c val=\"#TooltipNumbers\">2</c> seconds. While Feared, Heroes are Silenced and are forced to run away from Horrify's center.");
+        parsed.Should().Be("After <c val=\"#TooltipNumbers\">0.5</c> seconds, deal <c val=\"#TooltipNumbers\">120<c val=\"#ColorGray\" value=\"120\" precision=\"0\" scaling=\"0.0400390625\">~~0.04~~</c></c> damage to enemy Heroes in an area and Fear them for <c val=\"#TooltipNumbers\">2</c> seconds. While Feared, Heroes are Silenced and are forced to run away from Horrify's center.");
     }
 
     [TestMethod]
@@ -200,7 +200,7 @@ public sealed class GameStringParserTests
         string parsed = parser.ParseText(text, StormLocale.ENUS);
 
         // assert
-        parsed.Should().Be("Rain a small army of Demonic Grunts down on enemies, dealing <c val=\"#TooltipNumbers\">85<c val=\"#ColorGray\">~~0.04~~</c></c> damage per impact. Grunts deal <c val=\"#TooltipNumbers\">39<c val=\"#ColorGray\">~~0.04~~</c></c> damage, have <c val=\"#TooltipNumbers\">750<c val=\"#ColorGray\">~~0.04~~</c></c> Health and last up to <c val=\"#TooltipNumbers\">10</c> seconds. When Grunts die they explode, dealing <c val=\"#TooltipNumbers\">40<c val=\"#ColorGray\">~~0.04~~</c></c> damage to nearby enemies, doubled against enemy Heroes.<n/><n/>Usable while Channeling All Shall Burn.");
+        parsed.Should().Be("Rain a small army of Demonic Grunts down on enemies, dealing <c val=\"#TooltipNumbers\">85<c val=\"#ColorGray\" value=\"85\" precision=\"0\" scaling=\"0.0400390625\">~~0.04~~</c></c> damage per impact. Grunts deal <c val=\"#TooltipNumbers\">39<c val=\"#ColorGray\" value=\"39\" precision=\"0\" scaling=\"0.0400390625\">~~0.04~~</c></c> damage, have <c val=\"#TooltipNumbers\">750<c val=\"#ColorGray\" value=\"750\" precision=\"0\" scaling=\"0.0400390625\">~~0.04~~</c></c> Health and last up to <c val=\"#TooltipNumbers\">10</c> seconds. When Grunts die they explode, dealing <c val=\"#TooltipNumbers\">40<c val=\"#ColorGray\" value=\"40\" precision=\"0\" scaling=\"0.0400390625\">~~0.04~~</c></c> damage to nearby enemies, doubled against enemy Heroes.<n/><n/>Usable while Channeling All Shall Burn.");
     }
 
     [TestMethod]
@@ -463,7 +463,7 @@ public sealed class GameStringParserTests
         string parsed = parser.ParseText(text, StormLocale.ENUS);
 
         // assert
-        parsed.Should().Be("Increase the damage of Octo-Grab by <c val=\"#TooltipNumbers\">13700%<c val=\"#ColorGray\">~~0.04~~</c></c>");
+        parsed.Should().Be("Increase the damage of Octo-Grab by <c val=\"#TooltipNumbers\">13700%<c val=\"#ColorGray\" value=\"13700\" precision=\"0\" scaling=\"0.0400390625\">~~0.04~~</c></c>");
     }
 
     [TestMethod]
@@ -597,7 +597,7 @@ public sealed class GameStringParserTests
         string parsed = parser.ParseText(text, StormLocale.ENUS);
 
         // assert
-        parsed.Should().Be("Channel on an allied or destroyed Fort or Keep to replace it with Ragnaros's ultimate form, temporarily gaining new Abilities, having <c val=\"#TooltipNumbers\">3996<c val=\"#ColorGray\">~~0.04~~</c></c> Health that burns away over <c val=\"#TooltipNumbers\">18</c> seconds.<n/><n/>Ragnaros returns to his normal form upon losing all Health in Molten Core.");
+        parsed.Should().Be("Channel on an allied or destroyed Fort or Keep to replace it with Ragnaros's ultimate form, temporarily gaining new Abilities, having <c val=\"#TooltipNumbers\">3996<c val=\"#ColorGray\" value=\"3996\" precision=\"0\" scaling=\"0.0400390625\">~~0.04~~</c></c> Health that burns away over <c val=\"#TooltipNumbers\">18</c> seconds.<n/><n/>Ragnaros returns to his normal form upon losing all Health in Molten Core.");
     }
 
     [TestMethod]
@@ -640,7 +640,7 @@ public sealed class GameStringParserTests
         string parsed = parser.ParseText(text, StormLocale.ENUS);
 
         // assert
-        parsed.Should().Be("Deal <c val=\"#TooltipNumbers\">159<c val=\"#ColorGray\">~~0.04~~</c></c> damage to enemies within the target area.");
+        parsed.Should().Be("Deal <c val=\"#TooltipNumbers\">159<c val=\"#ColorGray\" value=\"159\" precision=\"0\" scaling=\"0.0400390625\">~~0.04~~</c></c> damage to enemies within the target area.");
     }
 
     [TestMethod]
@@ -684,7 +684,7 @@ public sealed class GameStringParserTests
         string parsed = parser.ParseText(text, StormLocale.ENUS);
 
         // assert
-        parsed.Should().Be("Shields Tyrael for <c val=\"#TooltipNumbers\">336<c val=\"#ColorGray\">~~0.04~~</c></c> damage and nearby allied Heroes and Minions for <c val=\"#TooltipNumbers\">40%</c> as much for <c val=\"#TooltipNumbers\">4</c> seconds.");
+        parsed.Should().Be("Shields Tyrael for <c val=\"#TooltipNumbers\">336<c val=\"#ColorGray\" value=\"336\" precision=\"0\" scaling=\"0.0400390625\">~~0.04~~</c></c> damage and nearby allied Heroes and Minions for <c val=\"#TooltipNumbers\">40%</c> as much for <c val=\"#TooltipNumbers\">4</c> seconds.");
     }
 
     [TestMethod]
@@ -824,7 +824,7 @@ public sealed class GameStringParserTests
         string parsed = parser.ParseText(text, StormLocale.ENUS);
 
         // assert
-        parsed.Should().Be("Eject from the Mech, setting it to self-destruct after <c val=\"#TooltipNumbers\">4</c> seconds. Deals <c val=\"#TooltipNumbers\">400<c val=\"#ColorGray\">~~0.04~~</c></c> to <c val=\"#TooltipNumbers\">1100<c val=\"#ColorGray\">~~0.04~~</c></c> damage in a large area, depending on distance from center. Deals <c val=\"#TooltipNumbers\">50%</c> damage against Structures.</n></n><c val=\"FF8000\">Gain <c val=\"#TooltipNumbers\">1%</c> Charge for every <c val=\"#TooltipNumbers\">2</c> seconds spent Basic Attacking, and <c val=\"#TooltipNumbers\">25%</c> Charge per <c val=\"#TooltipNumbers\">100%</c> of Mech Health lost.</c>");
+        parsed.Should().Be("Eject from the Mech, setting it to self-destruct after <c val=\"#TooltipNumbers\">4</c> seconds. Deals <c val=\"#TooltipNumbers\">400<c val=\"#ColorGray\" value=\"400\" precision=\"0\" scaling=\"0.0400390625\">~~0.04~~</c></c> to <c val=\"#TooltipNumbers\">1100<c val=\"#ColorGray\" value=\"1100\" precision=\"0\" scaling=\"0.0400390625\">~~0.04~~</c></c> damage in a large area, depending on distance from center. Deals <c val=\"#TooltipNumbers\">50%</c> damage against Structures.</n></n><c val=\"FF8000\">Gain <c val=\"#TooltipNumbers\">1%</c> Charge for every <c val=\"#TooltipNumbers\">2</c> seconds spent Basic Attacking, and <c val=\"#TooltipNumbers\">25%</c> Charge per <c val=\"#TooltipNumbers\">100%</c> of Mech Health lost.</c>");
     }
 
     [TestMethod]
@@ -885,7 +885,7 @@ public sealed class GameStringParserTests
         string parsed = parser.ParseText(text, StormLocale.ENUS);
 
         // assert
-        parsed.Should().Be("Transform for <c val=\"#TooltipNumbers\">20</c> seconds, gaining <c val=\"#TooltipNumbers\">1000<c val=\"#ColorGray\">~~0.04~~</c></c> Health.");
+        parsed.Should().Be("Transform for <c val=\"#TooltipNumbers\">20</c> seconds, gaining <c val=\"#TooltipNumbers\">1000<c val=\"#ColorGray\" value=\"1000\" precision=\"0\" scaling=\"0.0400390625\">~~0.04~~</c></c> Health.");
     }
 
     [TestMethod]
@@ -940,7 +940,7 @@ public sealed class GameStringParserTests
         string parsed = parser.ParseText(text, StormLocale.ENUS);
 
         // assert
-        parsed.Should().Be("While at or below <c val=\"#TooltipNumbers\">50</c> Brew, gain <c val=\"#TooltipNumbers\">20%</c> Movement Speed. While at or above <c val=\"#TooltipNumbers\">50</c> Brew, regenerate an additional <c val=\"#TooltipNumbers\">18<c val=\"#ColorGray\">~~0.04~~</c></c> Health per second.");
+        parsed.Should().Be("While at or below <c val=\"#TooltipNumbers\">50</c> Brew, gain <c val=\"#TooltipNumbers\">20%</c> Movement Speed. While at or above <c val=\"#TooltipNumbers\">50</c> Brew, regenerate an additional <c val=\"#TooltipNumbers\">18<c val=\"#ColorGray\" value=\"18\" precision=\"0\" scaling=\"0.0400390625\">~~0.04~~</c></c> Health per second.");
     }
 
     [TestMethod]
@@ -1147,7 +1147,7 @@ public sealed class GameStringParserTests
         string parsed = parser.ParseText(text, StormLocale.ENUS);
 
         // assert
-        parsed.Should().Be("Launch a grenade that explodes at the end of its path or upon hitting an enemy, dealing <c val=\"#TooltipNumbers\">124<c val=\"#ColorGray\">~~0.04~~</c></c> damage to nearby enemies. Grenades can ricochet off of terrain. Deals <c val=\"#TooltipNumbers\">50%</c> less damage to Structures.<n/><n/>Stores up to <c val=\"#TooltipNumbers\">4</c> charges. Frag Launcher's cooldown replenishes all charges at the same time.");
+        parsed.Should().Be("Launch a grenade that explodes at the end of its path or upon hitting an enemy, dealing <c val=\"#TooltipNumbers\">124<c val=\"#ColorGray\" value=\"124\" precision=\"0\" scaling=\"0.0400390625\">~~0.04~~</c></c> damage to nearby enemies. Grenades can ricochet off of terrain. Deals <c val=\"#TooltipNumbers\">50%</c> less damage to Structures.<n/><n/>Stores up to <c val=\"#TooltipNumbers\">4</c> charges. Frag Launcher's cooldown replenishes all charges at the same time.");
     }
 
     [TestMethod]
@@ -1677,7 +1677,7 @@ public sealed class GameStringParserTests
         string parsed = parser.ParseText(text, StormLocale.ENUS);
 
         // assert
-        parsed.Should().Be("Activate to make Arthas's next Basic Attack strike immediately and deal <c val=\"#TooltipNumbers\">99<c val=\"#ColorGray\">~~0.04~~</c></c> increased damage. Dealing damage restores <c val=\"#TooltipNumbers\">30</c> Mana.");
+        parsed.Should().Be("Activate to make Arthas's next Basic Attack strike immediately and deal <c val=\"#TooltipNumbers\">99<c val=\"#ColorGray\" value=\"99\" precision=\"0\" scaling=\"0.0400390625\">~~0.04~~</c></c> increased damage. Dealing damage restores <c val=\"#TooltipNumbers\">30</c> Mana.");
     }
 
     [TestMethod]
@@ -1790,7 +1790,7 @@ public sealed class GameStringParserTests
         string parsed = parser.ParseText(text, StormLocale.ENUS);
 
         // assert
-        parsed.Should().Be("Deal <c val=\"#TooltipNumbers\">135<c val=\"#ColorGray\">~~0.05~~</c></c> damage to enemies in the area.");
+        parsed.Should().Be("Deal <c val=\"#TooltipNumbers\">135<c val=\"#ColorGray\" value=\"135\" precision=\"0\" scaling=\"0.050048828125\">~~0.05~~</c></c> damage to enemies in the area.");
     }
 
     [TestMethod]
@@ -1986,7 +1986,7 @@ public sealed class GameStringParserTests
         string parsed = parser.ParseText(text, StormLocale.ENUS);
 
         // assert
-        parsed.Should().Be("Activate to swing the Hammer of Twilight, dealing <c val=\"#TooltipNumbers\">150<c val=\"#ColorGray\">~~0.045~~</c></c> damage, pushing enemies away, and Stunning them for <c val=\"#TooltipNumbers\">0.75</c> seconds.<n/><n/><c val=\"#AbilityPassive\">Passive:</c> Cho's Basic Attacks deal <c val=\"#TooltipNumbers\">25%</c> increased damage.");
+        parsed.Should().Be("Activate to swing the Hammer of Twilight, dealing <c val=\"#TooltipNumbers\">150<c val=\"#ColorGray\" value=\"150\" precision=\"0\" scaling=\"0.044921875\">~~0.045~~</c></c> damage, pushing enemies away, and Stunning them for <c val=\"#TooltipNumbers\">0.75</c> seconds.<n/><n/><c val=\"#AbilityPassive\">Passive:</c> Cho's Basic Attacks deal <c val=\"#TooltipNumbers\">25%</c> increased damage.");
     }
 
     [TestMethod]
@@ -2427,7 +2427,7 @@ public sealed class GameStringParserTests
         string parsed = parser.ParseText(text, StormLocale.ENUS);
 
         // assert
-        parsed.Should().Be("Basic Attacks against enemy Heroes afflicted by Shadow Mark grant a <c val=\"#TooltipNumbers\">160<c val=\"#ColorGray\">~~0.04~~</c></c> point Shield that rapidly decays.");
+        parsed.Should().Be("Basic Attacks against enemy Heroes afflicted by Shadow Mark grant a <c val=\"#TooltipNumbers\">160<c val=\"#ColorGray\" value=\"160\" precision=\"0\" scaling=\"0.0400390625\">~~0.04~~</c></c> point Shield that rapidly decays.");
     }
 
     [TestMethod]
@@ -2616,16 +2616,16 @@ public sealed class GameStringParserTests
         string parsed = parser.ParseText(text, StormLocale.ENUS);
 
         // assert
-        parsed.Should().Be("Channel a powerful Void Orb that grows over time until reaching maximum size after <c val=\"#TooltipNumbers\">2</c> seconds. Recast to launch the Orb early.<n/><n/>Enemies that come into contact with the Orb take <c val=\"#TooltipNumbers\">81<c val=\"#ColorGray\">~~0.04~~</c></c> damage and are Blinded for <S val=\"StandardTooltipDetails\">1</S> second.<n/><n/>When the Orb reaches the end of its path, it detonates in a large explosion, dealing <c val=\"#TooltipNumbers\">320<c val=\"#ColorGray\">~~0.04~~</c></c> damage.<n/><n/>Charging up this Ability increases its contact damage up to <c val=\"#TooltipNumbers\">146<c val=\"#ColorGray\">~~0.04~~</c></c> and its explosion damage up to <c val=\"#TooltipNumbers\">671<c val=\"#ColorGray\">~~0.04~~</c></c>.<n/><n/><S val=\"TooltipSubscript\">Contact damage is dealt every 0.25 seconds.</S>");
+        parsed.Should().Be("Channel a powerful Void Orb that grows over time until reaching maximum size after <c val=\"#TooltipNumbers\">2</c> seconds. Recast to launch the Orb early.<n/><n/>Enemies that come into contact with the Orb take <c val=\"#TooltipNumbers\">81<c val=\"#ColorGray\" value=\"81.25\" precision=\"0\" scaling=\"0.0400390625\">~~0.04~~</c></c> damage and are Blinded for <S val=\"StandardTooltipDetails\">1</S> second.<n/><n/>When the Orb reaches the end of its path, it detonates in a large explosion, dealing <c val=\"#TooltipNumbers\">320<c val=\"#ColorGray\" value=\"320\" precision=\"0\" scaling=\"0.0400390625\">~~0.04~~</c></c> damage.<n/><n/>Charging up this Ability increases its contact damage up to <c val=\"#TooltipNumbers\">146<c val=\"#ColorGray\" value=\"146.185\" precision=\"0\" scaling=\"0.0400390625\">~~0.04~~</c></c> and its explosion damage up to <c val=\"#TooltipNumbers\">671<c val=\"#ColorGray\" value=\"670.592\" precision=\"0\" scaling=\"0.0400390625\">~~0.04~~</c></c>.<n/><n/><S val=\"TooltipSubscript\">Contact damage is dealt every 0.25 seconds.</S>");
     }
 
     [TestMethod]
-    [DataRow(StormLocale.ENUS, "3.75", "0.045")]
-    [DataRow(StormLocale.DEDE, "3,75", "0,045")]
-    [DataRow(StormLocale.FRFR, "3,75", "0,045")]
-    [DataRow(StormLocale.KOKR, "3.75", "0.045")]
-    [DataRow(StormLocale.RURU, "3,75", "0,045")]
-    public void ParseText_HasStormLocale_WritesValueAndScalingInLocale(StormLocale stormLocale, string expectedValue, string expectedScaling)
+    [DataRow(StormLocale.ENUS, "3.75")]
+    [DataRow(StormLocale.DEDE, "3,75")]
+    [DataRow(StormLocale.FRFR, "3,75")]
+    [DataRow(StormLocale.KOKR, "3.75")]
+    [DataRow(StormLocale.RURU, "3,75")]
+    public void ParseText_HasStormLocale_WritesValueInLocaleAndScalingInInvariantCulture(StormLocale stormLocale, string expectedValue)
     {
         // arrange
         string text = "deals <c val=\"#TooltipNumbers\"><d ref=\"Effect,LocaleDamage,Amount*1.5\" precision=\"2\"/></c> damage";
@@ -2636,13 +2636,13 @@ public sealed class GameStringParserTests
         string parsed = parser.ParseText(text, stormLocale);
 
         // assert
-        parsed.Should().Be($"deals <c val=\"#TooltipNumbers\">{expectedValue}<c val=\"#ColorGray\">~~{expectedScaling}~~</c></c> damage");
+        parsed.Should().Be($"deals <c val=\"#TooltipNumbers\">{expectedValue}<c val=\"#ColorGray\" value=\"3.75\" precision=\"2\" scaling=\"0.044921875\">~~0.045~~</c></c> damage");
     }
 
     [TestMethod]
     [DataRow(StormLocale.ENUS, "deals 3.75 (+4.5% per level) damage")]
     [DataRow(StormLocale.DEDE, "deals 3,75 (+4,5 % pro Stufe) damage")]
-    public void ParseText_HasStormLocale_GameStringTextReadsLocaleScaling(StormLocale stormLocale, string expected)
+    public void ParseText_HasStormLocale_GameStringTextWritesScalingInLocale(StormLocale stormLocale, string expected)
     {
         // arrange
         string text = "deals <c val=\"#TooltipNumbers\"><d ref=\"Effect,LocaleDamage,Amount*1.5\" precision=\"2\"/></c> damage";
@@ -2743,6 +2743,39 @@ public sealed class GameStringParserTests
 
         // assert
         result.Should().Be("25%<c val=\"#ColorGray\">~~0.04~~</c>");
+    }
+
+    [TestMethod]
+    public void AppendValue_ValueHasUnroundedValue_WritesAttributesForTheLevelCalculation()
+    {
+        // act
+        string result = AppendValue(new ValueScale(111, 0.04, 110.6, 0));
+
+        // assert
+        result.Should().Be("111<c val=\"#ColorGray\" value=\"110.6\" precision=\"0\" scaling=\"0.0400390625\">~~0.04~~</c>");
+    }
+
+    [TestMethod]
+    public void AppendValue_ValueHasUnroundedValueAndIsPercent_WritesPercentBeforeScaling()
+    {
+        // act
+        string result = AppendValue(new ValueScale(30, 0.05, 30.24, 0), isPercent: true);
+
+        // assert
+        result.Should().Be("30%<c val=\"#ColorGray\" value=\"30.24\" precision=\"0\" scaling=\"0.050048828125\">~~0.05~~</c>");
+    }
+
+    [TestMethod]
+    public void AppendValue_BuilderHasCommaDecimalSeparator_WritesScalingTagInInvariantCulture()
+    {
+        // arrange
+        DefaultInterpolatedStringHandler builder = new(0, 0, CultureInfo.GetCultureInfo("de-DE"));
+
+        // act
+        GameStringParser.AppendValue(ref builder, new ValueScale(1.25, 0.035, 1.2468, 2), false);
+
+        // assert
+        builder.ToStringAndClear().Should().Be("1,25<c val=\"#ColorGray\" value=\"1.2468\" precision=\"2\" scaling=\"0.034912109375\">~~0.035~~</c>");
     }
 
     [TestMethod]

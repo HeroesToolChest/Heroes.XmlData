@@ -118,6 +118,61 @@ public sealed class MathHelpersTests
         result.Should().Be(expected);
     }
 
+    [TestMethod]
+    [DataRow(0.5, 0.5)] // already a step
+    [DataRow(2, 2)]
+    [DataRow(0.04, 0.0400390625)] // 163.84 steps, rounded to 164
+    [DataRow(0.045, 0.044921875)] // 184.32 steps, rounded to 184
+    [DataRow(0.05, 0.050048828125)] // 204.8 steps, rounded to 205
+    [DataRow(0.035, 0.034912109375)] // 143.36 steps, rounded to 143
+    [DataRow(-0.04, -0.0400390625)]
+    [DataRow(0.3, 0.300048828125)] // 1228.8 steps, rounded to 1229
+    [DataRow(0.0001220703125, 0.000244140625)] // half a step, rounded away from zero
+    [DataRow(double.NaN, double.NaN)]
+    [DataRow(1e12, 1e12)] // too large, kept as is
+    public void ToStormFixedLiteralValue_HasNumber_ReturnsStoredValue(double number, double expected)
+    {
+        // act
+        double result = MathHelpers.ToStormFixedLiteralValue(number);
+
+        // assert
+        result.Should().Be(expected);
+    }
+
+    [TestMethod]
+    [DataRow(1.5, "1.5")]
+    [DataRow(-110.6, "-110.6")]
+    [DataRow(0.1234567, "0.123457")] // normalized to 6 decimal places
+    [DataRow(1_000_000.0, "999999")]
+    public void AppendInvariantNumber_BuilderHasCommaDecimalSeparator_AppendsInInvariantCulture(double number, string expected)
+    {
+        // arrange
+        DefaultInterpolatedStringHandler builder = new(0, 0, CultureInfo.GetCultureInfo("de-DE"));
+
+        // act
+        MathHelpers.AppendInvariantNumber(ref builder, number);
+
+        // assert
+        builder.ToStringAndClear().Should().Be(expected);
+    }
+
+    [TestMethod]
+    [DataRow(0.04, "0.0400390625")] // more than 6 decimal places, so the stored value is written exactly
+    [DataRow(-0.035, "-0.034912109375")]
+    [DataRow(0.5, "0.5")]
+    [DataRow(-0.00001, "0")] // rounds to -0, which is written as 0
+    public void AppendInvariantStormFixedNumber_BuilderHasCommaDecimalSeparator_AppendsStoredValueInInvariantCulture(double number, string expected)
+    {
+        // arrange
+        DefaultInterpolatedStringHandler builder = new(0, 0, CultureInfo.GetCultureInfo("de-DE"));
+
+        // act
+        MathHelpers.AppendInvariantStormFixedNumber(ref builder, number);
+
+        // assert
+        builder.ToStringAndClear().Should().Be(expected);
+    }
+
     private static string AppendNumber(double number, IFormatProvider formatProvider)
     {
         DefaultInterpolatedStringHandler builder = new(0, 0, formatProvider);

@@ -11,6 +11,11 @@ internal static class MathHelpers
     /// </summary>
     public const string NumberFormat = "0.######";
 
+    /// <summary>
+    /// The format a fixed-point value is written in. It has up to 12 decimal places, so any step of 1/4096 is written exactly, with trailing zeros dropped.
+    /// </summary>
+    public const string StormFixedNumberFormat = "0.############";
+
     // the game stores numbers as fixed-point (20.12), so each step is 1/4096
     private const decimal StormFixedScale = 4096m;
 
@@ -19,6 +24,9 @@ internal static class MathHelpers
 
     // larger than any game value, keeps the conversion to decimal and long from overflowing
     private const double StormFixedMaxMagnitude = 1e12;
+
+    // more than the longest number written in NumberFormat or StormFixedNumberFormat, e.g. -999999.999999 or -999999999999.999999999999
+    private const int InvariantNumberBufferLength = 32;
 
     /// <summary>
     /// Appends <paramref name="number"/> in <see cref="NumberFormat"/> to <paramref name="builder"/>, in the culture the builder was created with.
@@ -29,6 +37,32 @@ internal static class MathHelpers
     public static void AppendNumber(ref DefaultInterpolatedStringHandler builder, double number)
     {
         builder.AppendFormatted(Normalize(number), NumberFormat);
+    }
+
+    /// <summary>
+    /// Appends <paramref name="number"/> in <see cref="NumberFormat"/> to <paramref name="builder"/>, always in the invariant culture,
+    /// whatever culture the builder was created with. For numbers that are data rather than text, such as an attribute value.
+    /// The number is first normalized (see <see cref="Normalize"/>).
+    /// </summary>
+    /// <param name="builder">The builder to append to.</param>
+    /// <param name="number">The number to append.</param>
+    public static void AppendInvariantNumber(ref DefaultInterpolatedStringHandler builder, double number)
+    {
+        AppendInvariant(ref builder, Normalize(number), NumberFormat);
+    }
+
+    /// <summary>
+    /// Appends the value the game stores for <paramref name="number"/> (see <see cref="ToStormFixedLiteralValue"/>) to <paramref name="builder"/>,
+    /// in <see cref="StormFixedNumberFormat"/> and always in the invariant culture, so the stored value is written exactly, e.g. 0.04 is written as 0.0400390625.
+    /// </summary>
+    /// <param name="builder">The builder to append to.</param>
+    /// <param name="number">The number as written in the data.</param>
+    public static void AppendInvariantStormFixedNumber(ref DefaultInterpolatedStringHandler builder, double number)
+    {
+        double storedValue = ToStormFixedLiteralValue(number);
+
+        // -0 (e.g. from a tiny negative number) would otherwise be written as "-0"
+        AppendInvariant(ref builder, storedValue == 0 ? 0 : storedValue, StormFixedNumberFormat);
     }
 
     /// <summary>
@@ -72,5 +106,35 @@ internal static class MathHelpers
         }
 
         return (double)(step / StormFixedScale);
+    }
+
+    /// <summary>
+    /// Gets the exact value the game stores for a number written as is in the data, such as a level scaling of 0.04.
+    /// The number is rounded to the nearest fixed-point step of 1/4096, e.g. 0.04 is 163.84 steps, stored as 164/4096, which is 0.0400390625.
+    /// </summary>
+    /// <remarks>
+    /// For a calculated value, see <see cref="ToStormFixedValue"/> instead.
+    /// </remarks>
+    /// <param name="number">The number as written in the data.</param>
+    /// <returns>The stored value of <paramref name="number"/>.</returns>
+    public static double ToStormFixedLiteralValue(double number)
+    {
+        if (!double.IsFinite(number) || Math.Abs(number) >= StormFixedMaxMagnitude)
+            return number;
+
+        // 4096 is a power of 2, so multiplying and dividing by it is exact
+        double scale = (double)StormFixedScale;
+
+        return Math.Round(number * scale, MidpointRounding.AwayFromZero) / scale;
+    }
+
+    private static void AppendInvariant(ref DefaultInterpolatedStringHandler builder, double number, string format)
+    {
+        Span<char> buffer = stackalloc char[InvariantNumberBufferLength];
+
+        if (number.TryFormat(buffer, out int charsWritten, format, CultureInfo.InvariantCulture))
+            builder.AppendFormatted(buffer[..charsWritten]);
+        else
+            builder.AppendLiteral(number.ToString(format, CultureInfo.InvariantCulture)); // too long for the buffer, e.g. 1e100
     }
 }
