@@ -2431,6 +2431,195 @@ public sealed class GameStringParserTests
     }
 
     [TestMethod]
+    public void ParseText_XalatathVoidEruptionAccumulatorMaxDamage_ParsedGameString()
+    {
+        // arrange
+        string text = "Channel a powerful Void Orb that grows over time until reaching maximum size after <c val=\"#TooltipNumbers\"><d ref=\"Behavior,XalatathVoidEruptionV2CasterBehavior,Duration\"/></c> seconds. Recast to launch the Orb early.<n/><n/>Enemies that come into contact with the Orb take <c val=\"#TooltipNumbers\"><d ref=\"Effect,XalatathVoidEruptionV2FlightDamage,Amount\"/></c> damage and are Blinded for <S val=\"StandardTooltipDetails\"><d ref=\"Behavior,XalatathVoidEruptionV2NonHeroesBuff,Duration\"/></S> second.<n/><n/>When the Orb reaches the end of its path, it detonates in a large explosion, dealing <c val=\"#TooltipNumbers\"><d ref=\"Effect,XalatathVoidEruptionV2ExplosionDamage,Amount\"/></c> damage.<n/><n/>Charging up this Ability increases its contact damage up to <c val=\"#TooltipNumbers\"><d ref=\"(Effect,XalatathVoidEruptionV2FlightDamage,Amount + (Effect,XalatathVoidEruptionV2FlightDamage,Amount * (Accumulator,XalatathVoidEruptionV2FlightDamageAccumulator,Scale * Behavior,XalatathVoidEruptionV2ScaleTokenCounter,Max)))\"/></c> and its explosion damage up to <c val=\"#TooltipNumbers\"><d ref=\"(Effect,XalatathVoidEruptionV2ExplosionDamage,Amount + (Effect,XalatathVoidEruptionV2ExplosionDamage,Amount * (Accumulator,XalatathVoidEruptionV2ExplosionDamageAccumulator,Scale * Behavior,XalatathVoidEruptionV2ExplosionScaleTokenCounter,Max)))\"/></c>.<n/><n/><S val=\"TooltipSubscript\">Contact damage is dealt every 0.25 seconds.</S>";
+
+        SourceContainer sourceContainer = new();
+        LayeredDataStorage layeredDataStorage = sourceContainer.LayeredDataStorage;
+        DataStorage dataStorage = layeredDataStorage.GetDataStorage(StormModType.Custom);
+
+        dataStorage.AddBaseClassCatalogName(CreateBaseElement("CBehaviorBuff"), "Behavior");
+        dataStorage.AddBaseClassCatalogName(CreateBaseElement("CBehaviorTokenCounter"), "Behavior");
+        dataStorage.AddBaseClassCatalogName(CreateBaseElement("CEffectDamage"), "Effect");
+        dataStorage.AddBaseClassCatalogName(CreateBaseElement("CAccumulatorToken"), "Accumulator");
+
+        dataStorage.AddConstElement(XmlReaderHelper.GetStormXmlConstElement(
+            """
+            <const id="$XalatathVoidEruptionV2FlightDamageCooldown" value="0.25" />
+            """));
+        dataStorage.AddConstElement(XmlReaderHelper.GetStormXmlConstElement(
+            """
+            <const id="$XalatathVoidEruptionV2MaxChannelTime" value="2.25" />
+            """));
+        dataStorage.AddConstElement(XmlReaderHelper.GetStormXmlConstElement(
+            """
+            <const id="$XalatathVoidEruptionV2MinChannelTime" value="0.25" />
+            """));
+        dataStorage.AddConstElement(XmlReaderHelper.GetStormXmlConstElement(
+            """
+            <const id="$XalatathVoidEruptionV2MaxActualChannelTime" value="+($XalatathVoidEruptionV2MaxChannelTime 0.0625)" evaluateAsExpression="1" />
+            """,
+            layeredDataStorage));
+        dataStorage.AddConstElement(XmlReaderHelper.GetStormXmlConstElement(
+            """
+            <const id="$XalatathVoidEruptionV2TokenMaxCount" value="floor(/($XalatathVoidEruptionV2MaxChannelTime 0.0625))" evaluateAsExpression="1" />
+            """,
+            layeredDataStorage));
+        dataStorage.AddConstElement(XmlReaderHelper.GetStormXmlConstElement(
+            """
+            <const id="$XalatathVoidEruptionV2ExplosionMaximumReleaseWindow" value="-($XalatathVoidEruptionV2MaxActualChannelTime $XalatathVoidEruptionV2MinChannelTime)" evaluateAsExpression="1" />
+            """,
+            layeredDataStorage));
+        dataStorage.AddConstElement(XmlReaderHelper.GetStormXmlConstElement(
+            """
+            <const id="$XalatathVoidEruptionV2ExplosionTokenMaxCount" value="floor(/($XalatathVoidEruptionV2ExplosionMaximumReleaseWindow 0.0625))" evaluateAsExpression="1" />
+            """,
+            layeredDataStorage));
+        dataStorage.AddConstElement(XmlReaderHelper.GetStormXmlConstElement(
+            """
+            <const id="$XalatathVoidEruptionV2FlightMinDamagePerSecond" value="325" />
+            """));
+        dataStorage.AddConstElement(XmlReaderHelper.GetStormXmlConstElement(
+            """
+            <const id="$XalatathVoidEruptionV2FlightChargeMaximumDamageBonus" value="0.80" />
+            """));
+        dataStorage.AddConstElement(XmlReaderHelper.GetStormXmlConstElement(
+            """
+            <const id="$XalatathVoidEruptionV2FlightDamage" value="/($XalatathVoidEruptionV2FlightMinDamagePerSecond /(1 $XalatathVoidEruptionV2FlightDamageCooldown))" evaluateAsExpression="1" />
+            """,
+            layeredDataStorage));
+        dataStorage.AddConstElement(XmlReaderHelper.GetStormXmlConstElement(
+            """
+            <const id="$XalatathVoidEruptionV2FlightDamageTokenScale" value="/($XalatathVoidEruptionV2FlightChargeMaximumDamageBonus $XalatathVoidEruptionV2TokenMaxCount)" evaluateAsExpression="1" />
+            """,
+            layeredDataStorage));
+        dataStorage.AddConstElement(XmlReaderHelper.GetStormXmlConstElement(
+            """
+            <const id="$XalatathVoidEruptionV2ExplosionDamage" value="320" />
+            """));
+        dataStorage.AddConstElement(XmlReaderHelper.GetStormXmlConstElement(
+            """
+            <const id="$XalatathVoidEruptionV2ChargeMaximumDamageBonus" value="1.1" />
+            """));
+        dataStorage.AddConstElement(XmlReaderHelper.GetStormXmlConstElement(
+            """
+            <const id="$XalatathVoidEruptionV2ExplosionDamageTokenScale" value="/($XalatathVoidEruptionV2ChargeMaximumDamageBonus $XalatathVoidEruptionV2ExplosionTokenMaxCount)" evaluateAsExpression="1" />
+            """,
+            layeredDataStorage));
+
+        dataStorage.AddElementWithId(
+            XmlReaderHelper.GetStormXmlElement(
+                """
+                <CBehaviorBuff id="XalatathVoidEruptionV2CasterBehavior">
+                  <Duration value="$XalatathVoidEruptionV2MaxActualChannelTime" />
+                </CBehaviorBuff>
+                """,
+                layeredDataStorage),
+            "Behavior");
+        dataStorage.AddElementWithId(
+            XmlReaderHelper.GetStormXmlElement(
+                """
+                <CBehaviorBuff id="XalatathVoidEruptionV2NonHeroesBuff">
+                  <Duration value="1" />
+                </CBehaviorBuff>
+                """),
+            "Behavior");
+        dataStorage.AddElementWithId(
+            XmlReaderHelper.GetStormXmlElement(
+                """
+                <CBehaviorTokenCounter id="XalatathVoidEruptionV2ScaleTokenCounter">
+                  <Max value="$XalatathVoidEruptionV2TokenMaxCount" />
+                </CBehaviorTokenCounter>
+                """,
+                layeredDataStorage),
+            "Behavior");
+        dataStorage.AddElementWithId(
+            XmlReaderHelper.GetStormXmlElement(
+                """
+                <CBehaviorTokenCounter id="XalatathVoidEruptionV2ExplosionScaleTokenCounter">
+                  <Max value="$XalatathVoidEruptionV2ExplosionTokenMaxCount" />
+                </CBehaviorTokenCounter>
+                """,
+                layeredDataStorage),
+            "Behavior");
+        dataStorage.AddElementWithId(
+            XmlReaderHelper.GetStormXmlElement(
+                """
+                <CAccumulatorToken id="XalatathVoidEruptionV2FlightDamageAccumulator">
+                  <MaxAccumulation value="$XalatathVoidEruptionV2FlightChargeMaximumDamageBonus" />
+                  <TokenId value="XalatathVoidEruptionV2ScaleTokenCounter" />
+                  <Scale value="$XalatathVoidEruptionV2FlightDamageTokenScale" />
+                </CAccumulatorToken>
+                """,
+                layeredDataStorage),
+            "Accumulator");
+        dataStorage.AddElementWithId(
+            XmlReaderHelper.GetStormXmlElement(
+                """
+                <CAccumulatorToken id="XalatathVoidEruptionV2ExplosionDamageAccumulator">
+                  <MaxAccumulation value="$XalatathVoidEruptionV2ChargeMaximumDamageBonus" />
+                  <TokenId value="XalatathVoidEruptionV2ExplosionScaleTokenCounter" />
+                  <Scale value="$XalatathVoidEruptionV2ExplosionDamageTokenScale" />
+                </CAccumulatorToken>
+                """,
+                layeredDataStorage),
+            "Accumulator");
+        dataStorage.AddElementWithId(
+            XmlReaderHelper.GetStormXmlElement(
+                """
+                <CEffectDamage id="XalatathVoidEruptionV2FlightDamage">
+                  <Amount value="$XalatathVoidEruptionV2FlightDamage">
+                    <AccumulatorArray value="XalatathVoidEruptionV2FlightDamageAccumulator" />
+                  </Amount>
+                </CEffectDamage>
+                """,
+                layeredDataStorage),
+            "Effect");
+        dataStorage.AddElementWithId(
+            XmlReaderHelper.GetStormXmlElement(
+                """
+                <CEffectDamage id="XalatathVoidEruptionV2ExplosionDamage">
+                  <Amount value="$XalatathVoidEruptionV2ExplosionDamage">
+                    <AccumulatorArray value="XalatathVoidEruptionV2ExplosionDamageAccumulator" />
+                  </Amount>
+                </CEffectDamage>
+                """,
+                layeredDataStorage),
+            "Effect");
+        dataStorage.AddLevelScalingElementValue(XmlReaderHelper.GetStormXmlElement(
+            """
+            <CHero id="Xalatath">
+              <LevelScalingArray Ability="XalatathVoidEruption">
+                <Modifications>
+                  <Catalog value="Effect" />
+                  <Entry value="XalatathVoidEruptionV2FlightDamage" />
+                  <Field value="Amount" />
+                  <Value value="0.040000" />
+                  <AffectedByOverdrive value="1" />
+                </Modifications>
+                <Modifications>
+                  <Catalog value="Effect" />
+                  <Entry value="XalatathVoidEruptionV2ExplosionDamage" />
+                  <Field value="Amount" />
+                  <Value value="0.040000" />
+                  <AffectedByOverdrive value="1" />
+                </Modifications>
+              </LevelScalingArray>
+            </CHero>
+            """).Members.GetMember("LevelScalingArray"));
+
+        GameStringParser parser = new(layeredDataStorage);
+
+        // act
+        string parsed = parser.ParseText(text, StormLocale.ENUS);
+
+        // assert
+        parsed.Should().Be("Channel a powerful Void Orb that grows over time until reaching maximum size after <c val=\"#TooltipNumbers\">2</c> seconds. Recast to launch the Orb early.<n/><n/>Enemies that come into contact with the Orb take <c val=\"#TooltipNumbers\">81<c val=\"#ColorGray\">~~0.04~~</c></c> damage and are Blinded for <S val=\"StandardTooltipDetails\">1</S> second.<n/><n/>When the Orb reaches the end of its path, it detonates in a large explosion, dealing <c val=\"#TooltipNumbers\">320<c val=\"#ColorGray\">~~0.04~~</c></c> damage.<n/><n/>Charging up this Ability increases its contact damage up to <c val=\"#TooltipNumbers\">146<c val=\"#ColorGray\">~~0.04~~</c></c> and its explosion damage up to <c val=\"#TooltipNumbers\">671<c val=\"#ColorGray\">~~0.04~~</c></c>.<n/><n/><S val=\"TooltipSubscript\">Contact damage is dealt every 0.25 seconds.</S>");
+    }
+
+    [TestMethod]
     [DataRow(StormLocale.ENUS, "3.75", "0.045")]
     [DataRow(StormLocale.DEDE, "3,75", "0,045")]
     [DataRow(StormLocale.FRFR, "3,75", "0,045")]
