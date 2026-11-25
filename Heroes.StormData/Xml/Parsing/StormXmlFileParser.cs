@@ -1,4 +1,4 @@
-﻿namespace Heroes.StormData.Xml.Parsing;
+namespace Heroes.StormData.Xml.Parsing;
 
 internal sealed class StormXmlFileParser
 {
@@ -219,7 +219,7 @@ internal sealed class StormXmlFileParser
             }
         }
 
-        return StormPrefixNotation.Compute(_layeredElementCache, value).ToString(CultureInfo.InvariantCulture);
+        return MathHelpers.ToStormFixedValue(StormPrefixNotation.Compute(_layeredElementCache, value)).ToString(CultureInfo.InvariantCulture);
     }
 
     private string GetAssetTextValue(string value)

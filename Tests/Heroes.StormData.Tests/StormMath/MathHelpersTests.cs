@@ -92,6 +92,32 @@ public sealed class MathHelpersTests
         result.Should().Be(expected);
     }
 
+    [TestMethod]
+    [DataRow(0, 0)]
+    [DataRow(31, 31)] // whole numbers are exact steps
+    [DataRow(-48, -48)]
+    [DataRow(17.5, 17.5)]
+    [DataRow(2.0625, 2.0625)]
+    [DataRow(0.000244140625, 0.0002)] // 1/4096, the smallest step
+    [DataRow(0.033333, 0.0332)] // 1.1/33 is 136.53 steps, rounded down to 136
+    [DataRow(0.022222, 0.0222)] // 0.8/36 is 91.02 steps, rounded down to 91
+    [DataRow(0.003, 0.003)] // 0.3/100 is 12.288 steps, rounded down to 12, which 0.003 still converts back to
+    [DataRow(33.333333, 33.3333)] // 200/6
+    [DataRow(-0.3, -0.3)] // -1228.8 steps, rounded down to -1229, which -0.3 converts back to
+    [DataRow(0.3, 0.2998)] // 1228.8 steps, rounded down to 1228
+    [DataRow(1.35, 1.3499)]
+    [DataRow(double.NaN, double.NaN)]
+    [DataRow(double.PositiveInfinity, double.PositiveInfinity)]
+    [DataRow(1e12, 1e12)] // too large, kept as is
+    public void ToStormFixedValue_HasNumber_ReturnsStoredValue(double number, double expected)
+    {
+        // act
+        double result = MathHelpers.ToStormFixedValue(number);
+
+        // assert
+        result.Should().Be(expected);
+    }
+
     private static string AppendNumber(double number, IFormatProvider formatProvider)
     {
         DefaultInterpolatedStringHandler builder = new(0, 0, formatProvider);

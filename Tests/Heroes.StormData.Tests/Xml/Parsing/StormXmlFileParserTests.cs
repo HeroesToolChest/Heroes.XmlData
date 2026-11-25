@@ -1,4 +1,4 @@
-﻿namespace Heroes.StormData.Xml.Parsing.Tests;
+namespace Heroes.StormData.Xml.Parsing.Tests;
 
 [TestClass]
 public sealed class StormXmlFileParserTests
@@ -112,6 +112,92 @@ public sealed class StormXmlFileParserTests
         constElement.EvaluateAsExpression.Should().BeTrue();
         constElement.Value.Should().Be("17.5");
         constElement.GetValueAsDouble().Should().Be(17.5);
+    }
+
+    [TestMethod]
+    [DataRow("1.1", "33", "0.0332")] // XalatathVoidEruptionV2ExplosionDamageTokenScale, 0.033333 is not a fixed-point step
+    [DataRow("0.3", "100", "0.003")] // DiabloBlackSoulstoneMaxHealthPercentageGainPerToken
+    [DataRow("1488", "48", "31")] // LucioSoundBarrierShieldPerStack
+    [DataRow("200", "6", "33.3333")] // XalatathMarkedResilienceShieldHealthPerStack
+    public void Parse_ConstWithExpression_ShouldReturnFixedPointValue(string dividend, string divisor, string expected)
+    {
+        // arrange
+        LayeredDataStorage layeredDataStorage = new();
+        DataStorage dataStorage = layeredDataStorage.GetDataStorage(StormModType.Base);
+
+        dataStorage.AddConstElement(XmlReaderHelper.GetStormXmlConstElement(
+            $"""
+            <const id="$Dividend" value="{dividend}" />
+            """));
+
+        dataStorage.AddConstElement(XmlReaderHelper.GetStormXmlConstElement(
+            $"""
+            <const id="$Divisor" value="{divisor}" />
+            """));
+
+        StormXmlFileParser stormXmlFileParser = XmlReaderHelper.CreateStormXmlFileParser(layeredDataStorage);
+
+        using XmlReader reader = XmlReaderHelper.CreateXmlReader(
+            """
+            <const id="$Result" value="/($Dividend $Divisor)" evaluateAsExpression="1" />
+            """);
+
+        // act
+        List<StormXmlElement> result = [.. stormXmlFileParser.Parse(reader, StormFileHelper.CreateStormFile())];
+
+        // assert
+        StormXmlConstElement constElement = (StormXmlConstElement)result[0];
+
+        constElement.Value.Should().Be(expected);
+    }
+
+    [TestMethod]
+    public void Parse_ConstWithNegateExpression_ShouldRoundDownToFixedPointValue()
+    {
+        // arrange
+        LayeredDataStorage layeredDataStorage = new();
+        DataStorage dataStorage = layeredDataStorage.GetDataStorage(StormModType.Base);
+
+        dataStorage.AddConstElement(XmlReaderHelper.GetStormXmlConstElement(
+            """
+            <const id="$TyraelElDruinsMightSlowAmountPos" value="0.3" />
+            """));
+
+        StormXmlFileParser stormXmlFileParser = XmlReaderHelper.CreateStormXmlFileParser(layeredDataStorage);
+
+        using XmlReader reader = XmlReaderHelper.CreateXmlReader(
+            """
+            <const id="$TyraelElDruinsMightSlowAmount" value="negate($TyraelElDruinsMightSlowAmountPos)" evaluateAsExpression="1" />
+            """);
+
+        // act
+        List<StormXmlElement> result = [.. stormXmlFileParser.Parse(reader, StormFileHelper.CreateStormFile())];
+
+        // assert
+        StormXmlConstElement constElement = (StormXmlConstElement)result[0];
+
+        constElement.Value.Should().Be("-0.3");
+    }
+
+    [TestMethod]
+    public void Parse_ConstWithoutExpression_ShouldKeepExactValue()
+    {
+        // arrange
+        LayeredDataStorage layeredDataStorage = new();
+        StormXmlFileParser stormXmlFileParser = XmlReaderHelper.CreateStormXmlFileParser(layeredDataStorage);
+
+        using XmlReader reader = XmlReaderHelper.CreateXmlReader(
+            """
+            <const id="$DiabloBlackSoulstoneMaxHealthPercentageGain" value="0.3" />
+            """);
+
+        // act
+        List<StormXmlElement> result = [.. stormXmlFileParser.Parse(reader, StormFileHelper.CreateStormFile())];
+
+        // assert
+        StormXmlConstElement constElement = (StormXmlConstElement)result[0];
+
+        constElement.Value.Should().Be("0.3");
     }
 
     [TestMethod]

@@ -1,4 +1,4 @@
-﻿using System.Data;
+using System.Data;
 
 namespace Heroes.StormData.StormMath;
 
@@ -15,6 +15,11 @@ internal static class StormPrefixNotation
             throw new SyntaxErrorException($"Syntax error in expression: {expression}", ex);
         }
     }
+
+    // rounds to the same decimal places as the result of Compute, so floor and round are not thrown off by floating-point noise,
+    // e.g. 0.3/0.1 is 2.9999999999999996, which would floor to 2 instead of 3
+    private static double RemoveFloatingPointNoise(double value) =>
+        Math.Round(value, StormCalculator.MaxFractionalDigits, StormCalculator.MaxFractionalMidpointRoundingMode);
 
     private static double Evaluate(LayeredElementCache layeredElementCache, ReadOnlySpan<char> expression)
     {
@@ -49,13 +54,13 @@ internal static class StormPrefixNotation
         {
             ReadOnlySpan<char> valueToBeRoundedSpan = expression[6..^1];  // removed round( and )
 
-            return Math.Round(Evaluate(layeredElementCache, valueToBeRoundedSpan));
+            return Math.Round(RemoveFloatingPointNoise(Evaluate(layeredElementCache, valueToBeRoundedSpan)));
         }
         else if (expression.StartsWith("floor", StringComparison.OrdinalIgnoreCase))
         {
             ReadOnlySpan<char> valueToBeFlooredSpan = expression[6..^1];  // removed floor( and )
 
-            return Math.Floor(Evaluate(layeredElementCache, valueToBeFlooredSpan));
+            return Math.Floor(RemoveFloatingPointNoise(Evaluate(layeredElementCache, valueToBeFlooredSpan)));
         }
         else if (expression.StartsWith("max", StringComparison.OrdinalIgnoreCase))
         {

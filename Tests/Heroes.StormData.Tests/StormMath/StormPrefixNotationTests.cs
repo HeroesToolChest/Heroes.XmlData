@@ -36,6 +36,9 @@ public sealed class StormPrefixNotationTests
     [DataRow(-6, "floor(-5.5)")]
     [DataRow(-5, "negate(floor(5.5))")]
     [DataRow(31, "/(1488 floor(/(6 0.125)))")]
+    [DataRow(3, "floor(/(0.3 0.1))")] // 0.3/0.1 is 2.9999999999999996 as a double
+    [DataRow(-3, "floor(/(negate(0.3) 0.1))")]
+    [DataRow(2, "round(/(0.15 0.1))")] // 0.15/0.1 is 1.4999999999999998 as a double
     public void Compute_ValidNumberExpressions_ReturnsValue(double expected, string expression)
     {
         // arrange
