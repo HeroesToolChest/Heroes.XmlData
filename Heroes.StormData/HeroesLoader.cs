@@ -128,8 +128,9 @@ public sealed class HeroesLoader
 
     /// <summary>
     /// Gets the locale of the currently loaded gamestrings, or <see langword="null"/> if no gamestrings are loaded.
+    /// <para>This is the same as <see cref="StormCatalog.GameStringsLocale"/>.</para>
     /// </summary>
-    public StormLocale? GameStringsLocale { get; private set; }
+    public StormLocale? GameStringsLocale => StormCatalog.GameStringsLocale;
 
     /// <summary>
     /// Helper method to get a <see cref="CASCConfig"/> from a local Heroes of the Storm directory.
@@ -853,9 +854,9 @@ public sealed class HeroesLoader
     private void LoadGameStringsCore(StormLocale locale)
     {
         // cleared first, so a failed load is not seen as loaded, it is safe to call again as it clears all gamestrings before loading
-        GameStringsLocale = null;
+        StormCatalog.GameStringsLocale = null;
 
         _heroesSource.LoadGameStrings(locale);
-        GameStringsLocale = locale;
+        StormCatalog.GameStringsLocale = locale;
     }
 }

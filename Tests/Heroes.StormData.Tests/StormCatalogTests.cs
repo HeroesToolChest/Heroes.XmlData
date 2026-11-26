@@ -6,6 +6,7 @@ public sealed class StormCatalogTests
     private const string GameStringId = "Button/Name/AlarakDeadlyChargeActivate";
     private const string AssetStringId = "UI/HeroIcons/Alarak";
     private const string StormLayoutPath = "ui/layout/hero/herotalents.stormlayout";
+    private const string ChargeDamageGameString = "deals <c val=\"#TooltipNumbers\"><d const=\"$AlarakChargeDamage\" precision=\"1\"/></c> damage";
 
     private readonly LayeredDataStorage _layeredDataStorage = new();
     private readonly StormCatalog _stormCatalog;
@@ -514,6 +515,208 @@ public sealed class StormCatalogTests
 
         // assert
         act.Should().Throw<KeyNotFoundException>().WithMessage($"*{StormLayoutPath}*");
+    }
+
+    [TestMethod]
+    public void GameStringsLocale_NewCatalog_IsNull()
+    {
+        // assert
+        _stormCatalog.GameStringsLocale.Should().BeNull();
+    }
+
+    [TestMethod]
+    public void ParseGameString_NoDataTags_ReturnsTextUnchanged()
+    {
+        // act
+        GameStringText gameStringText = _stormCatalog.ParseGameString("Deadly Charge");
+
+        // assert
+        gameStringText.RawText.Should().Be("Deadly Charge");
+    }
+
+    [TestMethod]
+    public void ParseGameString_HasDataTag_ReplacesTagWithValue()
+    {
+        // arrange
+        AddConst("$AlarakChargeDamage", "1.5");
+
+        // act
+        GameStringText gameStringText = _stormCatalog.ParseGameString(ChargeDamageGameString);
+
+        // assert
+        gameStringText.RawText.Should().Be("deals <c val=\"#TooltipNumbers\">1.5</c> damage");
+    }
+
+    [TestMethod]
+    public void ParseGameString_NoLocaleAndNoGameStringsLoaded_UsesENUS()
+    {
+        // arrange
+        AddConst("$AlarakChargeDamage", "1.5");
+
+        // act
+        GameStringText gameStringText = _stormCatalog.ParseGameString(ChargeDamageGameString);
+
+        // assert
+        gameStringText.GameStringLocale.Should().Be(StormLocale.ENUS);
+        gameStringText.RawText.Should().Be("deals <c val=\"#TooltipNumbers\">1.5</c> damage");
+    }
+
+    [TestMethod]
+    public void ParseGameString_NoLocale_UsesGameStringsLocale()
+    {
+        // arrange
+        AddConst("$AlarakChargeDamage", "1.5");
+        _stormCatalog.GameStringsLocale = StormLocale.DEDE;
+
+        // act
+        GameStringText gameStringText = _stormCatalog.ParseGameString(ChargeDamageGameString);
+
+        // assert
+        gameStringText.GameStringLocale.Should().Be(StormLocale.DEDE);
+        gameStringText.RawText.Should().Be("deals <c val=\"#TooltipNumbers\">1,5</c> damage");
+    }
+
+    [TestMethod]
+    public void ParseGameString_LocaleGiven_UsesItInsteadOfGameStringsLocale()
+    {
+        // arrange
+        AddConst("$AlarakChargeDamage", "1.5");
+        _stormCatalog.GameStringsLocale = StormLocale.DEDE;
+
+        // act
+        GameStringText gameStringText = _stormCatalog.ParseGameString(ChargeDamageGameString, StormLocale.ENUS);
+
+        // assert
+        gameStringText.GameStringLocale.Should().Be(StormLocale.ENUS);
+        gameStringText.RawText.Should().Be("deals <c val=\"#TooltipNumbers\">1.5</c> damage");
+    }
+
+    [TestMethod]
+    public void ParseGameString_UndefinedLocale_ThrowsArgumentOutOfRangeException()
+    {
+        // act
+        Action act = () => _stormCatalog.ParseGameString("Deadly Charge", (StormLocale)999);
+
+        // assert
+        act.Should().Throw<ArgumentOutOfRangeException>().WithParameterName("locale");
+    }
+
+    [TestMethod]
+    [DataRow(true)]
+    [DataRow(false)]
+    public void ParseGameString_ExtractFontValues_PassedToGameStringText(bool extractFontValues)
+    {
+        // act
+        GameStringText gameStringText = _stormCatalog.ParseGameString("Deadly Charge", extractFontValues: extractFontValues);
+
+        // assert
+        gameStringText.IsFontValuesExtracted.Should().Be(extractFontValues);
+    }
+
+    [TestMethod]
+    public void ParseGameString_DataChangedAfterParse_ParsesWithCurrentData()
+    {
+        // arrange - the catalog is a live view, so a higher layer's value is used once it is loaded
+        AddConst("$AlarakChargeDamage", "1.5");
+        GameStringText before = _stormCatalog.ParseGameString(ChargeDamageGameString);
+
+        AddConst("$AlarakChargeDamage", "2.5", StormModType.Map);
+
+        // act
+        GameStringText after = _stormCatalog.ParseGameString(ChargeDamageGameString);
+
+        // assert
+        before.RawText.Should().Be("deals <c val=\"#TooltipNumbers\">1.5</c> damage");
+        after.RawText.Should().Be("deals <c val=\"#TooltipNumbers\">2.5</c> damage");
+    }
+
+    [TestMethod]
+    public void TryGetParsedGameString_GameStringLoaded_ReturnsTrueAndParsedText()
+    {
+        // arrange
+        AddConst("$AlarakChargeDamage", "1.5");
+        AddGameString(StormModType.Base, GameStringId, ChargeDamageGameString);
+
+        // act
+        bool result = _stormCatalog.TryGetParsedGameString(GameStringId, out GameStringText? gameStringText);
+
+        // assert
+        result.Should().BeTrue();
+        gameStringText!.RawText.Should().Be("deals <c val=\"#TooltipNumbers\">1.5</c> damage");
+    }
+
+    [TestMethod]
+    public void TryGetParsedGameString_GameStringLoaded_UsesGameStringsLocale()
+    {
+        // arrange
+        AddConst("$AlarakChargeDamage", "1.5");
+        AddGameString(StormModType.Base, GameStringId, ChargeDamageGameString);
+        _stormCatalog.GameStringsLocale = StormLocale.FRFR;
+
+        // act
+        bool result = _stormCatalog.TryGetParsedGameString(GameStringId, out GameStringText? gameStringText);
+
+        // assert
+        result.Should().BeTrue();
+        gameStringText!.GameStringLocale.Should().Be(StormLocale.FRFR);
+        gameStringText.RawText.Should().Be("deals <c val=\"#TooltipNumbers\">1,5</c> damage");
+    }
+
+    [TestMethod]
+    public void TryGetParsedGameString_GameStringNotLoaded_ReturnsFalseAndNull()
+    {
+        // act
+        bool result = _stormCatalog.TryGetParsedGameString(GameStringId, out GameStringText? gameStringText);
+
+        // assert
+        result.Should().BeFalse();
+        gameStringText.Should().BeNull();
+    }
+
+    [TestMethod]
+    [DataRow(true)]
+    [DataRow(false)]
+    public void TryGetParsedGameString_ExtractFontValues_PassedToGameStringText(bool extractFontValues)
+    {
+        // arrange
+        AddGameString(StormModType.Base, GameStringId, "Deadly Charge");
+
+        // act
+        bool result = _stormCatalog.TryGetParsedGameString(GameStringId, out GameStringText? gameStringText, extractFontValues);
+
+        // assert
+        result.Should().BeTrue();
+        gameStringText!.IsFontValuesExtracted.Should().Be(extractFontValues);
+    }
+
+    [TestMethod]
+    public void GetParsedGameString_GameStringLoaded_ReturnsParsedText()
+    {
+        // arrange
+        AddConst("$AlarakChargeDamage", "1.5");
+        AddGameString(StormModType.Base, GameStringId, ChargeDamageGameString);
+
+        // act
+        GameStringText gameStringText = _stormCatalog.GetParsedGameString(GameStringId);
+
+        // assert
+        gameStringText.RawText.Should().Be("deals <c val=\"#TooltipNumbers\">1.5</c> damage");
+    }
+
+    [TestMethod]
+    public void GetParsedGameString_GameStringNotLoaded_ThrowsKeyNotFoundExceptionWithId()
+    {
+        // act
+        Action act = () => _stormCatalog.GetParsedGameString(GameStringId);
+
+        // assert
+        act.Should().Throw<KeyNotFoundException>().WithMessage($"*{GameStringId}*");
+    }
+
+    // adds the const element directly to the data storage of the given layer
+    private void AddConst(string id, string value, StormModType stormModType = StormModType.Base)
+    {
+        _layeredDataStorage.GetDataStorage(stormModType).AddConstElement(XmlReaderHelper.GetStormXmlConstElement($"""<const id="{id}" value="{value}" />"""));
     }
 
     // adds the gamestring directly to the text cache of the given layer

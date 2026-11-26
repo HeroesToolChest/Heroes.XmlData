@@ -11,12 +11,101 @@ namespace Heroes.StormData;
 public sealed class StormCatalog
 {
     private readonly LayeredDataStorage _layeredDataStorage;
+    private readonly GameStringParser _gameStringParser;
 
     internal StormCatalog(LayeredDataStorage layeredDataStorage)
     {
         ArgumentNullException.ThrowIfNull(layeredDataStorage);
 
         _layeredDataStorage = layeredDataStorage;
+
+        // holds no per-call state (the locale is passed to each call), so one instance is used for the lifetime of the catalog
+        _gameStringParser = new GameStringParser(layeredDataStorage);
+    }
+
+    /// <summary>
+    /// Gets the locale of the currently loaded gamestrings, or <see langword="null"/> if no gamestrings are loaded.
+    /// <para>
+    /// This is the locale that <see cref="ParseGameString(ReadOnlySpan{char}, StormLocale?, bool)"/> uses when no locale is given.
+    /// </para>
+    /// </summary>
+    public StormLocale? GameStringsLocale { get; internal set; }
+
+    /// <summary>
+    /// Parses an unparsed gamestring into a <see cref="GameStringText"/>, replacing its data tags (<c>&lt;d ... /&gt;</c>) with their values.
+    /// <para>
+    /// The values are calculated from the currently loaded XML data, so the same gamestring can parse to different text after a <c>mapmod</c> is loaded or unloaded.
+    /// </para>
+    /// </summary>
+    /// <param name="gameString">The unparsed gamestring text (not its <c>id</c>). Can be from <see cref="TryGetGameString(ReadOnlySpan{char}, out string?)"/> or any other source.</param>
+    /// <param name="locale">
+    /// The locale of <paramref name="gameString"/>, used to format the numbers written into the text and for the scaling text.
+    /// If <see langword="null"/>, the <see cref="GameStringsLocale"/> is used, or <see cref="StormLocale.ENUS"/> if no gamestrings are loaded.
+    /// </param>
+    /// <param name="extractFontValues">
+    /// If <see langword="true"/>, the <c>val</c> values of the font style and constant tags are saved in <see cref="GameStringText.FontStyleValues"/> and <see cref="GameStringText.FontConstantValues"/>.
+    /// If the output with color tags is not needed, set to <see langword="false"/> for faster parsing.
+    /// </param>
+    /// <returns>The parsed <see cref="GameStringText"/>.</returns>
+    /// <exception cref="ArgumentOutOfRangeException"><paramref name="locale"/> is not a defined <see cref="StormLocale"/> value.</exception>
+    public GameStringText ParseGameString(ReadOnlySpan<char> gameString, StormLocale? locale = null, bool extractFontValues = false)
+    {
+        StormLocale stormLocale = locale ?? GameStringsLocale ?? StormLocale.ENUS;
+
+        if (!Enum.IsDefined(stormLocale))
+            throw new ArgumentOutOfRangeException(nameof(locale), stormLocale, $"The value is not a defined {nameof(StormLocale)}.");
+
+        return new GameStringText(_gameStringParser.ParseText(gameString, stormLocale), stormLocale, extractFontValues);
+    }
+
+    /// <summary>
+    /// Gets a gamestring (from a <c>gamestrings.txt</c> file) by its <c>id</c> and parses it into a <see cref="GameStringText"/>, if it exists.
+    /// <para>
+    /// This is the same as <see cref="TryGetGameString(ReadOnlySpan{char}, out string?)"/> followed by <see cref="ParseGameString(ReadOnlySpan{char}, StormLocale?, bool)"/>
+    /// with the <see cref="GameStringsLocale"/>, which is the locale of the gamestring.
+    /// </para>
+    /// </summary>
+    /// <param name="id">The <c>id</c> of the gamestring (e.g. <c>Button/Name/AlarakDeadlyChargeActivate</c>). This is case-sensitive.</param>
+    /// <param name="gameStringText">When this method returns, contains the parsed <see cref="GameStringText"/>, if the gamestring was found; otherwise, <see langword="null"/>.</param>
+    /// <param name="extractFontValues">
+    /// If <see langword="true"/>, the <c>val</c> values of the font style and constant tags are saved in <see cref="GameStringText.FontStyleValues"/> and <see cref="GameStringText.FontConstantValues"/>.
+    /// If the output with color tags is not needed, set to <see langword="false"/> for faster parsing.
+    /// </param>
+    /// <returns><see langword="true"/> if the gamestring was found; otherwise <see langword="false"/>, in the same cases as <see cref="GameStringExists(ReadOnlySpan{char})"/>.</returns>
+    public bool TryGetParsedGameString(ReadOnlySpan<char> id, [NotNullWhen(true)] out GameStringText? gameStringText, bool extractFontValues = false)
+    {
+        if (!TryGetGameString(id, out string? gameString))
+        {
+            gameStringText = null;
+            return false;
+        }
+
+        gameStringText = ParseGameString(gameString, null, extractFontValues);
+        return true;
+    }
+
+    /// <summary>
+    /// Gets a gamestring (from a <c>gamestrings.txt</c> file) by its <c>id</c> and parses it into a <see cref="GameStringText"/>.
+    /// <para>
+    /// This is the same as <see cref="GetGameString(ReadOnlySpan{char})"/> followed by <see cref="ParseGameString(ReadOnlySpan{char}, StormLocale?, bool)"/>
+    /// with the <see cref="GameStringsLocale"/>, which is the locale of the gamestring.
+    /// </para>
+    /// </summary>
+    /// <param name="id">The <c>id</c> of the gamestring (e.g. <c>Button/Name/AlarakDeadlyChargeActivate</c>). This is case-sensitive.</param>
+    /// <param name="extractFontValues">
+    /// If <see langword="true"/>, the <c>val</c> values of the font style and constant tags are saved in <see cref="GameStringText.FontStyleValues"/> and <see cref="GameStringText.FontConstantValues"/>.
+    /// If the output with color tags is not needed, set to <see langword="false"/> for faster parsing.
+    /// </param>
+    /// <returns>The parsed <see cref="GameStringText"/>.</returns>
+    /// <exception cref="KeyNotFoundException">
+    /// The gamestring was not found (in the same cases that <see cref="GameStringExists(ReadOnlySpan{char})"/> returns <see langword="false"/>).
+    /// </exception>
+    public GameStringText GetParsedGameString(ReadOnlySpan<char> id, bool extractFontValues = false)
+    {
+        if (TryGetParsedGameString(id, out GameStringText? gameStringText, extractFontValues))
+            return gameStringText;
+
+        throw new KeyNotFoundException($"Could not find the gamestring: {id}");
     }
 
     /// <summary>

@@ -1071,6 +1071,36 @@ public sealed class HeroesLoaderTests
     }
 
     [TestMethod]
+    public void LoadGameStrings_Loaded_SetsStormCatalogGameStringsLocale()
+    {
+        // arrange
+        HeroesLoader heroesLoader = HeroesLoader.LoadWithInternal(_heroesSource);
+
+        // act
+        heroesLoader.LoadGameStrings(StormLocale.DEDE);
+
+        // assert
+        heroesLoader.StormCatalog.GameStringsLocale.Should().Be(StormLocale.DEDE);
+    }
+
+    [TestMethod]
+    public void LoadGameStrings_SourceThrows_StormCatalogGameStringsLocaleIsNull()
+    {
+        // arrange
+        HeroesLoader heroesLoader = HeroesLoader.LoadWithInternal(_heroesSource);
+        heroesLoader.LoadGameStrings(StormLocale.ENUS);
+
+        _heroesSource.When(x => x.LoadGameStrings(StormLocale.FRFR)).Do(_ => throw new IOException());
+
+        // act
+        Action act = () => heroesLoader.LoadGameStrings(StormLocale.FRFR);
+
+        // assert
+        act.Should().Throw<IOException>();
+        heroesLoader.StormCatalog.GameStringsLocale.Should().BeNull();
+    }
+
+    [TestMethod]
     public void LoadGameStrings_UndefinedLocale_ThrowsArgumentOutOfRangeExceptionWithoutLoading()
     {
         // arrange
