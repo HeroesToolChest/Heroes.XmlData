@@ -574,6 +574,19 @@ public sealed class HeroesLoader
     }
 
     /// <summary>
+    /// Gets the <see cref="StormModContainer"/>s of all the loaded <c>stormmods</c>, in their data layer order:
+    /// the base <c>stormmods</c> first, then the <c>mapmod</c>'s, then any custom ones. Within a layer, they are in the order they were loaded.
+    /// <para>
+    /// This includes the <c>stormmods</c> loaded through an <c>includes.xml</c> file.
+    /// </para>
+    /// </summary>
+    /// <returns>
+    /// A new list of the loaded <see cref="StormModContainer"/>s, or an empty list if nothing is loaded.
+    /// Loading or unloading afterwards does not change the returned list.
+    /// </returns>
+    public IReadOnlyList<StormModContainer> GetLoadedStormModContainers() => [.. _heroesSource.SourceContainer.StormModContainers];
+
+    /// <summary>
     /// Determines if a file, or an entry in an MPQ archive file, exists.
     /// </summary>
     /// <param name="path">

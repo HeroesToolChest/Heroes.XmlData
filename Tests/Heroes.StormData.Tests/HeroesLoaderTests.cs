@@ -1348,6 +1348,60 @@ public sealed class HeroesLoaderTests
     }
 
     [TestMethod]
+    public void GetLoadedStormModContainers_ContainersLoaded_ReturnsContainersInLayerOrder()
+    {
+        // arrange
+        SourceContainer sourceContainer = new();
+        _heroesSource.SourceContainer.Returns(sourceContainer);
+
+        StormModContainer baseContainer = AddModContainer(sourceContainer, StormModType.Base);
+        StormModContainer customContainer = AddModContainer(sourceContainer, StormModType.Custom);
+        StormModContainer mapContainer = AddModContainer(sourceContainer, StormModType.Map);
+
+        HeroesLoader heroesLoader = HeroesLoader.LoadWithInternal(_heroesSource);
+
+        // act
+        IReadOnlyList<StormModContainer> result = heroesLoader.GetLoadedStormModContainers();
+
+        // assert
+        result.Should().Equal(baseContainer, mapContainer, customContainer);
+    }
+
+    [TestMethod]
+    public void GetLoadedStormModContainers_ContainerAddedAfterCall_ReturnedListDoesNotChange()
+    {
+        // arrange
+        SourceContainer sourceContainer = new();
+        _heroesSource.SourceContainer.Returns(sourceContainer);
+
+        StormModContainer baseContainer = AddModContainer(sourceContainer, StormModType.Base);
+
+        HeroesLoader heroesLoader = HeroesLoader.LoadWithInternal(_heroesSource);
+        IReadOnlyList<StormModContainer> result = heroesLoader.GetLoadedStormModContainers();
+
+        // act
+        AddModContainer(sourceContainer, StormModType.Map);
+
+        // assert
+        result.Should().Equal(baseContainer);
+        heroesLoader.GetLoadedStormModContainers().Should().NotBeSameAs(result).And.HaveCount(2);
+    }
+
+    [TestMethod]
+    public void GetLoadedStormModContainers_NothingLoaded_ReturnsEmpty()
+    {
+        // arrange
+        _heroesSource.SourceContainer.Returns(new SourceContainer());
+        HeroesLoader heroesLoader = HeroesLoader.LoadWithInternal(_heroesSource);
+
+        // act
+        IReadOnlyList<StormModContainer> result = heroesLoader.GetLoadedStormModContainers();
+
+        // assert
+        result.Should().BeEmpty();
+    }
+
+    [TestMethod]
     public void GetStormMap_MapNotFound_ThrowsKeyNotFoundException()
     {
         // arrange
@@ -1655,6 +1709,14 @@ public sealed class HeroesLoaderTests
         MpqFilePath = Path.Combine("mods", "heroesmapmods", "test.stormmap"),
         MpqEntryPath = Path.Combine("base.stormdata", "gamedata.xml"),
     };
+
+    private static StormModContainer AddModContainer(SourceContainer sourceContainer, StormModType stormModType)
+    {
+        StormModContainer stormModContainer = new(sourceContainer, stormModType);
+        sourceContainer.AddModContainer(stormModContainer);
+
+        return stormModContainer;
+    }
 
     private void SetTryGetFile(string path, string? mpqEntryPath, Stream stream)
     {
