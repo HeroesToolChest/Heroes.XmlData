@@ -1,4 +1,4 @@
-﻿namespace Heroes.StormData.Cache.Strings;
+namespace Heroes.StormData.Cache.Strings;
 
 /// <summary>
 /// Looks up text data across the base, map, and custom <see cref="TextCache"/> layers.
@@ -37,7 +37,7 @@ internal sealed class LayeredTextCache
         value = null;
 
         // custom first
-        if (_customTextCache.AssetTextsById.TryGetValue(id, out StringValue? stringValue))
+        if (_customTextCache.AssetTextsById.TryGetValue(id, out StringValue stringValue))
         {
             value = stringValue.Value;
             return true;
