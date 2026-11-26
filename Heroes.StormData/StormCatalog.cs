@@ -107,4 +107,53 @@ public sealed class StormCatalog
 
         throw new KeyNotFoundException($"Could not find the asset string: {id}");
     }
+
+    /// <summary>
+    /// Determines if a <c>.stormlayout</c> file exists.
+    /// </summary>
+    /// <param name="relativePath">
+    /// The path of the file relative to the <c>base.stormdata</c> directory, which starts with <c>ui</c> (e.g. <c>ui/layout/hero/herotalents.stormlayout</c>).
+    /// This is case-insensitive and either <c>/</c> or <c>\</c> can be used as the directory separator.
+    /// </param>
+    /// <returns><see langword="true"/> if the file exists; otherwise <see langword="false"/>, which includes <paramref name="relativePath"/> being empty.</returns>
+    public bool StormLayoutFileExists(ReadOnlySpan<char> relativePath) => _layeredDataStorage.Files.TryGetFirstStormLayoutFileByRelativePath(relativePath, out _);
+
+    /// <summary>
+    /// Gets a <c>.stormlayout</c> file, if it exists.
+    /// <para>
+    /// If more than one <c>stormmod</c> has the file, the one from the highest layer is used (custom, then map, then base).
+    /// To open it, use <see cref="HeroesLoader.GetFile(StormFile)"/> or <see cref="HeroesLoader.TryGetFile(StormFile?, out Stream?)"/>.
+    /// </para>
+    /// </summary>
+    /// <param name="relativePath">
+    /// The path of the file relative to the <c>base.stormdata</c> directory, which starts with <c>ui</c> (e.g. <c>ui/layout/hero/herotalents.stormlayout</c>).
+    /// This is case-insensitive and either <c>/</c> or <c>\</c> can be used as the directory separator.
+    /// </param>
+    /// <param name="stormFile">When this method returns, contains the <see cref="StormFile"/>, if found; otherwise, <see langword="null"/>.</param>
+    /// <returns><see langword="true"/> if the file was found; otherwise <see langword="false"/>, in the same cases as <see cref="StormLayoutFileExists(ReadOnlySpan{char})"/>.</returns>
+    public bool TryGetStormLayoutFile(ReadOnlySpan<char> relativePath, [NotNullWhen(true)] out StormFile? stormFile) =>
+        _layeredDataStorage.Files.TryGetFirstStormLayoutFileByRelativePath(relativePath, out stormFile);
+
+    /// <summary>
+    /// Gets a <c>.stormlayout</c> file.
+    /// <para>
+    /// If more than one <c>stormmod</c> has the file, the one from the highest layer is used (custom, then map, then base).
+    /// To open it, use <see cref="HeroesLoader.GetFile(StormFile)"/> or <see cref="HeroesLoader.TryGetFile(StormFile?, out Stream?)"/>.
+    /// </para>
+    /// </summary>
+    /// <param name="relativePath">
+    /// The path of the file relative to the <c>base.stormdata</c> directory, which starts with <c>ui</c> (e.g. <c>ui/layout/hero/herotalents.stormlayout</c>).
+    /// This is case-insensitive and either <c>/</c> or <c>\</c> can be used as the directory separator.
+    /// </param>
+    /// <returns>The <see cref="StormFile"/>.</returns>
+    /// <exception cref="KeyNotFoundException">
+    /// The file was not found (in the same cases that <see cref="StormLayoutFileExists(ReadOnlySpan{char})"/> returns <see langword="false"/>).
+    /// </exception>
+    public StormFile GetStormLayoutFile(ReadOnlySpan<char> relativePath)
+    {
+        if (TryGetStormLayoutFile(relativePath, out StormFile? stormFile))
+            return stormFile;
+
+        throw new KeyNotFoundException($"Could not find the stormlayout file: {relativePath}");
+    }
 }

@@ -10,6 +10,7 @@ global using Heroes.StormData.DepotCache;
 global using Heroes.StormData.DepotCache.Maps;
 global using Heroes.StormData.Exceptions;
 global using Heroes.StormData.Extensions;
+global using Heroes.StormData.Paths;
 global using Heroes.StormData.Source;
 global using Heroes.StormData.StormMods;
 global using Heroes.StormData.StormMods.Mpq;

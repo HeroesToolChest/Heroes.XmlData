@@ -5,6 +5,7 @@ public sealed class StormCatalogTests
 {
     private const string GameStringId = "Button/Name/AlarakDeadlyChargeActivate";
     private const string AssetStringId = "UI/HeroIcons/Alarak";
+    private const string StormLayoutPath = "ui/layout/hero/herotalents.stormlayout";
 
     private readonly LayeredDataStorage _layeredDataStorage = new();
     private readonly StormCatalog _stormCatalog;
@@ -369,6 +370,152 @@ public sealed class StormCatalogTests
         act.Should().Throw<KeyNotFoundException>().WithMessage($"*{AssetStringId}*");
     }
 
+    [TestMethod]
+    public void StormLayoutFileExists_FileLoaded_ReturnsTrue()
+    {
+        // arrange
+        AddStormLayoutFile(StormModType.Base, StormLayoutPath);
+
+        // act
+        bool result = _stormCatalog.StormLayoutFileExists(StormLayoutPath);
+
+        // assert
+        result.Should().BeTrue();
+    }
+
+    [TestMethod]
+    public void StormLayoutFileExists_FileNotLoaded_ReturnsFalse()
+    {
+        // act
+        bool result = _stormCatalog.StormLayoutFileExists(StormLayoutPath);
+
+        // assert
+        result.Should().BeFalse();
+    }
+
+    [TestMethod]
+    public void StormLayoutFileExists_EmptyPath_ReturnsFalse()
+    {
+        // arrange
+        AddStormLayoutFile(StormModType.Base, StormLayoutPath);
+
+        // act
+        bool result = _stormCatalog.StormLayoutFileExists(ReadOnlySpan<char>.Empty);
+
+        // assert
+        result.Should().BeFalse();
+    }
+
+    [TestMethod]
+    [DataRow("UI/Layout/Hero/HeroTalents.StormLayout")]
+    [DataRow(@"ui\layout\hero\herotalents.stormlayout")]
+    [DataRow("ui/layout/hero/herotalents.stormlayout")]
+    public void StormLayoutFileExists_PathWithDifferentCasingOrSeparators_ReturnsTrue(string relativePath)
+    {
+        // arrange
+        AddStormLayoutFile(StormModType.Base, StormLayoutPath);
+
+        // act
+        bool result = _stormCatalog.StormLayoutFileExists(relativePath);
+
+        // assert
+        result.Should().BeTrue();
+    }
+
+    [TestMethod]
+    public void StormLayoutFileExists_OnlyAnAssetFileWithSamePath_ReturnsFalse()
+    {
+        // arrange - layout files and asset files are separate lookups
+        _layeredDataStorage.GetDataStorage(StormModType.Base).FileCache.AssetFilesByRelativePath.Dictionary[PathNormalizer.NormalizePath(StormLayoutPath)] = StormFileHelper.CreateStormFile();
+
+        // act
+        bool result = _stormCatalog.StormLayoutFileExists(StormLayoutPath);
+
+        // assert
+        result.Should().BeFalse();
+    }
+
+    [TestMethod]
+    public void TryGetStormLayoutFile_FileLoaded_ReturnsTrueAndFile()
+    {
+        // arrange
+        StormFile expected = AddStormLayoutFile(StormModType.Base, StormLayoutPath);
+
+        // act
+        bool result = _stormCatalog.TryGetStormLayoutFile(StormLayoutPath, out StormFile? stormFile);
+
+        // assert
+        result.Should().BeTrue();
+        stormFile.Should().BeSameAs(expected);
+    }
+
+    [TestMethod]
+    public void TryGetStormLayoutFile_FileNotLoaded_ReturnsFalseAndNull()
+    {
+        // act
+        bool result = _stormCatalog.TryGetStormLayoutFile(StormLayoutPath, out StormFile? stormFile);
+
+        // assert
+        result.Should().BeFalse();
+        stormFile.Should().BeNull();
+    }
+
+    [TestMethod]
+    public void TryGetStormLayoutFile_InBaseMapAndCustom_ReturnsCustomFile()
+    {
+        // arrange
+        AddStormLayoutFile(StormModType.Base, StormLayoutPath);
+        AddStormLayoutFile(StormModType.Map, StormLayoutPath);
+        StormFile expected = AddStormLayoutFile(StormModType.Custom, StormLayoutPath);
+
+        // act
+        bool result = _stormCatalog.TryGetStormLayoutFile(StormLayoutPath, out StormFile? stormFile);
+
+        // assert
+        result.Should().BeTrue();
+        stormFile.Should().BeSameAs(expected);
+    }
+
+    [TestMethod]
+    public void TryGetStormLayoutFile_MapDataCleared_ReturnsBaseFile()
+    {
+        // arrange - the catalog is a live view, so it reflects data that is removed after it was created
+        StormFile expected = AddStormLayoutFile(StormModType.Base, StormLayoutPath);
+        AddStormLayoutFile(StormModType.Map, StormLayoutPath);
+
+        _layeredDataStorage.ClearDataStorage(StormModType.Map);
+
+        // act
+        bool result = _stormCatalog.TryGetStormLayoutFile(StormLayoutPath, out StormFile? stormFile);
+
+        // assert
+        result.Should().BeTrue();
+        stormFile.Should().BeSameAs(expected);
+    }
+
+    [TestMethod]
+    public void GetStormLayoutFile_FileLoaded_ReturnsFile()
+    {
+        // arrange
+        StormFile expected = AddStormLayoutFile(StormModType.Base, StormLayoutPath);
+
+        // act
+        StormFile stormFile = _stormCatalog.GetStormLayoutFile(StormLayoutPath);
+
+        // assert
+        stormFile.Should().BeSameAs(expected);
+    }
+
+    [TestMethod]
+    public void GetStormLayoutFile_FileNotLoaded_ThrowsKeyNotFoundExceptionWithPath()
+    {
+        // act
+        Action act = () => _stormCatalog.GetStormLayoutFile(StormLayoutPath);
+
+        // assert
+        act.Should().Throw<KeyNotFoundException>().WithMessage($"*{StormLayoutPath}*");
+    }
+
     // adds the gamestring directly to the text cache of the given layer
     private void AddGameString(StormModType stormModType, string id, string value)
     {
@@ -379,5 +526,14 @@ public sealed class StormCatalogTests
     private void AddAssetString(StormModType stormModType, string id, string value)
     {
         _layeredDataStorage.GetDataStorage(stormModType).TextCache.AssetTextsById.Dictionary.Add(id, new StringValue(value, StormFileHelper.CreateStormFile()));
+    }
+
+    // adds the layout file directly to the file cache of the given layer, keyed by the normalized path like the loaded files are
+    private StormFile AddStormLayoutFile(StormModType stormModType, string relativePath)
+    {
+        StormFile stormFile = StormFileHelper.CreateStormFile();
+        _layeredDataStorage.GetDataStorage(stormModType).FileCache.StormLayoutFilesByRelativePath.Dictionary[PathNormalizer.NormalizePath(relativePath)] = stormFile;
+
+        return stormFile;
     }
 }
