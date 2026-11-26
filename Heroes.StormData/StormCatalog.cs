@@ -1,7 +1,7 @@
 namespace Heroes.StormData;
 
 /// <summary>
-/// Gives read access to the loaded Heroes of the Storm data (the xml elements, gamestrings, styles, and files),
+/// Gives read access to the loaded Heroes of the Storm data (the XML elements, gamestrings, styles, and files),
 /// merged across the base, map, and custom <c>stormmods</c>.
 /// </summary>
 /// <remarks>
@@ -10,6 +10,10 @@ namespace Heroes.StormData;
 /// </remarks>
 public sealed class StormCatalog
 {
+    // the type letter that class element names start with in the XML (e.g. the C of CEffectDamage)
+    private const char ClassElementDeclaration = 'C';
+    private const string ClassElementDeclarationString = "C";
+
     private readonly LayeredDataStorage _layeredDataStorage;
     private readonly GameStringParser _gameStringParser;
 
@@ -244,5 +248,76 @@ public sealed class StormCatalog
             return stormFile;
 
         throw new KeyNotFoundException($"Could not find the stormlayout file: {relativePath}");
+    }
+
+    /// <summary>
+    /// Gets the catalog name (e.g. <c>Effect</c>) of an element name (e.g. <c>CEffectDamage</c>), if it is known.
+    /// <para>
+    /// If more than one <c>stormmod</c> has the element name, the catalog name from the highest layer is used (custom, then map, then base).
+    /// </para>
+    /// </summary>
+    /// <param name="elementName">
+    /// The element name as written in the XML, with its leading <c>C</c> (e.g. <c>CEffectDamage</c>), the same as <see cref="StormXmlElement.ElementNameWithDeclaration"/>.
+    /// This is case-insensitive.
+    /// </param>
+    /// <param name="catalogName">When this method returns, contains the catalog name, if found; otherwise, <see langword="null"/>.</param>
+    /// <returns>
+    /// <see langword="true"/> if the catalog name was found; otherwise <see langword="false"/>, which includes <paramref name="elementName"/> not starting with <c>C</c>
+    /// (such as <c>EffectDamage</c>) or being empty.
+    /// </returns>
+    public bool TryGetCatalogName(ReadOnlySpan<char> elementName, [NotNullWhen(true)] out string? catalogName)
+    {
+        // the element names are stored without their leading C
+        if (elementName.Length < 2 || char.ToUpperInvariant(elementName[0]) != ClassElementDeclaration)
+        {
+            catalogName = null;
+            return false;
+        }
+
+        return _layeredDataStorage.Elements.TryGetFirstCatalogNameByElementName(elementName[1..], out catalogName);
+    }
+
+    /// <summary>
+    /// Gets the catalog name (e.g. <c>Effect</c>) of an element name (e.g. <c>CEffectDamage</c>).
+    /// <para>
+    /// If more than one <c>stormmod</c> has the element name, the catalog name from the highest layer is used (custom, then map, then base).
+    /// </para>
+    /// </summary>
+    /// <param name="elementName">
+    /// The element name as written in the XML, with its leading <c>C</c> (e.g. <c>CEffectDamage</c>), the same as <see cref="StormXmlElement.ElementNameWithDeclaration"/>.
+    /// This is case-insensitive.
+    /// </param>
+    /// <returns>The catalog name.</returns>
+    /// <exception cref="KeyNotFoundException">
+    /// The catalog name was not found (in the same cases that <see cref="TryGetCatalogName(ReadOnlySpan{char}, out string?)"/> returns <see langword="false"/>).
+    /// </exception>
+    public string GetCatalogName(ReadOnlySpan<char> elementName)
+    {
+        if (TryGetCatalogName(elementName, out string? catalogName))
+            return catalogName;
+
+        throw new KeyNotFoundException($"Could not find the catalog name of the element: {elementName}");
+    }
+
+    /// <summary>
+    /// Gets the element names (e.g. <c>CEffectDamage</c>) of a catalog name (e.g. <c>Effect</c>), from all the loaded <c>stormmods</c>.
+    /// </summary>
+    /// <param name="catalogName">The catalog name (e.g. <c>Effect</c>). This is case-insensitive.</param>
+    /// <returns>
+    /// A new list of the element names as written in the XML, with their leading <c>C</c> (the form that <see cref="TryGetCatalogName(ReadOnlySpan{char}, out string?)"/> takes),
+    /// sorted by <see cref="StringComparer.OrdinalIgnoreCase"/>. It is empty if the catalog name is not found.
+    /// </returns>
+    public IReadOnlyList<string> GetElementNames(ReadOnlySpan<char> catalogName)
+    {
+        HashSet<string> elementNames = _layeredDataStorage.Elements.GetClassElementNamesByCatalogName(catalogName);
+
+        List<string> elementNamesWithDeclaration = new(elementNames.Count);
+
+        foreach (string elementName in elementNames)
+            elementNamesWithDeclaration.Add(string.Concat(ClassElementDeclarationString, elementName));
+
+        elementNamesWithDeclaration.Sort(StringComparer.OrdinalIgnoreCase);
+
+        return elementNamesWithDeclaration;
     }
 }

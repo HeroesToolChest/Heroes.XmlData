@@ -1,4 +1,4 @@
-﻿using System.Runtime.InteropServices;
+using System.Runtime.InteropServices;
 
 namespace Heroes.StormData.Cache.Elements;
 
@@ -66,6 +66,24 @@ internal sealed class LayeredElementCache
             return true;
 
         return false;
+    }
+
+    /// <summary>
+    /// Gets the class element names (without type letter declaration) (e.g. <c>EffectDamage</c>) of a catalog name from all the data storages.
+    /// </summary>
+    /// <param name="catalogName">The catalog name (e.g. <c>Effect</c>). This is case-insensitive.</param>
+    /// <returns>
+    /// A new case-insensitive set of the class element names from the base, map, and custom data storages, or an empty set if none of them have the catalog name.
+    /// </returns>
+    public HashSet<string> GetClassElementNamesByCatalogName(ReadOnlySpan<char> catalogName)
+    {
+        HashSet<string> elementNames = new(StringComparer.OrdinalIgnoreCase);
+
+        AddClassElementNames(_baseElementCache, catalogName, elementNames);
+        AddClassElementNames(_mapElementCache, catalogName, elementNames);
+        AddClassElementNames(_customElementCache, catalogName, elementNames);
+
+        return elementNames;
     }
 
     /// <summary>
@@ -160,6 +178,13 @@ internal sealed class LayeredElementCache
         MergeScalingFieldValuesInto(ref scalingFieldValues, ref isCopy, FindScalingFieldValuesById(_customElementCache, id, catalogName));
 
         return scalingFieldValues;
+    }
+
+    private static void AddClassElementNames(ElementCache elementCache, ReadOnlySpan<char> catalogName, HashSet<string> elementNames)
+    {
+        // the dictionary's comparer is StringComparer.OrdinalIgnoreCase, which supports span lookups
+        if (elementCache.ClassElementsByCatalog.GetAlternateLookup<ReadOnlySpan<char>>().TryGetValue(catalogName, out HashSet<string>? foundElementNames))
+            elementNames.UnionWith(foundElementNames);
     }
 
     private static StormXmlElement? FindStormXmlElementByElementName(ElementCache elementCache, ReadOnlySpan<char> elementName)

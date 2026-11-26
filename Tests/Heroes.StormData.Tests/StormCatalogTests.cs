@@ -224,7 +224,7 @@ public sealed class StormCatalogTests
     [TestMethod]
     public void AssetStringExists_IdWithLeadingAt_ReturnsFalse()
     {
-        // arrange - the id does not include the '@' used to reference it in xml
+        // arrange - the id does not include the '@' used to reference it in XML
         AddAssetString(StormModType.Base, AssetStringId, "Assets/Textures/storm_ui_icon_alarak.dds");
 
         // act
@@ -291,7 +291,7 @@ public sealed class StormCatalogTests
     [TestMethod]
     public void TryGetAssetString_IdAsSpanSliceWithoutLeadingAt_ReturnsValue()
     {
-        // arrange - mirrors the xml lookup, where the leading '@' is sliced off the attribute value
+        // arrange - mirrors the XML lookup, where the leading '@' is sliced off the attribute value
         AddAssetString(StormModType.Base, AssetStringId, "Assets/Textures/storm_ui_icon_alarak.dds");
 
         // act
@@ -711,6 +711,190 @@ public sealed class StormCatalogTests
 
         // assert
         act.Should().Throw<KeyNotFoundException>().WithMessage($"*{GameStringId}*");
+    }
+
+    [TestMethod]
+    public void TryGetCatalogName_ElementNameWithDeclaration_ReturnsTrueAndCatalogName()
+    {
+        // arrange
+        AddBaseClassCatalogName(StormModType.Base, "CEffectDamage", "Effect");
+
+        // act
+        bool result = _stormCatalog.TryGetCatalogName("CEffectDamage", out string? catalogName);
+
+        // assert
+        result.Should().BeTrue();
+        catalogName.Should().Be("Effect");
+    }
+
+    [TestMethod]
+    public void TryGetCatalogName_ElementNameWithoutDeclaration_ReturnsFalse()
+    {
+        // arrange - the name must be as written in the XML, with the leading C
+        AddBaseClassCatalogName(StormModType.Base, "CEffectDamage", "Effect");
+
+        // act
+        bool result = _stormCatalog.TryGetCatalogName("EffectDamage", out string? catalogName);
+
+        // assert
+        result.Should().BeFalse();
+        catalogName.Should().BeNull();
+    }
+
+    [TestMethod]
+    public void TryGetCatalogName_ElementNameStartingWithCWithoutDeclaration_ReturnsFalse()
+    {
+        // arrange - CCamera is stored as Camera, passing Camera has its first letter removed (amera), so it is not found
+        AddBaseClassCatalogName(StormModType.Base, "CCamera", "Camera");
+
+        // act
+        bool result = _stormCatalog.TryGetCatalogName("Camera", out string? catalogName);
+
+        // assert
+        result.Should().BeFalse();
+        catalogName.Should().BeNull();
+    }
+
+    [TestMethod]
+    [DataRow("CEFFECTDAMAGE")]
+    [DataRow("ceffectdamage")]
+    public void TryGetCatalogName_ElementNameWithDifferentCasing_ReturnsCatalogName(string elementName)
+    {
+        // arrange
+        AddBaseClassCatalogName(StormModType.Base, "CEffectDamage", "Effect");
+
+        // act
+        bool result = _stormCatalog.TryGetCatalogName(elementName, out string? catalogName);
+
+        // assert
+        result.Should().BeTrue();
+        catalogName.Should().Be("Effect");
+    }
+
+    [TestMethod]
+    [DataRow("")]
+    [DataRow("C")]
+    public void TryGetCatalogName_EmptyOrOnlyDeclaration_ReturnsFalse(string elementName)
+    {
+        // arrange
+        AddBaseClassCatalogName(StormModType.Base, "CEffectDamage", "Effect");
+
+        // act
+        bool result = _stormCatalog.TryGetCatalogName(elementName, out string? catalogName);
+
+        // assert
+        result.Should().BeFalse();
+        catalogName.Should().BeNull();
+    }
+
+    [TestMethod]
+    public void TryGetCatalogName_ElementNameNotLoaded_ReturnsFalse()
+    {
+        // act
+        bool result = _stormCatalog.TryGetCatalogName("CEffectDamage", out string? catalogName);
+
+        // assert
+        result.Should().BeFalse();
+        catalogName.Should().BeNull();
+    }
+
+    [TestMethod]
+    public void TryGetCatalogName_InBaseAndCustom_ReturnsCustomCatalogName()
+    {
+        // arrange
+        AddBaseClassCatalogName(StormModType.Base, "CEffectDamage", "Effect");
+        AddBaseClassCatalogName(StormModType.Custom, "CEffectDamage", "EffectCustom");
+
+        // act
+        bool result = _stormCatalog.TryGetCatalogName("CEffectDamage", out string? catalogName);
+
+        // assert
+        result.Should().BeTrue();
+        catalogName.Should().Be("EffectCustom");
+    }
+
+    [TestMethod]
+    public void GetCatalogName_ElementNameLoaded_ReturnsCatalogName()
+    {
+        // arrange
+        AddBaseClassCatalogName(StormModType.Base, "CEffectDamage", "Effect");
+
+        // act
+        string catalogName = _stormCatalog.GetCatalogName("CEffectDamage");
+
+        // assert
+        catalogName.Should().Be("Effect");
+    }
+
+    [TestMethod]
+    public void GetCatalogName_ElementNameNotLoaded_ThrowsKeyNotFoundExceptionWithElementName()
+    {
+        // act
+        Action act = () => _stormCatalog.GetCatalogName("CEffectDamage");
+
+        // assert
+        act.Should().Throw<KeyNotFoundException>().WithMessage("*CEffectDamage*");
+    }
+
+    [TestMethod]
+    public void GetElementNames_CatalogLoaded_ReturnsElementNamesWithDeclarationSorted()
+    {
+        // arrange
+        AddBaseClassCatalogName(StormModType.Base, "CEffectSet", "Effect");
+        AddBaseClassCatalogName(StormModType.Base, "CEffectDamage", "Effect");
+        AddBaseClassCatalogName(StormModType.Base, "CAbilEffectTarget", "Abil");
+
+        // act
+        IReadOnlyList<string> elementNames = _stormCatalog.GetElementNames("Effect");
+
+        // assert
+        elementNames.Should().Equal("CEffectDamage", "CEffectSet");
+    }
+
+    [TestMethod]
+    public void GetElementNames_InMoreThanOneLayer_ReturnsUnionOnce()
+    {
+        // arrange
+        AddBaseClassCatalogName(StormModType.Base, "CEffectDamage", "Effect");
+        AddBaseClassCatalogName(StormModType.Map, "CEffectDamage", "Effect");
+        AddBaseClassCatalogName(StormModType.Map, "CEffectSet", "Effect");
+        AddBaseClassCatalogName(StormModType.Custom, "CEffectCreatePersistent", "Effect");
+
+        // act
+        IReadOnlyList<string> elementNames = _stormCatalog.GetElementNames("Effect");
+
+        // assert
+        elementNames.Should().Equal("CEffectCreatePersistent", "CEffectDamage", "CEffectSet");
+    }
+
+    [TestMethod]
+    public void GetElementNames_CatalogNotLoaded_ReturnsEmpty()
+    {
+        // act
+        IReadOnlyList<string> elementNames = _stormCatalog.GetElementNames("Effect");
+
+        // assert
+        elementNames.Should().BeEmpty();
+    }
+
+    [TestMethod]
+    public void GetElementNames_ReturnedNames_EachFoundByTryGetCatalogName()
+    {
+        // arrange - the names are returned in the form that TryGetCatalogName takes
+        AddBaseClassCatalogName(StormModType.Base, "CEffectDamage", "Effect");
+        AddBaseClassCatalogName(StormModType.Base, "CEffectSet", "Effect");
+
+        // act
+        IReadOnlyList<string> elementNames = _stormCatalog.GetElementNames("Effect");
+
+        // assert
+        elementNames.Should().AllSatisfy(x => _stormCatalog.GetCatalogName(x).Should().Be("Effect"));
+    }
+
+    // adds the class element's catalog name the same way loading an XML file does
+    private void AddBaseClassCatalogName(StormModType stormModType, string elementNameWithDeclaration, string catalogName)
+    {
+        _layeredDataStorage.GetDataStorage(stormModType).AddBaseClassCatalogName(XmlReaderHelper.GetStormXmlElement($"<{elementNameWithDeclaration} />"), catalogName);
     }
 
     // adds the const element directly to the data storage of the given layer

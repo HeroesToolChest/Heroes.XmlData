@@ -88,7 +88,7 @@ internal sealed class LayeredTextCacheTests
     [TestMethod]
     public void TryGetFirstAssetTextById_IdAsSpanSlice_ReturnsValue()
     {
-        // arrange - mirrors the xml lookup, where the leading '@' is sliced off the attribute value
+        // arrange - mirrors the XML lookup, where the leading '@' is sliced off the attribute value
         AddAssetText(StormModType.Base, "AlarakPortrait", "alarak.dds");
 
         // act

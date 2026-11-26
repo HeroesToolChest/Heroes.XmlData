@@ -427,7 +427,7 @@ public sealed class HeroesLoader
     }
 
     /// <summary>
-    /// Unloads the current <c>mapmod</c>, removing all of its data (the xml, file, style, <c>assets.txt</c>, and gamestring data).
+    /// Unloads the current <c>mapmod</c>, removing all of its data (the XML, file, style, <c>assets.txt</c>, and gamestring data).
     /// <para>
     /// The base <c>stormmods</c> data stays loaded, including any values the map had overridden.
     /// The base gamestrings and <see cref="GameStringsLocale"/> are not changed, and nothing is reloaded.
@@ -505,7 +505,7 @@ public sealed class HeroesLoader
     public bool StormMapExists(string? mapTitle) => TryGetMapProperties(mapTitle, out _, out _);
 
     /// <summary>
-    /// Gets a map's data from the <c>.s2ma</c> and <c>.s2mv</c> files. Does not contain data from the xml or gamestring files.
+    /// Gets a map's data from the <c>.s2ma</c> and <c>.s2mv</c> files. Does not contain data from the XML or gamestring files.
     /// <para>
     /// Loads the depot cache (the map files) if it is not already loaded. The base <c>stormmods</c> are not loaded.
     /// </para>
@@ -525,7 +525,7 @@ public sealed class HeroesLoader
     }
 
     /// <summary>
-    /// Gets a map's data from the <c>.s2ma</c> and <c>.s2mv</c> files. Does not contain data from the xml or gamestring files.
+    /// Gets a map's data from the <c>.s2ma</c> and <c>.s2mv</c> files. Does not contain data from the XML or gamestring files.
     /// <para>
     /// Loads the depot cache (the map files) if it is not already loaded. The base <c>stormmods</c> are not loaded.
     /// </para>

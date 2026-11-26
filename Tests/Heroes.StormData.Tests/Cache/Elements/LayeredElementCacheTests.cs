@@ -1,4 +1,4 @@
-﻿namespace Heroes.StormData.Cache.Elements.Tests;
+namespace Heroes.StormData.Cache.Elements.Tests;
 
 [TestClass]
 internal sealed class LayeredElementCacheTests
@@ -299,6 +299,94 @@ internal sealed class LayeredElementCacheTests
         // assert
         result.Should().BeTrue();
         catalogName.Should().Be("CustomCatalog");
+    }
+
+    [TestMethod]
+    [DataRow(StormModType.Base)]
+    [DataRow(StormModType.Map)]
+    [DataRow(StormModType.Custom)]
+    public void GetClassElementNamesByCatalogName_InSingleLayer_ReturnsElementNames(StormModType stormModType)
+    {
+        // arrange
+        AddClassElementName(stormModType, "Effect", "EffectDamage");
+        AddClassElementName(stormModType, "Effect", "EffectSet");
+
+        // act
+        HashSet<string> elementNames = _layeredElementCache.GetClassElementNamesByCatalogName("Effect");
+
+        // assert
+        elementNames.Should().BeEquivalentTo("EffectDamage", "EffectSet");
+    }
+
+    [TestMethod]
+    public void GetClassElementNamesByCatalogName_NoLayersHaveCatalog_ReturnsEmpty()
+    {
+        // arrange
+        AddClassElementName(StormModType.Base, "Abil", "AbilEffectTarget");
+
+        // act
+        HashSet<string> elementNames = _layeredElementCache.GetClassElementNamesByCatalogName("Effect");
+
+        // assert
+        elementNames.Should().BeEmpty();
+    }
+
+    [TestMethod]
+    public void GetClassElementNamesByCatalogName_InAllLayers_ReturnsUnion()
+    {
+        // arrange
+        AddClassElementName(StormModType.Base, "Effect", "EffectDamage");
+        AddClassElementName(StormModType.Map, "Effect", "EffectSet");
+        AddClassElementName(StormModType.Custom, "Effect", "EffectCreatePersistent");
+
+        // act
+        HashSet<string> elementNames = _layeredElementCache.GetClassElementNamesByCatalogName("Effect");
+
+        // assert
+        elementNames.Should().BeEquivalentTo("EffectDamage", "EffectSet", "EffectCreatePersistent");
+    }
+
+    [TestMethod]
+    public void GetClassElementNamesByCatalogName_SameElementNameInMoreThanOneLayer_ReturnsItOnce()
+    {
+        // arrange - the set is case-insensitive, like the stored element names
+        AddClassElementName(StormModType.Base, "Effect", "EffectDamage");
+        AddClassElementName(StormModType.Map, "Effect", "effectdamage");
+
+        // act
+        HashSet<string> elementNames = _layeredElementCache.GetClassElementNamesByCatalogName("Effect");
+
+        // assert
+        elementNames.Should().ContainSingle();
+    }
+
+    [TestMethod]
+    public void GetClassElementNamesByCatalogName_CatalogNameWithDifferentCasing_ReturnsElementNames()
+    {
+        // arrange
+        AddClassElementName(StormModType.Base, "Effect", "EffectDamage");
+
+        // act
+        HashSet<string> elementNames = _layeredElementCache.GetClassElementNamesByCatalogName("EFFECT");
+
+        // assert
+        elementNames.Should().BeEquivalentTo("EffectDamage");
+    }
+
+    [TestMethod]
+    public void GetClassElementNamesByCatalogName_CalledTwice_ReturnsNewSets()
+    {
+        // arrange
+        AddClassElementName(StormModType.Base, "Effect", "EffectDamage");
+
+        // act
+        HashSet<string> first = _layeredElementCache.GetClassElementNamesByCatalogName("Effect");
+        first.Add("EffectSet");
+
+        HashSet<string> second = _layeredElementCache.GetClassElementNamesByCatalogName("Effect");
+
+        // assert
+        second.Should().BeEquivalentTo("EffectDamage");
     }
 
     [TestMethod]
@@ -1285,6 +1373,20 @@ internal sealed class LayeredElementCacheTests
         second.Should().Equal(first);
     }
 
+    // adds the class element name to the catalog's set, the same way DataStorage.AddBaseClassCatalogName does
+    private void AddClassElementName(StormModType stormModType, string catalogName, string elementName)
+    {
+        Dictionary<string, HashSet<string>> classElementsByCatalog = GetElementCache(stormModType).ClassElementsByCatalog;
+
+        if (!classElementsByCatalog.TryGetValue(catalogName, out HashSet<string>? elementNames))
+        {
+            elementNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            classElementsByCatalog.Add(catalogName, elementNames);
+        }
+
+        elementNames.Add(elementName);
+    }
+
     private static StormXmlConstElement CreateStormXmlConstElement(string id, string value = "1")
     {
         return XmlReaderHelper.GetStormXmlConstElement($"""<const id="{id}" value="{value}" />""");
@@ -1299,7 +1401,7 @@ internal sealed class LayeredElementCacheTests
             """);
     }
 
-    // parses the xml into an element with no id and adds it to the element cache of the given layer
+    // parses the XML into an element with no id and adds it to the element cache of the given layer
     private StormXmlElement AddStormXmlElement(StormModType stormModType, string xml)
     {
         StormXmlElement element = XmlReaderHelper.GetStormXmlElement(xml);
