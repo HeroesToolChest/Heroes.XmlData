@@ -24,6 +24,18 @@ internal sealed class LayeredTextCache
     }
 
     /// <summary>
+    /// Tries to retrieve the first gamestring value (from a <c>gamestrings.txt</c> file) by its <c>id</c> from the data storages.
+    /// </summary>
+    /// <param name="id">The <c>id</c> (the key) of the gamestring. This is case-sensitive.</param>
+    /// <param name="value">
+    /// When this method returns, contains the unparsed gamestring value associated with the specified <c>id</c>, if found; otherwise, <see langword="null"/>.
+    /// The value can be <see cref="string.Empty"/> if the gamestring has no value.
+    /// </param>
+    /// <returns><see langword="true"/> if the gamestring was found; otherwise, <see langword="false"/>.</returns>
+    public bool TryGetFirstGameStringById(ReadOnlySpan<char> id, [NotNullWhen(true)] out string? value) =>
+        TryGetFirst(id, static textCache => textCache.GameStringsById, out value);
+
+    /// <summary>
     /// Tries to retrieve the first asset text value (from an <c>assets.txt</c> file) by its <c>id</c> from the data storages.
     /// </summary>
     /// <param name="id">The <c>id</c> (the key) of the asset text, without the leading <c>@</c> that is used to reference it in XML. This is case-sensitive.</param>
@@ -32,29 +44,24 @@ internal sealed class LayeredTextCache
     /// The value can be <see cref="string.Empty"/> if the asset text has no value.
     /// </param>
     /// <returns><see langword="true"/> if the asset text was found; otherwise, <see langword="false"/>.</returns>
-    public bool TryGetFirstAssetTextById(ReadOnlySpan<char> id, [NotNullWhen(true)] out string? value)
+    public bool TryGetFirstAssetTextById(ReadOnlySpan<char> id, [NotNullWhen(true)] out string? value) =>
+        TryGetFirst(id, static textCache => textCache.AssetTextsById, out value);
+
+    // looks in the custom layer first, then map, then base
+    private bool TryGetFirst(
+        ReadOnlySpan<char> id,
+        Func<TextCache, Dictionary<string, StringValue>.AlternateLookup<ReadOnlySpan<char>>> getLookup,
+        [NotNullWhen(true)] out string? value)
     {
+        if (getLookup(_customTextCache).TryGetValue(id, out StringValue stringValue) ||
+            getLookup(_mapTextCache).TryGetValue(id, out stringValue) ||
+            getLookup(_baseTextCache).TryGetValue(id, out stringValue))
+        {
+            value = stringValue.Value;
+            return true;
+        }
+
         value = null;
-
-        // custom first
-        if (_customTextCache.AssetTextsById.TryGetValue(id, out StringValue stringValue))
-        {
-            value = stringValue.Value;
-            return true;
-        }
-
-        if (_mapTextCache.AssetTextsById.TryGetValue(id, out stringValue))
-        {
-            value = stringValue.Value;
-            return true;
-        }
-
-        if (_baseTextCache.AssetTextsById.TryGetValue(id, out stringValue))
-        {
-            value = stringValue.Value;
-            return true;
-        }
-
         return false;
     }
 }

@@ -1,4 +1,4 @@
-﻿namespace Heroes.StormData.Cache.Strings.Tests;
+namespace Heroes.StormData.Cache.Strings.Tests;
 
 [TestClass]
 internal sealed class LayeredTextCacheTests
@@ -205,10 +205,123 @@ internal sealed class LayeredTextCacheTests
         value.Should().Be("base.dds");
     }
 
+    [TestMethod]
+    [DataRow(StormModType.Base)]
+    [DataRow(StormModType.Map)]
+    [DataRow(StormModType.Custom)]
+    public void TryGetFirstGameStringById_InSingleLayer_ReturnsValue(StormModType stormModType)
+    {
+        // arrange
+        AddGameString(stormModType, "Button/Name/AlarakDeadlyChargeActivate", "Deadly Charge");
+
+        // act
+        bool result = _layeredTextCache.TryGetFirstGameStringById("Button/Name/AlarakDeadlyChargeActivate", out string? value);
+
+        // assert
+        result.Should().BeTrue();
+        value.Should().Be("Deadly Charge");
+    }
+
+    [TestMethod]
+    public void TryGetFirstGameStringById_IdNotInAnyLayer_ReturnsFalse()
+    {
+        // arrange
+        AddGameString(StormModType.Base, "BaseId", "base");
+        AddGameString(StormModType.Map, "MapId", "map");
+        AddGameString(StormModType.Custom, "CustomId", "custom");
+
+        // act
+        bool result = _layeredTextCache.TryGetFirstGameStringById("DoesNotExist", out string? value);
+
+        // assert
+        result.Should().BeFalse();
+        value.Should().BeNull();
+    }
+
+    [TestMethod]
+    public void TryGetFirstGameStringById_IdOnlyAnAssetText_ReturnsFalse()
+    {
+        // arrange - gamestrings and asset texts are separate lookups
+        AddAssetText(StormModType.Base, "AlarakPortrait", "alarak.dds");
+
+        // act
+        bool result = _layeredTextCache.TryGetFirstGameStringById("AlarakPortrait", out string? value);
+
+        // assert
+        result.Should().BeFalse();
+        value.Should().BeNull();
+    }
+
+    [TestMethod]
+    public void TryGetFirstGameStringById_IdWithDifferentCasing_ReturnsFalse()
+    {
+        // arrange
+        AddGameString(StormModType.Base, "Button/Name/AlarakDeadlyChargeActivate", "Deadly Charge");
+
+        // act
+        bool result = _layeredTextCache.TryGetFirstGameStringById("button/name/alarakdeadlychargeactivate", out string? value);
+
+        // assert
+        result.Should().BeFalse();
+        value.Should().BeNull();
+    }
+
+    [TestMethod]
+    public void TryGetFirstGameStringById_InAllLayers_ReturnsCustomValue()
+    {
+        // arrange
+        AddGameString(StormModType.Base, "Button/Name/AlarakDeadlyChargeActivate", "base");
+        AddGameString(StormModType.Map, "Button/Name/AlarakDeadlyChargeActivate", "map");
+        AddGameString(StormModType.Custom, "Button/Name/AlarakDeadlyChargeActivate", "custom");
+
+        // act
+        bool result = _layeredTextCache.TryGetFirstGameStringById("Button/Name/AlarakDeadlyChargeActivate", out string? value);
+
+        // assert
+        result.Should().BeTrue();
+        value.Should().Be("custom");
+    }
+
+    [TestMethod]
+    public void TryGetFirstGameStringById_InBaseAndMap_ReturnsMapValue()
+    {
+        // arrange
+        AddGameString(StormModType.Base, "Button/Name/AlarakDeadlyChargeActivate", "base");
+        AddGameString(StormModType.Map, "Button/Name/AlarakDeadlyChargeActivate", "map");
+
+        // act
+        bool result = _layeredTextCache.TryGetFirstGameStringById("Button/Name/AlarakDeadlyChargeActivate", out string? value);
+
+        // assert
+        result.Should().BeTrue();
+        value.Should().Be("map");
+    }
+
+    [TestMethod]
+    public void TryGetFirstGameStringById_EmptyValueInHigherLayer_ReturnsEmptyValue()
+    {
+        // arrange
+        AddGameString(StormModType.Base, "Button/Name/AlarakDeadlyChargeActivate", "base");
+        AddGameString(StormModType.Custom, "Button/Name/AlarakDeadlyChargeActivate", string.Empty);
+
+        // act
+        bool result = _layeredTextCache.TryGetFirstGameStringById("Button/Name/AlarakDeadlyChargeActivate", out string? value);
+
+        // assert
+        result.Should().BeTrue();
+        value.Should().BeEmpty();
+    }
+
     // adds the asset text directly to the text cache of the given layer
     private void AddAssetText(StormModType stormModType, string id, string value)
     {
         GetTextCache(stormModType).AssetTextsById.Dictionary.Add(id, new StringValue(value, StormFileHelper.CreateStormFile()));
+    }
+
+    // adds the gamestring directly to the text cache of the given layer
+    private void AddGameString(StormModType stormModType, string id, string value)
+    {
+        GetTextCache(stormModType).GameStringsById.Dictionary.Add(id, new StringValue(value, StormFileHelper.CreateStormFile()));
     }
 
     private TextCache GetTextCache(StormModType stormModType) => stormModType switch
