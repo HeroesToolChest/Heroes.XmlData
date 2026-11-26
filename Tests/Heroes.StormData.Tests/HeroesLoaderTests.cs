@@ -10,6 +10,7 @@ public sealed class HeroesLoaderTests
 
     public HeroesLoaderTests()
     {
+        _heroesSource.SourceContainer.Returns(new SourceContainer());
         _heroesSource.LoadStormMapMod(Arg.Is<string>(x => x == MapTitle || x == OtherMapTitle)).Returns(true);
 
         SetS2MAProperties(MapTitle, new S2MAProperties() { S2MVProperties = new S2MVProperties() { HeaderTitle = MapTitle } });

@@ -55,6 +55,8 @@ public sealed class HeroesLoader
         ModsInfoFile = modsInfoFile;
         HeroesVersion = modsInfoFile?.Version;
         IsPtr = modsInfoFile?.IsPtr ?? false;
+
+        StormCatalog = new StormCatalog(heroesSource.SourceContainer.LayeredDataStorage);
     }
 
     private HeroesLoader(IHeroesSource heroesSource, CASCConfig cascConfig)
@@ -64,6 +66,8 @@ public sealed class HeroesLoader
         RootDirectory = heroesSource.ModsDirectoryPath;
         HeroesVersion = cascConfig.VersionName;
         IsPtr = cascConfig.Product == ProductPtrName;
+
+        StormCatalog = new StormCatalog(heroesSource.SourceContainer.LayeredDataStorage);
     }
 
     /// <summary>
@@ -96,6 +100,15 @@ public sealed class HeroesLoader
     /// Gets the <c>hdp.info</c> file properties of a file source, or <see langword="null"/> if there is none or the source is CASC.
     /// </summary>
     public ModsInfoFile? ModsInfoFile { get; }
+
+    /// <summary>
+    /// Gets the <see cref="StormData.StormCatalog"/> for reading the loaded data.
+    /// <para>
+    /// It is the same instance for the lifetime of this loader and always reflects what is currently loaded,
+    /// so it is empty (other than the default data) until the base <c>stormmods</c> are loaded, and it changes as a <c>mapmod</c> or gamestrings are loaded or unloaded.
+    /// </para>
+    /// </summary>
+    public StormCatalog StormCatalog { get; }
 
     /// <summary>
     /// Gets a value indicating whether the base <c>stormmods</c> have been loaded.
