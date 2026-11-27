@@ -2236,6 +2236,88 @@ public sealed class StormCatalogTests
     }
 
     [TestMethod]
+    public void TryGetElementIdByUnitName_MapRenamesActorsUnitName_OnlyNewUnitNameFindsActor()
+    {
+        // arrange - like TownWallRadial6L1, whose unitName is TownWallRadial06L1 in heroesdata.stormmod and TownWallRadial6L1 on some maps
+        AddUnitActor(StormModType.Base, """<CActorUnit id="TownWallRadial6L1" unitName="TownWallRadial06L1" />""");
+        AddUnitActor(StormModType.Map, """<CActorUnit id="TownWallRadial6L1" unitName="TownWallRadial6L1" />""");
+
+        // act
+        bool oldResult = _stormCatalog.TryGetElementIdByUnitName("Actor", "TownWallRadial06L1", out string? oldId);
+        bool newResult = _stormCatalog.TryGetElementIdByUnitName("Actor", "TownWallRadial6L1", out string? newId);
+
+        // assert
+        oldResult.Should().BeFalse();
+        oldId.Should().BeNull();
+        newResult.Should().BeTrue();
+        newId.Should().Be("TownWallRadial6L1");
+    }
+
+    [TestMethod]
+    public void TryGetElementIdByUnitName_RenamedInSameLayer_OnlyNewUnitNameFindsActor()
+    {
+        // arrange - like PlantHorrorOvergrowthPlant, whose map file defines it with unitName OvergrowthPlant and then PlantHorrorOvergrowthPlant
+        AddUnitActor(StormModType.Map, """<CActorUnit id="PlantHorrorOvergrowthPlant" unitName="OvergrowthPlant" />""");
+        AddUnitActor(StormModType.Map, """<CActorUnit id="PlantHorrorOvergrowthPlant" unitName="PlantHorrorOvergrowthPlant" />""");
+
+        // act
+        bool oldResult = _stormCatalog.TryGetElementIdByUnitName("Actor", "OvergrowthPlant", out _);
+        bool newResult = _stormCatalog.TryGetElementIdByUnitName("Actor", "PlantHorrorOvergrowthPlant", out string? newId);
+
+        // assert
+        oldResult.Should().BeFalse();
+        newResult.Should().BeTrue();
+        newId.Should().Be("PlantHorrorOvergrowthPlant");
+    }
+
+    [TestMethod]
+    public void TryGetElementIdByUnitName_HigherLayerActorRenamed_ReturnsLowerLayerActorForUnit()
+    {
+        // arrange - the map's actor was for the unit before it was renamed, the base actor still is
+        AddUnitActor(StormModType.Base, """<CActorUnit id="BaseWallActor" unitName="TownWall" />""");
+        AddUnitActor(StormModType.Map, """<CActorUnit id="MapWallActor" unitName="TownWall" />""");
+        AddUnitActor(StormModType.Map, """<CActorUnit id="MapWallActor" unitName="MapTownWall" />""");
+
+        // act
+        bool result = _stormCatalog.TryGetElementIdByUnitName("Actor", "TownWall", out string? id);
+
+        // assert
+        result.Should().BeTrue();
+        id.Should().Be("BaseWallActor");
+    }
+
+    [TestMethod]
+    public void TryGetElementIdByUnitName_LaterDefinitionWithoutUnitName_StillFindsActor()
+    {
+        // arrange - an override that leaves out the unitName keeps it
+        AddUnitActor(StormModType.Base, """<CActorUnit id="HeroMuradinActor" unitName="HeroMuradin" />""");
+        _layeredDataStorage.GetDataStorage(StormModType.Map).AddElementWithId(
+            XmlReaderHelper.GetStormXmlElement("""<CActorUnit id="HeroMuradinActor"><Scale value="1.1" /></CActorUnit>"""),
+            "Actor");
+
+        // act
+        bool result = _stormCatalog.TryGetElementIdByUnitName("Actor", "HeroMuradin", out string? id);
+
+        // assert
+        result.Should().BeTrue();
+        id.Should().Be("HeroMuradinActor");
+    }
+
+    [TestMethod]
+    public void GetElementIdByUnitName_ActorRenamed_ThrowsKeyNotFoundExceptionForOldUnitName()
+    {
+        // arrange
+        AddUnitActor(StormModType.Base, """<CActorUnit id="TownWallRadial21L1" unitName="TownWallRadial2lL1" />""");
+        AddUnitActor(StormModType.Map, """<CActorUnit id="TownWallRadial21L1" unitName="TownWallRadial21L1" />""");
+
+        // act
+        Action act = () => _stormCatalog.GetElementIdByUnitName("Actor", "TownWallRadial2lL1");
+
+        // assert
+        act.Should().Throw<KeyNotFoundException>().WithMessage("*Actor,TownWallRadial2lL1*");
+    }
+
+    [TestMethod]
     public void TryGetElementIdByUnitName_CatalogNameWithDifferentCasing_ReturnsActorId()
     {
         // arrange

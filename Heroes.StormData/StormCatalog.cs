@@ -486,14 +486,26 @@ public sealed class StormCatalog
     /// <para>
     /// If more than one element has the unit name, the one from the highest layer is used (custom, then map, then base), and within a layer the one loaded last.
     /// Only an element's own <c>unitName</c> attributes are used, not one it inherits from its <c>parent</c>.
+    /// An element whose <c>unitName</c> a later definition changed (e.g. a map that renames it) is only found by its new unit name.
     /// </para>
     /// </summary>
     /// <param name="catalogName">The catalog name of the element (e.g. <c>Actor</c>). This is case-insensitive.</param>
     /// <param name="unitName">The <c>id</c> of the unit (e.g. <c>HeroMuradin</c>), the value of the <c>unitName</c> attribute. This is case-sensitive.</param>
     /// <param name="id">When this method returns, contains the <c>id</c> of the element, if found; otherwise, <see langword="null"/>.</param>
     /// <returns><see langword="true"/> if an element has the unit name; otherwise <see langword="false"/>, which includes <paramref name="unitName"/> being empty.</returns>
-    public bool TryGetElementIdByUnitName(ReadOnlySpan<char> catalogName, ReadOnlySpan<char> unitName, [NotNullWhen(true)] out string? id) =>
-        _layeredDataStorage.Elements.TryGetFirstIdByUnitName(unitName, catalogName, out id);
+    public bool TryGetElementIdByUnitName(ReadOnlySpan<char> catalogName, ReadOnlySpan<char> unitName, [NotNullWhen(true)] out string? id)
+    {
+        // highest layer first. A layer has the unit name a definition of the element had, so the merged element is checked to still have it,
+        // as a later definition can have changed it (then a lower layer's element can still be the one for the unit)
+        foreach (StormModType layer in (ReadOnlySpan<StormModType>)[StormModType.Custom, StormModType.Map, StormModType.Base])
+        {
+            if (_layeredDataStorage.Elements.TryGetIdByUnitNameInLayer(layer, unitName, catalogName, out id) && HasUnitName(catalogName, id, unitName))
+                return true;
+        }
+
+        id = null;
+        return false;
+    }
 
     /// <summary>
     /// Gets the <c>id</c> of the element of a catalog that is for a unit, by its <c>unitName</c> attribute.
@@ -502,6 +514,7 @@ public sealed class StormCatalog
     /// <para>
     /// If more than one element has the unit name, the one from the highest layer is used (custom, then map, then base), and within a layer the one loaded last.
     /// Only an element's own <c>unitName</c> attributes are used, not one it inherits from its <c>parent</c>.
+    /// An element whose <c>unitName</c> a later definition changed (e.g. a map that renames it) is only found by its new unit name.
     /// </para>
     /// </summary>
     /// <param name="catalogName">The catalog name of the element (e.g. <c>Actor</c>). This is case-insensitive.</param>
@@ -810,4 +823,11 @@ public sealed class StormCatalog
         storedElementName = elementName[1..];
         return true;
     }
+
+    // whether the merged element still has the unit name, which a later definition can have changed
+    private bool HasUnitName(ReadOnlySpan<char> catalogName, string id, ReadOnlySpan<char> unitName) =>
+        TryGetElement(catalogName, id, out StormXmlElement? element) &&
+        element.Members.TryGetMember(StormXmlConstants.UnitNameAttributeName, out StormXmlArray? elementUnitName) &&
+        elementUnitName.Value.HasValue &&
+        unitName.Equals(elementUnitName.Value.RawValue, StringComparison.Ordinal);
 }

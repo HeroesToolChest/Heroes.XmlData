@@ -224,6 +224,36 @@ internal sealed class LayeredElementCache
     }
 
     /// <summary>
+    /// Tries to retrieve the <c>id</c> of an element in the specified catalog name by its <c>unitName</c> attribute from one data storage.
+    /// <para>
+    /// This is the unit name a definition of the element had, which a later definition of the same element can have changed.
+    /// </para>
+    /// </summary>
+    /// <param name="stormModType">The data storage to look in.</param>
+    /// <param name="unitName">The value of the <c>unitName</c> attribute (e.g. <c>HeroMuradin</c>). This is case-sensitive.</param>
+    /// <param name="catalogName">The catalog name of the element (e.g. <c>Actor</c>). This is case-insensitive.</param>
+    /// <param name="id">When this method returns, contains the <c>id</c> of the element, if found; otherwise, <see langword="null"/>.</param>
+    /// <returns><see langword="true"/> if the <c>id</c> was found; otherwise, <see langword="false"/>.</returns>
+    public bool TryGetIdByUnitNameInLayer(StormModType stormModType, ReadOnlySpan<char> unitName, ReadOnlySpan<char> catalogName, [NotNullWhen(true)] out string? id)
+    {
+        ElementCache? elementCache = stormModType switch
+        {
+            StormModType.Base => _baseElementCache,
+            StormModType.Map => _mapElementCache,
+            StormModType.Custom => _customElementCache,
+            _ => null,
+        };
+
+        if (elementCache is null)
+        {
+            id = null;
+            return false;
+        }
+
+        return TryGetIdByUnitName(elementCache, unitName, catalogName, out id);
+    }
+
+    /// <summary>
     /// Retrieves the <c>LevelScalingArray</c> modification <c>Field</c> and <c>Value</c> list by its <c>id</c> (the <c>Entry</c>) from the specified catalog name, merged from the data storages.
     /// <para>
     /// The lists are merged by <c>Field</c> (case-sensitive): a higher data storage replaces the <c>Value</c> of a matching <c>Field</c> and adds any new <c>Field</c>.

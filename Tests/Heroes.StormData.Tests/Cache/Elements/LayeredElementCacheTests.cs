@@ -233,6 +233,41 @@ internal sealed class LayeredElementCacheTests
     }
 
     [TestMethod]
+    public void TryGetIdByUnitNameInLayer_EachLayer_ReturnsOnlyThatLayersId()
+    {
+        // arrange
+        AddIdByUnitName(StormModType.Base, "Actor", "HeroMuradin", "BaseActor");
+        AddIdByUnitName(StormModType.Map, "Actor", "HeroMuradin", "MapActor");
+
+        // act
+        bool baseResult = _layeredElementCache.TryGetIdByUnitNameInLayer(StormModType.Base, "HeroMuradin", "Actor", out string? baseId);
+        bool mapResult = _layeredElementCache.TryGetIdByUnitNameInLayer(StormModType.Map, "HeroMuradin", "Actor", out string? mapId);
+        bool customResult = _layeredElementCache.TryGetIdByUnitNameInLayer(StormModType.Custom, "HeroMuradin", "Actor", out string? customId);
+
+        // assert
+        baseResult.Should().BeTrue();
+        baseId.Should().Be("BaseActor");
+        mapResult.Should().BeTrue();
+        mapId.Should().Be("MapActor");
+        customResult.Should().BeFalse();
+        customId.Should().BeNull();
+    }
+
+    [TestMethod]
+    public void TryGetIdByUnitNameInLayer_UndefinedLayer_ReturnsFalse()
+    {
+        // arrange
+        AddIdByUnitName(StormModType.Base, "Actor", "HeroMuradin", "BaseActor");
+
+        // act
+        bool result = _layeredElementCache.TryGetIdByUnitNameInLayer((StormModType)99, "HeroMuradin", "Actor", out string? id);
+
+        // assert
+        result.Should().BeFalse();
+        id.Should().BeNull();
+    }
+
+    [TestMethod]
     public void TryGetFirstIdByUnitName_CatalogNameWithDifferentCasing_ReturnsId()
     {
         // arrange
