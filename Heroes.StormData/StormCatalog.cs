@@ -271,6 +271,55 @@ public sealed class StormCatalog
     }
 
     /// <summary>
+    /// Determines if an asset file (such as a <c>.dds</c> image) exists.
+    /// </summary>
+    /// <param name="relativePath">
+    /// The path of the file relative to the <c>base.stormassets</c> directory, which starts with <c>assets</c> (e.g. <c>assets/textures/storm_ui_icon_abathur.dds</c>),
+    /// the same as the asset paths in the XML and <c>assets.txt</c> files. This is case-insensitive and either <c>/</c> or <c>\</c> can be used as the directory separator.
+    /// </param>
+    /// <returns><see langword="true"/> if the file exists; otherwise <see langword="false"/>, which includes <paramref name="relativePath"/> being empty.</returns>
+    public bool AssetFileExists(ReadOnlySpan<char> relativePath) => _layeredDataStorage.Files.TryGetFirstAssetFileByRelativePath(relativePath, out _);
+
+    /// <summary>
+    /// Gets an asset file (such as a <c>.dds</c> image), if it exists.
+    /// <para>
+    /// If more than one <c>stormmod</c> has the file, the one from the highest layer is used (custom, then map, then base).
+    /// To open it, use <see cref="HeroesLoader.GetFile(StormFile)"/> or <see cref="HeroesLoader.TryGetFile(StormFile?, out Stream?)"/>.
+    /// </para>
+    /// </summary>
+    /// <param name="relativePath">
+    /// The path of the file relative to the <c>base.stormassets</c> directory, which starts with <c>assets</c> (e.g. <c>assets/textures/storm_ui_icon_abathur.dds</c>),
+    /// the same as the asset paths in the XML and <c>assets.txt</c> files. This is case-insensitive and either <c>/</c> or <c>\</c> can be used as the directory separator.
+    /// </param>
+    /// <param name="stormFile">When this method returns, contains the <see cref="StormFile"/>, if found; otherwise, <see langword="null"/>.</param>
+    /// <returns><see langword="true"/> if the file was found; otherwise <see langword="false"/>, in the same cases as <see cref="AssetFileExists(ReadOnlySpan{char})"/>.</returns>
+    public bool TryGetAssetFile(ReadOnlySpan<char> relativePath, [NotNullWhen(true)] out StormFile? stormFile) =>
+        _layeredDataStorage.Files.TryGetFirstAssetFileByRelativePath(relativePath, out stormFile);
+
+    /// <summary>
+    /// Gets an asset file (such as a <c>.dds</c> image).
+    /// <para>
+    /// If more than one <c>stormmod</c> has the file, the one from the highest layer is used (custom, then map, then base).
+    /// To open it, use <see cref="HeroesLoader.GetFile(StormFile)"/> or <see cref="HeroesLoader.TryGetFile(StormFile?, out Stream?)"/>.
+    /// </para>
+    /// </summary>
+    /// <param name="relativePath">
+    /// The path of the file relative to the <c>base.stormassets</c> directory, which starts with <c>assets</c> (e.g. <c>assets/textures/storm_ui_icon_abathur.dds</c>),
+    /// the same as the asset paths in the XML and <c>assets.txt</c> files. This is case-insensitive and either <c>/</c> or <c>\</c> can be used as the directory separator.
+    /// </param>
+    /// <returns>The <see cref="StormFile"/>.</returns>
+    /// <exception cref="KeyNotFoundException">
+    /// The file was not found (in the same cases that <see cref="AssetFileExists(ReadOnlySpan{char})"/> returns <see langword="false"/>).
+    /// </exception>
+    public StormFile GetAssetFile(ReadOnlySpan<char> relativePath)
+    {
+        if (TryGetAssetFile(relativePath, out StormFile? stormFile))
+            return stormFile;
+
+        throw new KeyNotFoundException($"Could not find the asset file: {relativePath}");
+    }
+
+    /// <summary>
     /// Gets the catalog name (e.g. <c>Effect</c>) of an element name (e.g. <c>CEffectDamage</c>), if it is known.
     /// <para>
     /// If more than one <c>stormmod</c> has the element name, the catalog name from the highest layer is used (custom, then map, then base).

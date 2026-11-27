@@ -6,6 +6,7 @@ public sealed class StormCatalogTests
     private const string GameStringId = "Button/Name/AlarakDeadlyChargeActivate";
     private const string AssetStringId = "UI/HeroIcons/Alarak";
     private const string StormLayoutPath = "ui/layout/hero/herotalents.stormlayout";
+    private const string AssetFilePath = "assets/textures/storm_ui_icon_abathur.dds";
     private const string ChargeDamageGameString = "deals <c val=\"#TooltipNumbers\"><d const=\"$AlarakChargeDamage\" precision=\"1\"/></c> damage";
 
     private readonly LayeredDataStorage _layeredDataStorage = new();
@@ -515,6 +516,167 @@ public sealed class StormCatalogTests
 
         // assert
         act.Should().Throw<KeyNotFoundException>().WithMessage($"*{StormLayoutPath}*");
+    }
+
+    [TestMethod]
+    public void AssetFileExists_FileLoaded_ReturnsTrue()
+    {
+        // arrange
+        AddAssetFile(StormModType.Base, AssetFilePath);
+
+        // act
+        bool result = _stormCatalog.AssetFileExists(AssetFilePath);
+
+        // assert
+        result.Should().BeTrue();
+    }
+
+    [TestMethod]
+    public void AssetFileExists_FileNotLoaded_ReturnsFalse()
+    {
+        // act
+        bool result = _stormCatalog.AssetFileExists(AssetFilePath);
+
+        // assert
+        result.Should().BeFalse();
+    }
+
+    [TestMethod]
+    public void AssetFileExists_EmptyPath_ReturnsFalse()
+    {
+        // arrange
+        AddAssetFile(StormModType.Base, AssetFilePath);
+
+        // act
+        bool result = _stormCatalog.AssetFileExists(ReadOnlySpan<char>.Empty);
+
+        // assert
+        result.Should().BeFalse();
+    }
+
+    [TestMethod]
+    [DataRow(@"Assets\Textures\storm_ui_icon_abathur.dds")]
+    [DataRow("ASSETS/TEXTURES/STORM_UI_ICON_ABATHUR.DDS")]
+    [DataRow("assets/textures/storm_ui_icon_abathur.dds")]
+    public void AssetFileExists_PathWithDifferentCasingOrSeparators_ReturnsTrue(string relativePath)
+    {
+        // arrange - the XML and assets.txt files write the paths as Assets\Textures\...
+        AddAssetFile(StormModType.Base, AssetFilePath);
+
+        // act
+        bool result = _stormCatalog.AssetFileExists(relativePath);
+
+        // assert
+        result.Should().BeTrue();
+    }
+
+    [TestMethod]
+    public void AssetFileExists_OnlyAStormLayoutFileWithSamePath_ReturnsFalse()
+    {
+        // arrange - asset files and layout files are separate lookups
+        AddStormLayoutFile(StormModType.Base, AssetFilePath);
+
+        // act
+        bool result = _stormCatalog.AssetFileExists(AssetFilePath);
+
+        // assert
+        result.Should().BeFalse();
+    }
+
+    [TestMethod]
+    public void TryGetAssetFile_FileLoaded_ReturnsTrueAndFile()
+    {
+        // arrange
+        StormFile expected = AddAssetFile(StormModType.Base, AssetFilePath);
+
+        // act
+        bool result = _stormCatalog.TryGetAssetFile(AssetFilePath, out StormFile? stormFile);
+
+        // assert
+        result.Should().BeTrue();
+        stormFile.Should().BeSameAs(expected);
+    }
+
+    [TestMethod]
+    public void TryGetAssetFile_FileNotLoaded_ReturnsFalseAndNull()
+    {
+        // act
+        bool result = _stormCatalog.TryGetAssetFile(AssetFilePath, out StormFile? stormFile);
+
+        // assert
+        result.Should().BeFalse();
+        stormFile.Should().BeNull();
+    }
+
+    [TestMethod]
+    public void TryGetAssetFile_InBaseMapAndCustom_ReturnsCustomFile()
+    {
+        // arrange
+        AddAssetFile(StormModType.Base, AssetFilePath);
+        AddAssetFile(StormModType.Map, AssetFilePath);
+        StormFile expected = AddAssetFile(StormModType.Custom, AssetFilePath);
+
+        // act
+        bool result = _stormCatalog.TryGetAssetFile(AssetFilePath, out StormFile? stormFile);
+
+        // assert
+        result.Should().BeTrue();
+        stormFile.Should().BeSameAs(expected);
+    }
+
+    [TestMethod]
+    public void TryGetAssetFile_MapDataCleared_ReturnsBaseFile()
+    {
+        // arrange - the catalog is a live view, so it reflects data that is removed after it was created
+        StormFile expected = AddAssetFile(StormModType.Base, AssetFilePath);
+        AddAssetFile(StormModType.Map, AssetFilePath);
+
+        _layeredDataStorage.ClearDataStorage(StormModType.Map);
+
+        // act
+        bool result = _stormCatalog.TryGetAssetFile(AssetFilePath, out StormFile? stormFile);
+
+        // assert
+        result.Should().BeTrue();
+        stormFile.Should().BeSameAs(expected);
+    }
+
+    [TestMethod]
+    public void TryGetAssetFile_PathFromAssetString_ReturnsFile()
+    {
+        // arrange - an asset string's value is the path of its asset file
+        StormFile expected = AddAssetFile(StormModType.Base, AssetFilePath);
+        AddAssetString(StormModType.Base, AssetStringId, @"Assets\Textures\storm_ui_icon_abathur.dds");
+
+        // act
+        bool result = _stormCatalog.TryGetAssetFile(_stormCatalog.GetAssetString(AssetStringId), out StormFile? stormFile);
+
+        // assert
+        result.Should().BeTrue();
+        stormFile.Should().BeSameAs(expected);
+    }
+
+    [TestMethod]
+    public void GetAssetFile_FileLoaded_ReturnsFile()
+    {
+        // arrange
+        StormFile expected = AddAssetFile(StormModType.Base, AssetFilePath);
+
+        // act
+        StormFile stormFile = _stormCatalog.GetAssetFile(AssetFilePath);
+
+        // assert
+        stormFile.Should().BeSameAs(expected);
+    }
+
+    [TestMethod]
+    public void GetAssetFile_FileNotLoaded_ThrowsKeyNotFoundExceptionWithPath()
+    {
+        // act
+        Action act = () => _stormCatalog.GetAssetFile(AssetFilePath);
+
+        // assert
+        act.Should().Throw<KeyNotFoundException>().WithMessage($"*{AssetFilePath}*");
     }
 
     [TestMethod]
@@ -2200,6 +2362,15 @@ public sealed class StormCatalogTests
     {
         StormFile stormFile = StormFileHelper.CreateStormFile();
         _layeredDataStorage.GetDataStorage(stormModType).FileCache.StormLayoutFilesByRelativePath.Dictionary[PathNormalizer.NormalizePath(relativePath)] = stormFile;
+
+        return stormFile;
+    }
+
+    // adds the asset file directly to the file cache of the given layer, keyed by the normalized path like the loaded files are
+    private StormFile AddAssetFile(StormModType stormModType, string relativePath)
+    {
+        StormFile stormFile = StormFileHelper.CreateStormFile();
+        _layeredDataStorage.GetDataStorage(stormModType).FileCache.AssetFilesByRelativePath.Dictionary[PathNormalizer.NormalizePath(relativePath)] = stormFile;
 
         return stormFile;
     }
