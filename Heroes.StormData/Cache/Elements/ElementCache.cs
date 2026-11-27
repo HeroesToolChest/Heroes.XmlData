@@ -1,4 +1,4 @@
-﻿namespace Heroes.StormData.Cache.Elements;
+namespace Heroes.StormData.Cache.Elements;
 
 /// <summary>
 /// Represents a cache for storing and retrieving elements from the data storage.
@@ -65,6 +65,18 @@ internal sealed class ElementCache
         new Dictionary<string, Dictionary<string, List<LevelScalingFieldValue>>.AlternateLookup<ReadOnlySpan<char>>>(StringComparer.OrdinalIgnoreCase).GetAlternateLookup<ReadOnlySpan<char>>();
 
     /// <summary>
+    /// Gets a lookup of element <c>id</c>s by their <c>unitName</c> attribute (the unit an actor is for, e.g. <c>HeroMuradin</c>) by their catalog name (e.g. <c>Actor</c>).
+    /// <para>
+    /// The key is case-insensitive.
+    /// </para>
+    /// <para>
+    /// The inner key (the unit name) is case-sensitive, like the unit's <c>id</c>.
+    /// </para>
+    /// </summary>
+    public Dictionary<string, Dictionary<string, string>.AlternateLookup<ReadOnlySpan<char>>>.AlternateLookup<ReadOnlySpan<char>> IdByUnitNameByCatalog { get; } =
+        new Dictionary<string, Dictionary<string, string>.AlternateLookup<ReadOnlySpan<char>>>(StringComparer.OrdinalIgnoreCase).GetAlternateLookup<ReadOnlySpan<char>>();
+
+    /// <summary>
     /// Removes all the elements and lookups.
     /// </summary>
     public void Clear()
@@ -75,5 +87,6 @@ internal sealed class ElementCache
         StormXmlElementByClassElement.Dictionary.Clear();
         StormXmlElementsByIdByCatalog.Dictionary.Clear();
         ScalingFieldValueByIdByCatalog.Dictionary.Clear();
+        IdByUnitNameByCatalog.Dictionary.Clear();
     }
 }

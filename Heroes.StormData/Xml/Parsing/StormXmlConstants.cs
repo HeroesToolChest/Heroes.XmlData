@@ -1,4 +1,4 @@
-﻿using System.Collections.Frozen;
+using System.Collections.Frozen;
 
 namespace Heroes.StormData.Xml.Parsing;
 
@@ -12,6 +12,7 @@ internal sealed class StormXmlConstants
     public const string ConstElementName = "const";
     public const string TokenInstructionName = "token";
     public const string TokenTypeAttributeName = "type";
+    public const string UnitNameAttributeName = "unitName";
 
     // .stormstyle files
     public const string StyleConstantElementName = "Constant";

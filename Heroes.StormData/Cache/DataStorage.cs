@@ -1,4 +1,4 @@
-﻿using System.Runtime.InteropServices;
+using System.Runtime.InteropServices;
 
 namespace Heroes.StormData.Cache;
 
@@ -106,6 +106,23 @@ internal sealed class DataStorage
         }
 
         ElementsVersion++;
+    }
+
+    /// <summary>
+    /// Adds the <c>id</c> of an element by its <c>unitName</c> attribute in its catalog. A later element with the same unit name replaces the earlier one.
+    /// </summary>
+    /// <param name="catalogName">The catalog name of the element (e.g. <c>Actor</c>).</param>
+    /// <param name="unitName">The value of the element's <c>unitName</c> attribute (e.g. <c>HeroMuradin</c>).</param>
+    /// <param name="id">The <c>id</c> of the element.</param>
+    public void AddIdByUnitName(string catalogName, string unitName, string id)
+    {
+        ref var idByUnitName = ref CollectionsMarshal.GetValueRefOrAddDefault(ElementCache.IdByUnitNameByCatalog.Dictionary, catalogName, out bool exists);
+
+        // case-sensitive for unit names
+        if (!exists)
+            idByUnitName = new Dictionary<string, string>(StringComparer.Ordinal).GetAlternateLookup<ReadOnlySpan<char>>();
+
+        idByUnitName.Dictionary[unitName] = id;
     }
 
     public void AddLevelScalingElementValue(StormXmlArray levelScalingArray)

@@ -182,9 +182,11 @@ public class StormModContainer
         if (element.Members.TryGetMember("LevelScalingArray", out StormXmlArray? levelScalingArray))
             _specificDataStorage.AddLevelScalingElementValue(levelScalingArray);
 
-        _specificDataStorage.AddElementWithId(element, catalogName);
+        // the unit this element is for (e.g. an actor's unitName), read from this definition before it is stored, as a later definition can be merged into it
+        if (element.Members.TryGetMember(StormXmlConstants.UnitNameAttributeName, out StormXmlArray? unitName) && unitName.Value.HasValue && !string.IsNullOrWhiteSpace(unitName.Value.RawValue))
+            _specificDataStorage.AddIdByUnitName(catalogName, unitName.Value.RawValue, element.Id);
 
-        // TODO: unitname attribute stuff
+        _specificDataStorage.AddElementWithId(element, catalogName);
     }
 
     // gets the catalog of a class element's class (e.g. Effect for CEffectDamage), adding it to this data storage the first time the class is seen in it.

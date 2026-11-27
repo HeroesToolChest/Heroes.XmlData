@@ -209,6 +209,21 @@ internal sealed class LayeredElementCache
     }
 
     /// <summary>
+    /// Tries to retrieve the first <c>id</c> of an element in the specified catalog name by its <c>unitName</c> attribute from the data storages.
+    /// </summary>
+    /// <param name="unitName">The value of the <c>unitName</c> attribute (e.g. <c>HeroMuradin</c>). This is case-sensitive.</param>
+    /// <param name="catalogName">The catalog name of the element (e.g. <c>Actor</c>). This is case-insensitive.</param>
+    /// <param name="id">When this method returns, contains the <c>id</c> of the element, if found; otherwise, <see langword="null"/>.</param>
+    /// <returns><see langword="true"/> if the <c>id</c> was found; otherwise, <see langword="false"/>.</returns>
+    public bool TryGetFirstIdByUnitName(ReadOnlySpan<char> unitName, ReadOnlySpan<char> catalogName, [NotNullWhen(true)] out string? id)
+    {
+        // custom first
+        return TryGetIdByUnitName(_customElementCache, unitName, catalogName, out id) ||
+            TryGetIdByUnitName(_mapElementCache, unitName, catalogName, out id) ||
+            TryGetIdByUnitName(_baseElementCache, unitName, catalogName, out id);
+    }
+
+    /// <summary>
     /// Retrieves the <c>LevelScalingArray</c> modification <c>Field</c> and <c>Value</c> list by its <c>id</c> (the <c>Entry</c>) from the specified catalog name, merged from the data storages.
     /// <para>
     /// The lists are merged by <c>Field</c> (case-sensitive): a higher data storage replaces the <c>Value</c> of a matching <c>Field</c> and adds any new <c>Field</c>.
@@ -249,6 +264,15 @@ internal sealed class LayeredElementCache
             return stormXmlElement;
 
         return null;
+    }
+
+    private static bool TryGetIdByUnitName(ElementCache elementCache, ReadOnlySpan<char> unitName, ReadOnlySpan<char> catalogName, [NotNullWhen(true)] out string? id)
+    {
+        if (elementCache.IdByUnitNameByCatalog.TryGetValue(catalogName, out var idByUnitName) && idByUnitName.TryGetValue(unitName, out id))
+            return true;
+
+        id = null;
+        return false;
     }
 
     private static StormXmlElement? FindStormXmlElementById(ElementCache elementCache, ReadOnlySpan<char> id, ReadOnlySpan<char> catalogName)

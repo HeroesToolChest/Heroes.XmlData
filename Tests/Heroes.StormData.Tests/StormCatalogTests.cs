@@ -2158,6 +2158,121 @@ public sealed class StormCatalogTests
     }
 
     [TestMethod]
+    public void TryGetElementIdByUnitName_ActorForUnit_ReturnsActorId()
+    {
+        // arrange
+        AddUnitActors();
+
+        // act
+        bool result = _stormCatalog.TryGetElementIdByUnitName("Actor", "HeroMuradin", out string? id);
+
+        // assert
+        result.Should().BeTrue();
+        id.Should().Be("HeroMuradinActor");
+    }
+
+    [TestMethod]
+    public void TryGetElementIdByUnitName_ReturnedId_IsFoundByTryGetElement()
+    {
+        // arrange
+        AddUnitActors();
+
+        // act
+        string id = _stormCatalog.GetElementIdByUnitName("Actor", "HeroMuradin");
+
+        // assert
+        _stormCatalog.TryGetElement("Actor", id, out StormXmlElement? actor).Should().BeTrue();
+        actor!.Members.GetMember("unitName").Value.RawValue.Should().Be("HeroMuradin");
+    }
+
+    [TestMethod]
+    public void TryGetElementIdByUnitName_MapActorForSameUnit_ReturnsMapActorId()
+    {
+        // arrange - a map replaces the unit's actor
+        AddUnitActors();
+        AddUnitActor(StormModType.Map, """<CActorUnit id="MapMuradinActor" unitName="HeroMuradin" />""");
+
+        // act
+        bool result = _stormCatalog.TryGetElementIdByUnitName("Actor", "HeroMuradin", out string? id);
+
+        // assert
+        result.Should().BeTrue();
+        id.Should().Be("MapMuradinActor");
+    }
+
+    [TestMethod]
+    public void TryGetElementIdByUnitName_MapDataCleared_ReturnsBaseActorId()
+    {
+        // arrange
+        AddUnitActors();
+        AddUnitActor(StormModType.Map, """<CActorUnit id="MapMuradinActor" unitName="HeroMuradin" />""");
+
+        _layeredDataStorage.ClearDataStorage(StormModType.Map);
+
+        // act
+        bool result = _stormCatalog.TryGetElementIdByUnitName("Actor", "HeroMuradin", out string? id);
+
+        // assert
+        result.Should().BeTrue();
+        id.Should().Be("HeroMuradinActor");
+    }
+
+    [TestMethod]
+    [DataRow("Actor", "HeroButcher")]
+    [DataRow("Actor", "heromuradin")]
+    [DataRow("Unit", "HeroMuradin")]
+    [DataRow("Actor", "")]
+    public void TryGetElementIdByUnitName_NotFound_ReturnsFalse(string catalogName, string unitName)
+    {
+        // arrange - the unit name is case-sensitive, and only the Actor catalog has it
+        AddUnitActors();
+
+        // act
+        bool result = _stormCatalog.TryGetElementIdByUnitName(catalogName, unitName, out string? id);
+
+        // assert
+        result.Should().BeFalse();
+        id.Should().BeNull();
+    }
+
+    [TestMethod]
+    public void TryGetElementIdByUnitName_CatalogNameWithDifferentCasing_ReturnsActorId()
+    {
+        // arrange
+        AddUnitActors();
+
+        // act
+        bool result = _stormCatalog.TryGetElementIdByUnitName("ACTOR", "HeroMuradin", out string? id);
+
+        // assert
+        result.Should().BeTrue();
+        id.Should().Be("HeroMuradinActor");
+    }
+
+    [TestMethod]
+    public void GetElementIdByUnitName_ActorForUnit_ReturnsActorId()
+    {
+        // arrange
+        AddUnitActors();
+
+        // act
+        string id = _stormCatalog.GetElementIdByUnitName("Actor", "MuradinStormBoltMissileUnit");
+
+        // assert
+        id.Should().Be("MuradinStormBoltMissile");
+    }
+
+    [TestMethod]
+    public void GetElementIdByUnitName_NotFound_ThrowsKeyNotFoundExceptionWithCatalogNameAndUnitName()
+    {
+        // act
+        Action act = () => _stormCatalog.GetElementIdByUnitName("Actor", "HeroMuradin");
+
+        // assert
+        act.Should().Throw<KeyNotFoundException>().WithMessage("*Actor,HeroMuradin*");
+    }
+
+    [TestMethod]
     public void GetGameStrings_GameStringsInAllLayers_ReturnsEachWithHighestLayerValue()
     {
         // arrange
@@ -2296,6 +2411,24 @@ public sealed class StormCatalogTests
                 </CEffectDamage>
                 """),
             "Effect");
+    }
+
+    // the actors of the HeroMuradin unit and of its storm bolt missile, in the base layer
+    private void AddUnitActors()
+    {
+        AddUnitActor(StormModType.Base, """<CActorUnit id="HeroMuradinActor" unitName="HeroMuradin" />""");
+        AddUnitActor(StormModType.Base, """<CActorMissile id="MuradinStormBoltMissile" unitName="MuradinStormBoltMissileUnit" />""");
+    }
+
+    // adds an actor and the id by its unitName to the data storage of the given layer, the same way loading an XML file does (see StormModContainer)
+    private void AddUnitActor(StormModType stormModType, string xml)
+    {
+        StormXmlElement actor = XmlReaderHelper.GetStormXmlElement(xml);
+        DataStorage dataStorage = _layeredDataStorage.GetDataStorage(stormModType);
+
+        dataStorage.AddBaseClassCatalogName(actor, "Actor");
+        dataStorage.AddIdByUnitName("Actor", actor.Members.GetMember("unitName").Value.RawValue, actor.Id!);
+        dataStorage.AddElementWithId(actor, "Actor");
     }
 
     // HeroMuradin and HeroButcher in the base layer, HeroMuradin (overridden) and MapUnit in the map layer, and CustomUnit in the custom layer

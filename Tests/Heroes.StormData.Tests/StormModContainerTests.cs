@@ -302,6 +302,84 @@ public sealed class StormModContainerTests
     }
 
     [TestMethod]
+    public void LoadXmlFile_ActorWithUnitName_AddsIdByUnitNameUnderCatalog()
+    {
+        // arrange
+        StormModContainer stormModContainer = new(_sourceContainer, StormModType.Base);
+
+        using XmlReader xmlReader = XmlReaderHelper.CreateXmlReader(
+            """
+            <CActorUnit id="HeroMuradinActor" parent="StormHero" unitName="HeroMuradin" />
+            <CActorMissile id="MuradinStormBoltMissile" unitName="MuradinStormBoltMissileUnit" />
+            """);
+
+        // act
+        stormModContainer.LoadXmlFile(xmlReader, CreateStormFile("actordata.xml"));
+
+        // assert
+        Dictionary<string, string> idByUnitName = GetElementCache(StormModType.Base).IdByUnitNameByCatalog.Dictionary.Should().ContainKey("Actor").WhoseValue.Dictionary;
+        idByUnitName.Should().ContainKey("HeroMuradin").WhoseValue.Should().Be("HeroMuradinActor");
+        idByUnitName.Should().ContainKey("MuradinStormBoltMissileUnit").WhoseValue.Should().Be("MuradinStormBoltMissile");
+    }
+
+    [TestMethod]
+    [DataRow("""<CActorUnit id="HeroMuradinActor" />""")]
+    [DataRow("""<CActorUnit id="HeroMuradinActor" unitName="" />""")]
+    [DataRow("""<CActorUnit default="1" unitName="HeroMuradin" />""")]
+    public void LoadXmlFile_NoUnitNameOrNoId_DoesNotAddIdByUnitName(string xml)
+    {
+        // arrange - a default element (no id) has no id to look up
+        StormModContainer stormModContainer = new(_sourceContainer, StormModType.Base);
+
+        using XmlReader xmlReader = XmlReaderHelper.CreateXmlReader(xml);
+
+        // act
+        stormModContainer.LoadXmlFile(xmlReader, CreateStormFile("actordata.xml"));
+
+        // assert
+        GetElementCache(StormModType.Base).IdByUnitNameByCatalog.Dictionary.Should().BeEmpty();
+    }
+
+    [TestMethod]
+    public void LoadXmlFile_LaterDefinitionWithoutUnitName_KeepsUnitName()
+    {
+        // arrange - an override that leaves out the unitName
+        StormModContainer stormModContainer = new(_sourceContainer, StormModType.Base);
+
+        using XmlReader xmlReader = XmlReaderHelper.CreateXmlReader(
+            """
+            <CActorUnit id="HeroMuradinActor" unitName="HeroMuradin" />
+            <CActorUnit id="HeroMuradinActor"><Scale value="1.1" /></CActorUnit>
+            """);
+
+        // act
+        stormModContainer.LoadXmlFile(xmlReader, CreateStormFile("actordata.xml"));
+
+        // assert
+        GetElementCache(StormModType.Base).IdByUnitNameByCatalog.Dictionary["Actor"].Dictionary.Should().ContainKey("HeroMuradin")
+            .WhoseValue.Should().Be("HeroMuradinActor");
+    }
+
+    [TestMethod]
+    public void LoadXmlFile_TwoActorsWithSameUnitName_LaterOneIsUsed()
+    {
+        // arrange - like DeadHeroResurrectSpirit in the game data
+        StormModContainer stormModContainer = new(_sourceContainer, StormModType.Base);
+
+        using XmlReader xmlReader = XmlReaderHelper.CreateXmlReader(
+            """
+            <CActorUnit id="PVEResurrectSpirit" unitName="DeadHeroResurrectSpirit" />
+            <CActorUnit id="DeadHeroResurrectSpirit" unitName="DeadHeroResurrectSpirit" />
+            """);
+
+        // act
+        stormModContainer.LoadXmlFile(xmlReader, CreateStormFile("actordata.xml"));
+
+        // assert
+        GetElementCache(StormModType.Base).IdByUnitNameByCatalog.Dictionary["Actor"].Dictionary["DeadHeroResurrectSpirit"].Should().Be("DeadHeroResurrectSpirit");
+    }
+
+    [TestMethod]
     public void LoadXmlFile_ClassElementWithIdHasLevelScalingArray_AddsScalingFieldValues()
     {
         // arrange

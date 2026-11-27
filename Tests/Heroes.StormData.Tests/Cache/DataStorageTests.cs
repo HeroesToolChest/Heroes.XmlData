@@ -1,4 +1,4 @@
-﻿namespace Heroes.StormData.Cache.Tests;
+namespace Heroes.StormData.Cache.Tests;
 
 [TestClass]
 public class DataStorageTests
@@ -605,6 +605,64 @@ public class DataStorageTests
         catalog.Should().ContainSingle();
         catalog["MyDamage"].Should().BeSameAs(firstElement);
         catalog["MyDamage"].Should().NotBeSameAs(secondElement);
+    }
+
+    [TestMethod]
+    public void AddIdByUnitName_NewCatalog_AddsIdByUnitName()
+    {
+        // arrange
+        DataStorage dataStorage = new();
+
+        // act
+        dataStorage.AddIdByUnitName("Actor", "HeroMuradin", "HeroMuradinActor");
+
+        // assert
+        dataStorage.ElementCache.IdByUnitNameByCatalog.Dictionary.Should().ContainKey("Actor")
+            .WhoseValue.Dictionary.Should().ContainKey("HeroMuradin").WhoseValue.Should().Be("HeroMuradinActor");
+    }
+
+    [TestMethod]
+    public void AddIdByUnitName_SameUnitNameAgain_ReplacesId()
+    {
+        // arrange - like DeadHeroResurrectSpirit in the game data, which two actors have
+        DataStorage dataStorage = new();
+        dataStorage.AddIdByUnitName("Actor", "DeadHeroResurrectSpirit", "PVEResurrectSpirit");
+
+        // act
+        dataStorage.AddIdByUnitName("Actor", "DeadHeroResurrectSpirit", "DeadHeroResurrectSpirit");
+
+        // assert
+        dataStorage.ElementCache.IdByUnitNameByCatalog.Dictionary["Actor"].Dictionary.Should().ContainSingle()
+            .Which.Value.Should().Be("DeadHeroResurrectSpirit");
+    }
+
+    [TestMethod]
+    public void AddIdByUnitName_UnitNamesDifferingOnlyByCasing_AddsBoth()
+    {
+        // arrange - unit names are unit ids, which are case-sensitive
+        DataStorage dataStorage = new();
+
+        // act
+        dataStorage.AddIdByUnitName("Actor", "HeroMuradin", "Upper");
+        dataStorage.AddIdByUnitName("Actor", "heromuradin", "Lower");
+
+        // assert
+        dataStorage.ElementCache.IdByUnitNameByCatalog.Dictionary["Actor"].Dictionary.Should().HaveCount(2);
+    }
+
+    [TestMethod]
+    public void AddIdByUnitName_CatalogNameWithDifferentCasing_AddsToSameCatalog()
+    {
+        // arrange
+        DataStorage dataStorage = new();
+
+        // act
+        dataStorage.AddIdByUnitName("Actor", "HeroMuradin", "HeroMuradin");
+        dataStorage.AddIdByUnitName("ACTOR", "HeroButcher", "HeroButcher");
+
+        // assert
+        dataStorage.ElementCache.IdByUnitNameByCatalog.Dictionary.Should().ContainSingle()
+            .Which.Value.Dictionary.Keys.Should().BeEquivalentTo("HeroMuradin", "HeroButcher");
     }
 
     [TestMethod]
@@ -1229,6 +1287,7 @@ public class DataStorageTests
         elementCache.StormXmlElementByClassElement.Dictionary.Should().BeEmpty();
         elementCache.StormXmlElementsByIdByCatalog.Dictionary.Should().BeEmpty();
         elementCache.ScalingFieldValueByIdByCatalog.Dictionary.Should().BeEmpty();
+        elementCache.IdByUnitNameByCatalog.Dictionary.Should().BeEmpty();
 
         dataStorage.TextCache.GameStringsById.Dictionary.Should().BeEmpty();
         dataStorage.TextCache.AssetTextsById.Dictionary.Should().BeEmpty();
@@ -1292,10 +1351,12 @@ public class DataStorageTests
         dataStorage.TextCache.AssetTextsById.Dictionary.Add("Id1", new StringValue("Value", stormFile));
         dataStorage.FileCache.StormLayoutFilesByRelativePath.Dictionary.Add(Path.Combine("ui", "layout", "test.stormlayout"), stormFile);
         dataStorage.FileCache.AssetFilesByRelativePath.Dictionary.Add(Path.Combine("assets", "test.dds"), stormFile);
+        dataStorage.AddIdByUnitName("Actor", "HeroMuradin", "HeroMuradin");
 
         // make sure every cache has data, so the clear tests can't pass on empty caches
         dataStorage.ElementCache.ScalingFieldValueByIdByCatalog.Dictionary.Should().NotBeEmpty();
         dataStorage.ElementCache.StormXmlElementsByIdByCatalog.Dictionary.Should().NotBeEmpty();
+        dataStorage.ElementCache.IdByUnitNameByCatalog.Dictionary.Should().NotBeEmpty();
 
         return dataStorage;
     }

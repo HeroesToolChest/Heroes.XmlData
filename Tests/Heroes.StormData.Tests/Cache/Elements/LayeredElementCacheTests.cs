@@ -170,6 +170,86 @@ internal sealed class LayeredElementCacheTests
     [DataRow(StormModType.Base)]
     [DataRow(StormModType.Map)]
     [DataRow(StormModType.Custom)]
+    public void TryGetFirstIdByUnitName_InSingleLayer_ReturnsId(StormModType stormModType)
+    {
+        // arrange
+        AddIdByUnitName(stormModType, "Actor", "HeroMuradin", "HeroMuradinActor");
+
+        // act
+        bool result = _layeredElementCache.TryGetFirstIdByUnitName("HeroMuradin", "Actor", out string? id);
+
+        // assert
+        result.Should().BeTrue();
+        id.Should().Be("HeroMuradinActor");
+    }
+
+    [TestMethod]
+    public void TryGetFirstIdByUnitName_InAllLayers_ReturnsCustomId()
+    {
+        // arrange
+        AddIdByUnitName(StormModType.Base, "Actor", "HeroMuradin", "BaseActor");
+        AddIdByUnitName(StormModType.Map, "Actor", "HeroMuradin", "MapActor");
+        AddIdByUnitName(StormModType.Custom, "Actor", "HeroMuradin", "CustomActor");
+
+        // act
+        bool result = _layeredElementCache.TryGetFirstIdByUnitName("HeroMuradin", "Actor", out string? id);
+
+        // assert
+        result.Should().BeTrue();
+        id.Should().Be("CustomActor");
+    }
+
+    [TestMethod]
+    public void TryGetFirstIdByUnitName_InBaseAndMap_ReturnsMapId()
+    {
+        // arrange
+        AddIdByUnitName(StormModType.Base, "Actor", "HeroMuradin", "BaseActor");
+        AddIdByUnitName(StormModType.Map, "Actor", "HeroMuradin", "MapActor");
+
+        // act
+        bool result = _layeredElementCache.TryGetFirstIdByUnitName("HeroMuradin", "Actor", out string? id);
+
+        // assert
+        result.Should().BeTrue();
+        id.Should().Be("MapActor");
+    }
+
+    [TestMethod]
+    [DataRow("HeroButcher", "Actor")]
+    [DataRow("heromuradin", "Actor")]
+    [DataRow("HeroMuradin", "Unit")]
+    [DataRow("", "Actor")]
+    public void TryGetFirstIdByUnitName_NotFound_ReturnsFalse(string unitName, string catalogName)
+    {
+        // arrange - the unit name is case-sensitive and is only in the Actor catalog
+        AddIdByUnitName(StormModType.Base, "Actor", "HeroMuradin", "HeroMuradinActor");
+
+        // act
+        bool result = _layeredElementCache.TryGetFirstIdByUnitName(unitName, catalogName, out string? id);
+
+        // assert
+        result.Should().BeFalse();
+        id.Should().BeNull();
+    }
+
+    [TestMethod]
+    public void TryGetFirstIdByUnitName_CatalogNameWithDifferentCasing_ReturnsId()
+    {
+        // arrange
+        AddIdByUnitName(StormModType.Base, "Actor", "HeroMuradin", "HeroMuradinActor");
+
+        // act
+        bool result = _layeredElementCache.TryGetFirstIdByUnitName("HeroMuradin", "actor", out string? id);
+
+        // assert
+        result.Should().BeTrue();
+        id.Should().Be("HeroMuradinActor");
+    }
+
+    [TestMethod]
+    [DataRow(StormModType.Base)]
+    [DataRow(StormModType.Map)]
+    [DataRow(StormModType.Custom)]
     public void TryGetFirstCatalogNameByElementName_ElementInSingleLayer_ReturnsCatalogName(StormModType stormModType)
     {
         // arrange
@@ -1675,6 +1755,21 @@ internal sealed class LayeredElementCacheTests
         scalingFieldValuesById.Dictionary.Add(id, cachedScalingFieldValues);
 
         return cachedScalingFieldValues;
+    }
+
+    // adds the id by its unit name directly to the element cache of the given layer
+    private void AddIdByUnitName(StormModType stormModType, string catalogName, string unitName, string id)
+    {
+        ElementCache elementCache = GetElementCache(stormModType);
+
+        if (!elementCache.IdByUnitNameByCatalog.Dictionary.TryGetValue(catalogName, out Dictionary<string, string>.AlternateLookup<ReadOnlySpan<char>> idByUnitName))
+        {
+            // inner dictionary keys are case-sensitive
+            idByUnitName = new Dictionary<string, string>(StringComparer.Ordinal).GetAlternateLookup<ReadOnlySpan<char>>();
+            elementCache.IdByUnitNameByCatalog.Dictionary.Add(catalogName, idByUnitName);
+        }
+
+        idByUnitName.Dictionary[unitName] = id;
     }
 
     private ElementCache GetElementCache(StormModType stormModType) => stormModType switch

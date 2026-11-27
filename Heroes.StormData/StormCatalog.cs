@@ -480,6 +480,45 @@ public sealed class StormCatalog
     }
 
     /// <summary>
+    /// Gets the <c>id</c> of the element of a catalog that is for a unit, by its <c>unitName</c> attribute, if there is one.
+    /// For example, the actor of the <c>HeroMuradin</c> unit is <c>&lt;CActorUnit id="HeroMuradin" unitName="HeroMuradin"&gt;</c>.
+    /// In the game data, the actors (<c>CActorUnit</c> and <c>CActorMissile</c>) are the elements that have a <c>unitName</c>.
+    /// <para>
+    /// If more than one element has the unit name, the one from the highest layer is used (custom, then map, then base), and within a layer the one loaded last.
+    /// Only an element's own <c>unitName</c> attributes are used, not one it inherits from its <c>parent</c>.
+    /// </para>
+    /// </summary>
+    /// <param name="catalogName">The catalog name of the element (e.g. <c>Actor</c>). This is case-insensitive.</param>
+    /// <param name="unitName">The <c>id</c> of the unit (e.g. <c>HeroMuradin</c>), the value of the <c>unitName</c> attribute. This is case-sensitive.</param>
+    /// <param name="id">When this method returns, contains the <c>id</c> of the element, if found; otherwise, <see langword="null"/>.</param>
+    /// <returns><see langword="true"/> if an element has the unit name; otherwise <see langword="false"/>, which includes <paramref name="unitName"/> being empty.</returns>
+    public bool TryGetElementIdByUnitName(ReadOnlySpan<char> catalogName, ReadOnlySpan<char> unitName, [NotNullWhen(true)] out string? id) =>
+        _layeredDataStorage.Elements.TryGetFirstIdByUnitName(unitName, catalogName, out id);
+
+    /// <summary>
+    /// Gets the <c>id</c> of the element of a catalog that is for a unit, by its <c>unitName</c> attribute.
+    /// For example, the actor of the <c>HeroMuradin</c> unit is <c>&lt;CActorUnit id="HeroMuradin" unitName="HeroMuradin"&gt;</c>.
+    /// In the game data, the actors (<c>CActorUnit</c> and <c>CActorMissile</c>) are the elements that have a <c>unitName</c>.
+    /// <para>
+    /// If more than one element has the unit name, the one from the highest layer is used (custom, then map, then base), and within a layer the one loaded last.
+    /// Only an element's own <c>unitName</c> attributes are used, not one it inherits from its <c>parent</c>.
+    /// </para>
+    /// </summary>
+    /// <param name="catalogName">The catalog name of the element (e.g. <c>Actor</c>). This is case-insensitive.</param>
+    /// <param name="unitName">The <c>id</c> of the unit (e.g. <c>HeroMuradin</c>), the value of the <c>unitName</c> attribute. This is case-sensitive.</param>
+    /// <returns>The <c>id</c> of the element.</returns>
+    /// <exception cref="KeyNotFoundException">
+    /// No element has the unit name (in the same cases that <see cref="TryGetElementIdByUnitName(ReadOnlySpan{char}, ReadOnlySpan{char}, out string?)"/> returns <see langword="false"/>).
+    /// </exception>
+    public string GetElementIdByUnitName(ReadOnlySpan<char> catalogName, ReadOnlySpan<char> unitName)
+    {
+        if (TryGetElementIdByUnitName(catalogName, unitName, out string? id))
+            return id;
+
+        throw new KeyNotFoundException($"Could not find an element with the unit name: {catalogName},{unitName}");
+    }
+
+    /// <summary>
     /// Determines if a default element exists. A default element is the element with no <c>id</c> (e.g. <c>&lt;CEffectDamage default="1"&gt;</c>).
     /// </summary>
     /// <param name="elementName">
