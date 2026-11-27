@@ -20,6 +20,21 @@ internal class StormXmlElementMerger
         return Merge(id, catalogName, out _);
     }
 
+    /// <summary>
+    /// Retrieves the merged element with no <c>id</c> (the default element) of a class, merged from the data storages and over its catalog's base class
+    /// default element (e.g. <c>CEffect</c> for <c>CEffectDamage</c>). This is the same element that <see cref="GetMerged(ReadOnlySpan{char}, ReadOnlySpan{char})"/>
+    /// merges an element at the top of its parent chain into.
+    /// <para>
+    /// The returned element can be the stored instance (when there is nothing to merge), so it must not be modified.
+    /// </para>
+    /// </summary>
+    /// <param name="elementName">The name of the class element (without type letter declaration) (e.g. <c>EffectDamage</c>). This is case-insensitive.</param>
+    /// <returns>The merged default element if the class has one; otherwise, <see langword="null"/>, even if its catalog's base class has one.</returns>
+    public StormXmlElement? GetMergedElementOfNoId(ReadOnlySpan<char> elementName)
+    {
+        return MergeUpElementOfNoId(elementName, out _);
+    }
+
     // the stored elements must never be merged into, so the parent is cloned first unless it is already a copy.
     // with no parent, the element is returned as is, so it keeps its own copy state
     private static StormXmlElement MergeIntoParent(StormXmlElement? parentElement, bool isParentCopy, StormXmlElement stormXmlElement, bool isElementCopy, out bool isCopy)

@@ -1,4 +1,4 @@
-﻿namespace Heroes.StormData.Cache;
+namespace Heroes.StormData.Cache;
 
 /// <summary>
 /// Represents a storage container for different types of data storage, including base, map, and custom data storage.
@@ -13,6 +13,7 @@ internal sealed class LayeredDataStorage
     private readonly DataStorage _mapDataStorage;
     private readonly DataStorage _customDataStorage;
 
+    private readonly StormXmlElementMerger _stormXmlElementMerger;
     private readonly MergedStormXmlElementCache _mergedStormXmlElementCache;
 
     /// <summary>
@@ -29,7 +30,8 @@ internal sealed class LayeredDataStorage
         Files = new LayeredFileCache(_baseDataStorage.FileCache, _mapDataStorage.FileCache, _customDataStorage.FileCache);
         Styles = new LayeredStyleCache(_baseDataStorage.StyleCache, _mapDataStorage.StyleCache, _customDataStorage.StyleCache);
 
-        _mergedStormXmlElementCache = new MergedStormXmlElementCache(new StormXmlElementMerger(Elements));
+        _stormXmlElementMerger = new StormXmlElementMerger(Elements);
+        _mergedStormXmlElementCache = new MergedStormXmlElementCache(_stormXmlElementMerger);
     }
 
     /// <summary>
@@ -79,6 +81,20 @@ internal sealed class LayeredDataStorage
     public StormXmlElement? GetMergedStormXmlElementById(ReadOnlySpan<char> id, ReadOnlySpan<char> catalogName)
     {
         return _mergedStormXmlElementCache.GetOrMerge(id, catalogName, GetElementsVersion());
+    }
+
+    /// <summary>
+    /// Retrieves the merged default element (the element with no <c>id</c>) of a class, merged from the data storages and over its catalog's base class
+    /// default element (e.g. <c>CEffect</c> for <c>CEffectDamage</c>), the same as an element with an <c>id</c> is merged into (see <see cref="StormXmlElementMerger"/>).
+    /// <para>
+    /// It is not cached, and the returned element can be the stored instance (when there is nothing to merge), so it must not be modified.
+    /// </para>
+    /// </summary>
+    /// <param name="elementName">The name of the class element (without type letter declaration) (e.g. <c>EffectDamage</c>). This is case-insensitive.</param>
+    /// <returns>The merged default element if the class has one; otherwise, <see langword="null"/>.</returns>
+    public StormXmlElement? GetMergedDefaultStormXmlElement(ReadOnlySpan<char> elementName)
+    {
+        return _stormXmlElementMerger.GetMergedElementOfNoId(elementName);
     }
 
     /// <summary>

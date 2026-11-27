@@ -87,6 +87,19 @@ internal sealed class LayeredElementCache
     }
 
     /// <summary>
+    /// Determines if any of the data storages has a <see cref="StormXmlElement"/> with no <c>id</c> for the class element name. Nothing is merged.
+    /// </summary>
+    /// <param name="elementName">The name of the class element (without type letter declaration) (e.g. <c>EffectDamage</c>). This is case-insensitive.</param>
+    /// <returns><see langword="true"/> if a data storage has the element; otherwise, <see langword="false"/>.</returns>
+    public bool ContainsStormXmlElementByClassElement(ReadOnlySpan<char> elementName)
+    {
+        // custom first
+        return FindStormXmlElementByElementName(_customElementCache, elementName) is not null ||
+            FindStormXmlElementByElementName(_mapElementCache, elementName) is not null ||
+            FindStormXmlElementByElementName(_baseElementCache, elementName) is not null;
+    }
+
+    /// <summary>
     /// Retrieves a <see cref="StormXmlElement"/> by its class element name (without type letter declaration) from the data storages.
     /// <para>
     /// The returned element can be the stored instance, so it must not be modified.

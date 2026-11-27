@@ -1258,6 +1258,102 @@ public sealed class StormCatalogTests
     }
 
     [TestMethod]
+    public void TryGetDefaultElement_ClassHasBaseClassDefault_IncludesBaseClassDefaults()
+    {
+        // arrange - CEffect is the Effect catalog's base class
+        AddEffectDefaults();
+
+        // act
+        bool result = _stormCatalog.TryGetDefaultElement("CEffectDamage", out StormXmlElement? element);
+
+        // assert - Chance and Marker come from CEffect, and CEffectDamage's own Chance overrides CEffect's
+        result.Should().BeTrue();
+        element!.ElementNameWithDeclaration.Should().Be("CEffectDamage");
+        element.Members.GetMember("Kind").Value.RawValue.Should().Be("Basic");
+        element.Members.GetMember("Chance").Value.RawValue.Should().Be("1");
+        element.Members.GetMember("Marker").Value.RawValue.Should().Be("Damage");
+    }
+
+    [TestMethod]
+    public void TryGetDefaultElement_BaseClass_ReturnsBaseClassDefault()
+    {
+        // arrange
+        AddEffectDefaults();
+
+        // act
+        bool result = _stormCatalog.TryGetDefaultElement("CEffect", out StormXmlElement? element);
+
+        // assert
+        result.Should().BeTrue();
+        element!.ElementNameWithDeclaration.Should().Be("CEffect");
+        element.Members.ContainsMember("Kind").Should().BeFalse();
+    }
+
+    [TestMethod]
+    public void TryGetDefaultElement_ClassHasNoDefaultButBaseClassDoes_ReturnsFalse()
+    {
+        // arrange - CEffectSet is an Effect class without a default element
+        AddEffectDefaults();
+        _layeredDataStorage.GetDataStorage(StormModType.Base).AddBaseClassCatalogName(XmlReaderHelper.GetStormXmlElement("<CEffectSet />"), "Effect");
+
+        // act
+        bool result = _stormCatalog.TryGetDefaultElement("CEffectSet", out StormXmlElement? element);
+        bool exists = _stormCatalog.DefaultElementExists("CEffectSet");
+
+        // assert
+        result.Should().BeFalse();
+        element.Should().BeNull();
+        exists.Should().BeFalse();
+    }
+
+    [TestMethod]
+    public void TryGetDefaultElement_SameDefaultsAsElementAtTopOfChain()
+    {
+        // arrange - an element with no parent is merged into its default element, so it has the same defaults
+        AddEffectDefaults();
+        _layeredDataStorage.GetDataStorage(StormModType.Base).AddElementWithId(XmlReaderHelper.GetStormXmlElement("""<CEffectDamage id="TopDamage"><Amount value="5" /></CEffectDamage>"""), "Effect");
+
+        // act
+        StormXmlElement defaultElement = _stormCatalog.GetDefaultElement("CEffectDamage");
+        StormXmlElement element = _stormCatalog.GetElement("Effect", "TopDamage");
+
+        // assert
+        foreach (string member in new[] { "Chance", "Marker", "Kind" })
+            element.Members.GetMember(member).Value.RawValue.Should().Be(defaultElement.Members.GetMember(member).Value.RawValue);
+    }
+
+    [TestMethod]
+    public void TryGetDefaultElement_ClassHasBaseClassDefault_DoesNotModifyStoredElements()
+    {
+        // arrange
+        AddEffectDefaults();
+        ElementCache elementCache = _layeredDataStorage.GetDataStorage(StormModType.Base).ElementCache;
+
+        // act
+        _stormCatalog.TryGetDefaultElement("CEffectDamage", out _);
+
+        // assert
+        elementCache.StormXmlElementByClassElement.Dictionary["Effect"].Members.ContainsMember("Kind").Should().BeFalse();
+        elementCache.StormXmlElementByClassElement.Dictionary["EffectDamage"].Members.ContainsMember("Marker").Should().BeFalse();
+    }
+
+    [TestMethod]
+    [DataRow(StormModType.Base)]
+    [DataRow(StormModType.Map)]
+    [DataRow(StormModType.Custom)]
+    public void DefaultElementExists_DefaultElementInAnyLayer_ReturnsTrue(StormModType stormModType)
+    {
+        // arrange
+        AddDefaultElement(stormModType, "<CEffectDamage default=\"1\"><Death value=\"Normal\" /></CEffectDamage>");
+
+        // act
+        bool result = _stormCatalog.DefaultElementExists("CEffectDamage");
+
+        // assert
+        result.Should().BeTrue();
+    }
+
+    [TestMethod]
     public void GetDefaultElement_DefaultElementLoaded_ReturnsElement()
     {
         // arrange
@@ -1854,6 +1950,20 @@ public sealed class StormCatalogTests
                 </CEffectDamage>
                 """),
             "Effect");
+    }
+
+    // CEffect (Chance 0.5, Marker Damage) as the Effect catalog's base class default, and CEffectDamage (Chance 1, Kind Basic), in the base layer
+    private void AddEffectDefaults()
+    {
+        DataStorage dataStorage = _layeredDataStorage.GetDataStorage(StormModType.Base);
+
+        StormXmlElement effectDefault = XmlReaderHelper.GetStormXmlElement("""<CEffect default="1"><Chance value="0.5" /><Marker value="Damage" /></CEffect>""");
+        StormXmlElement effectDamageDefault = XmlReaderHelper.GetStormXmlElement("""<CEffectDamage default="1"><Chance value="1" /><Kind value="Basic" /></CEffectDamage>""");
+
+        dataStorage.AddBaseClassCatalogName(effectDefault, "Effect");
+        dataStorage.AddBaseClassCatalogName(effectDamageDefault, "Effect");
+        dataStorage.AddElementWithNoId(effectDefault);
+        dataStorage.AddElementWithNoId(effectDamageDefault);
     }
 
     // adds an element with no id to the data storage of the given layer

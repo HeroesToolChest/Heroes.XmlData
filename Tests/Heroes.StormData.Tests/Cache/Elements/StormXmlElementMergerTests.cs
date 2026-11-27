@@ -1,4 +1,4 @@
-﻿namespace Heroes.StormData.Cache.Elements.Tests;
+namespace Heroes.StormData.Cache.Elements.Tests;
 
 [TestClass]
 public class StormXmlElementMergerTests
@@ -498,5 +498,88 @@ public class StormXmlElementMergerTests
         baseParent.Members["AreaArray"].ByIndex[0]["RectangleHeight"].Value.GetString().Should().Be("6");
         customParent.Members["AreaArray"].ByIndex[0].ContainsMember("RectangleWidth").Should().BeFalse();
         customParent.Members["AreaArray"].ByIndex[0]["RectangleHeight"].Value.GetString().Should().Be("7");
+    }
+
+    [TestMethod]
+    public void GetMergedElementOfNoId_ClassHasBaseClassDefault_IncludesBaseClassDefaults()
+    {
+        // arrange
+        LayeredDataStorage layeredDataStorage = CreateEffectDefaultsStorage();
+        StormXmlElementMerger stormXmlElementMerger = new(layeredDataStorage.Elements);
+
+        // act
+        StormXmlElement? result = stormXmlElementMerger.GetMergedElementOfNoId("EffectDamage");
+
+        // assert - CEffectDamage's own value overrides CEffect's
+        result.Should().NotBeNull();
+        result.ElementName.Should().Be("EffectDamage");
+        result.Members["Chance"].Value.RawValue.Should().Be("1");
+        result.Members["Kind"].Value.RawValue.Should().Be("Basic");
+        result.Members["Marker"].Value.RawValue.Should().Be("Damage");
+    }
+
+    [TestMethod]
+    public void GetMergedElementOfNoId_BaseClass_ReturnsBaseClassDefault()
+    {
+        // arrange
+        LayeredDataStorage layeredDataStorage = CreateEffectDefaultsStorage();
+        StormXmlElementMerger stormXmlElementMerger = new(layeredDataStorage.Elements);
+
+        // act
+        StormXmlElement? result = stormXmlElementMerger.GetMergedElementOfNoId("Effect");
+
+        // assert
+        result.Should().NotBeNull();
+        result.ElementName.Should().Be("Effect");
+        result.Members.ContainsMember("Kind").Should().BeFalse();
+    }
+
+    [TestMethod]
+    public void GetMergedElementOfNoId_ClassHasNoDefault_ReturnsNull()
+    {
+        // arrange - the catalog's base class has a default, the class doesn't
+        LayeredDataStorage layeredDataStorage = CreateEffectDefaultsStorage();
+        layeredDataStorage.GetDataStorage(StormModType.Base).AddBaseClassCatalogName(XmlReaderHelper.GetStormXmlElement("<CEffectSet />"), "Effect");
+
+        StormXmlElementMerger stormXmlElementMerger = new(layeredDataStorage.Elements);
+
+        // act
+        StormXmlElement? result = stormXmlElementMerger.GetMergedElementOfNoId("EffectSet");
+
+        // assert
+        result.Should().BeNull();
+    }
+
+    [TestMethod]
+    public void GetMergedElementOfNoId_ClassHasBaseClassDefault_DoesNotModifyStoredElements()
+    {
+        // arrange
+        LayeredDataStorage layeredDataStorage = CreateEffectDefaultsStorage();
+        ElementCache elementCache = layeredDataStorage.GetDataStorage(StormModType.Base).ElementCache;
+        StormXmlElementMerger stormXmlElementMerger = new(layeredDataStorage.Elements);
+
+        // act
+        stormXmlElementMerger.GetMergedElementOfNoId("EffectDamage");
+
+        // assert
+        elementCache.StormXmlElementByClassElement.Dictionary["Effect"].Members.ContainsMember("Kind").Should().BeFalse();
+        elementCache.StormXmlElementByClassElement.Dictionary["EffectDamage"].Members.ContainsMember("Marker").Should().BeFalse();
+    }
+
+    // CEffect (Chance 0.5, Marker Damage) as the Effect catalog's base class default, and CEffectDamage (Chance 1, Kind Basic), in the base layer
+    private static LayeredDataStorage CreateEffectDefaultsStorage()
+    {
+        LayeredDataStorage layeredDataStorage = new();
+        DataStorage dataStorage = layeredDataStorage.GetDataStorage(StormModType.Base);
+
+        StormXmlElement effectDefault = XmlReaderHelper.GetStormXmlElement("""<CEffect default="1"><Chance value="0.5" /><Marker value="Damage" /></CEffect>""");
+        StormXmlElement effectDamageDefault = XmlReaderHelper.GetStormXmlElement("""<CEffectDamage default="1"><Chance value="1" /><Kind value="Basic" /></CEffectDamage>""");
+
+        dataStorage.AddBaseClassCatalogName(effectDefault, "Effect");
+        dataStorage.AddBaseClassCatalogName(effectDamageDefault, "Effect");
+        dataStorage.AddElementWithNoId(effectDefault);
+        dataStorage.AddElementWithNoId(effectDamageDefault);
+
+        return layeredDataStorage;
     }
 }

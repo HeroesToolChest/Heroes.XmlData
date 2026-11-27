@@ -832,6 +832,64 @@ internal sealed class LayeredElementCacheTests
     [DataRow(StormModType.Base)]
     [DataRow(StormModType.Map)]
     [DataRow(StormModType.Custom)]
+    public void ContainsStormXmlElementByClassElement_ElementInSingleLayer_ReturnsTrue(StormModType stormModType)
+    {
+        // arrange
+        AddStormXmlElement(stormModType, """<CEffectDamage default="1"><Kind value="Basic" /></CEffectDamage>""");
+
+        // act
+        bool result = _layeredElementCache.ContainsStormXmlElementByClassElement("EffectDamage");
+
+        // assert
+        result.Should().BeTrue();
+    }
+
+    [TestMethod]
+    public void ContainsStormXmlElementByClassElement_ElementNameWithDifferentCasing_ReturnsTrue()
+    {
+        // arrange - class element names are case-insensitive
+        AddStormXmlElement(StormModType.Base, """<CEffectDamage default="1" />""");
+
+        // act
+        bool result = _layeredElementCache.ContainsStormXmlElementByClassElement("effectdamage");
+
+        // assert
+        result.Should().BeTrue();
+    }
+
+    [TestMethod]
+    [DataRow("EffectSet")]
+    [DataRow("CEffectDamage")]
+    [DataRow("")]
+    public void ContainsStormXmlElementByClassElement_ElementNotInAnyLayer_ReturnsFalse(string elementName)
+    {
+        // arrange - the name is without its leading C
+        AddStormXmlElement(StormModType.Base, """<CEffectDamage default="1" />""");
+
+        // act
+        bool result = _layeredElementCache.ContainsStormXmlElementByClassElement(elementName);
+
+        // assert
+        result.Should().BeFalse();
+    }
+
+    [TestMethod]
+    public void ContainsStormXmlElementByClassElement_OnlyElementWithId_ReturnsFalse()
+    {
+        // arrange
+        AddStormXmlElement(StormModType.Base, "Effect", "AlarakDamage", CreateStormXmlElement("AlarakDamage"));
+
+        // act
+        bool result = _layeredElementCache.ContainsStormXmlElementByClassElement("EffectDamage");
+
+        // assert
+        result.Should().BeFalse();
+    }
+
+    [TestMethod]
+    [DataRow(StormModType.Base)]
+    [DataRow(StormModType.Map)]
+    [DataRow(StormModType.Custom)]
     public void ContainsStormXmlElementById_ElementInSingleLayer_ReturnsTrue(StormModType stormModType)
     {
         // arrange

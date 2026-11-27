@@ -397,15 +397,21 @@ public sealed class StormCatalog
     /// </param>
     /// <returns>
     /// <see langword="true"/> if any of the loaded <c>stormmods</c> has the default element; otherwise <see langword="false"/>, which includes <paramref name="elementName"/>
-    /// not starting with <c>C</c> (such as <c>EffectDamage</c>) or being empty.
+    /// not starting with <c>C</c> (such as <c>EffectDamage</c>) or being empty. Nothing is merged, so this is cheaper than
+    /// <see cref="TryGetDefaultElement(ReadOnlySpan{char}, out StormXmlElement?)"/>.
     /// </returns>
-    public bool DefaultElementExists(ReadOnlySpan<char> elementName) => TryGetDefaultElement(elementName, out _);
+    public bool DefaultElementExists(ReadOnlySpan<char> elementName) =>
+        TryRemoveClassElementDeclaration(elementName, out ReadOnlySpan<char> storedElementName) && _layeredDataStorage.Elements.ContainsStormXmlElementByClassElement(storedElementName);
 
     /// <summary>
     /// Gets a default element, if it exists. A default element is the element with no <c>id</c> (e.g. <c>&lt;CEffectDamage default="1"&gt;</c>).
     /// <para>
-    /// It is merged from all the loaded <c>stormmods</c> (base, then map, then custom).
-    /// The same instance can be returned on later calls until the loaded data changes. Its public members are read-only.
+    /// It is merged from all the loaded <c>stormmods</c> (base, then map, then custom), then over its catalog's base class default element
+    /// (e.g. <c>CEffect</c> for <c>CEffectDamage</c>), so the defaults it inherits are included. This is the same default element that
+    /// <see cref="TryGetElement(ReadOnlySpan{char}, ReadOnlySpan{char}, out StormXmlElement?)"/> merges an element into.
+    /// </para>
+    /// <para>
+    /// It is not cached: it can be the stored instance or a new merged copy, so later calls don't always return the same instance. Its public members are read-only.
     /// </para>
     /// </summary>
     /// <param name="elementName">
@@ -422,15 +428,19 @@ public sealed class StormCatalog
             return false;
         }
 
-        element = _layeredDataStorage.Elements.GetStormXmlElementByClassElement(storedElementName);
+        element = _layeredDataStorage.GetMergedDefaultStormXmlElement(storedElementName);
         return element is not null;
     }
 
     /// <summary>
     /// Gets a default element. A default element is the element with no <c>id</c> (e.g. <c>&lt;CEffectDamage default="1"&gt;</c>).
     /// <para>
-    /// It is merged from all the loaded <c>stormmods</c> (base, then map, then custom).
-    /// The same instance can be returned on later calls until the loaded data changes. Its public members are read-only.
+    /// It is merged from all the loaded <c>stormmods</c> (base, then map, then custom), then over its catalog's base class default element
+    /// (e.g. <c>CEffect</c> for <c>CEffectDamage</c>), so the defaults it inherits are included. This is the same default element that
+    /// <see cref="TryGetElement(ReadOnlySpan{char}, ReadOnlySpan{char}, out StormXmlElement?)"/> merges an element into.
+    /// </para>
+    /// <para>
+    /// It is not cached: it can be the stored instance or a new merged copy, so later calls don't always return the same instance. Its public members are read-only.
     /// </para>
     /// </summary>
     /// <param name="elementName">
@@ -531,7 +541,7 @@ public sealed class StormCatalog
     /// It is merged from all the loaded <c>stormmods</c> (base, then map, then custom). Its <see cref="StormXmlStyleConstantElement.Value"/> is as written,
     /// so it can be a reference to another constant (e.g. <c>#ColorChatLobby</c>). To follow the references to the final value, use
     /// <see cref="TryGetStyleConstantValue(ReadOnlySpan{char}, out string?)"/>.
-    /// The same instance can be returned on later calls until the loaded data changes. Its public members are read-only.
+    /// It is not cached: it can be the stored instance or a new merged copy, so later calls don't always return the same instance. Its public members are read-only.
     /// </para>
     /// </summary>
     /// <param name="name">The <c>name</c> of the style constant, without the leading <c>#</c> used to reference it (e.g. <c>ColorGray</c>). This is case-sensitive.</param>
@@ -549,7 +559,7 @@ public sealed class StormCatalog
     /// It is merged from all the loaded <c>stormmods</c> (base, then map, then custom). Its <see cref="StormXmlStyleConstantElement.Value"/> is as written,
     /// so it can be a reference to another constant (e.g. <c>#ColorChatLobby</c>). To follow the references to the final value, use
     /// <see cref="TryGetStyleConstantValue(ReadOnlySpan{char}, out string?)"/>.
-    /// The same instance can be returned on later calls until the loaded data changes. Its public members are read-only.
+    /// It is not cached: it can be the stored instance or a new merged copy, so later calls don't always return the same instance. Its public members are read-only.
     /// </para>
     /// </summary>
     /// <param name="name">The <c>name</c> of the style constant, without the leading <c>#</c> used to reference it (e.g. <c>ColorGray</c>). This is case-sensitive.</param>
