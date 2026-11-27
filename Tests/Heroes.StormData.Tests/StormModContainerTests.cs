@@ -1,3 +1,4 @@
+
 using System.Collections.ObjectModel;
 using System.Text;
 
@@ -106,9 +107,10 @@ public sealed class StormModContainerTests
     [DataRow("UnitData.xml")]
     [DataRow("Data.xml")]
     [DataRow("Effects.xml")]
-    public void LoadXmlFile_ClassElementNameDoesNotStartWithCatalogFromFileName_DoesNotAddBaseClassCatalogName(string fileName)
+    [DataRow("MuradinData.xml")]
+    public void LoadXmlFile_ClassElementInFileOfOtherCatalog_AddsCatalogNameFromClassName(string fileName)
     {
-        // arrange
+        // arrange - the catalog comes from the class name, not the file name
         StormModContainer stormModContainer = new(_sourceContainer, StormModType.Base);
 
         using XmlReader xmlReader = XmlReaderHelper.CreateXmlReader("""<CEffectDamage default="1" />""");
@@ -118,9 +120,122 @@ public sealed class StormModContainerTests
 
         // assert
         ElementCache elementCache = GetElementCache(StormModType.Base);
-        elementCache.ClassElementsByCatalog.Should().BeEmpty();
-        elementCache.CatalogByClassElement.Dictionary.Should().BeEmpty();
+        elementCache.ClassElementsByCatalog.Should().ContainKey("Effect").WhoseValue.Should().BeEquivalentTo("EffectDamage");
+        elementCache.CatalogByClassElement.Dictionary.Should().ContainKey("EffectDamage").WhoseValue.Should().Be("Effect");
         elementCache.StormXmlElementByClassElement.Dictionary.Should().ContainKey("EffectDamage");
+    }
+
+    [TestMethod]
+    [DataRow("effectdata.xml")]
+    [DataRow("EffectData.xml")]
+    [DataRow("EFFECTDATA.XML")]
+    public void LoadXmlFile_FileNameInAnyCasing_CatalogNameHasGameDataCasing(string fileName)
+    {
+        // arrange - the files are lowercase in CASC and extracted data, the catalog name should still be Effect
+        StormModContainer stormModContainer = new(_sourceContainer, StormModType.Base);
+
+        using XmlReader xmlReader = XmlReaderHelper.CreateXmlReader("""<CEffectDamage id="AbathurSymbioteStabDamage" />""");
+
+        // act
+        stormModContainer.LoadXmlFile(xmlReader, CreateStormFile(fileName));
+
+        // assert
+        ElementCache elementCache = GetElementCache(StormModType.Base);
+        elementCache.CatalogByClassElement.Dictionary.Should().ContainKey("EffectDamage").WhoseValue.Should().BeSameAs("Effect");
+        elementCache.StormXmlElementsByIdByCatalog.Dictionary.Keys.Should().Equal("Effect");
+    }
+
+    [TestMethod]
+    public void LoadXmlFile_ClassOnlyInHeroFile_AddsElementUnderCatalogFromClassName()
+    {
+        // arrange - like CEffectModifyCatalogNumeric, which is only in the hero files (e.g. muradindata.xml), never in effectdata.xml
+        StormModContainer stormModContainer = new(_sourceContainer, StormModType.Base);
+
+        using XmlReader xmlReader = XmlReaderHelper.CreateXmlReader("""<CEffectModifyCatalogNumeric id="MuradinModifyCatalog" />""");
+
+        // act
+        stormModContainer.LoadXmlFile(xmlReader, CreateStormFile("MuradinData.xml"));
+
+        // assert
+        GetElementCache(StormModType.Base).StormXmlElementsByIdByCatalog.Dictionary.Should().ContainKey("Effect")
+            .WhoseValue.Dictionary.Keys.Should().Equal("MuradinModifyCatalog");
+    }
+
+    [TestMethod]
+    [DataRow("CRequirementEq", "RequirementNode")]
+    [DataRow("CRequirementCountBehavior", "RequirementNode")]
+    [DataRow("CRequirementNode", "RequirementNode")]
+    [DataRow("CRequirement", "Requirement")]
+    public void LoadXmlFile_RequirementClasses_AddsElementUnderRequirementOrRequirementNodeCatalog(string elementName, string expectedCatalogName)
+    {
+        // arrange - the requirement nodes are the only classes that don't start with their catalog's name
+        StormModContainer stormModContainer = new(_sourceContainer, StormModType.Base);
+
+        using XmlReader xmlReader = XmlReaderHelper.CreateXmlReader($"""<{elementName} id="TestRequirement" />""");
+
+        // act
+        stormModContainer.LoadXmlFile(xmlReader, CreateStormFile("RequirementNodeData.xml"));
+
+        // assert
+        GetElementCache(StormModType.Base).StormXmlElementsByIdByCatalog.Dictionary.Keys.Should().Equal(expectedCatalogName);
+    }
+
+    [TestMethod]
+    public void LoadXmlFile_ClassNotOfKnownCatalogButStartsWithFileCatalog_AddsCatalogNameFromFileWithElementNameCasing()
+    {
+        // arrange - a class of a catalog the game data doesn't have, which only the file name gives
+        StormModContainer stormModContainer = new(_sourceContainer, StormModType.Base);
+
+        using XmlReader xmlReader = XmlReaderHelper.CreateXmlReader("""<CWidgetButton id="TestWidget" />""");
+
+        // act
+        stormModContainer.LoadXmlFile(xmlReader, CreateStormFile("widgetdata.xml"));
+
+        // assert
+        ElementCache elementCache = GetElementCache(StormModType.Base);
+        elementCache.CatalogByClassElement.Dictionary.Should().ContainKey("WidgetButton").WhoseValue.Should().Be("Widget");
+        elementCache.StormXmlElementsByIdByCatalog.Dictionary.Keys.Should().Equal("Widget");
+    }
+
+    [TestMethod]
+    public void LoadXmlFile_ClassNotOfKnownCatalogButInLowerLayer_AddsElementUnderLowerLayerCatalog()
+    {
+        // arrange - the base layer has the class from its file name, the map's file name doesn't
+        StormModContainer baseStormModContainer = new(_sourceContainer, StormModType.Base);
+        StormModContainer mapStormModContainer = new(_sourceContainer, StormModType.Map);
+
+        using XmlReader baseXmlReader = XmlReaderHelper.CreateXmlReader("""<CWidgetButton default="1" />""");
+        baseStormModContainer.LoadXmlFile(baseXmlReader, CreateStormFile("WidgetData.xml"));
+
+        using XmlReader mapXmlReader = XmlReaderHelper.CreateXmlReader("""<CWidgetButton id="MapWidget" />""");
+
+        // act
+        mapStormModContainer.LoadXmlFile(mapXmlReader, CreateStormFile("MapData.xml"));
+
+        // assert
+        GetElementCache(StormModType.Map).StormXmlElementsByIdByCatalog.Dictionary.Keys.Should().Equal("Widget");
+    }
+
+    [TestMethod]
+    public void LoadXmlFile_SameClassMoreThanOnce_AddsClassToCatalogOnce()
+    {
+        // arrange
+        StormModContainer stormModContainer = new(_sourceContainer, StormModType.Base);
+
+        using XmlReader xmlReader = XmlReaderHelper.CreateXmlReader(
+            """
+            <CEffectDamage default="1" />
+            <CEffectDamage id="Damage1" />
+            <CEffectDamage id="Damage2" />
+            """);
+
+        // act
+        stormModContainer.LoadXmlFile(xmlReader, CreateStormFile("EffectData.xml"));
+
+        // assert
+        ElementCache elementCache = GetElementCache(StormModType.Base);
+        elementCache.ClassElementsByCatalog.Should().ContainSingle().Which.Value.Should().BeEquivalentTo("EffectDamage");
+        elementCache.StormXmlElementsByIdByCatalog.Dictionary["Effect"].Dictionary.Keys.Should().BeEquivalentTo("Damage1", "Damage2");
     }
 
     [TestMethod]
@@ -174,15 +289,17 @@ public sealed class StormModContainerTests
         // arrange
         StormModContainer stormModContainer = new(_sourceContainer, StormModType.Base);
 
-        using XmlReader xmlReader = XmlReaderHelper.CreateXmlReader("""<CUnit id="Abathur" />""");
+        // a class that starts with no catalog name, in a file whose name has no catalog
+        using XmlReader xmlReader = XmlReaderHelper.CreateXmlReader("""<CNotACatalogClass id="Abathur" />""");
 
         // act
-        // the file name has no catalog, so no base class catalog name is added for CUnit
         stormModContainer.LoadXmlFile(xmlReader, CreateStormFile("Units.xml"));
 
         // assert
-        GetElementCache(StormModType.Base).StormXmlElementsByIdByCatalog.Dictionary.Should().ContainKey(string.Empty)
+        ElementCache elementCache = GetElementCache(StormModType.Base);
+        elementCache.StormXmlElementsByIdByCatalog.Dictionary.Should().ContainKey(string.Empty)
             .WhoseValue.Dictionary.Keys.Should().Equal("Abathur");
+        elementCache.CatalogByClassElement.Dictionary.Should().BeEmpty();
     }
 
     [TestMethod]

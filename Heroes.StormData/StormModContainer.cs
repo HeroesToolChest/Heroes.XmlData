@@ -150,17 +150,19 @@ public class StormModContainer
         }
     }
 
-    private static string? GetCatalogNameFromFileName(StormXmlElement element)
+    // the catalog from a <catalog>data.xml file name, if the class element's name starts with it, with the casing of the element name (e.g. Effect for CEffectDamage in effectdata.xml)
+    private static bool TryGetCatalogNameFromFileName(StormXmlElement element, [NotNullWhen(true)] out string? catalogName)
     {
+        catalogName = null;
+
         string fileName = Path.GetFileName(element.StormFiles[0].RelativePath);
 
         int index = fileName.LastIndexOf("data.xml", StringComparison.OrdinalIgnoreCase);
-        if (index > 1)
-        {
-            return fileName[..index];
-        }
+        if (index < 2 || !element.ElementName.StartsWith(fileName.AsSpan(0, index), StringComparison.OrdinalIgnoreCase))
+            return false;
 
-        return null;
+        catalogName = element.ElementName[..index];
+        return true;
     }
 
     private void AddElement(StormXmlElement element)
@@ -168,13 +170,7 @@ public class StormModContainer
         if (element.ElementType != StormXmlElementType.Class)
             return;
 
-        string? catalogName = GetCatalogNameFromFileName(element);
-
-        // base class catalog name check
-        if (!string.IsNullOrWhiteSpace(catalogName) && element.ElementName.StartsWith(catalogName, StringComparison.OrdinalIgnoreCase))
-        {
-            _specificDataStorage.AddBaseClassCatalogName(element, catalogName);
-        }
+        string catalogName = GetCatalogName(element);
 
         // element with no id check
         if (string.IsNullOrEmpty(element.Id))
@@ -186,14 +182,33 @@ public class StormModContainer
         if (element.Members.TryGetMember("LevelScalingArray", out StormXmlArray? levelScalingArray))
             _specificDataStorage.AddLevelScalingElementValue(levelScalingArray);
 
-        if (!_sourceContainer.LayeredDataStorage.Elements.TryGetFirstCatalogNameByElementName(element.ElementName, out string? existingCatalogName))
-        {
-            // TODO: more lookup
-            existingCatalogName = string.Empty;
-        }
-
-        _specificDataStorage.AddElementWithId(element, existingCatalogName);
+        _specificDataStorage.AddElementWithId(element, catalogName);
 
         // TODO: unitname attribute stuff
+    }
+
+    // gets the catalog of a class element's class (e.g. Effect for CEffectDamage), adding it to this data storage the first time the class is seen in it.
+    // it is from the class name (see ElementCatalogNames), then a catalog another data storage has for the class, then the file name, and empty if none of them have one
+    private string GetCatalogName(StormXmlElement element)
+    {
+        if (_specificDataStorage.ElementCache.CatalogByClassElement.TryGetValue(element.ElementName, out string? catalogName))
+            return catalogName;
+
+        if (ElementCatalogNames.TryGetCatalogName(element.ElementName, out catalogName))
+        {
+            _specificDataStorage.AddBaseClassCatalogName(element, catalogName);
+            return catalogName;
+        }
+
+        if (_sourceContainer.LayeredDataStorage.Elements.TryGetFirstCatalogNameByElementName(element.ElementName, out catalogName))
+            return catalogName;
+
+        if (TryGetCatalogNameFromFileName(element, out catalogName))
+        {
+            _specificDataStorage.AddBaseClassCatalogName(element, catalogName);
+            return catalogName;
+        }
+
+        return string.Empty;
     }
 }
