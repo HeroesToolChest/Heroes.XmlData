@@ -1035,6 +1035,23 @@ internal sealed class LayeredElementCacheTests
     }
 
     [TestMethod]
+    public void GetStormXmlElementById_InBaseWithParentAndMapWithout_KeepsParent()
+    {
+        // arrange - the map's override leaves out the parent attribute
+        AddStormXmlElement(StormModType.Base, "Effect", "ChildDamage", XmlReaderHelper.GetStormXmlElement("""<CEffectDamage id="ChildDamage" parent="ParentDamage" />"""));
+        AddStormXmlElement(StormModType.Map, "Effect", "ChildDamage", CreateStormXmlElement("ChildDamage", "150"));
+
+        // act
+        StormXmlElement? result = _layeredElementCache.GetStormXmlElementById("ChildDamage", "Effect");
+
+        // assert
+        result.Should().NotBeNull();
+        result.Parent.Should().Be("ParentDamage");
+        result.HasParent.Should().BeTrue();
+        result.Members["Amount"].Value.RawValue.Should().Be("150");
+    }
+
+    [TestMethod]
     public void GetStormXmlElementById_InBaseAndCustom_ReturnsMergedCopy()
     {
         // arrange

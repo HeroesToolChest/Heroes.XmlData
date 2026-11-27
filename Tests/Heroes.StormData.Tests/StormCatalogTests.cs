@@ -991,9 +991,58 @@ public sealed class StormCatalogTests
         // act
         bool result = _stormCatalog.TryGetElement("Effect", "ChildDamage", out StormXmlElement? element);
 
-        // assert
+        // assert - the map's override leaves out the parent, which is kept, so the parent's values are still inherited
         result.Should().BeTrue();
         element!.Members.GetMember("Amount").Value.RawValue.Should().Be("150");
+        element.Members.GetMember("Kind").Value.RawValue.Should().Be("Spell");
+        element.Parent.Should().Be("ParentDamage");
+    }
+
+    [TestMethod]
+    public void TryGetElement_OverriddenInSameLayerWithoutParent_KeepsParentValues()
+    {
+        // arrange - a later stormmod in the same layer (e.g. heroesdata.stormmod over core.stormmod) that leaves out the parent
+        AddMergeableElements();
+        _layeredDataStorage.GetDataStorage(StormModType.Base).AddElementWithId(
+            XmlReaderHelper.GetStormXmlElement(
+                """
+                <CEffectDamage id="ChildDamage">
+                  <Death value="Fire" />
+                </CEffectDamage>
+                """),
+            "Effect");
+
+        // act
+        bool result = _stormCatalog.TryGetElement("Effect", "ChildDamage", out StormXmlElement? element);
+
+        // assert
+        result.Should().BeTrue();
+        element!.Members.GetMember("Amount").Value.RawValue.Should().Be("120");
+        element.Members.GetMember("Kind").Value.RawValue.Should().Be("Spell");
+        element.Members.GetMember("Death").Value.RawValue.Should().Be("Fire");
+    }
+
+    [TestMethod]
+    public void TryGetParsedGameString_ElementOverriddenWithoutParent_UsesParentValue()
+    {
+        // arrange - the tooltip's value only comes from the parent
+        DataStorage dataStorage = _layeredDataStorage.GetDataStorage(StormModType.Base);
+        dataStorage.AddBaseClassCatalogName(XmlReaderHelper.GetStormXmlElement("<CEffectDamage />"), "Effect");
+        dataStorage.AddElementWithId(XmlReaderHelper.GetStormXmlElement("""<CEffectDamage id="ParentDamage"><Amount value="50" /></CEffectDamage>"""), "Effect");
+        dataStorage.AddElementWithId(XmlReaderHelper.GetStormXmlElement("""<CEffectDamage id="ChildDamage" parent="ParentDamage" />"""), "Effect");
+
+        _layeredDataStorage.GetDataStorage(StormModType.Map).AddElementWithId(
+            XmlReaderHelper.GetStormXmlElement("""<CEffectDamage id="ChildDamage"><Death value="Fire" /></CEffectDamage>"""),
+            "Effect");
+
+        AddGameString(StormModType.Base, GameStringId, "Deals <d ref=\"Effect,ChildDamage,Amount\"/> damage");
+
+        // act
+        bool result = _stormCatalog.TryGetParsedGameString(GameStringId, out GameStringText? gameStringText);
+
+        // assert
+        result.Should().BeTrue();
+        gameStringText!.RawText.Should().Be("Deals 50 damage");
     }
 
     [TestMethod]

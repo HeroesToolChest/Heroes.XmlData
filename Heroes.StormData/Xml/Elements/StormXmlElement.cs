@@ -1,4 +1,4 @@
-﻿namespace Heroes.StormData.Xml.Elements;
+namespace Heroes.StormData.Xml.Elements;
 
 /// <summary>
 /// Represents a top level XML element.
@@ -102,10 +102,38 @@ public class StormXmlElement
     }
 
     /// <summary>
-    /// Merges the properties of another <see cref="StormXmlElement"/> into this instance.
+    /// Merges a later definition of the same element (from a later file or <c>stormmod</c>, or a higher data storage layer) into this instance.
+    /// <para>
+    /// The <c>id</c>, <c>parent</c>, and <c>default</c> attributes that <paramref name="other"/> does not have keep their current values,
+    /// so an override that leaves out the <c>parent</c> attribute keeps the element's parent.
+    /// </para>
     /// </summary>
-    /// <param name="other">The <see cref="StormXmlElement"/> to merge into the current instance.</param>
+    /// <param name="other">The later definition of the element to merge into the current instance.</param>
     internal void Merge(StormXmlElement other)
+    {
+        Merge(other, isChild: false);
+    }
+
+    /// <summary>
+    /// Merges a child element into this instance, which is its parent (or its default element), so the child's values override the inherited ones.
+    /// <para>
+    /// Unlike <see cref="Merge(StormXmlElement)"/>, the <c>id</c>, <c>parent</c>, and <c>default</c> attributes are the child's,
+    /// as they are not inherited (a child of a <c>default="1"</c> element is not a default element itself).
+    /// </para>
+    /// </summary>
+    /// <param name="child">The child element to merge into the current instance.</param>
+    internal void MergeChild(StormXmlElement child)
+    {
+        Merge(child, isChild: true);
+    }
+
+    /// <summary>
+    /// Creates a deep copy of the current StormXmlElement.
+    /// </summary>
+    /// <returns>A new <see cref="StormXmlElement"/> instance that is a copy of the current element.</returns>
+    internal virtual StormXmlElement Clone() => new(this);
+
+    private void Merge(StormXmlElement other, bool isChild)
     {
         if (ReferenceEquals(this, other))
             return;
@@ -116,7 +144,9 @@ public class StormXmlElement
         _stormFiles.AddRange(other._stormFiles);
 
         Initialize(other._stormXmlMembers);
-        InitializeAttributes(other._stormXmlMembers);
+
+        // the merged members keep an attribute that the later definition leaves out, while a child's attributes replace its parent's
+        InitializeAttributes(isChild ? other._stormXmlMembers : _stormXmlMembers);
 
         // If the merging element's parent equals its own id (case-sensitive),
         // it is a self-referential parent and should be ignored; preserve the current element's parent.
@@ -131,12 +161,6 @@ public class StormXmlElement
                 _stormXmlMembers.Remove(StormXmlConstants.ParentAttributeName);
         }
     }
-
-    /// <summary>
-    /// Creates a deep copy of the current StormXmlElement.
-    /// </summary>
-    /// <returns>A new <see cref="StormXmlElement"/> instance that is a copy of the current element.</returns>
-    internal virtual StormXmlElement Clone() => new(this);
 
     [MemberNotNull(nameof(ElementName))]
     [MemberNotNull(nameof(ElementNameWithDeclaration))]

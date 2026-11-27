@@ -1,4 +1,4 @@
-﻿namespace Heroes.StormData.Xml.Elements.Tests;
+namespace Heroes.StormData.Xml.Elements.Tests;
 
 [TestClass]
 public sealed class StormXmlElementTests
@@ -458,11 +458,11 @@ public sealed class StormXmlElementTests
             </CEffectDamage>
             """);
 
-        // act
-        baseElement.Merge(element2);
-        baseElement.Merge(element3);
-        baseElement.Merge(element4);
-        baseElement.Merge(element5);
+        // act - each element is the child of the one before it
+        baseElement.MergeChild(element2);
+        baseElement.MergeChild(element3);
+        baseElement.MergeChild(element4);
+        baseElement.MergeChild(element5);
 
         // assert
         baseElement.ElementName.Should().Be("EffectDamage");
@@ -519,10 +519,10 @@ public sealed class StormXmlElementTests
             </CWeaponLegacy>
             """);
 
-        // act
-        baseElement.Merge(element2);
-        baseElement.Merge(element3);
-        baseElement.Merge(element4);
+        // act - each element is the child of the one before it
+        baseElement.MergeChild(element2);
+        baseElement.MergeChild(element3);
+        baseElement.MergeChild(element4);
 
         // assert
         baseElement.ElementType.Should().Be(StormXmlElementType.Class);
@@ -591,5 +591,124 @@ public sealed class StormXmlElementTests
         element.HasParent.Should().BeFalse();
         element.Members.ContainsMember("parent").Should().BeFalse();
         element.Members["MaxRerolls"].Value.RawValue.Should().Be("3");
+    }
+
+    [TestMethod]
+    public void Merge_LaterDefinitionWithoutParent_KeepsParent()
+    {
+        // arrange - an override (e.g. in a map's stormmod) that leaves out the parent
+        StormXmlElement element = XmlReaderHelper.GetStormXmlElement(
+            """
+            <CEffectDamage id="ChildDamage" parent="ParentDamage">
+              <Amount value="120" />
+            </CEffectDamage>
+            """);
+
+        StormXmlElement mergingElement = XmlReaderHelper.GetStormXmlElement(
+            """
+            <CEffectDamage id="ChildDamage">
+              <Amount value="150" />
+            </CEffectDamage>
+            """);
+
+        // act
+        element.Merge(mergingElement);
+
+        // assert
+        element.Id.Should().Be("ChildDamage");
+        element.Parent.Should().Be("ParentDamage");
+        element.HasParent.Should().BeTrue();
+        element.Members["parent"].Value.RawValue.Should().Be("ParentDamage");
+        element.Members["Amount"].Value.RawValue.Should().Be("150");
+    }
+
+    [TestMethod]
+    public void Merge_LaterDefinitionWithDifferentParent_UsesNewParent()
+    {
+        // arrange
+        StormXmlElement element = XmlReaderHelper.GetStormXmlElement("""<CEffectDamage id="ChildDamage" parent="ParentDamage" />""");
+        StormXmlElement mergingElement = XmlReaderHelper.GetStormXmlElement("""<CEffectDamage id="ChildDamage" parent="OtherParentDamage" />""");
+
+        // act
+        element.Merge(mergingElement);
+
+        // assert
+        element.Parent.Should().Be("OtherParentDamage");
+        element.HasParent.Should().BeTrue();
+    }
+
+    [TestMethod]
+    public void Merge_LaterDefinitionWithParent_AddsParent()
+    {
+        // arrange
+        StormXmlElement element = XmlReaderHelper.GetStormXmlElement("""<CEffectDamage id="ChildDamage" />""");
+        StormXmlElement mergingElement = XmlReaderHelper.GetStormXmlElement("""<CEffectDamage id="ChildDamage" parent="ParentDamage" />""");
+
+        // act
+        element.Merge(mergingElement);
+
+        // assert
+        element.Parent.Should().Be("ParentDamage");
+        element.HasParent.Should().BeTrue();
+    }
+
+    [TestMethod]
+    public void Merge_LaterDefinitionWithoutDefault_KeepsIsDefault()
+    {
+        // arrange
+        StormXmlElement element = XmlReaderHelper.GetStormXmlElement("""<CEffectDamage default="1" id="StormDamage" />""");
+        StormXmlElement mergingElement = XmlReaderHelper.GetStormXmlElement("""<CEffectDamage id="StormDamage"><Amount value="1" /></CEffectDamage>""");
+
+        // act
+        element.Merge(mergingElement);
+
+        // assert
+        element.IsDefault.Should().BeTrue();
+    }
+
+    [TestMethod]
+    public void MergeChild_ChildWithIdAndParent_UsesChildAttributes()
+    {
+        // arrange
+        StormXmlElement parentElement = XmlReaderHelper.GetStormXmlElement(
+            """
+            <CEffectDamage default="1" id="ParentDamage" parent="GrandparentDamage">
+              <Kind value="Spell" />
+            </CEffectDamage>
+            """);
+
+        StormXmlElement childElement = XmlReaderHelper.GetStormXmlElement(
+            """
+            <CEffectDamage id="ChildDamage" parent="ParentDamage">
+              <Amount value="120" />
+            </CEffectDamage>
+            """);
+
+        // act
+        parentElement.MergeChild(childElement);
+
+        // assert
+        parentElement.Id.Should().Be("ChildDamage");
+        parentElement.Parent.Should().Be("ParentDamage");
+        parentElement.IsDefault.Should().BeFalse();
+        parentElement.Members["Kind"].Value.RawValue.Should().Be("Spell");
+        parentElement.Members["Amount"].Value.RawValue.Should().Be("120");
+    }
+
+    [TestMethod]
+    public void MergeChild_ChildWithoutParentIntoDefaultElement_HasNoParent()
+    {
+        // arrange - the top of a parent chain is merged into its default element
+        StormXmlElement defaultElement = XmlReaderHelper.GetStormXmlElement("""<CEffectDamage default="1"><Death value="Normal" /></CEffectDamage>""");
+        StormXmlElement element = XmlReaderHelper.GetStormXmlElement("""<CEffectDamage id="TopDamage"><Amount value="5" /></CEffectDamage>""");
+
+        // act
+        defaultElement.MergeChild(element);
+
+        // assert
+        defaultElement.Id.Should().Be("TopDamage");
+        defaultElement.HasParent.Should().BeFalse();
+        defaultElement.IsDefault.Should().BeFalse();
+        defaultElement.Members["Death"].Value.RawValue.Should().Be("Normal");
     }
 }

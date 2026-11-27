@@ -1,4 +1,4 @@
-﻿namespace Heroes.StormData.Cache.Elements;
+namespace Heroes.StormData.Cache.Elements;
 
 internal class StormXmlElementMerger
 {
@@ -33,7 +33,7 @@ internal class StormXmlElementMerger
         if (!isParentCopy)
             parentElement = parentElement.Clone();
 
-        parentElement.Merge(stormXmlElement);
+        parentElement.MergeChild(stormXmlElement);
 
         isCopy = true;
         return parentElement;
