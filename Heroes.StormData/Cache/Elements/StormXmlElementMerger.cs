@@ -21,9 +21,13 @@ internal class StormXmlElementMerger
     }
 
     /// <summary>
-    /// Retrieves the merged element with no <c>id</c> (the default element) of a class, merged from the data storages and over its catalog's base class
-    /// default element (e.g. <c>CEffect</c> for <c>CEffectDamage</c>). This is the same element that <see cref="GetMerged(ReadOnlySpan{char}, ReadOnlySpan{char})"/>
-    /// merges an element at the top of its parent chain into.
+    /// Retrieves the merged element with no <c>id</c> (the default element) of a class, merged from the data storages and over the default elements
+    /// of the classes it derives from: its catalog's base class (e.g. <c>CValidator</c>), then each class in between (e.g. <c>CValidatorUnit</c> for <c>CValidatorUnitAbil</c>).
+    /// This is the same element that <see cref="GetMerged(ReadOnlySpan{char}, ReadOnlySpan{char})"/> merges an element at the top of its parent chain into.
+    /// <para>
+    /// A class derives from each class of the same catalog whose name is the start of its name, up to a capital letter (e.g. <c>CValidatorUnitOrderQueue</c>
+    /// derives from <c>CValidator</c>, <c>CValidatorUnit</c>, and <c>CValidatorUnitOrder</c>). The more derived class's values override the less derived class's.
+    /// </para>
     /// <para>
     /// The returned element can be the stored instance (when there is nothing to merge), so it must not be modified.
     /// </para>
@@ -81,7 +85,7 @@ internal class StormXmlElementMerger
         return MergeIntoParent(elementOfNoId, isElementOfNoIdCopy, stormXmlElement, isElementCopy, out isCopy);
     }
 
-    // elements with no id attribute
+    // elements with no id attribute, merged over the default elements of the classes they derive from
     private StormXmlElement? MergeUpElementOfNoId(ReadOnlySpan<char> elementName, out bool isCopy)
     {
         isCopy = false;
@@ -91,33 +95,57 @@ internal class StormXmlElementMerger
         if (stormXmlElement is null)
             return null;
 
-        // the base element may not be the correct one, but close enough
-        StormXmlElement? baseElement = GetBaseStormElement(stormXmlElement.ElementName, out bool isBaseCopy);
-
-        if (baseElement is null)
+        if (!_layeredElementCache.TryGetFirstCatalogNameByElementName(stormXmlElement.ElementName, out string? catalogName))
         {
             isCopy = isElementCopy;
             return stormXmlElement;
         }
 
-        // the element-of-no-id can be the base element itself, in which case there is nothing to merge
-        if (baseElement.ElementName.Equals(stormXmlElement.ElementName, StringComparison.OrdinalIgnoreCase))
+        StormXmlElement? merged = null;
+        bool isMergedCopy = false;
+
+        // the catalog's base class first (e.g. Validator), which is not always the start of the element name (e.g. RequirementNode for RequirementEq)
+        if (!catalogName.Equals(stormXmlElement.ElementName, StringComparison.OrdinalIgnoreCase))
+            MergeClassDefaultInto(ref merged, ref isMergedCopy, catalogName);
+
+        // then each class in between, from the least to the most derived (e.g. ValidatorUnit, then ValidatorUnitOrder for ValidatorUnitOrderQueue).
+        // a class is only a base of the element if it is in the same catalog (e.g. Achievement is a different catalog than AchievementTerm)
+        string fullElementName = stormXmlElement.ElementName;
+
+        for (int i = 1; i < fullElementName.Length; i++)
         {
-            isCopy = isBaseCopy;
-            return baseElement;
+            if (!char.IsUpper(fullElementName[i]))
+                continue;
+
+            ReadOnlySpan<char> className = fullElementName.AsSpan(0, i);
+
+            if (className.Length <= catalogName.Length && className.Equals(catalogName, StringComparison.OrdinalIgnoreCase))
+                continue;
+
+            if (_layeredElementCache.TryGetFirstCatalogNameByElementName(className, out string? classCatalogName) &&
+                classCatalogName.Equals(catalogName, StringComparison.OrdinalIgnoreCase))
+            {
+                MergeClassDefaultInto(ref merged, ref isMergedCopy, className);
+            }
         }
 
-        return MergeIntoParent(baseElement, isBaseCopy, stormXmlElement, isElementCopy, out isCopy);
+        return MergeIntoParent(merged, isMergedCopy, stormXmlElement, isElementCopy, out isCopy);
     }
 
-    private StormXmlElement? GetBaseStormElement(ReadOnlySpan<char> elementName, out bool isCopy)
+    // merges a class's default element (if it has one) into the default elements merged so far, as their child
+    private void MergeClassDefaultInto(ref StormXmlElement? merged, ref bool isMergedCopy, ReadOnlySpan<char> className)
     {
-        if (_layeredElementCache.TryGetFirstCatalogNameByElementName(elementName, out string? catalogName))
+        StormXmlElement? classDefault = _layeredElementCache.GetStormXmlElementByClassElement(className, out bool isClassDefaultCopy);
+        if (classDefault is null)
+            return;
+
+        if (merged is null)
         {
-            return _layeredElementCache.GetStormXmlElementByClassElement(catalogName, out isCopy);
+            merged = classDefault;
+            isMergedCopy = isClassDefaultCopy;
+            return;
         }
 
-        isCopy = false;
-        return null;
+        merged = MergeIntoParent(merged, isMergedCopy, classDefault, isClassDefaultCopy, out isMergedCopy);
     }
 }

@@ -448,9 +448,9 @@ public sealed class StormCatalog
     /// <summary>
     /// Gets a default element, if it exists. A default element is the element with no <c>id</c> (e.g. <c>&lt;CEffectDamage default="1"&gt;</c>).
     /// <para>
-    /// It is merged from all the loaded <c>stormmods</c> (base, then map, then custom), then over its catalog's base class default element
-    /// (e.g. <c>CEffect</c> for <c>CEffectDamage</c>), so the defaults it inherits are included. This is the same default element that
-    /// <see cref="TryGetElement(ReadOnlySpan{char}, ReadOnlySpan{char}, out StormXmlElement?)"/> merges an element into.
+    /// It is merged from all the loaded <c>stormmods</c> (base, then map, then custom), then over the default elements of the classes it derives from:
+    /// its catalog's base class and each class in between (e.g. <c>CValidator</c> and <c>CValidatorUnit</c> for <c>CValidatorUnitAbil</c>), so the defaults it inherits are included.
+    /// This is the same default element that <see cref="TryGetElement(ReadOnlySpan{char}, ReadOnlySpan{char}, out StormXmlElement?)"/> merges an element into.
     /// </para>
     /// <para>
     /// It is not cached: it can be the stored instance or a new merged copy, so later calls don't always return the same instance. Its public members are read-only.
@@ -477,9 +477,9 @@ public sealed class StormCatalog
     /// <summary>
     /// Gets a default element. A default element is the element with no <c>id</c> (e.g. <c>&lt;CEffectDamage default="1"&gt;</c>).
     /// <para>
-    /// It is merged from all the loaded <c>stormmods</c> (base, then map, then custom), then over its catalog's base class default element
-    /// (e.g. <c>CEffect</c> for <c>CEffectDamage</c>), so the defaults it inherits are included. This is the same default element that
-    /// <see cref="TryGetElement(ReadOnlySpan{char}, ReadOnlySpan{char}, out StormXmlElement?)"/> merges an element into.
+    /// It is merged from all the loaded <c>stormmods</c> (base, then map, then custom), then over the default elements of the classes it derives from:
+    /// its catalog's base class and each class in between (e.g. <c>CValidator</c> and <c>CValidatorUnit</c> for <c>CValidatorUnitAbil</c>), so the defaults it inherits are included.
+    /// This is the same default element that <see cref="TryGetElement(ReadOnlySpan{char}, ReadOnlySpan{char}, out StormXmlElement?)"/> merges an element into.
     /// </para>
     /// <para>
     /// It is not cached: it can be the stored instance or a new merged copy, so later calls don't always return the same instance. Its public members are read-only.

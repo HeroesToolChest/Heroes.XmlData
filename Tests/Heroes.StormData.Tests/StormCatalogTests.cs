@@ -1275,6 +1275,39 @@ public sealed class StormCatalogTests
     }
 
     [TestMethod]
+    public void TryGetDefaultElement_IntermediateClassHasDefault_IncludesIntermediateDefaults()
+    {
+        // arrange - CValidatorUnitAbil derives from CValidatorUnit, which derives from CValidator, as in the game data
+        DataStorage dataStorage = _layeredDataStorage.GetDataStorage(StormModType.Base);
+
+        foreach (string xml in new[]
+        {
+            """<CValidator default="1"><ResultFailed value="Error" /></CValidator>""",
+            """<CValidatorUnit default="1"><ResultNoUnit value="MustTargetUnit" /><WhichUnit Value="Target" /></CValidatorUnit>""",
+            """<CValidatorUnitAbil default="1"><AbilClass value="CAbilUnknown" /></CValidatorUnitAbil>""",
+        })
+        {
+            StormXmlElement classDefault = XmlReaderHelper.GetStormXmlElement(xml);
+            dataStorage.AddBaseClassCatalogName(classDefault, "Validator");
+            dataStorage.AddElementWithNoId(classDefault);
+        }
+
+        dataStorage.AddElementWithId(XmlReaderHelper.GetStormXmlElement("""<CValidatorUnitAbil id="CasterHasMountAbility" />"""), "Validator");
+
+        // act
+        StormXmlElement defaultElement = _stormCatalog.GetDefaultElement("CValidatorUnitAbil");
+        StormXmlElement element = _stormCatalog.GetElement("Validator", "CasterHasMountAbility");
+
+        // assert - the default element and an element of the class both have every class's defaults
+        foreach (StormXmlElement result in new[] { defaultElement, element })
+        {
+            result.Members.GetMember("ResultFailed").Value.RawValue.Should().Be("Error");
+            result.Members.GetMember("ResultNoUnit").Value.RawValue.Should().Be("MustTargetUnit");
+            result.Members.GetMember("AbilClass").Value.RawValue.Should().Be("CAbilUnknown");
+        }
+    }
+
+    [TestMethod]
     public void TryGetDefaultElement_BaseClass_ReturnsBaseClassDefault()
     {
         // arrange

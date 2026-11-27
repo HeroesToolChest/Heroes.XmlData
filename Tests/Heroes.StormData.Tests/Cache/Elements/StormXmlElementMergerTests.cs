@@ -566,6 +566,206 @@ public class StormXmlElementMergerTests
         elementCache.StormXmlElementByClassElement.Dictionary["EffectDamage"].Members.ContainsMember("Marker").Should().BeFalse();
     }
 
+    [TestMethod]
+    public void GetMergedElementOfNoId_IntermediateClassHasDefault_IncludesIntermediateDefaults()
+    {
+        // arrange - CValidatorUnitAbil derives from CValidatorUnit, which derives from CValidator
+        LayeredDataStorage layeredDataStorage = CreateValidatorDefaultsStorage();
+        StormXmlElementMerger stormXmlElementMerger = new(layeredDataStorage.Elements);
+
+        // act
+        StormXmlElement? result = stormXmlElementMerger.GetMergedElementOfNoId("ValidatorUnitAbil");
+
+        // assert
+        result.Should().NotBeNull();
+        result.ElementName.Should().Be("ValidatorUnitAbil");
+        result.Members["ResultFailed"].Value.RawValue.Should().Be("Error");
+        result.Members["WhichUnit"].ByMember["Value"].Value.RawValue.Should().Be("Target");
+        result.Members["ResultNoUnit"].Value.RawValue.Should().Be("MustTargetUnit");
+        result.Members["AbilClass"].Value.RawValue.Should().Be("CAbilUnknown");
+    }
+
+    [TestMethod]
+    public void GetMergedElementOfNoId_TwoIntermediateClasses_MoreDerivedOverridesLessDerived()
+    {
+        // arrange - CValidatorUnitOrderQueue -> CValidatorUnitOrder (WhichUnit Caster) -> CValidatorUnit (WhichUnit Target) -> CValidator
+        LayeredDataStorage layeredDataStorage = CreateValidatorDefaultsStorage();
+        StormXmlElementMerger stormXmlElementMerger = new(layeredDataStorage.Elements);
+
+        // act
+        StormXmlElement? result = stormXmlElementMerger.GetMergedElementOfNoId("ValidatorUnitOrderQueue");
+
+        // assert
+        result.Should().NotBeNull();
+        result.Members["WhichUnit"].ByMember["Value"].Value.RawValue.Should().Be("Caster");
+        result.Members["ResultNoUnit"].Value.RawValue.Should().Be("MustTargetUnit");
+        result.Members["ResultFailed"].Value.RawValue.Should().Be("Error");
+        result.Members["Target"].ByMember["Value"].Value.RawValue.Should().Be("Unknown");
+        result.Members["Find"].Value.RawValue.Should().Be("1");
+    }
+
+    [TestMethod]
+    public void GetMergedElementOfNoId_IntermediateClassHasNoDefault_SkipsIt()
+    {
+        // arrange - CValidatorUnitCompare has no default element, but CValidatorUnit does
+        LayeredDataStorage layeredDataStorage = CreateValidatorDefaultsStorage();
+        AddClassDefault(layeredDataStorage, "Validator", """<CValidatorUnitCompareField default="1"><Value value="0" /></CValidatorUnitCompareField>""");
+
+        StormXmlElementMerger stormXmlElementMerger = new(layeredDataStorage.Elements);
+
+        // act
+        StormXmlElement? result = stormXmlElementMerger.GetMergedElementOfNoId("ValidatorUnitCompareField");
+
+        // assert
+        result.Should().NotBeNull();
+        result.Members["WhichUnit"].ByMember["Value"].Value.RawValue.Should().Be("Target");
+        result.Members["Value"].Value.RawValue.Should().Be("0");
+    }
+
+    [TestMethod]
+    public void GetMergedElementOfNoId_ClassNameStartNotAtCapitalLetter_IsNotABase()
+    {
+        // arrange - CValidatorUni is a class of the catalog whose name starts CValidatorUnitAbil's, but not up to a capital letter
+        LayeredDataStorage layeredDataStorage = CreateValidatorDefaultsStorage();
+        AddClassDefault(layeredDataStorage, "Validator", """<CValidatorUni default="1"><NotInherited value="1" /></CValidatorUni>""");
+
+        StormXmlElementMerger stormXmlElementMerger = new(layeredDataStorage.Elements);
+
+        // act
+        StormXmlElement? result = stormXmlElementMerger.GetMergedElementOfNoId("ValidatorUnitAbil");
+
+        // assert
+        result.Should().NotBeNull();
+        result.Members.ContainsMember("NotInherited").Should().BeFalse();
+    }
+
+    [TestMethod]
+    public void GetMergedElementOfNoId_ClassNameStartIsOtherCatalog_IsNotABase()
+    {
+        // arrange - CAchievement is the start of CAchievementTermTime's name, but is a different catalog than AchievementTerm
+        LayeredDataStorage layeredDataStorage = new();
+        AddClassDefault(layeredDataStorage, "Achievement", """<CAchievement default="1"><AchievementOnly value="1" /></CAchievement>""");
+        AddClassDefault(layeredDataStorage, "AchievementTerm", """<CAchievementTerm default="1"><TermBase value="1" /></CAchievementTerm>""");
+        AddClassDefault(layeredDataStorage, "AchievementTerm", """<CAchievementTermTime default="1"><Time value="30" /></CAchievementTermTime>""");
+
+        StormXmlElementMerger stormXmlElementMerger = new(layeredDataStorage.Elements);
+
+        // act
+        StormXmlElement? result = stormXmlElementMerger.GetMergedElementOfNoId("AchievementTermTime");
+
+        // assert
+        result.Should().NotBeNull();
+        result.Members["TermBase"].Value.RawValue.Should().Be("1");
+        result.Members["Time"].Value.RawValue.Should().Be("30");
+        result.Members.ContainsMember("AchievementOnly").Should().BeFalse();
+    }
+
+    [TestMethod]
+    public void GetMergedElementOfNoId_CatalogBaseClassIsNotStartOfName_IncludesBaseClassDefault()
+    {
+        // arrange - CRequirementEq is in the RequirementNode catalog, whose base class CRequirementNode is not the start of its name.
+        // CRequirement is the start of its name, but is the Requirement catalog
+        LayeredDataStorage layeredDataStorage = new();
+        AddClassDefault(layeredDataStorage, "RequirementNode", """<CRequirementNode default="1"><Tooltip value="Node" /></CRequirementNode>""");
+        AddClassDefault(layeredDataStorage, "Requirement", """<CRequirement default="1"><RequirementOnly value="1" /></CRequirement>""");
+        AddClassDefault(layeredDataStorage, "RequirementNode", """<CRequirementEq default="1"><OperandArray index="0" value="A" /></CRequirementEq>""");
+
+        StormXmlElementMerger stormXmlElementMerger = new(layeredDataStorage.Elements);
+
+        // act
+        StormXmlElement? result = stormXmlElementMerger.GetMergedElementOfNoId("RequirementEq");
+
+        // assert
+        result.Should().NotBeNull();
+        result.Members["Tooltip"].Value.RawValue.Should().Be("Node");
+        result.Members.ContainsMember("OperandArray").Should().BeTrue();
+        result.Members.ContainsMember("RequirementOnly").Should().BeFalse();
+    }
+
+    [TestMethod]
+    public void GetMergedElementOfNoId_IntermediateClassDefaultInHigherLayer_IncludesIt()
+    {
+        // arrange - the map overrides the intermediate class's default
+        LayeredDataStorage layeredDataStorage = CreateValidatorDefaultsStorage();
+        layeredDataStorage.GetDataStorage(StormModType.Map).AddElementWithNoId(
+            XmlReaderHelper.GetStormXmlElement("""<CValidatorUnit default="1"><WhichUnit Value="Source" /></CValidatorUnit>"""));
+
+        StormXmlElementMerger stormXmlElementMerger = new(layeredDataStorage.Elements);
+
+        // act
+        StormXmlElement? result = stormXmlElementMerger.GetMergedElementOfNoId("ValidatorUnitAbil");
+
+        // assert
+        result.Should().NotBeNull();
+        result.Members["WhichUnit"].ByMember["Value"].Value.RawValue.Should().Be("Source");
+        result.Members["ResultNoUnit"].Value.RawValue.Should().Be("MustTargetUnit");
+    }
+
+    [TestMethod]
+    public void GetMergedElementOfNoId_IntermediateClassHasDefault_DoesNotModifyStoredElements()
+    {
+        // arrange
+        LayeredDataStorage layeredDataStorage = CreateValidatorDefaultsStorage();
+        ElementCache elementCache = layeredDataStorage.GetDataStorage(StormModType.Base).ElementCache;
+        StormXmlElementMerger stormXmlElementMerger = new(layeredDataStorage.Elements);
+
+        // act
+        stormXmlElementMerger.GetMergedElementOfNoId("ValidatorUnitOrderQueue");
+
+        // assert
+        elementCache.StormXmlElementByClassElement.Dictionary["Validator"].Members.ContainsMember("WhichUnit").Should().BeFalse();
+        elementCache.StormXmlElementByClassElement.Dictionary["ValidatorUnit"].Members.ContainsMember("Target").Should().BeFalse();
+        elementCache.StormXmlElementByClassElement.Dictionary["ValidatorUnitOrder"].Members.ContainsMember("Find").Should().BeFalse();
+        elementCache.StormXmlElementByClassElement.Dictionary["ValidatorUnitOrderQueue"].Members.ContainsMember("ResultNoUnit").Should().BeFalse();
+    }
+
+    [TestMethod]
+    public void GetMerged_ElementOfClassWithIntermediateDefault_IncludesIntermediateDefaults()
+    {
+        // arrange - like CasterHasMountAbility in the game data, an element with no parent
+        LayeredDataStorage layeredDataStorage = CreateValidatorDefaultsStorage();
+        layeredDataStorage.GetDataStorage(StormModType.Base).AddElementWithId(
+            XmlReaderHelper.GetStormXmlElement("""<CValidatorUnitAbil id="CasterHasMountAbility"><Abil value="Mount" /></CValidatorUnitAbil>"""),
+            "Validator");
+
+        StormXmlElementMerger stormXmlElementMerger = new(layeredDataStorage.Elements);
+
+        // act
+        StormXmlElement? result = stormXmlElementMerger.GetMerged("CasterHasMountAbility", "Validator");
+
+        // assert
+        result.Should().NotBeNull();
+        result.Id.Should().Be("CasterHasMountAbility");
+        result.Members["Abil"].Value.RawValue.Should().Be("Mount");
+        result.Members["AbilClass"].Value.RawValue.Should().Be("CAbilUnknown");
+        result.Members["WhichUnit"].ByMember["Value"].Value.RawValue.Should().Be("Target");
+        result.Members["ResultFailed"].Value.RawValue.Should().Be("Error");
+    }
+
+    // the validator classes and their default elements, as in core.stormmod's validatordata.xml
+    private static LayeredDataStorage CreateValidatorDefaultsStorage()
+    {
+        LayeredDataStorage layeredDataStorage = new();
+
+        AddClassDefault(layeredDataStorage, "Validator", """<CValidator default="1"><ResultFailed value="Error" /></CValidator>""");
+        AddClassDefault(layeredDataStorage, "Validator", """<CValidatorUnit default="1"><ResultNoUnit value="MustTargetUnit" /><WhichUnit Value="Target" /><OtherUnit Value="Unknown" /></CValidatorUnit>""");
+        AddClassDefault(layeredDataStorage, "Validator", """<CValidatorUnitAbil default="1"><AbilClass value="CAbilUnknown" /></CValidatorUnitAbil>""");
+        AddClassDefault(layeredDataStorage, "Validator", """<CValidatorUnitOrder default="1"><WhichUnit Value="Caster" /><Target Value="Unknown" /></CValidatorUnitOrder>""");
+        AddClassDefault(layeredDataStorage, "Validator", """<CValidatorUnitOrderQueue default="1"><Find value="1" /></CValidatorUnitOrderQueue>""");
+
+        return layeredDataStorage;
+    }
+
+    // adds a class's catalog name and its default element to the base layer, the same way loading an XML file does
+    private static void AddClassDefault(LayeredDataStorage layeredDataStorage, string catalogName, string xml)
+    {
+        StormXmlElement element = XmlReaderHelper.GetStormXmlElement(xml);
+        DataStorage dataStorage = layeredDataStorage.GetDataStorage(StormModType.Base);
+
+        dataStorage.AddBaseClassCatalogName(element, catalogName);
+        dataStorage.AddElementWithNoId(element);
+    }
+
     // CEffect (Chance 0.5, Marker Damage) as the Effect catalog's base class default, and CEffectDamage (Chance 1, Kind Basic), in the base layer
     private static LayeredDataStorage CreateEffectDefaultsStorage()
     {

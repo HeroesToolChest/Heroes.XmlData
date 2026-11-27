@@ -84,8 +84,9 @@ internal sealed class LayeredDataStorage
     }
 
     /// <summary>
-    /// Retrieves the merged default element (the element with no <c>id</c>) of a class, merged from the data storages and over its catalog's base class
-    /// default element (e.g. <c>CEffect</c> for <c>CEffectDamage</c>), the same as an element with an <c>id</c> is merged into (see <see cref="StormXmlElementMerger"/>).
+    /// Retrieves the merged default element (the element with no <c>id</c>) of a class, merged from the data storages and over the default elements of the classes
+    /// it derives from (e.g. <c>CValidator</c> and <c>CValidatorUnit</c> for <c>CValidatorUnitAbil</c>), the same as an element with an <c>id</c> is merged into
+    /// (see <see cref="StormXmlElementMerger.GetMergedElementOfNoId(ReadOnlySpan{char})"/>).
     /// <para>
     /// It is not cached, and the returned element can be the stored instance (when there is nothing to merge), so it must not be modified.
     /// </para>
