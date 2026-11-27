@@ -1426,6 +1426,365 @@ public sealed class StormCatalogTests
         act.Should().Throw<KeyNotFoundException>().WithMessage("*Unit,HeroMuradin,EnergyMax*");
     }
 
+    [TestMethod]
+    public void StyleConstantExists_ConstantLoaded_ReturnsTrue()
+    {
+        // arrange
+        AddStyleConstant(StormModType.Base, """<Constant name="ColorGray" val="a7a7a7" />""");
+
+        // act
+        bool result = _stormCatalog.StyleConstantExists("ColorGray");
+
+        // assert
+        result.Should().BeTrue();
+    }
+
+    [TestMethod]
+    [DataRow("ColorWhite")]
+    [DataRow("#ColorGray")]
+    [DataRow("colorgray")]
+    [DataRow("")]
+    public void StyleConstantExists_NameNotFound_ReturnsFalse(string name)
+    {
+        // arrange - the name is without its #, and is case-sensitive
+        AddStyleConstant(StormModType.Base, """<Constant name="ColorGray" val="a7a7a7" />""");
+
+        // act
+        bool result = _stormCatalog.StyleConstantExists(name);
+
+        // assert
+        result.Should().BeFalse();
+    }
+
+    [TestMethod]
+    public void TryGetStyleConstant_ConstantLoaded_ReturnsConstant()
+    {
+        // arrange
+        AddStyleConstant(StormModType.Base, """<Constant name="ColorGray" val="a7a7a7" />""");
+
+        // act
+        bool result = _stormCatalog.TryGetStyleConstant("ColorGray", out StormXmlStyleConstantElement? constant);
+
+        // assert
+        result.Should().BeTrue();
+        constant!.Name.Should().Be("ColorGray");
+        constant.Value.Should().Be("a7a7a7");
+    }
+
+    [TestMethod]
+    public void TryGetStyleConstant_ConstantIsReference_ReturnsValueAsWritten()
+    {
+        // arrange
+        AddStyleConstant(StormModType.Base, """<Constant name="ColorChatLobby" val="ffffff" />""");
+        AddStyleConstant(StormModType.Base, """<Constant name="ColorInGameAll" val="#ColorChatLobby" />""");
+
+        // act
+        bool result = _stormCatalog.TryGetStyleConstant("ColorInGameAll", out StormXmlStyleConstantElement? constant);
+
+        // assert
+        result.Should().BeTrue();
+        constant!.Value.Should().Be("#ColorChatLobby");
+    }
+
+    [TestMethod]
+    public void TryGetStyleConstant_InBaseAndMap_ReturnsMapValue()
+    {
+        // arrange
+        AddStyleConstant(StormModType.Base, """<Constant name="ColorGray" val="a7a7a7" />""");
+        AddStyleConstant(StormModType.Map, """<Constant name="ColorGray" val="888888" />""");
+
+        // act
+        bool result = _stormCatalog.TryGetStyleConstant("ColorGray", out StormXmlStyleConstantElement? constant);
+
+        // assert
+        result.Should().BeTrue();
+        constant!.Value.Should().Be("888888");
+    }
+
+    [TestMethod]
+    public void TryGetStyleConstant_ConstantNotLoaded_ReturnsFalseAndNull()
+    {
+        // act
+        bool result = _stormCatalog.TryGetStyleConstant("ColorGray", out StormXmlStyleConstantElement? constant);
+
+        // assert
+        result.Should().BeFalse();
+        constant.Should().BeNull();
+    }
+
+    [TestMethod]
+    public void GetStyleConstant_ConstantLoaded_ReturnsConstant()
+    {
+        // arrange
+        AddStyleConstant(StormModType.Base, """<Constant name="ColorGray" val="a7a7a7" />""");
+
+        // act
+        StormXmlStyleConstantElement constant = _stormCatalog.GetStyleConstant("ColorGray");
+
+        // assert
+        constant.Value.Should().Be("a7a7a7");
+    }
+
+    [TestMethod]
+    public void GetStyleConstant_ConstantNotLoaded_ThrowsKeyNotFoundExceptionWithName()
+    {
+        // act
+        Action act = () => _stormCatalog.GetStyleConstant("ColorGray");
+
+        // assert
+        act.Should().Throw<KeyNotFoundException>().WithMessage("*ColorGray*");
+    }
+
+    [TestMethod]
+    public void TryGetStyleConstantValue_ConstantIsNotReference_ReturnsValue()
+    {
+        // arrange
+        AddStyleConstant(StormModType.Base, """<Constant name="ColorGray" val="a7a7a7" />""");
+
+        // act
+        bool result = _stormCatalog.TryGetStyleConstantValue("ColorGray", out string? value);
+
+        // assert
+        result.Should().BeTrue();
+        value.Should().Be("a7a7a7");
+    }
+
+    [TestMethod]
+    public void TryGetStyleConstantValue_ConstantIsReference_ReturnsReferencedValue()
+    {
+        // arrange
+        AddStyleConstant(StormModType.Base, """<Constant name="ColorChatLobby" val="ffffff" />""");
+        AddStyleConstant(StormModType.Base, """<Constant name="ColorInGameAll" val="#ColorChatLobby" />""");
+
+        // act
+        bool result = _stormCatalog.TryGetStyleConstantValue("ColorInGameAll", out string? value);
+
+        // assert
+        result.Should().BeTrue();
+        value.Should().Be("ffffff");
+    }
+
+    [TestMethod]
+    public void TryGetStyleConstantValue_ChainOfReferences_ReturnsFinalValue()
+    {
+        // arrange
+        AddStyleConstant(StormModType.Base, """<Constant name="ColorA" val="#ColorB" />""");
+        AddStyleConstant(StormModType.Base, """<Constant name="ColorB" val="#ColorC" />""");
+        AddStyleConstant(StormModType.Base, """<Constant name="ColorC" val="123456" />""");
+
+        // act
+        bool result = _stormCatalog.TryGetStyleConstantValue("ColorA", out string? value);
+
+        // assert
+        result.Should().BeTrue();
+        value.Should().Be("123456");
+    }
+
+    [TestMethod]
+    public void TryGetStyleConstantValue_ReferencedConstantInOtherLayer_ReturnsReferencedValue()
+    {
+        // arrange - a map constant that references a base one
+        AddStyleConstant(StormModType.Base, """<Constant name="ColorChatLobby" val="ffffff" />""");
+        AddStyleConstant(StormModType.Map, """<Constant name="ColorMapChat" val="#ColorChatLobby" />""");
+
+        // act
+        bool result = _stormCatalog.TryGetStyleConstantValue("ColorMapChat", out string? value);
+
+        // assert
+        result.Should().BeTrue();
+        value.Should().Be("ffffff");
+    }
+
+    [TestMethod]
+    public void TryGetStyleConstantValue_ReferencedConstantNotFound_ReturnsFalse()
+    {
+        // arrange
+        AddStyleConstant(StormModType.Base, """<Constant name="ColorInGameAll" val="#ColorChatLobby" />""");
+
+        // act
+        bool result = _stormCatalog.TryGetStyleConstantValue("ColorInGameAll", out string? value);
+
+        // assert
+        result.Should().BeFalse();
+        value.Should().BeNull();
+    }
+
+    [TestMethod]
+    [DataRow("ColorA")]
+    [DataRow("ColorSelf")]
+    public void TryGetStyleConstantValue_ReferencesLoop_ReturnsFalse(string name)
+    {
+        // arrange - ColorA -> ColorB -> ColorA, and ColorSelf -> ColorSelf
+        AddStyleConstant(StormModType.Base, """<Constant name="ColorA" val="#ColorB" />""");
+        AddStyleConstant(StormModType.Base, """<Constant name="ColorB" val="#ColorA" />""");
+        AddStyleConstant(StormModType.Base, """<Constant name="ColorSelf" val="#ColorSelf" />""");
+
+        // act
+        bool result = _stormCatalog.TryGetStyleConstantValue(name, out string? value);
+
+        // assert
+        result.Should().BeFalse();
+        value.Should().BeNull();
+    }
+
+    [TestMethod]
+    public void TryGetStyleConstantValue_ConstantNotLoaded_ReturnsFalse()
+    {
+        // act
+        bool result = _stormCatalog.TryGetStyleConstantValue("ColorGray", out string? value);
+
+        // assert
+        result.Should().BeFalse();
+        value.Should().BeNull();
+    }
+
+    [TestMethod]
+    public void TryGetStyleConstantValue_StyleTextColorReference_ReturnsConstantValue()
+    {
+        // arrange - a style's textcolor is a reference, which is looked up without its #
+        AddStyleConstant(StormModType.Base, """<Constant name="ColorGray" val="a7a7a7" />""");
+        AddStyle(StormModType.Base, """<Style name="TooltipSubscript" textcolor="#ColorGray" />""");
+
+        string textColor = _stormCatalog.GetStyle("TooltipSubscript").Members["textcolor"].Value.RawValue;
+
+        // act
+        bool result = _stormCatalog.TryGetStyleConstantValue(textColor.AsSpan(1), out string? value);
+
+        // assert
+        result.Should().BeTrue();
+        value.Should().Be("a7a7a7");
+    }
+
+    [TestMethod]
+    public void StyleExists_StyleLoaded_ReturnsTrue()
+    {
+        // arrange
+        AddStyle(StormModType.Base, """<Style name="TimerTitle" height="20" />""");
+
+        // act
+        bool result = _stormCatalog.StyleExists("TimerTitle");
+
+        // assert
+        result.Should().BeTrue();
+    }
+
+    [TestMethod]
+    [DataRow("OtherStyle")]
+    [DataRow("timertitle")]
+    [DataRow("")]
+    public void StyleExists_NameNotFound_ReturnsFalse(string name)
+    {
+        // arrange
+        AddStyle(StormModType.Base, """<Style name="TimerTitle" height="20" />""");
+
+        // act
+        bool result = _stormCatalog.StyleExists(name);
+
+        // assert
+        result.Should().BeFalse();
+    }
+
+    [TestMethod]
+    public void TryGetStyle_StyleHasNoTextColor_ReturnsTemplateTextColor()
+    {
+        // arrange - like TimerTitle in the game data, the style has no textcolor of its own
+        AddStyle(StormModType.Base, """<Style name="StandardTooltip" textcolor="#ColorWhite" height="16" />""");
+        AddStyle(StormModType.Base, """<Style name="TimerTitle" template="StandardTooltip" height="20" />""");
+
+        // act
+        bool result = _stormCatalog.TryGetStyle("TimerTitle", out StormXmlStyleElement? style);
+
+        // assert
+        result.Should().BeTrue();
+        style!.Name.Should().Be("TimerTitle");
+        style.Template.Should().Be("StandardTooltip");
+        style.Members["textcolor"].Value.RawValue.Should().Be("#ColorWhite");
+        style.Members["height"].Value.RawValue.Should().Be("20");
+    }
+
+    [TestMethod]
+    public void TryGetStyle_TemplateChain_IncludesEveryTemplate()
+    {
+        // arrange - TooltipSubscript -> StandardTooltip -> StandardBase
+        AddStyle(StormModType.Base, """<Style name="StandardBase" textcolor="255,255,255,255" vjustify="Top" />""");
+        AddStyle(StormModType.Base, """<Style name="StandardTooltip" template="StandardBase" height="16" />""");
+        AddStyle(StormModType.Base, """<Style name="TooltipSubscript" template="StandardTooltip" textcolor="#ColorGray" />""");
+
+        // act
+        bool result = _stormCatalog.TryGetStyle("TooltipSubscript", out StormXmlStyleElement? style);
+
+        // assert
+        result.Should().BeTrue();
+        style!.Members["textcolor"].Value.RawValue.Should().Be("#ColorGray");
+        style.Members["height"].Value.RawValue.Should().Be("16");
+        style.Members["vjustify"].Value.RawValue.Should().Be("Top");
+    }
+
+    [TestMethod]
+    public void TryGetStyle_StyleInBaseAndMap_MergesLayersAndTemplate()
+    {
+        // arrange - the map changes the style's height, the color comes from the template
+        AddStyle(StormModType.Base, """<Style name="StandardTooltip" textcolor="#ColorWhite" />""");
+        AddStyle(StormModType.Base, """<Style name="TimerTitle" template="StandardTooltip" height="20" />""");
+        AddStyle(StormModType.Map, """<Style name="TimerTitle" height="24" />""");
+
+        // act
+        bool result = _stormCatalog.TryGetStyle("TimerTitle", out StormXmlStyleElement? style);
+
+        // assert - the map's override leaves out the template, which is kept
+        result.Should().BeTrue();
+        style!.Template.Should().Be("StandardTooltip");
+        style.Members["height"].Value.RawValue.Should().Be("24");
+        style.Members["textcolor"].Value.RawValue.Should().Be("#ColorWhite");
+    }
+
+    [TestMethod]
+    public void TryGetStyle_StyleNotLoaded_ReturnsFalseAndNull()
+    {
+        // act
+        bool result = _stormCatalog.TryGetStyle("TimerTitle", out StormXmlStyleElement? style);
+
+        // assert
+        result.Should().BeFalse();
+        style.Should().BeNull();
+    }
+
+    [TestMethod]
+    public void GetStyle_StyleLoaded_ReturnsMergedStyle()
+    {
+        // arrange
+        AddStyle(StormModType.Base, """<Style name="StandardTooltip" textcolor="#ColorWhite" />""");
+        AddStyle(StormModType.Base, """<Style name="TimerTitle" template="StandardTooltip" />""");
+
+        // act
+        StormXmlStyleElement style = _stormCatalog.GetStyle("TimerTitle");
+
+        // assert
+        style.Members["textcolor"].Value.RawValue.Should().Be("#ColorWhite");
+    }
+
+    [TestMethod]
+    public void GetStyle_StyleNotLoaded_ThrowsKeyNotFoundExceptionWithName()
+    {
+        // act
+        Action act = () => _stormCatalog.GetStyle("TimerTitle");
+
+        // assert
+        act.Should().Throw<KeyNotFoundException>().WithMessage("*TimerTitle*");
+    }
+
+    // adds the style constant to the data storage of the given layer, the same way loading a .stormstyle file does
+    private void AddStyleConstant(StormModType stormModType, string xml)
+    {
+        _layeredDataStorage.GetDataStorage(stormModType).AddStyleConstantElement(XmlReaderHelper.GetStormXmlStyleConstantElement(xml));
+    }
+
+    // adds the style to the data storage of the given layer, the same way loading a .stormstyle file does
+    private void AddStyle(StormModType stormModType, string xml)
+    {
+        _layeredDataStorage.GetDataStorage(stormModType).AddStyleElement(XmlReaderHelper.GetStormXmlStyleElement(xml));
+    }
+
     // Unit,HeroMuradin (LifeMax 2765, LifeRegenRate 5.7617, EnergyMax 500) with its LevelScalingArray on CHero Muradin, in the base layer
     private void AddMuradin(string lifeScaling = "0.040000")
     {

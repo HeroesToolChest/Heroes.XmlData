@@ -518,6 +518,146 @@ public sealed class StormCatalog
         throw new KeyNotFoundException($"Could not find the scaling: {catalogName},{id},{field}");
     }
 
+    /// <summary>
+    /// Determines if a style constant (a <c>Constant</c> element from a <c>.stormstyle</c> file, e.g. <c>&lt;Constant name="ColorGray" val="a7a7a7" /&gt;</c>) exists.
+    /// </summary>
+    /// <param name="name">The <c>name</c> of the style constant, without the leading <c>#</c> used to reference it (e.g. <c>ColorGray</c>). This is case-sensitive.</param>
+    /// <returns><see langword="true"/> if any of the loaded <c>stormmods</c> has the style constant; otherwise <see langword="false"/>, which includes <paramref name="name"/> being empty.</returns>
+    public bool StyleConstantExists(ReadOnlySpan<char> name) => _layeredDataStorage.Styles.ContainsStormXmlStyleConstantElementByName(name);
+
+    /// <summary>
+    /// Gets a style constant (a <c>Constant</c> element from a <c>.stormstyle</c> file, e.g. <c>&lt;Constant name="ColorGray" val="a7a7a7" /&gt;</c>), if it exists.
+    /// <para>
+    /// It is merged from all the loaded <c>stormmods</c> (base, then map, then custom). Its <see cref="StormXmlStyleConstantElement.Value"/> is as written,
+    /// so it can be a reference to another constant (e.g. <c>#ColorChatLobby</c>). To follow the references to the final value, use
+    /// <see cref="TryGetStyleConstantValue(ReadOnlySpan{char}, out string?)"/>.
+    /// The same instance can be returned on later calls until the loaded data changes. Its public members are read-only.
+    /// </para>
+    /// </summary>
+    /// <param name="name">The <c>name</c> of the style constant, without the leading <c>#</c> used to reference it (e.g. <c>ColorGray</c>). This is case-sensitive.</param>
+    /// <param name="constant">When this method returns, contains the style constant, if found; otherwise, <see langword="null"/>.</param>
+    /// <returns><see langword="true"/> if the style constant was found; otherwise <see langword="false"/>, in the same cases as <see cref="StyleConstantExists(ReadOnlySpan{char})"/>.</returns>
+    public bool TryGetStyleConstant(ReadOnlySpan<char> name, [NotNullWhen(true)] out StormXmlStyleConstantElement? constant)
+    {
+        constant = _layeredDataStorage.Styles.GetStormXmlStyleConstantElementByName(name);
+        return constant is not null;
+    }
+
+    /// <summary>
+    /// Gets a style constant (a <c>Constant</c> element from a <c>.stormstyle</c> file, e.g. <c>&lt;Constant name="ColorGray" val="a7a7a7" /&gt;</c>).
+    /// <para>
+    /// It is merged from all the loaded <c>stormmods</c> (base, then map, then custom). Its <see cref="StormXmlStyleConstantElement.Value"/> is as written,
+    /// so it can be a reference to another constant (e.g. <c>#ColorChatLobby</c>). To follow the references to the final value, use
+    /// <see cref="TryGetStyleConstantValue(ReadOnlySpan{char}, out string?)"/>.
+    /// The same instance can be returned on later calls until the loaded data changes. Its public members are read-only.
+    /// </para>
+    /// </summary>
+    /// <param name="name">The <c>name</c> of the style constant, without the leading <c>#</c> used to reference it (e.g. <c>ColorGray</c>). This is case-sensitive.</param>
+    /// <returns>The style constant.</returns>
+    /// <exception cref="KeyNotFoundException">
+    /// The style constant was not found (in the same cases that <see cref="StyleConstantExists(ReadOnlySpan{char})"/> returns <see langword="false"/>).
+    /// </exception>
+    public StormXmlStyleConstantElement GetStyleConstant(ReadOnlySpan<char> name)
+    {
+        if (TryGetStyleConstant(name, out StormXmlStyleConstantElement? constant))
+            return constant;
+
+        throw new KeyNotFoundException($"Could not find the style constant: {name}");
+    }
+
+    /// <summary>
+    /// Gets the final value of a style constant, following its references to other constants (a value that starts with <c>#</c>),
+    /// e.g. <c>ColorInGameAll</c> is <c>#ColorChatLobby</c>, so its value is <c>ColorChatLobby</c>'s value.
+    /// <para>
+    /// This is also how to get the value of a reference in a style, such as a <c>textcolor</c> of <c>#ColorGray</c>: pass the name without the <c>#</c>.
+    /// </para>
+    /// </summary>
+    /// <param name="name">The <c>name</c> of the style constant, without the leading <c>#</c> used to reference it (e.g. <c>ColorGray</c>). This is case-sensitive.</param>
+    /// <param name="value">When this method returns, contains the final value (it does not start with <c>#</c>), if found; otherwise, <see langword="null"/>.</param>
+    /// <returns>
+    /// <see langword="true"/> if the style constant and every constant it references were found; otherwise <see langword="false"/>,
+    /// which includes a reference to a constant that does not exist and references that loop back to an earlier constant.
+    /// </returns>
+    public bool TryGetStyleConstantValue(ReadOnlySpan<char> name, [NotNullWhen(true)] out string? value)
+    {
+        value = null;
+
+        if (!TryGetStyleConstant(name, out StormXmlStyleConstantElement? constant))
+            return false;
+
+        string currentValue = constant.Value;
+        HashSet<string>? referencedNames = null;
+
+        while (currentValue.StartsWith('#'))
+        {
+            // most constants are not references, so the set is only made for the ones that are
+            referencedNames ??= new HashSet<string>(StringComparer.Ordinal) { constant.Name };
+
+            string referencedName = currentValue[1..];
+
+            if (!referencedNames.Add(referencedName) || !TryGetStyleConstant(referencedName, out constant))
+                return false;
+
+            currentValue = constant.Value;
+        }
+
+        value = currentValue;
+        return true;
+    }
+
+    /// <summary>
+    /// Determines if a style (a <c>Style</c> element from a <c>.stormstyle</c> file, e.g. <c>&lt;Style name="TooltipSubscript" template="StandardTooltip" /&gt;</c>) exists.
+    /// </summary>
+    /// <param name="name">The <c>name</c> of the style (e.g. <c>TooltipSubscript</c>). This is case-sensitive.</param>
+    /// <returns><see langword="true"/> if any of the loaded <c>stormmods</c> has the style; otherwise <see langword="false"/>, which includes <paramref name="name"/> being empty.</returns>
+    public bool StyleExists(ReadOnlySpan<char> name) => _layeredDataStorage.Styles.ContainsStormXmlStyleElementByName(name);
+
+    /// <summary>
+    /// Gets a style (a <c>Style</c> element from a <c>.stormstyle</c> file, e.g. <c>&lt;Style name="TooltipSubscript" template="StandardTooltip" /&gt;</c>), if it exists,
+    /// merged with its <c>template</c> chain so the attributes it inherits are included.
+    /// <para>
+    /// It is merged from all the loaded <c>stormmods</c> (base, then map, then custom), then over its template, that template's template, and so on,
+    /// so a style that has no <c>textcolor</c> of its own has its template's. The style's own attributes override its template's, and it keeps its own <c>name</c> and <c>template</c>.
+    /// </para>
+    /// <para>
+    /// Its attribute values are as written, so a color can be a reference to a style constant (e.g. <c>#ColorGray</c>),
+    /// which <see cref="TryGetStyleConstantValue(ReadOnlySpan{char}, out string?)"/> gets the value of. Its public members are read-only.
+    /// </para>
+    /// </summary>
+    /// <param name="name">The <c>name</c> of the style (e.g. <c>TooltipSubscript</c>). This is case-sensitive.</param>
+    /// <param name="style">When this method returns, contains the merged style, if found; otherwise, <see langword="null"/>.</param>
+    /// <returns><see langword="true"/> if the style was found; otherwise <see langword="false"/>, in the same cases as <see cref="StyleExists(ReadOnlySpan{char})"/>.</returns>
+    public bool TryGetStyle(ReadOnlySpan<char> name, [NotNullWhen(true)] out StormXmlStyleElement? style)
+    {
+        style = _layeredDataStorage.Styles.GetMergedStormXmlStyleElementByName(name);
+        return style is not null;
+    }
+
+    /// <summary>
+    /// Gets a style (a <c>Style</c> element from a <c>.stormstyle</c> file, e.g. <c>&lt;Style name="TooltipSubscript" template="StandardTooltip" /&gt;</c>),
+    /// merged with its <c>template</c> chain so the attributes it inherits are included.
+    /// <para>
+    /// It is merged from all the loaded <c>stormmods</c> (base, then map, then custom), then over its template, that template's template, and so on,
+    /// so a style that has no <c>textcolor</c> of its own has its template's. The style's own attributes override its template's, and it keeps its own <c>name</c> and <c>template</c>.
+    /// </para>
+    /// <para>
+    /// Its attribute values are as written, so a color can be a reference to a style constant (e.g. <c>#ColorGray</c>),
+    /// which <see cref="TryGetStyleConstantValue(ReadOnlySpan{char}, out string?)"/> gets the value of. Its public members are read-only.
+    /// </para>
+    /// </summary>
+    /// <param name="name">The <c>name</c> of the style (e.g. <c>TooltipSubscript</c>). This is case-sensitive.</param>
+    /// <returns>The merged style.</returns>
+    /// <exception cref="KeyNotFoundException">
+    /// The style was not found (in the same cases that <see cref="StyleExists(ReadOnlySpan{char})"/> returns <see langword="false"/>).
+    /// </exception>
+    public StormXmlStyleElement GetStyle(ReadOnlySpan<char> name)
+    {
+        if (TryGetStyle(name, out StormXmlStyleElement? style))
+            return style;
+
+        throw new KeyNotFoundException($"Could not find the style: {name}");
+    }
+
     // the element names are stored without their leading C, so it is removed before a lookup. A name without it is not found.
     private static bool TryRemoveClassElementDeclaration(ReadOnlySpan<char> elementName, out ReadOnlySpan<char> storedElementName)
     {
