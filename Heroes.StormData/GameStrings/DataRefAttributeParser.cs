@@ -1,4 +1,4 @@
-﻿namespace Heroes.StormData.GameStrings;
+namespace Heroes.StormData.GameStrings;
 
 internal sealed class DataRefAttributeParser
 {
@@ -248,34 +248,9 @@ internal sealed class DataRefAttributeParser
         if (fieldNode.IsEmpty || !fieldNode.Value.TryGetDouble(out double fieldValue))
             return new ValueScale(0);
 
-        if (TryGetScaling(mergedStormXmlElement, catalog, entry, field, fieldNode, out double scaling))
+        if (LevelScalingResolver.TryGetScaling(_layeredDataStorage.Elements, mergedStormXmlElement, catalog, entry, field, fieldNode, out double scaling))
             return new ValueScale(fieldValue, scaling);
 
         return new ValueScale(fieldValue);
-    }
-
-    // finds the LevelScalingArray modification whose Field resolves to the same node as the dref field
-    private bool TryGetScaling(StormXmlElement mergedStormXmlElement, ReadOnlySpan<char> catalog, ReadOnlySpan<char> entry, ReadOnlySpan<char> field, FieldNode fieldNode, out double scaling)
-    {
-        scaling = 0;
-
-        IReadOnlyList<LevelScalingFieldValue>? scalingFieldValues = _layeredDataStorage.Elements.GetScalingFieldValuesById(entry, catalog);
-        if (scalingFieldValues is null)
-            return false;
-
-        // from the end, so if two spellings resolve to the same node, the later (higher data storage layer) one wins
-        for (int i = scalingFieldValues.Count - 1; i >= 0; i--)
-        {
-            LevelScalingFieldValue scalingFieldValue = scalingFieldValues[i];
-
-            // fast path: same text, so no need to parse it.
-            // both are parsed on the same merged element, so the node instances can be compared
-            bool isMatch = field.Equals(scalingFieldValue.Field, StringComparison.Ordinal) || DataRefFieldParser.ParseField(mergedStormXmlElement, scalingFieldValue.Field).IsSameNode(fieldNode);
-
-            if (isMatch)
-                return double.TryParse(scalingFieldValue.Value, NumberStyles.Float, CultureInfo.InvariantCulture, out scaling);
-        }
-
-        return false;
     }
 }

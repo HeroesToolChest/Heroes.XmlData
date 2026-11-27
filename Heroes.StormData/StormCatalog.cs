@@ -449,6 +449,75 @@ public sealed class StormCatalog
         throw new KeyNotFoundException($"Could not find the default element: {elementName}");
     }
 
+    /// <summary>
+    /// Gets the per-level scaling of an element's field (from a <c>LevelScalingArray</c> modification), if it has one.
+    /// For example, a hero unit's <c>LifeMax</c> with a scaling of 0.04 increases by 4% per level.
+    /// <para>
+    /// A modification matches if its <c>Field</c> is the same text as <paramref name="field"/>, or if both refer to the same value of the merged element,
+    /// so different spellings of the same field (such as with and without an index) match.
+    /// If more than one <c>stormmod</c> has a matching modification, the one from the highest layer is used (custom, then map, then base).
+    /// This is the same scaling that the gamestrings use for the field's data references.
+    /// </para>
+    /// </summary>
+    /// <param name="catalogName">The catalog name of the element (e.g. <c>Unit</c>). This is case-insensitive.</param>
+    /// <param name="id">The <c>id</c> of the element (e.g. <c>HeroMuradin</c>). This is case-sensitive.</param>
+    /// <param name="field">The field (e.g. <c>LifeMax</c> or <c>Modification.DamageDealtScaled[Spell]</c>), the same as in a data reference.</param>
+    /// <param name="scaling">
+    /// When this method returns, contains the scaling, if found; otherwise, the default value.
+    /// Its <see cref="StormNumber.Value"/> is as written in the data (e.g. 0.04) and its <see cref="StormNumber.FixedValue"/> is what the game stores (e.g. 0.0400390625).
+    /// </param>
+    /// <returns>
+    /// <see langword="true"/> if the field has a scaling; otherwise <see langword="false"/>, which includes the element not being found
+    /// and the modification's <c>Value</c> not being a number.
+    /// </returns>
+    public bool TryGetScaling(ReadOnlySpan<char> catalogName, ReadOnlySpan<char> id, ReadOnlySpan<char> field, out StormNumber scaling)
+    {
+        // the fields are resolved on the merged element, as in a data reference
+        if (!TryGetElement(catalogName, id, out StormXmlElement? element))
+        {
+            scaling = default;
+            return false;
+        }
+
+        FieldNode fieldNode = DataRefFieldParser.ParseField(element, field);
+
+        if (!LevelScalingResolver.TryGetScaling(_layeredDataStorage.Elements, element, catalogName, id, field, fieldNode, out double value))
+        {
+            scaling = default;
+            return false;
+        }
+
+        scaling = StormNumber.FromDataValue(value);
+        return true;
+    }
+
+    /// <summary>
+    /// Gets the per-level scaling of an element's field (from a <c>LevelScalingArray</c> modification).
+    /// For example, a hero unit's <c>LifeMax</c> with a scaling of 0.04 increases by 4% per level.
+    /// <para>
+    /// A modification matches if its <c>Field</c> is the same text as <paramref name="field"/>, or if both refer to the same value of the merged element,
+    /// so different spellings of the same field (such as with and without an index) match.
+    /// If more than one <c>stormmod</c> has a matching modification, the one from the highest layer is used (custom, then map, then base).
+    /// This is the same scaling that the gamestrings use for the field's data references.
+    /// </para>
+    /// </summary>
+    /// <param name="catalogName">The catalog name of the element (e.g. <c>Unit</c>). This is case-insensitive.</param>
+    /// <param name="id">The <c>id</c> of the element (e.g. <c>HeroMuradin</c>). This is case-sensitive.</param>
+    /// <param name="field">The field (e.g. <c>LifeMax</c> or <c>Modification.DamageDealtScaled[Spell]</c>), the same as in a data reference.</param>
+    /// <returns>
+    /// The scaling. Its <see cref="StormNumber.Value"/> is as written in the data (e.g. 0.04) and its <see cref="StormNumber.FixedValue"/> is what the game stores (e.g. 0.0400390625).
+    /// </returns>
+    /// <exception cref="KeyNotFoundException">
+    /// The field has no scaling (in the same cases that <see cref="TryGetScaling(ReadOnlySpan{char}, ReadOnlySpan{char}, ReadOnlySpan{char}, out StormNumber)"/> returns <see langword="false"/>).
+    /// </exception>
+    public StormNumber GetScaling(ReadOnlySpan<char> catalogName, ReadOnlySpan<char> id, ReadOnlySpan<char> field)
+    {
+        if (TryGetScaling(catalogName, id, field, out StormNumber scaling))
+            return scaling;
+
+        throw new KeyNotFoundException($"Could not find the scaling: {catalogName},{id},{field}");
+    }
+
     // the element names are stored without their leading C, so it is removed before a lookup. A name without it is not found.
     private static bool TryRemoveClassElementDeclaration(ReadOnlySpan<char> elementName, out ReadOnlySpan<char> storedElementName)
     {

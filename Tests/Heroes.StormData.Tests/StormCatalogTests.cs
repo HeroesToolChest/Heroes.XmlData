@@ -1280,6 +1280,199 @@ public sealed class StormCatalogTests
         act.Should().Throw<KeyNotFoundException>().WithMessage("*CEffectDamage*");
     }
 
+    [TestMethod]
+    [DataRow("LifeMax")]
+    [DataRow("LifeRegenRate")]
+    public void TryGetScaling_FieldHasScaling_ReturnsValueAndFixedValue(string field)
+    {
+        // arrange
+        AddMuradin();
+
+        // act
+        bool result = _stormCatalog.TryGetScaling("Unit", "HeroMuradin", field, out StormNumber scaling);
+
+        // assert - 0.04 is 163.84 steps of 1/4096, stored as 164/4096
+        result.Should().BeTrue();
+        scaling.Value.Should().Be(0.04);
+        scaling.FixedValue.Should().Be(0.0400390625);
+    }
+
+    [TestMethod]
+    public void TryGetScaling_ScalingOf0045_FixedValueIsRoundedDown()
+    {
+        // arrange - 0.045 is 184.32 steps, so it is stored as 184/4096, below the written value
+        AddMuradin(lifeScaling: "0.045000");
+
+        // act
+        bool result = _stormCatalog.TryGetScaling("Unit", "HeroMuradin", "LifeMax", out StormNumber scaling);
+
+        // assert
+        result.Should().BeTrue();
+        scaling.Value.Should().Be(0.045);
+        scaling.FixedValue.Should().Be(0.044921875);
+    }
+
+    [TestMethod]
+    public void TryGetScaling_FieldHasNoScaling_ReturnsFalse()
+    {
+        // arrange
+        AddMuradin();
+
+        // act
+        bool result = _stormCatalog.TryGetScaling("Unit", "HeroMuradin", "EnergyMax", out StormNumber scaling);
+
+        // assert
+        result.Should().BeFalse();
+        scaling.Should().Be(default(StormNumber));
+    }
+
+    [TestMethod]
+    public void TryGetScaling_ElementNotLoaded_ReturnsFalse()
+    {
+        // arrange - the scaling exists, but not the element its fields are resolved on
+        AddMuradinScaling(StormModType.Base, "0.040000");
+
+        // act
+        bool result = _stormCatalog.TryGetScaling("Unit", "HeroMuradin", "LifeMax", out _);
+
+        // assert
+        result.Should().BeFalse();
+    }
+
+    [TestMethod]
+    public void TryGetScaling_FieldWithIndexForSameValue_ReturnsScaling()
+    {
+        // arrange - the scaling's Field has no index, the field asked for does, both are the same value
+        AddMuradin();
+
+        // act
+        bool result = _stormCatalog.TryGetScaling("Unit", "HeroMuradin", "LifeMax[0]", out StormNumber scaling);
+
+        // assert
+        result.Should().BeTrue();
+        scaling.Value.Should().Be(0.04);
+    }
+
+    [TestMethod]
+    public void TryGetScaling_ScalingInBaseAndMap_ReturnsMapScaling()
+    {
+        // arrange
+        AddMuradin();
+        AddMuradinScaling(StormModType.Map, "0.050000");
+
+        // act
+        bool result = _stormCatalog.TryGetScaling("Unit", "HeroMuradin", "LifeMax", out StormNumber scaling);
+
+        // assert
+        result.Should().BeTrue();
+        scaling.Value.Should().Be(0.05);
+        scaling.FixedValue.Should().Be(0.0500488281250);
+    }
+
+    [TestMethod]
+    public void TryGetScaling_CatalogNameWithDifferentCasing_ReturnsScaling()
+    {
+        // arrange
+        AddMuradin();
+
+        // act
+        bool result = _stormCatalog.TryGetScaling("UNIT", "HeroMuradin", "LifeMax", out StormNumber scaling);
+
+        // assert
+        result.Should().BeTrue();
+        scaling.Value.Should().Be(0.04);
+    }
+
+    [TestMethod]
+    public void TryGetScaling_SameScalingAsGameString_ScalingAttributeIsFixedValue()
+    {
+        // arrange - the gamestring writes the stored scaling, which must be the catalog's FixedValue
+        AddMuradin();
+        AddGameString(StormModType.Base, GameStringId, "<d ref=\"Unit,HeroMuradin,LifeMax\"/>");
+
+        // act
+        StormNumber scaling = _stormCatalog.GetScaling("Unit", "HeroMuradin", "LifeMax");
+        string parsed = _stormCatalog.GetParsedGameString(GameStringId).RawText;
+
+        // assert
+        parsed.Should().Contain($"scaling=\"{scaling.FixedValue.ToString(CultureInfo.InvariantCulture)}\"");
+        parsed.Should().Contain($"~~{scaling.Value.ToString(CultureInfo.InvariantCulture)}~~");
+    }
+
+    [TestMethod]
+    public void GetScaling_FieldHasScaling_ReturnsScaling()
+    {
+        // arrange
+        AddMuradin();
+
+        // act
+        StormNumber scaling = _stormCatalog.GetScaling("Unit", "HeroMuradin", "LifeRegenRate");
+
+        // assert
+        scaling.Value.Should().Be(0.04);
+        scaling.FixedValue.Should().Be(0.0400390625);
+    }
+
+    [TestMethod]
+    public void GetScaling_FieldHasNoScaling_ThrowsKeyNotFoundExceptionWithReference()
+    {
+        // arrange
+        AddMuradin();
+
+        // act
+        Action act = () => _stormCatalog.GetScaling("Unit", "HeroMuradin", "EnergyMax");
+
+        // assert
+        act.Should().Throw<KeyNotFoundException>().WithMessage("*Unit,HeroMuradin,EnergyMax*");
+    }
+
+    // Unit,HeroMuradin (LifeMax 2765, LifeRegenRate 5.7617, EnergyMax 500) with its LevelScalingArray on CHero Muradin, in the base layer
+    private void AddMuradin(string lifeScaling = "0.040000")
+    {
+        DataStorage dataStorage = _layeredDataStorage.GetDataStorage(StormModType.Base);
+
+        dataStorage.AddBaseClassCatalogName(XmlReaderHelper.GetStormXmlElement("<CUnit />"), "Unit");
+        dataStorage.AddElementWithId(
+            XmlReaderHelper.GetStormXmlElement(
+                """
+                <CUnit id="HeroMuradin">
+                  <LifeStart value="2765" />
+                  <LifeMax value="2765" />
+                  <LifeRegenRate value="5.7617" />
+                  <EnergyMax value="500" />
+                </CUnit>
+                """),
+            "Unit");
+
+        AddMuradinScaling(StormModType.Base, lifeScaling);
+    }
+
+    // the LevelScalingArray of CHero Muradin, the same shape as in the game data
+    private void AddMuradinScaling(StormModType stormModType, string lifeScaling)
+    {
+        _layeredDataStorage.GetDataStorage(stormModType).AddLevelScalingElementValue(XmlReaderHelper.GetStormXmlElement(
+            $"""
+            <CHero id="Muradin">
+              <LevelScalingArray Ability="MuradinStormBolt">
+                <Modifications>
+                  <Catalog value="Unit" />
+                  <Entry value="HeroMuradin" />
+                  <Field value="LifeMax" />
+                  <Value value="{lifeScaling}" />
+                  <AffectedByOverdrive value="1" />
+                </Modifications>
+                <Modifications>
+                  <Catalog value="Unit" />
+                  <Entry value="HeroMuradin" />
+                  <Field value="LifeRegenRate" />
+                  <Value value="0.040000" />
+                  <AffectedByOverdrive value="1" />
+                </Modifications>
+              </LevelScalingArray>
+            </CHero>
+            """).Members.GetMember("LevelScalingArray"));
+    }
+
     // Effect,ChildDamage (Amount 120) with parent Effect,ParentDamage (Kind Spell), in the base layer
     private void AddMergeableElements()
     {

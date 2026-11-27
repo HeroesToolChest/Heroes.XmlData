@@ -1458,20 +1458,6 @@ internal sealed class LayeredElementCacheTests
         second.Should().Equal(first);
     }
 
-    // adds the class element name to the catalog's set, the same way DataStorage.AddBaseClassCatalogName does
-    private void AddClassElementName(StormModType stormModType, string catalogName, string elementName)
-    {
-        Dictionary<string, HashSet<string>> classElementsByCatalog = GetElementCache(stormModType).ClassElementsByCatalog;
-
-        if (!classElementsByCatalog.TryGetValue(catalogName, out HashSet<string>? elementNames))
-        {
-            elementNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-            classElementsByCatalog.Add(catalogName, elementNames);
-        }
-
-        elementNames.Add(elementName);
-    }
-
     private static StormXmlConstElement CreateStormXmlConstElement(string id, string value = "1")
     {
         return XmlReaderHelper.GetStormXmlConstElement($"""<const id="{id}" value="{value}" />""");
@@ -1484,6 +1470,20 @@ internal sealed class LayeredElementCacheTests
               <Amount value="{amount}" />
             </CEffectDamage>
             """);
+    }
+
+    // adds the class element name to the catalog's set, the same way DataStorage.AddBaseClassCatalogName does
+    private void AddClassElementName(StormModType stormModType, string catalogName, string elementName)
+    {
+        Dictionary<string, HashSet<string>> classElementsByCatalog = GetElementCache(stormModType).ClassElementsByCatalog;
+
+        if (!classElementsByCatalog.TryGetValue(catalogName, out HashSet<string>? elementNames))
+        {
+            elementNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            classElementsByCatalog.Add(catalogName, elementNames);
+        }
+
+        elementNames.Add(elementName);
     }
 
     // parses the XML into an element with no id and adds it to the element cache of the given layer

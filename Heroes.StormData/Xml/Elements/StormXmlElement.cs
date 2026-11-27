@@ -133,6 +133,23 @@ public class StormXmlElement
     /// <returns>A new <see cref="StormXmlElement"/> instance that is a copy of the current element.</returns>
     internal virtual StormXmlElement Clone() => new(this);
 
+    [MemberNotNull(nameof(ElementName))]
+    [MemberNotNull(nameof(ElementNameWithDeclaration))]
+    private protected virtual void Initialize(StormXmlMember stormXmlMember)
+    {
+        ElementName = stormXmlMember.Name[1..];
+        ElementNameWithDeclaration = stormXmlMember.Name;
+
+        if (stormXmlMember.Name.StartsWith('C'))
+            ElementType = StormXmlElementType.Class;
+        else if (stormXmlMember.Name.StartsWith('S'))
+            ElementType = StormXmlElementType.Struct;
+        else if (stormXmlMember.Name.StartsWith('E'))
+            ElementType = StormXmlElementType.Enum;
+        else
+            ElementType = StormXmlElementType.Unknown;
+    }
+
     private void Merge(StormXmlElement other, bool isChild)
     {
         if (ReferenceEquals(this, other))
@@ -160,23 +177,6 @@ public class StormXmlElement
             else
                 _stormXmlMembers.Remove(StormXmlConstants.ParentAttributeName);
         }
-    }
-
-    [MemberNotNull(nameof(ElementName))]
-    [MemberNotNull(nameof(ElementNameWithDeclaration))]
-    private protected virtual void Initialize(StormXmlMember stormXmlMember)
-    {
-        ElementName = stormXmlMember.Name[1..];
-        ElementNameWithDeclaration = stormXmlMember.Name;
-
-        if (stormXmlMember.Name.StartsWith('C'))
-            ElementType = StormXmlElementType.Class;
-        else if (stormXmlMember.Name.StartsWith('S'))
-            ElementType = StormXmlElementType.Struct;
-        else if (stormXmlMember.Name.StartsWith('E'))
-            ElementType = StormXmlElementType.Enum;
-        else
-            ElementType = StormXmlElementType.Unknown;
     }
 
     private void InitializeAttributes(StormXmlMember stormXmlMember)
