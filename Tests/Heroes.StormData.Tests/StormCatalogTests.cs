@@ -776,6 +776,60 @@ public sealed class StormCatalogTests
     }
 
     [TestMethod]
+    public void ParseGameString_ExtractFontValuesWithoutLocale_UsesGameStringsLocale()
+    {
+        // arrange
+        AddConst("$AlarakChargeDamage", "1.5");
+        _stormCatalog.GameStringsLocale = StormLocale.DEDE;
+
+        // act
+        GameStringText gameStringText = _stormCatalog.ParseGameString(ChargeDamageGameString, true);
+
+        // assert
+        gameStringText.GameStringLocale.Should().Be(StormLocale.DEDE);
+        gameStringText.IsFontValuesExtracted.Should().BeTrue();
+        gameStringText.RawText.Should().Be("deals <c val=\"#TooltipNumbers\">1,5</c> damage");
+    }
+
+    [TestMethod]
+    [DataRow(true)]
+    [DataRow(false)]
+    public void ParseGameString_LocaleAndExtractFontValues_UsesBoth(bool extractFontValues)
+    {
+        // arrange
+        AddConst("$AlarakChargeDamage", "1.5");
+        _stormCatalog.GameStringsLocale = StormLocale.ENUS;
+
+        // act
+        GameStringText gameStringText = _stormCatalog.ParseGameString(ChargeDamageGameString, StormLocale.FRFR, extractFontValues);
+
+        // assert
+        gameStringText.GameStringLocale.Should().Be(StormLocale.FRFR);
+        gameStringText.IsFontValuesExtracted.Should().Be(extractFontValues);
+        gameStringText.RawText.Should().Be("deals <c val=\"#TooltipNumbers\">1,5</c> damage");
+    }
+
+    [TestMethod]
+    public void ParseGameString_Locale_DoesNotExtractFontValues()
+    {
+        // act
+        GameStringText gameStringText = _stormCatalog.ParseGameString("Deadly Charge", StormLocale.ENUS);
+
+        // assert
+        gameStringText.IsFontValuesExtracted.Should().BeFalse();
+    }
+
+    [TestMethod]
+    public void ParseGameString_UndefinedLocaleWithExtractFontValues_ThrowsArgumentOutOfRangeException()
+    {
+        // act
+        Action act = () => _stormCatalog.ParseGameString("Deadly Charge", (StormLocale)999, true);
+
+        // assert
+        act.Should().Throw<ArgumentOutOfRangeException>().WithParameterName("locale");
+    }
+
+    [TestMethod]
     public void ParseGameString_DataChangedAfterParse_ParsesWithCurrentData()
     {
         // arrange - the catalog is a live view, so a higher layer's value is used once it is loaded
@@ -905,6 +959,7 @@ public sealed class StormCatalogTests
 
         // assert
         gameStringText.RawText.Should().Be("deals <c val=\"#TooltipNumbers\">1.5</c> damage");
+        gameStringText.IsFontValuesExtracted.Should().BeFalse();
     }
 
     [TestMethod]

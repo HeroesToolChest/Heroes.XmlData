@@ -170,13 +170,13 @@ internal sealed class LayeredElementCacheTests
     [DataRow(StormModType.Base)]
     [DataRow(StormModType.Map)]
     [DataRow(StormModType.Custom)]
-    public void TryGetFirstIdByUnitName_InSingleLayer_ReturnsId(StormModType stormModType)
+    public void TryGetIdByUnitNameInLayer_InThatLayer_ReturnsId(StormModType stormModType)
     {
         // arrange
         AddIdByUnitName(stormModType, "Actor", "HeroMuradin", "HeroMuradinActor");
 
         // act
-        bool result = _layeredElementCache.TryGetFirstIdByUnitName("HeroMuradin", "Actor", out string? id);
+        bool result = _layeredElementCache.TryGetIdByUnitNameInLayer(stormModType, "HeroMuradin", "Actor", out string? id);
 
         // assert
         result.Should().BeTrue();
@@ -184,48 +184,17 @@ internal sealed class LayeredElementCacheTests
     }
 
     [TestMethod]
-    public void TryGetFirstIdByUnitName_InAllLayers_ReturnsCustomId()
-    {
-        // arrange
-        AddIdByUnitName(StormModType.Base, "Actor", "HeroMuradin", "BaseActor");
-        AddIdByUnitName(StormModType.Map, "Actor", "HeroMuradin", "MapActor");
-        AddIdByUnitName(StormModType.Custom, "Actor", "HeroMuradin", "CustomActor");
-
-        // act
-        bool result = _layeredElementCache.TryGetFirstIdByUnitName("HeroMuradin", "Actor", out string? id);
-
-        // assert
-        result.Should().BeTrue();
-        id.Should().Be("CustomActor");
-    }
-
-    [TestMethod]
-    public void TryGetFirstIdByUnitName_InBaseAndMap_ReturnsMapId()
-    {
-        // arrange
-        AddIdByUnitName(StormModType.Base, "Actor", "HeroMuradin", "BaseActor");
-        AddIdByUnitName(StormModType.Map, "Actor", "HeroMuradin", "MapActor");
-
-        // act
-        bool result = _layeredElementCache.TryGetFirstIdByUnitName("HeroMuradin", "Actor", out string? id);
-
-        // assert
-        result.Should().BeTrue();
-        id.Should().Be("MapActor");
-    }
-
-    [TestMethod]
     [DataRow("HeroButcher", "Actor")]
     [DataRow("heromuradin", "Actor")]
     [DataRow("HeroMuradin", "Unit")]
     [DataRow("", "Actor")]
-    public void TryGetFirstIdByUnitName_NotFound_ReturnsFalse(string unitName, string catalogName)
+    public void TryGetIdByUnitNameInLayer_NotFound_ReturnsFalse(string unitName, string catalogName)
     {
         // arrange - the unit name is case-sensitive and is only in the Actor catalog
         AddIdByUnitName(StormModType.Base, "Actor", "HeroMuradin", "HeroMuradinActor");
 
         // act
-        bool result = _layeredElementCache.TryGetFirstIdByUnitName(unitName, catalogName, out string? id);
+        bool result = _layeredElementCache.TryGetIdByUnitNameInLayer(StormModType.Base, unitName, catalogName, out string? id);
 
         // assert
         result.Should().BeFalse();
@@ -268,13 +237,13 @@ internal sealed class LayeredElementCacheTests
     }
 
     [TestMethod]
-    public void TryGetFirstIdByUnitName_CatalogNameWithDifferentCasing_ReturnsId()
+    public void TryGetIdByUnitNameInLayer_CatalogNameWithDifferentCasing_ReturnsId()
     {
         // arrange
         AddIdByUnitName(StormModType.Base, "Actor", "HeroMuradin", "HeroMuradinActor");
 
         // act
-        bool result = _layeredElementCache.TryGetFirstIdByUnitName("HeroMuradin", "actor", out string? id);
+        bool result = _layeredElementCache.TryGetIdByUnitNameInLayer(StormModType.Base, "HeroMuradin", "actor", out string? id);
 
         // assert
         result.Should().BeTrue();

@@ -36,42 +36,70 @@ public sealed class StormCatalog
     /// <summary>
     /// Gets the locale of the currently loaded gamestrings, or <see langword="null"/> if no gamestrings are loaded.
     /// <para>
-    /// This is the locale that <see cref="ParseGameString(ReadOnlySpan{char}, StormLocale?, bool)"/> uses when no locale is given.
+    /// This is the locale that the <c>ParseGameString</c> overloads without a locale, such as <see cref="ParseGameString(ReadOnlySpan{char})"/>, use.
     /// </para>
     /// </summary>
     public StormLocale? GameStringsLocale { get; internal set; }
 
     /// <summary>
     /// Parses an unparsed gamestring into a <see cref="GameStringText"/>, replacing its data tags (<c>&lt;d ... /&gt;</c>) with their values.
+    /// Its locale is the <see cref="GameStringsLocale"/>, or <see cref="StormLocale.ENUS"/> if no gamestrings are loaded, and its font values are not extracted.
     /// <para>
     /// The values are calculated from the currently loaded XML data, so the same gamestring can parse to different text after a <c>mapmod</c> is loaded or unloaded.
     /// </para>
     /// </summary>
     /// <param name="gameString">The unparsed gamestring text (not its <c>id</c>). Can be from <see cref="TryGetGameString(ReadOnlySpan{char}, out string?)"/> or any other source.</param>
-    /// <param name="locale">
-    /// The locale of <paramref name="gameString"/>, used to format the numbers written into the text and for the scaling text.
-    /// If <see langword="null"/>, the <see cref="GameStringsLocale"/> is used, or <see cref="StormLocale.ENUS"/> if no gamestrings are loaded.
+    /// <returns>The parsed <see cref="GameStringText"/>.</returns>
+    public GameStringText ParseGameString(ReadOnlySpan<char> gameString) => ParseGameStringCore(gameString, GetDefaultGameStringLocale(), false);
+
+    /// <summary>
+    /// Parses an unparsed gamestring into a <see cref="GameStringText"/>, replacing its data tags (<c>&lt;d ... /&gt;</c>) with their values.
+    /// Its locale is the <see cref="GameStringsLocale"/>, or <see cref="StormLocale.ENUS"/> if no gamestrings are loaded.
+    /// <para>
+    /// The values are calculated from the currently loaded XML data, so the same gamestring can parse to different text after a <c>mapmod</c> is loaded or unloaded.
+    /// </para>
+    /// </summary>
+    /// <param name="gameString">The unparsed gamestring text (not its <c>id</c>). Can be from <see cref="TryGetGameString(ReadOnlySpan{char}, out string?)"/> or any other source.</param>
+    /// <param name="extractFontValues">
+    /// If <see langword="true"/>, the <c>val</c> values of the font style and constant tags are saved in <see cref="GameStringText.FontStyleValues"/> and <see cref="GameStringText.FontConstantValues"/>.
+    /// If the output with color tags is not needed, set to <see langword="false"/> for faster parsing.
     /// </param>
+    /// <returns>The parsed <see cref="GameStringText"/>.</returns>
+    public GameStringText ParseGameString(ReadOnlySpan<char> gameString, bool extractFontValues) => ParseGameStringCore(gameString, GetDefaultGameStringLocale(), extractFontValues);
+
+    /// <summary>
+    /// Parses an unparsed gamestring of a locale into a <see cref="GameStringText"/>, replacing its data tags (<c>&lt;d ... /&gt;</c>) with their values.
+    /// Its font values are not extracted.
+    /// <para>
+    /// The values are calculated from the currently loaded XML data, so the same gamestring can parse to different text after a <c>mapmod</c> is loaded or unloaded.
+    /// </para>
+    /// </summary>
+    /// <param name="gameString">The unparsed gamestring text (not its <c>id</c>). Can be from <see cref="TryGetGameString(ReadOnlySpan{char}, out string?)"/> or any other source.</param>
+    /// <param name="locale">The locale of <paramref name="gameString"/>, used to format the numbers written into the text and for the scaling text.</param>
+    /// <returns>The parsed <see cref="GameStringText"/>.</returns>
+    /// <exception cref="ArgumentOutOfRangeException"><paramref name="locale"/> is not a defined <see cref="StormLocale"/> value.</exception>
+    public GameStringText ParseGameString(ReadOnlySpan<char> gameString, StormLocale locale) => ParseGameStringCore(gameString, locale, false);
+
+    /// <summary>
+    /// Parses an unparsed gamestring of a locale into a <see cref="GameStringText"/>, replacing its data tags (<c>&lt;d ... /&gt;</c>) with their values.
+    /// <para>
+    /// The values are calculated from the currently loaded XML data, so the same gamestring can parse to different text after a <c>mapmod</c> is loaded or unloaded.
+    /// </para>
+    /// </summary>
+    /// <param name="gameString">The unparsed gamestring text (not its <c>id</c>). Can be from <see cref="TryGetGameString(ReadOnlySpan{char}, out string?)"/> or any other source.</param>
+    /// <param name="locale">The locale of <paramref name="gameString"/>, used to format the numbers written into the text and for the scaling text.</param>
     /// <param name="extractFontValues">
     /// If <see langword="true"/>, the <c>val</c> values of the font style and constant tags are saved in <see cref="GameStringText.FontStyleValues"/> and <see cref="GameStringText.FontConstantValues"/>.
     /// If the output with color tags is not needed, set to <see langword="false"/> for faster parsing.
     /// </param>
     /// <returns>The parsed <see cref="GameStringText"/>.</returns>
     /// <exception cref="ArgumentOutOfRangeException"><paramref name="locale"/> is not a defined <see cref="StormLocale"/> value.</exception>
-    public GameStringText ParseGameString(ReadOnlySpan<char> gameString, StormLocale? locale = null, bool extractFontValues = false)
-    {
-        StormLocale stormLocale = locale ?? GameStringsLocale ?? StormLocale.ENUS;
-
-        if (!Enum.IsDefined(stormLocale))
-            throw new ArgumentOutOfRangeException(nameof(locale), stormLocale, $"The value is not a defined {nameof(StormLocale)}.");
-
-        return new GameStringText(_gameStringParser.ParseText(gameString, stormLocale), stormLocale, extractFontValues);
-    }
+    public GameStringText ParseGameString(ReadOnlySpan<char> gameString, StormLocale locale, bool extractFontValues) => ParseGameStringCore(gameString, locale, extractFontValues);
 
     /// <summary>
     /// Gets a gamestring (from a <c>gamestrings.txt</c> file) by its <c>id</c> and parses it into a <see cref="GameStringText"/>, if it exists.
     /// <para>
-    /// This is the same as <see cref="TryGetGameString(ReadOnlySpan{char}, out string?)"/> followed by <see cref="ParseGameString(ReadOnlySpan{char}, StormLocale?, bool)"/>
+    /// This is the same as <see cref="TryGetGameString(ReadOnlySpan{char}, out string?)"/> followed by <see cref="ParseGameString(ReadOnlySpan{char})"/>
     /// with the <see cref="GameStringsLocale"/>, which is the locale of the gamestring.
     /// </para>
     /// </summary>
@@ -86,7 +114,7 @@ public sealed class StormCatalog
     /// <summary>
     /// Gets a gamestring (from a <c>gamestrings.txt</c> file) by its <c>id</c> and parses it into a <see cref="GameStringText"/>, if it exists.
     /// <para>
-    /// This is the same as <see cref="TryGetGameString(ReadOnlySpan{char}, out string?)"/> followed by <see cref="ParseGameString(ReadOnlySpan{char}, StormLocale?, bool)"/>
+    /// This is the same as <see cref="TryGetGameString(ReadOnlySpan{char}, out string?)"/> followed by <see cref="ParseGameString(ReadOnlySpan{char}, bool)"/>
     /// with the <see cref="GameStringsLocale"/>, which is the locale of the gamestring.
     /// </para>
     /// </summary>
@@ -105,14 +133,28 @@ public sealed class StormCatalog
             return false;
         }
 
-        gameStringText = ParseGameString(gameString, null, extractFontValues);
+        gameStringText = ParseGameString(gameString, extractFontValues);
         return true;
     }
 
     /// <summary>
+    /// Gets a gamestring (from a <c>gamestrings.txt</c> file) by its <c>id</c> and parses it into a <see cref="GameStringText"/>. Its font values are not extracted.
+    /// <para>
+    /// This is the same as <see cref="GetGameString(ReadOnlySpan{char})"/> followed by <see cref="ParseGameString(ReadOnlySpan{char})"/>
+    /// with the <see cref="GameStringsLocale"/>, which is the locale of the gamestring.
+    /// </para>
+    /// </summary>
+    /// <param name="id">The <c>id</c> of the gamestring (e.g. <c>Button/Name/AlarakDeadlyChargeActivate</c>). This is case-sensitive.</param>
+    /// <returns>The parsed <see cref="GameStringText"/>.</returns>
+    /// <exception cref="KeyNotFoundException">
+    /// The gamestring was not found (in the same cases that <see cref="GameStringExists(ReadOnlySpan{char})"/> returns <see langword="false"/>).
+    /// </exception>
+    public GameStringText GetParsedGameString(ReadOnlySpan<char> id) => GetParsedGameString(id, false);
+
+    /// <summary>
     /// Gets a gamestring (from a <c>gamestrings.txt</c> file) by its <c>id</c> and parses it into a <see cref="GameStringText"/>.
     /// <para>
-    /// This is the same as <see cref="GetGameString(ReadOnlySpan{char})"/> followed by <see cref="ParseGameString(ReadOnlySpan{char}, StormLocale?, bool)"/>
+    /// This is the same as <see cref="GetGameString(ReadOnlySpan{char})"/> followed by <see cref="ParseGameString(ReadOnlySpan{char}, bool)"/>
     /// with the <see cref="GameStringsLocale"/>, which is the locale of the gamestring.
     /// </para>
     /// </summary>
@@ -125,7 +167,7 @@ public sealed class StormCatalog
     /// <exception cref="KeyNotFoundException">
     /// The gamestring was not found (in the same cases that <see cref="GameStringExists(ReadOnlySpan{char})"/> returns <see langword="false"/>).
     /// </exception>
-    public GameStringText GetParsedGameString(ReadOnlySpan<char> id, bool extractFontValues = false)
+    public GameStringText GetParsedGameString(ReadOnlySpan<char> id, bool extractFontValues)
     {
         if (TryGetParsedGameString(id, extractFontValues, out GameStringText? gameStringText))
             return gameStringText;
@@ -181,7 +223,7 @@ public sealed class StormCatalog
     /// <para>
     /// If more than one <c>stormmod</c> has a gamestring, the value from the highest layer is used (custom, then map, then base),
     /// the same as <see cref="TryGetGameString(ReadOnlySpan{char}, out string?)"/>. They are in the <see cref="GameStringsLocale"/>.
-    /// To parse one, use <see cref="ParseGameString(ReadOnlySpan{char}, StormLocale?, bool)"/>.
+    /// To parse one, use <see cref="ParseGameString(ReadOnlySpan{char})"/>.
     /// </para>
     /// </summary>
     /// <returns>
@@ -467,31 +509,40 @@ public sealed class StormCatalog
     }
 
     /// <summary>
-    /// Gets the <c>id</c>s of the elements of a catalog (e.g. every <c>Unit</c>), from all the loaded <c>stormmods</c> or from one layer.
+    /// Gets the <c>id</c>s of the elements of a catalog (e.g. every <c>Unit</c>), from all the loaded <c>stormmods</c>.
+    /// <para>
+    /// Only elements with an <c>id</c> are included, not default elements. Each <c>id</c> can be passed to
+    /// <see cref="TryGetElement(ReadOnlySpan{char}, ReadOnlySpan{char}, out StormXmlElement?)"/> with the same <paramref name="catalogName"/>.
+    /// To get them from one layer, use <see cref="GetElementIds(ReadOnlySpan{char}, StormModType)"/>.
+    /// </para>
+    /// </summary>
+    /// <param name="catalogName">The catalog name (e.g. <c>Unit</c>). This is case-insensitive.</param>
+    /// <returns>
+    /// A new list of the <c>id</c>s, each once, sorted by <see cref="StringComparer.Ordinal"/>, or an empty list if the catalog has no elements.
+    /// Loading or unloading afterwards does not change it.
+    /// </returns>
+    public IReadOnlyList<string> GetElementIds(ReadOnlySpan<char> catalogName) => GetElementIdsCore(catalogName, null);
+
+    /// <summary>
+    /// Gets the <c>id</c>s of the elements of a catalog (e.g. every <c>Unit</c>) from one layer, such as <see cref="StormModType.Map"/> for the elements a <c>mapmod</c> adds or overrides.
     /// <para>
     /// Only elements with an <c>id</c> are included, not default elements. Each <c>id</c> can be passed to
     /// <see cref="TryGetElement(ReadOnlySpan{char}, ReadOnlySpan{char}, out StormXmlElement?)"/> with the same <paramref name="catalogName"/>.
     /// </para>
     /// </summary>
     /// <param name="catalogName">The catalog name (e.g. <c>Unit</c>). This is case-insensitive.</param>
-    /// <param name="stormModType">
-    /// The layer to get the <c>id</c>s from, such as <see cref="StormModType.Map"/> for the elements a <c>mapmod</c> adds or overrides,
-    /// or <see langword="null"/> for all the layers.
-    /// </param>
+    /// <param name="stormModType">The layer to get the <c>id</c>s from.</param>
     /// <returns>
-    /// A new list of the <c>id</c>s, each once, sorted by <see cref="StringComparer.Ordinal"/>, or an empty list if the catalog has no elements.
+    /// A new list of the <c>id</c>s, each once, sorted by <see cref="StringComparer.Ordinal"/>, or an empty list if the layer has no elements of the catalog.
     /// Loading or unloading afterwards does not change it.
     /// </returns>
     /// <exception cref="ArgumentOutOfRangeException"><paramref name="stormModType"/> is not a defined <see cref="StormModType"/> value.</exception>
-    public IReadOnlyList<string> GetElementIds(ReadOnlySpan<char> catalogName, StormModType? stormModType = null)
+    public IReadOnlyList<string> GetElementIds(ReadOnlySpan<char> catalogName, StormModType stormModType)
     {
-        if (stormModType is StormModType layer && !Enum.IsDefined(layer))
-            throw new ArgumentOutOfRangeException(nameof(stormModType), layer, $"The value is not a defined {nameof(StormModType)}.");
+        if (!Enum.IsDefined(stormModType))
+            throw new ArgumentOutOfRangeException(nameof(stormModType), stormModType, $"The value is not a defined {nameof(StormModType)}.");
 
-        List<string> ids = [.. _layeredDataStorage.Elements.GetStormXmlElementIdsByCatalogName(catalogName, stormModType)];
-        ids.Sort(StringComparer.Ordinal);
-
-        return ids;
+        return GetElementIdsCore(catalogName, stormModType);
     }
 
     /// <summary>
@@ -837,6 +888,26 @@ public sealed class StormCatalog
 
         storedElementName = elementName[1..];
         return true;
+    }
+
+    // the ids of one layer, or of all the layers if it is null
+    private List<string> GetElementIdsCore(ReadOnlySpan<char> catalogName, StormModType? stormModType)
+    {
+        List<string> ids = [.. _layeredDataStorage.Elements.GetStormXmlElementIdsByCatalogName(catalogName, stormModType)];
+        ids.Sort(StringComparer.Ordinal);
+
+        return ids;
+    }
+
+    // the locale of a gamestring when none is given: the loaded gamestrings' locale
+    private StormLocale GetDefaultGameStringLocale() => GameStringsLocale ?? StormLocale.ENUS;
+
+    private GameStringText ParseGameStringCore(ReadOnlySpan<char> gameString, StormLocale locale, bool extractFontValues)
+    {
+        if (!Enum.IsDefined(locale))
+            throw new ArgumentOutOfRangeException(nameof(locale), locale, $"The value is not a defined {nameof(StormLocale)}.");
+
+        return new GameStringText(_gameStringParser.ParseText(gameString, locale), locale, extractFontValues);
     }
 
     // whether the merged element still has the unit name, which a later definition can have changed
