@@ -5,8 +5,14 @@ namespace Heroes.StormData;
 /// merged across the base, map, and custom <c>stormmods</c>.
 /// </summary>
 /// <remarks>
+/// <para>
 /// An instance is a live view of the data of the <see cref="HeroesLoader"/> that owns it,
 /// so it reflects whatever is currently loaded and changes as the loader loads and unloads data.
+/// </para>
+/// <para>
+/// This class is not thread-safe: looking up an element (and parsing a gamestring, which looks up elements) can add to an internal cache,
+/// so its methods must not be called from more than one thread at the same time, or while the <see cref="HeroesLoader"/> is loading or unloading data.
+/// </para>
 /// </remarks>
 public sealed class StormCatalog
 {
@@ -267,14 +273,13 @@ public sealed class StormCatalog
     /// </returns>
     public bool TryGetCatalogName(ReadOnlySpan<char> elementName, [NotNullWhen(true)] out string? catalogName)
     {
-        // the element names are stored without their leading C
-        if (elementName.Length < 2 || char.ToUpperInvariant(elementName[0]) != ClassElementDeclaration)
+        if (!TryRemoveClassElementDeclaration(elementName, out ReadOnlySpan<char> storedElementName))
         {
             catalogName = null;
             return false;
         }
 
-        return _layeredDataStorage.Elements.TryGetFirstCatalogNameByElementName(elementName[1..], out catalogName);
+        return _layeredDataStorage.Elements.TryGetFirstCatalogNameByElementName(storedElementName, out catalogName);
     }
 
     /// <summary>
@@ -319,5 +324,141 @@ public sealed class StormCatalog
         elementNamesWithDeclaration.Sort(StringComparer.OrdinalIgnoreCase);
 
         return elementNamesWithDeclaration;
+    }
+
+    /// <summary>
+    /// Determines if an element with an <c>id</c> exists in a catalog.
+    /// <para>
+    /// Only the element's own <c>id</c> is checked, nothing is merged, so this is cheaper than <see cref="TryGetElement(ReadOnlySpan{char}, ReadOnlySpan{char}, out StormXmlElement?)"/>.
+    /// </para>
+    /// </summary>
+    /// <param name="catalogName">The catalog name (e.g. <c>Effect</c>). This is case-insensitive.</param>
+    /// <param name="id">The <c>id</c> of the element (e.g. <c>GuldanHorrifyDamage</c>). This is case-sensitive.</param>
+    /// <returns><see langword="true"/> if any of the loaded <c>stormmods</c> has the element; otherwise <see langword="false"/>, which includes <paramref name="id"/> being empty.</returns>
+    public bool ElementExists(ReadOnlySpan<char> catalogName, ReadOnlySpan<char> id) => _layeredDataStorage.Elements.ContainsStormXmlElementById(id, catalogName);
+
+    /// <summary>
+    /// Gets an element with an <c>id</c> from a catalog, if it exists, merged into the complete element that the game uses.
+    /// <para>
+    /// The element is merged from all the loaded <c>stormmods</c> (base, then map, then custom), its <c>parent</c> elements, and its default element (the element with no <c>id</c>),
+    /// so values it inherits are included.
+    /// </para>
+    /// <para>
+    /// The merged element is cached, so the same instance can be returned on later calls until the loaded data changes. Its public members are read-only.
+    /// </para>
+    /// </summary>
+    /// <param name="catalogName">The catalog name (e.g. <c>Effect</c>). This is case-insensitive.</param>
+    /// <param name="id">The <c>id</c> of the element (e.g. <c>GuldanHorrifyDamage</c>). This is case-sensitive.</param>
+    /// <param name="element">When this method returns, contains the merged element, if found; otherwise, <see langword="null"/>.</param>
+    /// <returns><see langword="true"/> if the element was found; otherwise <see langword="false"/>, in the same cases as <see cref="ElementExists(ReadOnlySpan{char}, ReadOnlySpan{char})"/>.</returns>
+    public bool TryGetElement(ReadOnlySpan<char> catalogName, ReadOnlySpan<char> id, [NotNullWhen(true)] out StormXmlElement? element)
+    {
+        // checked first, so a missing id is not merged or cached
+        if (!ElementExists(catalogName, id))
+        {
+            element = null;
+            return false;
+        }
+
+        element = _layeredDataStorage.GetMergedStormXmlElementById(id, catalogName);
+        return element is not null;
+    }
+
+    /// <summary>
+    /// Gets an element with an <c>id</c> from a catalog, merged into the complete element that the game uses.
+    /// <para>
+    /// The element is merged from all the loaded <c>stormmods</c> (base, then map, then custom), its <c>parent</c> elements, and its default element (the element with no <c>id</c>),
+    /// so values it inherits are included.
+    /// </para>
+    /// <para>
+    /// The merged element is cached, so the same instance can be returned on later calls until the loaded data changes. Its public members are read-only.
+    /// </para>
+    /// </summary>
+    /// <param name="catalogName">The catalog name (e.g. <c>Effect</c>). This is case-insensitive.</param>
+    /// <param name="id">The <c>id</c> of the element (e.g. <c>GuldanHorrifyDamage</c>). This is case-sensitive.</param>
+    /// <returns>The merged element.</returns>
+    /// <exception cref="KeyNotFoundException">
+    /// The element was not found (in the same cases that <see cref="ElementExists(ReadOnlySpan{char}, ReadOnlySpan{char})"/> returns <see langword="false"/>).
+    /// </exception>
+    public StormXmlElement GetElement(ReadOnlySpan<char> catalogName, ReadOnlySpan<char> id)
+    {
+        if (TryGetElement(catalogName, id, out StormXmlElement? element))
+            return element;
+
+        throw new KeyNotFoundException($"Could not find the element: {catalogName},{id}");
+    }
+
+    /// <summary>
+    /// Determines if a default element exists. A default element is the element with no <c>id</c> (e.g. <c>&lt;CEffectDamage default="1"&gt;</c>).
+    /// </summary>
+    /// <param name="elementName">
+    /// The element name as written in the XML, with its leading <c>C</c> (e.g. <c>CEffectDamage</c>), the same as <see cref="StormXmlElement.ElementNameWithDeclaration"/>.
+    /// This is case-insensitive.
+    /// </param>
+    /// <returns>
+    /// <see langword="true"/> if any of the loaded <c>stormmods</c> has the default element; otherwise <see langword="false"/>, which includes <paramref name="elementName"/>
+    /// not starting with <c>C</c> (such as <c>EffectDamage</c>) or being empty.
+    /// </returns>
+    public bool DefaultElementExists(ReadOnlySpan<char> elementName) => TryGetDefaultElement(elementName, out _);
+
+    /// <summary>
+    /// Gets a default element, if it exists. A default element is the element with no <c>id</c> (e.g. <c>&lt;CEffectDamage default="1"&gt;</c>).
+    /// <para>
+    /// It is merged from all the loaded <c>stormmods</c> (base, then map, then custom).
+    /// The same instance can be returned on later calls until the loaded data changes. Its public members are read-only.
+    /// </para>
+    /// </summary>
+    /// <param name="elementName">
+    /// The element name as written in the XML, with its leading <c>C</c> (e.g. <c>CEffectDamage</c>), the same as <see cref="StormXmlElement.ElementNameWithDeclaration"/>.
+    /// This is case-insensitive.
+    /// </param>
+    /// <param name="element">When this method returns, contains the default element, if found; otherwise, <see langword="null"/>.</param>
+    /// <returns><see langword="true"/> if the default element was found; otherwise <see langword="false"/>, in the same cases as <see cref="DefaultElementExists(ReadOnlySpan{char})"/>.</returns>
+    public bool TryGetDefaultElement(ReadOnlySpan<char> elementName, [NotNullWhen(true)] out StormXmlElement? element)
+    {
+        if (!TryRemoveClassElementDeclaration(elementName, out ReadOnlySpan<char> storedElementName))
+        {
+            element = null;
+            return false;
+        }
+
+        element = _layeredDataStorage.Elements.GetStormXmlElementByClassElement(storedElementName);
+        return element is not null;
+    }
+
+    /// <summary>
+    /// Gets a default element. A default element is the element with no <c>id</c> (e.g. <c>&lt;CEffectDamage default="1"&gt;</c>).
+    /// <para>
+    /// It is merged from all the loaded <c>stormmods</c> (base, then map, then custom).
+    /// The same instance can be returned on later calls until the loaded data changes. Its public members are read-only.
+    /// </para>
+    /// </summary>
+    /// <param name="elementName">
+    /// The element name as written in the XML, with its leading <c>C</c> (e.g. <c>CEffectDamage</c>), the same as <see cref="StormXmlElement.ElementNameWithDeclaration"/>.
+    /// This is case-insensitive.
+    /// </param>
+    /// <returns>The default element.</returns>
+    /// <exception cref="KeyNotFoundException">
+    /// The default element was not found (in the same cases that <see cref="DefaultElementExists(ReadOnlySpan{char})"/> returns <see langword="false"/>).
+    /// </exception>
+    public StormXmlElement GetDefaultElement(ReadOnlySpan<char> elementName)
+    {
+        if (TryGetDefaultElement(elementName, out StormXmlElement? element))
+            return element;
+
+        throw new KeyNotFoundException($"Could not find the default element: {elementName}");
+    }
+
+    // the element names are stored without their leading C, so it is removed before a lookup. A name without it is not found.
+    private static bool TryRemoveClassElementDeclaration(ReadOnlySpan<char> elementName, out ReadOnlySpan<char> storedElementName)
+    {
+        if (elementName.Length < 2 || char.ToUpperInvariant(elementName[0]) != ClassElementDeclaration)
+        {
+            storedElementName = default;
+            return false;
+        }
+
+        storedElementName = elementName[1..];
+        return true;
     }
 }

@@ -56,7 +56,7 @@ public sealed class StormCatalogTests
         AddGameString(StormModType.Base, GameStringId, "Deadly Charge");
 
         // act
-        bool result = _stormCatalog.GameStringExists(ReadOnlySpan<char>.Empty);
+        bool result = _stormCatalog.GameStringExists([]);
 
         // assert
         result.Should().BeFalse();
@@ -215,7 +215,7 @@ public sealed class StormCatalogTests
         AddAssetString(StormModType.Base, AssetStringId, "Assets/Textures/storm_ui_icon_alarak.dds");
 
         // act
-        bool result = _stormCatalog.AssetStringExists(ReadOnlySpan<char>.Empty);
+        bool result = _stormCatalog.AssetStringExists([]);
 
         // assert
         result.Should().BeFalse();
@@ -401,7 +401,7 @@ public sealed class StormCatalogTests
         AddStormLayoutFile(StormModType.Base, StormLayoutPath);
 
         // act
-        bool result = _stormCatalog.StormLayoutFileExists(ReadOnlySpan<char>.Empty);
+        bool result = _stormCatalog.StormLayoutFileExists([]);
 
         // assert
         result.Should().BeFalse();
@@ -889,6 +889,376 @@ public sealed class StormCatalogTests
 
         // assert
         elementNames.Should().AllSatisfy(x => _stormCatalog.GetCatalogName(x).Should().Be("Effect"));
+    }
+
+    [TestMethod]
+    public void ElementExists_ElementLoaded_ReturnsTrue()
+    {
+        // arrange
+        AddMergeableElements();
+
+        // act
+        bool result = _stormCatalog.ElementExists("Effect", "ChildDamage");
+
+        // assert
+        result.Should().BeTrue();
+    }
+
+    [TestMethod]
+    public void ElementExists_ElementNotLoaded_ReturnsFalse()
+    {
+        // arrange
+        AddMergeableElements();
+
+        // act
+        bool result = _stormCatalog.ElementExists("Effect", "UnknownDamage");
+
+        // assert
+        result.Should().BeFalse();
+    }
+
+    [TestMethod]
+    public void ElementExists_IdInOtherCatalog_ReturnsFalse()
+    {
+        // arrange
+        AddMergeableElements();
+
+        // act
+        bool result = _stormCatalog.ElementExists("Abil", "ChildDamage");
+
+        // assert
+        result.Should().BeFalse();
+    }
+
+    [TestMethod]
+    public void ElementExists_EmptyId_ReturnsFalse()
+    {
+        // arrange
+        AddMergeableElements();
+
+        // act
+        bool result = _stormCatalog.ElementExists("Effect", []);
+
+        // assert
+        result.Should().BeFalse();
+    }
+
+    [TestMethod]
+    public void ElementExists_CatalogNameWithDifferentCasingAndIdWithDifferentCasing_CatalogIsCaseInsensitiveAndIdIsNot()
+    {
+        // arrange
+        AddMergeableElements();
+
+        // act
+        bool catalogResult = _stormCatalog.ElementExists("EFFECT", "ChildDamage");
+        bool idResult = _stormCatalog.ElementExists("Effect", "childdamage");
+
+        // assert
+        catalogResult.Should().BeTrue();
+        idResult.Should().BeFalse();
+    }
+
+    [TestMethod]
+    public void TryGetElement_ElementHasParent_ReturnsElementWithParentValues()
+    {
+        // arrange
+        AddMergeableElements();
+
+        // act
+        bool result = _stormCatalog.TryGetElement("Effect", "ChildDamage", out StormXmlElement? element);
+
+        // assert
+        result.Should().BeTrue();
+        element!.Id.Should().Be("ChildDamage");
+        element.Members.GetMember("Amount").Value.RawValue.Should().Be("120");
+        element.Members.GetMember("Kind").Value.RawValue.Should().Be("Spell");
+    }
+
+    [TestMethod]
+    public void TryGetElement_ElementInBaseAndMap_ReturnsMapValueMergedOverBase()
+    {
+        // arrange
+        AddMergeableElements();
+        _layeredDataStorage.GetDataStorage(StormModType.Map).AddElementWithId(
+            XmlReaderHelper.GetStormXmlElement(
+                """
+                <CEffectDamage id="ChildDamage">
+                  <Amount value="150" />
+                </CEffectDamage>
+                """),
+            "Effect");
+
+        // act
+        bool result = _stormCatalog.TryGetElement("Effect", "ChildDamage", out StormXmlElement? element);
+
+        // assert
+        result.Should().BeTrue();
+        element!.Members.GetMember("Amount").Value.RawValue.Should().Be("150");
+    }
+
+    [TestMethod]
+    public void TryGetElement_ElementNotLoaded_ReturnsFalseAndNull()
+    {
+        // arrange
+        AddMergeableElements();
+
+        // act
+        bool result = _stormCatalog.TryGetElement("Effect", "UnknownDamage", out StormXmlElement? element);
+
+        // assert
+        result.Should().BeFalse();
+        element.Should().BeNull();
+    }
+
+    [TestMethod]
+    public void TryGetElement_CalledTwice_ReturnsSameInstance()
+    {
+        // arrange
+        AddMergeableElements();
+
+        // act
+        _stormCatalog.TryGetElement("Effect", "ChildDamage", out StormXmlElement? first);
+        _stormCatalog.TryGetElement("Effect", "ChildDamage", out StormXmlElement? second);
+
+        // assert
+        first.Should().NotBeNull();
+        second.Should().BeSameAs(first);
+    }
+
+    [TestMethod]
+    public void TryGetElement_NotFoundThenAdded_ReturnsElement()
+    {
+        // arrange - the catalog is a live view, so an element that is loaded later is found
+        AddMergeableElements();
+        _stormCatalog.TryGetElement("Effect", "NewDamage", out _).Should().BeFalse();
+
+        _layeredDataStorage.GetDataStorage(StormModType.Map).AddElementWithId(
+            XmlReaderHelper.GetStormXmlElement("""<CEffectDamage id="NewDamage" parent="ParentDamage" />"""),
+            "Effect");
+
+        // act
+        bool result = _stormCatalog.TryGetElement("Effect", "NewDamage", out StormXmlElement? element);
+
+        // assert
+        result.Should().BeTrue();
+        element!.Members.GetMember("Kind").Value.RawValue.Should().Be("Spell");
+    }
+
+    [TestMethod]
+    public void TryGetElement_MapDataCleared_ReturnsElementWithoutMapValues()
+    {
+        // arrange
+        AddMergeableElements();
+        _layeredDataStorage.GetDataStorage(StormModType.Map).AddElementWithId(
+            XmlReaderHelper.GetStormXmlElement(
+                """
+                <CEffectDamage id="ChildDamage">
+                  <Amount value="999" />
+                </CEffectDamage>
+                """),
+            "Effect");
+
+        _stormCatalog.TryGetElement("Effect", "ChildDamage", out StormXmlElement? before);
+
+        _layeredDataStorage.ClearDataStorage(StormModType.Map);
+
+        // act
+        bool result = _stormCatalog.TryGetElement("Effect", "ChildDamage", out StormXmlElement? after);
+
+        // assert
+        before!.Members.GetMember("Amount").Value.RawValue.Should().Be("999");
+        result.Should().BeTrue();
+        after!.Members.GetMember("Amount").Value.RawValue.Should().Be("120");
+    }
+
+    [TestMethod]
+    public void TryGetElement_IdAndCatalogNameAsSpanSlices_ReturnsSameInstanceAsStrings()
+    {
+        // arrange - mirrors a data reference, where the catalog name and id are slices of the text
+        AddMergeableElements();
+        ReadOnlySpan<char> dRef = "Effect,ChildDamage,Amount";
+
+        // act
+        _stormCatalog.TryGetElement("Effect", "ChildDamage", out StormXmlElement? fromStrings);
+        _stormCatalog.TryGetElement(dRef[..6], dRef[7..18], out StormXmlElement? fromSlices);
+
+        // assert
+        fromStrings.Should().NotBeNull();
+        fromSlices.Should().BeSameAs(fromStrings);
+    }
+
+    [TestMethod]
+    public void GetElement_ElementLoaded_ReturnsMergedElement()
+    {
+        // arrange
+        AddMergeableElements();
+
+        // act
+        StormXmlElement element = _stormCatalog.GetElement("Effect", "ChildDamage");
+
+        // assert
+        element.Members.GetMember("Amount").Value.RawValue.Should().Be("120");
+        element.Members.GetMember("Kind").Value.RawValue.Should().Be("Spell");
+    }
+
+    [TestMethod]
+    public void GetElement_ElementNotLoaded_ThrowsKeyNotFoundExceptionWithCatalogNameAndId()
+    {
+        // act
+        Action act = () => _stormCatalog.GetElement("Effect", "UnknownDamage");
+
+        // assert
+        act.Should().Throw<KeyNotFoundException>().WithMessage("*Effect,UnknownDamage*");
+    }
+
+    [TestMethod]
+    public void DefaultElementExists_DefaultElementLoaded_ReturnsTrue()
+    {
+        // arrange
+        AddDefaultElement(StormModType.Base, "<CEffectDamage default=\"1\"><Death value=\"Normal\" /></CEffectDamage>");
+
+        // act
+        bool result = _stormCatalog.DefaultElementExists("CEffectDamage");
+
+        // assert
+        result.Should().BeTrue();
+    }
+
+    [TestMethod]
+    [DataRow("EffectDamage")]
+    [DataRow("")]
+    [DataRow("C")]
+    public void DefaultElementExists_ElementNameWithoutDeclarationOrEmpty_ReturnsFalse(string elementName)
+    {
+        // arrange
+        AddDefaultElement(StormModType.Base, "<CEffectDamage default=\"1\"><Death value=\"Normal\" /></CEffectDamage>");
+
+        // act
+        bool result = _stormCatalog.DefaultElementExists(elementName);
+
+        // assert
+        result.Should().BeFalse();
+    }
+
+    [TestMethod]
+    public void DefaultElementExists_DefaultElementNotLoaded_ReturnsFalse()
+    {
+        // act
+        bool result = _stormCatalog.DefaultElementExists("CEffectDamage");
+
+        // assert
+        result.Should().BeFalse();
+    }
+
+    [TestMethod]
+    [DataRow("CEffectDamage")]
+    [DataRow("ceffectdamage")]
+    public void TryGetDefaultElement_DefaultElementLoaded_ReturnsTrueAndElement(string elementName)
+    {
+        // arrange
+        AddDefaultElement(StormModType.Base, "<CEffectDamage default=\"1\"><Death value=\"Normal\" /></CEffectDamage>");
+
+        // act
+        bool result = _stormCatalog.TryGetDefaultElement(elementName, out StormXmlElement? element);
+
+        // assert
+        result.Should().BeTrue();
+        element!.ElementNameWithDeclaration.Should().Be("CEffectDamage");
+        element.Members.GetMember("Death").Value.RawValue.Should().Be("Normal");
+    }
+
+    [TestMethod]
+    public void TryGetDefaultElement_InBaseAndMap_ReturnsMapValuesMergedOverBase()
+    {
+        // arrange
+        AddDefaultElement(StormModType.Base, "<CEffectDamage default=\"1\"><Death value=\"Normal\" /><Kind value=\"Spell\" /></CEffectDamage>");
+        AddDefaultElement(StormModType.Map, "<CEffectDamage default=\"1\"><Death value=\"Fire\" /></CEffectDamage>");
+
+        // act
+        bool result = _stormCatalog.TryGetDefaultElement("CEffectDamage", out StormXmlElement? element);
+
+        // assert
+        result.Should().BeTrue();
+        element!.Members.GetMember("Death").Value.RawValue.Should().Be("Fire");
+        element.Members.GetMember("Kind").Value.RawValue.Should().Be("Spell");
+    }
+
+    [TestMethod]
+    public void TryGetDefaultElement_DefaultElementNotLoaded_ReturnsFalseAndNull()
+    {
+        // act
+        bool result = _stormCatalog.TryGetDefaultElement("CEffectDamage", out StormXmlElement? element);
+
+        // assert
+        result.Should().BeFalse();
+        element.Should().BeNull();
+    }
+
+    [TestMethod]
+    public void TryGetDefaultElement_OnlyAnElementWithId_ReturnsFalse()
+    {
+        // arrange - an element with an id is not a default element
+        AddMergeableElements();
+
+        // act
+        bool result = _stormCatalog.TryGetDefaultElement("CEffectDamage", out StormXmlElement? element);
+
+        // assert
+        result.Should().BeFalse();
+        element.Should().BeNull();
+    }
+
+    [TestMethod]
+    public void GetDefaultElement_DefaultElementLoaded_ReturnsElement()
+    {
+        // arrange
+        AddDefaultElement(StormModType.Base, "<CEffectDamage default=\"1\"><Death value=\"Normal\" /></CEffectDamage>");
+
+        // act
+        StormXmlElement element = _stormCatalog.GetDefaultElement("CEffectDamage");
+
+        // assert
+        element.Members.GetMember("Death").Value.RawValue.Should().Be("Normal");
+    }
+
+    [TestMethod]
+    public void GetDefaultElement_DefaultElementNotLoaded_ThrowsKeyNotFoundExceptionWithElementName()
+    {
+        // act
+        Action act = () => _stormCatalog.GetDefaultElement("CEffectDamage");
+
+        // assert
+        act.Should().Throw<KeyNotFoundException>().WithMessage("*CEffectDamage*");
+    }
+
+    // Effect,ChildDamage (Amount 120) with parent Effect,ParentDamage (Kind Spell), in the base layer
+    private void AddMergeableElements()
+    {
+        DataStorage dataStorage = _layeredDataStorage.GetDataStorage(StormModType.Base);
+
+        dataStorage.AddBaseClassCatalogName(XmlReaderHelper.GetStormXmlElement("<CEffectDamage />"), "Effect");
+        dataStorage.AddElementWithId(
+            XmlReaderHelper.GetStormXmlElement(
+                """
+                <CEffectDamage default="1" id="ParentDamage">
+                  <Kind value="Spell" />
+                </CEffectDamage>
+                """),
+            "Effect");
+        dataStorage.AddElementWithId(
+            XmlReaderHelper.GetStormXmlElement(
+                """
+                <CEffectDamage id="ChildDamage" parent="ParentDamage">
+                  <Amount value="120" />
+                </CEffectDamage>
+                """),
+            "Effect");
+    }
+
+    // adds an element with no id to the data storage of the given layer
+    private void AddDefaultElement(StormModType stormModType, string xml)
+    {
+        _layeredDataStorage.GetDataStorage(stormModType).AddElementWithNoId(XmlReaderHelper.GetStormXmlElement(xml));
     }
 
     // adds the class element's catalog name the same way loading an XML file does

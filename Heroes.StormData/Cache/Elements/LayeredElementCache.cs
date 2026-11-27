@@ -159,6 +159,21 @@ internal sealed class LayeredElementCache
     }
 
     /// <summary>
+    /// Determines if any of the data storages has a <see cref="StormXmlElement"/> with the <c>id</c> in the specified catalog name.
+    /// Nothing is merged, so this is cheaper than <see cref="GetStormXmlElementById(ReadOnlySpan{char}, ReadOnlySpan{char})"/>.
+    /// </summary>
+    /// <param name="id">The <c>id</c> of the <see cref="StormXmlElement"/>. This is case-sensitive.</param>
+    /// <param name="catalogName">The catalog name of the <see cref="StormXmlElement"/>. This is case-insensitive.</param>
+    /// <returns><see langword="true"/> if a data storage has the element; otherwise, <see langword="false"/>.</returns>
+    public bool ContainsStormXmlElementById(ReadOnlySpan<char> id, ReadOnlySpan<char> catalogName)
+    {
+        // custom first
+        return FindStormXmlElementById(_customElementCache, id, catalogName) is not null ||
+            FindStormXmlElementById(_mapElementCache, id, catalogName) is not null ||
+            FindStormXmlElementById(_baseElementCache, id, catalogName) is not null;
+    }
+
+    /// <summary>
     /// Retrieves the <c>LevelScalingArray</c> modification <c>Field</c> and <c>Value</c> list by its <c>id</c> (the <c>Entry</c>) from the specified catalog name, merged from the data storages.
     /// <para>
     /// The lists are merged by <c>Field</c> (case-sensitive): a higher data storage replaces the <c>Value</c> of a matching <c>Field</c> and adds any new <c>Field</c>.

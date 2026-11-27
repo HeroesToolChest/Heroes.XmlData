@@ -832,6 +832,74 @@ internal sealed class LayeredElementCacheTests
     [DataRow(StormModType.Base)]
     [DataRow(StormModType.Map)]
     [DataRow(StormModType.Custom)]
+    public void ContainsStormXmlElementById_ElementInSingleLayer_ReturnsTrue(StormModType stormModType)
+    {
+        // arrange
+        AddStormXmlElement(stormModType, "Effect", "AlarakDamage", CreateStormXmlElement("AlarakDamage"));
+
+        // act
+        bool result = _layeredElementCache.ContainsStormXmlElementById("AlarakDamage", "Effect");
+
+        // assert
+        result.Should().BeTrue();
+    }
+
+    [TestMethod]
+    public void ContainsStormXmlElementById_NoLayersHaveElement_ReturnsFalse()
+    {
+        // arrange
+        AddStormXmlElement(StormModType.Base, "Effect", "OtherDamage", CreateStormXmlElement("OtherDamage"));
+
+        // act
+        bool result = _layeredElementCache.ContainsStormXmlElementById("AlarakDamage", "Effect");
+
+        // assert
+        result.Should().BeFalse();
+    }
+
+    [TestMethod]
+    public void ContainsStormXmlElementById_IdInOtherCatalog_ReturnsFalse()
+    {
+        // arrange
+        AddStormXmlElement(StormModType.Base, "Abil", "AlarakDamage", CreateStormXmlElement("AlarakDamage"));
+
+        // act
+        bool result = _layeredElementCache.ContainsStormXmlElementById("AlarakDamage", "Effect");
+
+        // assert
+        result.Should().BeFalse();
+    }
+
+    [TestMethod]
+    public void ContainsStormXmlElementById_IdWithDifferentCasing_ReturnsFalse()
+    {
+        // arrange - ids are case-sensitive
+        AddStormXmlElement(StormModType.Base, "Effect", "AlarakDamage", CreateStormXmlElement("AlarakDamage"));
+
+        // act
+        bool result = _layeredElementCache.ContainsStormXmlElementById("alarakdamage", "Effect");
+
+        // assert
+        result.Should().BeFalse();
+    }
+
+    [TestMethod]
+    public void ContainsStormXmlElementById_CatalogNameWithDifferentCasing_ReturnsTrue()
+    {
+        // arrange - catalog names are case-insensitive
+        AddStormXmlElement(StormModType.Base, "Effect", "AlarakDamage", CreateStormXmlElement("AlarakDamage"));
+
+        // act
+        bool result = _layeredElementCache.ContainsStormXmlElementById("AlarakDamage", "effect");
+
+        // assert
+        result.Should().BeTrue();
+    }
+
+    [TestMethod]
+    [DataRow(StormModType.Base)]
+    [DataRow(StormModType.Map)]
+    [DataRow(StormModType.Custom)]
     public void GetStormXmlElementById_ElementInSingleLayer_ReturnsElement(StormModType stormModType)
     {
         // arrange
