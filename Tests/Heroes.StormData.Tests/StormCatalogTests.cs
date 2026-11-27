@@ -844,11 +844,53 @@ public sealed class StormCatalogTests
         AddGameString(StormModType.Base, GameStringId, "Deadly Charge");
 
         // act
-        bool result = _stormCatalog.TryGetParsedGameString(GameStringId, out GameStringText? gameStringText, extractFontValues);
+        bool result = _stormCatalog.TryGetParsedGameString(GameStringId, extractFontValues, out GameStringText? gameStringText);
 
         // assert
         result.Should().BeTrue();
         gameStringText!.IsFontValuesExtracted.Should().Be(extractFontValues);
+    }
+
+    [TestMethod]
+    public void TryGetParsedGameString_NoExtractFontValues_DoesNotExtractFontValues()
+    {
+        // arrange
+        AddGameString(StormModType.Base, GameStringId, "Deadly Charge");
+
+        // act
+        bool result = _stormCatalog.TryGetParsedGameString(GameStringId, out GameStringText? gameStringText);
+
+        // assert
+        result.Should().BeTrue();
+        gameStringText!.IsFontValuesExtracted.Should().BeFalse();
+    }
+
+    [TestMethod]
+    [DataRow(true)]
+    [DataRow(false)]
+    public void TryGetParsedGameString_WithExtractFontValuesGameStringNotLoaded_ReturnsFalseAndNull(bool extractFontValues)
+    {
+        // act
+        bool result = _stormCatalog.TryGetParsedGameString(GameStringId, extractFontValues, out GameStringText? gameStringText);
+
+        // assert
+        result.Should().BeFalse();
+        gameStringText.Should().BeNull();
+    }
+
+    [TestMethod]
+    [DataRow(true)]
+    [DataRow(false)]
+    public void GetParsedGameString_ExtractFontValues_PassedToGameStringText(bool extractFontValues)
+    {
+        // arrange
+        AddGameString(StormModType.Base, GameStringId, "Deadly Charge");
+
+        // act
+        GameStringText gameStringText = _stormCatalog.GetParsedGameString(GameStringId, extractFontValues);
+
+        // assert
+        gameStringText.IsFontValuesExtracted.Should().Be(extractFontValues);
     }
 
     [TestMethod]

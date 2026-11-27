@@ -76,13 +76,28 @@ public sealed class StormCatalog
     /// </para>
     /// </summary>
     /// <param name="id">The <c>id</c> of the gamestring (e.g. <c>Button/Name/AlarakDeadlyChargeActivate</c>). This is case-sensitive.</param>
-    /// <param name="gameStringText">When this method returns, contains the parsed <see cref="GameStringText"/>, if the gamestring was found; otherwise, <see langword="null"/>.</param>
+    /// <param name="gameStringText">
+    /// When this method returns, contains the parsed <see cref="GameStringText"/>, if the gamestring was found; otherwise, <see langword="null"/>.
+    /// Its font values are not extracted (see <see cref="TryGetParsedGameString(ReadOnlySpan{char}, bool, out GameStringText?)"/>).
+    /// </param>
+    /// <returns><see langword="true"/> if the gamestring was found; otherwise <see langword="false"/>, in the same cases as <see cref="GameStringExists(ReadOnlySpan{char})"/>.</returns>
+    public bool TryGetParsedGameString(ReadOnlySpan<char> id, [NotNullWhen(true)] out GameStringText? gameStringText) => TryGetParsedGameString(id, false, out gameStringText);
+
+    /// <summary>
+    /// Gets a gamestring (from a <c>gamestrings.txt</c> file) by its <c>id</c> and parses it into a <see cref="GameStringText"/>, if it exists.
+    /// <para>
+    /// This is the same as <see cref="TryGetGameString(ReadOnlySpan{char}, out string?)"/> followed by <see cref="ParseGameString(ReadOnlySpan{char}, StormLocale?, bool)"/>
+    /// with the <see cref="GameStringsLocale"/>, which is the locale of the gamestring.
+    /// </para>
+    /// </summary>
+    /// <param name="id">The <c>id</c> of the gamestring (e.g. <c>Button/Name/AlarakDeadlyChargeActivate</c>). This is case-sensitive.</param>
     /// <param name="extractFontValues">
     /// If <see langword="true"/>, the <c>val</c> values of the font style and constant tags are saved in <see cref="GameStringText.FontStyleValues"/> and <see cref="GameStringText.FontConstantValues"/>.
     /// If the output with color tags is not needed, set to <see langword="false"/> for faster parsing.
     /// </param>
+    /// <param name="gameStringText">When this method returns, contains the parsed <see cref="GameStringText"/>, if the gamestring was found; otherwise, <see langword="null"/>.</param>
     /// <returns><see langword="true"/> if the gamestring was found; otherwise <see langword="false"/>, in the same cases as <see cref="GameStringExists(ReadOnlySpan{char})"/>.</returns>
-    public bool TryGetParsedGameString(ReadOnlySpan<char> id, [NotNullWhen(true)] out GameStringText? gameStringText, bool extractFontValues = false)
+    public bool TryGetParsedGameString(ReadOnlySpan<char> id, bool extractFontValues, [NotNullWhen(true)] out GameStringText? gameStringText)
     {
         if (!TryGetGameString(id, out string? gameString))
         {
@@ -112,7 +127,7 @@ public sealed class StormCatalog
     /// </exception>
     public GameStringText GetParsedGameString(ReadOnlySpan<char> id, bool extractFontValues = false)
     {
-        if (TryGetParsedGameString(id, out GameStringText? gameStringText, extractFontValues))
+        if (TryGetParsedGameString(id, extractFontValues, out GameStringText? gameStringText))
             return gameStringText;
 
         throw new KeyNotFoundException($"Could not find the gamestring: {id}");
