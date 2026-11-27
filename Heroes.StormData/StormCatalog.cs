@@ -162,6 +162,20 @@ public sealed class StormCatalog
     }
 
     /// <summary>
+    /// Gets all the loaded gamestrings (from the <c>gamestrings.txt</c> files), unparsed, by their <c>id</c>.
+    /// <para>
+    /// If more than one <c>stormmod</c> has a gamestring, the value from the highest layer is used (custom, then map, then base),
+    /// the same as <see cref="TryGetGameString(ReadOnlySpan{char}, out string?)"/>. They are in the <see cref="GameStringsLocale"/>.
+    /// To parse one, use <see cref="ParseGameString(ReadOnlySpan{char}, StormLocale?, bool)"/>.
+    /// </para>
+    /// </summary>
+    /// <returns>
+    /// A new dictionary of the unparsed gamestrings by their <c>id</c> (case-sensitive), or an empty one if no gamestrings are loaded.
+    /// Loading or unloading afterwards does not change it.
+    /// </returns>
+    public IReadOnlyDictionary<string, string> GetGameStrings() => _layeredDataStorage.Texts.GetGameStrings();
+
+    /// <summary>
     /// Determines if an asset string (from an <c>assets.txt</c> file) exists.
     /// </summary>
     /// <param name="id">
@@ -386,6 +400,34 @@ public sealed class StormCatalog
             return element;
 
         throw new KeyNotFoundException($"Could not find the element: {catalogName},{id}");
+    }
+
+    /// <summary>
+    /// Gets the <c>id</c>s of the elements of a catalog (e.g. every <c>Unit</c>), from all the loaded <c>stormmods</c> or from one layer.
+    /// <para>
+    /// Only elements with an <c>id</c> are included, not default elements. Each <c>id</c> can be passed to
+    /// <see cref="TryGetElement(ReadOnlySpan{char}, ReadOnlySpan{char}, out StormXmlElement?)"/> with the same <paramref name="catalogName"/>.
+    /// </para>
+    /// </summary>
+    /// <param name="catalogName">The catalog name (e.g. <c>Unit</c>). This is case-insensitive.</param>
+    /// <param name="stormModType">
+    /// The layer to get the <c>id</c>s from, such as <see cref="StormModType.Map"/> for the elements a <c>mapmod</c> adds or overrides,
+    /// or <see langword="null"/> for all the layers.
+    /// </param>
+    /// <returns>
+    /// A new list of the <c>id</c>s, each once, sorted by <see cref="StringComparer.Ordinal"/>, or an empty list if the catalog has no elements.
+    /// Loading or unloading afterwards does not change it.
+    /// </returns>
+    /// <exception cref="ArgumentOutOfRangeException"><paramref name="stormModType"/> is not a defined <see cref="StormModType"/> value.</exception>
+    public IReadOnlyList<string> GetElementIds(ReadOnlySpan<char> catalogName, StormModType? stormModType = null)
+    {
+        if (stormModType is StormModType layer && !Enum.IsDefined(layer))
+            throw new ArgumentOutOfRangeException(nameof(stormModType), layer, $"The value is not a defined {nameof(StormModType)}.");
+
+        List<string> ids = [.. _layeredDataStorage.Elements.GetStormXmlElementIdsByCatalogName(catalogName, stormModType)];
+        ids.Sort(StringComparer.Ordinal);
+
+        return ids;
     }
 
     /// <summary>

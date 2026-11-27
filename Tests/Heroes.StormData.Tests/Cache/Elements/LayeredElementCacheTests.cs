@@ -829,6 +829,97 @@ internal sealed class LayeredElementCacheTests
     }
 
     [TestMethod]
+    public void GetStormXmlElementIdsByCatalogName_InAllLayers_ReturnsUnionOnce()
+    {
+        // arrange
+        AddStormXmlElement(StormModType.Base, "Unit", "HeroMuradin", CreateStormXmlElement("HeroMuradin"));
+        AddStormXmlElement(StormModType.Base, "Unit", "HeroButcher", CreateStormXmlElement("HeroButcher"));
+        AddStormXmlElement(StormModType.Map, "Unit", "HeroMuradin", CreateStormXmlElement("HeroMuradin"));
+        AddStormXmlElement(StormModType.Custom, "Unit", "CustomUnit", CreateStormXmlElement("CustomUnit"));
+
+        // act
+        HashSet<string> ids = _layeredElementCache.GetStormXmlElementIdsByCatalogName("Unit");
+
+        // assert
+        ids.Should().BeEquivalentTo("HeroMuradin", "HeroButcher", "CustomUnit");
+    }
+
+    [TestMethod]
+    [DataRow(StormModType.Base, "HeroMuradin", "HeroButcher")]
+    [DataRow(StormModType.Map, "HeroMuradin")]
+    [DataRow(StormModType.Custom, "CustomUnit")]
+    public void GetStormXmlElementIdsByCatalogName_OneLayer_ReturnsOnlyThatLayersIds(StormModType stormModType, params string[] expected)
+    {
+        // arrange
+        AddStormXmlElement(StormModType.Base, "Unit", "HeroMuradin", CreateStormXmlElement("HeroMuradin"));
+        AddStormXmlElement(StormModType.Base, "Unit", "HeroButcher", CreateStormXmlElement("HeroButcher"));
+        AddStormXmlElement(StormModType.Map, "Unit", "HeroMuradin", CreateStormXmlElement("HeroMuradin"));
+        AddStormXmlElement(StormModType.Custom, "Unit", "CustomUnit", CreateStormXmlElement("CustomUnit"));
+
+        // act
+        HashSet<string> ids = _layeredElementCache.GetStormXmlElementIdsByCatalogName("Unit", stormModType);
+
+        // assert
+        ids.Should().BeEquivalentTo(expected);
+    }
+
+    [TestMethod]
+    public void GetStormXmlElementIdsByCatalogName_CatalogNameWithDifferentCasing_ReturnsIds()
+    {
+        // arrange
+        AddStormXmlElement(StormModType.Base, "Unit", "HeroMuradin", CreateStormXmlElement("HeroMuradin"));
+
+        // act
+        HashSet<string> ids = _layeredElementCache.GetStormXmlElementIdsByCatalogName("UNIT");
+
+        // assert
+        ids.Should().BeEquivalentTo("HeroMuradin");
+    }
+
+    [TestMethod]
+    public void GetStormXmlElementIdsByCatalogName_IdsDifferingOnlyByCasing_ReturnsBoth()
+    {
+        // arrange - ids are case-sensitive
+        AddStormXmlElement(StormModType.Base, "Unit", "HeroMuradin", CreateStormXmlElement("HeroMuradin"));
+        AddStormXmlElement(StormModType.Map, "Unit", "heromuradin", CreateStormXmlElement("heromuradin"));
+
+        // act
+        HashSet<string> ids = _layeredElementCache.GetStormXmlElementIdsByCatalogName("Unit");
+
+        // assert
+        ids.Should().BeEquivalentTo("HeroMuradin", "heromuradin");
+    }
+
+    [TestMethod]
+    public void GetStormXmlElementIdsByCatalogName_CatalogNotInAnyLayer_ReturnsEmpty()
+    {
+        // arrange
+        AddStormXmlElement(StormModType.Base, "Unit", "HeroMuradin", CreateStormXmlElement("HeroMuradin"));
+
+        // act
+        HashSet<string> ids = _layeredElementCache.GetStormXmlElementIdsByCatalogName("Effect");
+
+        // assert
+        ids.Should().BeEmpty();
+    }
+
+    [TestMethod]
+    public void GetStormXmlElementIdsByCatalogName_CalledTwice_ReturnsNewSets()
+    {
+        // arrange
+        AddStormXmlElement(StormModType.Base, "Unit", "HeroMuradin", CreateStormXmlElement("HeroMuradin"));
+
+        // act
+        HashSet<string> first = _layeredElementCache.GetStormXmlElementIdsByCatalogName("Unit");
+        first.Add("Other");
+
+        HashSet<string> second = _layeredElementCache.GetStormXmlElementIdsByCatalogName("Unit");
+
+        // assert
+        second.Should().BeEquivalentTo("HeroMuradin");
+    }
+
+    [TestMethod]
     [DataRow(StormModType.Base)]
     [DataRow(StormModType.Map)]
     [DataRow(StormModType.Custom)]

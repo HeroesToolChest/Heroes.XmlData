@@ -1869,6 +1869,157 @@ public sealed class StormCatalogTests
         act.Should().Throw<KeyNotFoundException>().WithMessage("*TimerTitle*");
     }
 
+    [TestMethod]
+    public void GetElementIds_ElementsInAllLayers_ReturnsEachIdOnceSorted()
+    {
+        // arrange
+        AddUnits();
+
+        // act
+        IReadOnlyList<string> ids = _stormCatalog.GetElementIds("Unit");
+
+        // assert
+        ids.Should().Equal("CustomUnit", "HeroButcher", "HeroMuradin", "MapUnit");
+    }
+
+    [TestMethod]
+    [DataRow(StormModType.Base, new[] { "HeroButcher", "HeroMuradin" })]
+    [DataRow(StormModType.Map, new[] { "HeroMuradin", "MapUnit" })]
+    [DataRow(StormModType.Custom, new[] { "CustomUnit" })]
+    public void GetElementIds_OneLayer_ReturnsOnlyThatLayersIds(StormModType stormModType, string[] expected)
+    {
+        // arrange - the map overrides HeroMuradin and adds MapUnit
+        AddUnits();
+
+        // act
+        IReadOnlyList<string> ids = _stormCatalog.GetElementIds("Unit", stormModType);
+
+        // assert
+        ids.Should().Equal(expected);
+    }
+
+    [TestMethod]
+    public void GetElementIds_EachId_IsFoundByTryGetElement()
+    {
+        // arrange
+        AddUnits();
+
+        // act
+        IReadOnlyList<string> ids = _stormCatalog.GetElementIds("unit");
+
+        // assert - the ids are found with the same catalog name, in any casing
+        ids.Should().AllSatisfy(id => _stormCatalog.ElementExists("unit", id).Should().BeTrue());
+    }
+
+    [TestMethod]
+    public void GetElementIds_DefaultElements_AreNotIncluded()
+    {
+        // arrange - CEffect and CEffectDamage defaults have no id
+        AddEffectDefaults();
+
+        // act
+        IReadOnlyList<string> ids = _stormCatalog.GetElementIds("Effect");
+
+        // assert
+        ids.Should().BeEmpty();
+    }
+
+    [TestMethod]
+    public void GetElementIds_CatalogHasNoElements_ReturnsEmpty()
+    {
+        // arrange
+        AddUnits();
+
+        // act
+        IReadOnlyList<string> ids = _stormCatalog.GetElementIds("Effect");
+
+        // assert
+        ids.Should().BeEmpty();
+    }
+
+    [TestMethod]
+    public void GetElementIds_MapDataClearedAfterward_ListIsUnchanged()
+    {
+        // arrange
+        AddUnits();
+        IReadOnlyList<string> ids = _stormCatalog.GetElementIds("Unit");
+
+        // act
+        _layeredDataStorage.ClearDataStorage(StormModType.Map);
+
+        // assert
+        ids.Should().Contain("MapUnit");
+        _stormCatalog.GetElementIds("Unit").Should().NotContain("MapUnit");
+    }
+
+    [TestMethod]
+    public void GetElementIds_UndefinedStormModType_ThrowsArgumentOutOfRangeException()
+    {
+        // act
+        Action act = () => _stormCatalog.GetElementIds("Unit", (StormModType)99);
+
+        // assert
+        act.Should().Throw<ArgumentOutOfRangeException>().WithParameterName("stormModType");
+    }
+
+    [TestMethod]
+    public void GetGameStrings_GameStringsInAllLayers_ReturnsEachWithHighestLayerValue()
+    {
+        // arrange
+        AddGameString(StormModType.Base, "Unit/Name/HeroMuradin", "Muradin");
+        AddGameString(StormModType.Base, "Unit/Name/HeroButcher", "The Butcher");
+        AddGameString(StormModType.Map, "Unit/Name/HeroMuradin", "Map Muradin");
+
+        // act
+        IReadOnlyDictionary<string, string> gameStrings = _stormCatalog.GetGameStrings();
+
+        // assert
+        gameStrings.Should().HaveCount(2);
+        gameStrings["Unit/Name/HeroMuradin"].Should().Be("Map Muradin");
+        gameStrings["Unit/Name/HeroButcher"].Should().Be("The Butcher");
+    }
+
+    [TestMethod]
+    public void GetGameStrings_SameValuesAsTryGetGameString()
+    {
+        // arrange
+        AddGameString(StormModType.Base, "Unit/Name/HeroMuradin", "Muradin");
+        AddGameString(StormModType.Custom, "Unit/Name/HeroMuradin", "Custom Muradin");
+        AddGameString(StormModType.Map, "Unit/Name/HeroButcher", "The Butcher");
+
+        // act
+        IReadOnlyDictionary<string, string> gameStrings = _stormCatalog.GetGameStrings();
+
+        // assert
+        foreach ((string id, string value) in gameStrings)
+            _stormCatalog.GetGameString(id).Should().Be(value);
+    }
+
+    [TestMethod]
+    public void GetGameStrings_NoGameStringsLoaded_ReturnsEmpty()
+    {
+        // act
+        IReadOnlyDictionary<string, string> gameStrings = _stormCatalog.GetGameStrings();
+
+        // assert
+        gameStrings.Should().BeEmpty();
+    }
+
+    [TestMethod]
+    public void GetGameStrings_GameStringsClearedAfterward_DictionaryIsUnchanged()
+    {
+        // arrange
+        AddGameString(StormModType.Base, "Unit/Name/HeroMuradin", "Muradin");
+        IReadOnlyDictionary<string, string> gameStrings = _stormCatalog.GetGameStrings();
+
+        // act
+        _layeredDataStorage.ClearGameStrings();
+
+        // assert
+        gameStrings.Should().ContainKey("Unit/Name/HeroMuradin");
+        _stormCatalog.GetGameStrings().Should().BeEmpty();
+    }
+
     // adds the style constant to the data storage of the given layer, the same way loading a .stormstyle file does
     private void AddStyleConstant(StormModType stormModType, string xml)
     {
@@ -1950,6 +2101,21 @@ public sealed class StormCatalogTests
                 </CEffectDamage>
                 """),
             "Effect");
+    }
+
+    // HeroMuradin and HeroButcher in the base layer, HeroMuradin (overridden) and MapUnit in the map layer, and CustomUnit in the custom layer
+    private void AddUnits()
+    {
+        _layeredDataStorage.GetDataStorage(StormModType.Base).AddBaseClassCatalogName(XmlReaderHelper.GetStormXmlElement("<CUnit />"), "Unit");
+
+        AddUnit(StormModType.Base, "HeroMuradin");
+        AddUnit(StormModType.Base, "HeroButcher");
+        AddUnit(StormModType.Map, "HeroMuradin");
+        AddUnit(StormModType.Map, "MapUnit");
+        AddUnit(StormModType.Custom, "CustomUnit");
+
+        void AddUnit(StormModType stormModType, string id) =>
+            _layeredDataStorage.GetDataStorage(stormModType).AddElementWithId(XmlReaderHelper.GetStormXmlElement($"""<CUnit id="{id}" />"""), "Unit");
     }
 
     // CEffect (Chance 0.5, Marker Damage) as the Effect catalog's base class default, and CEffectDamage (Chance 1, Kind Basic), in the base layer

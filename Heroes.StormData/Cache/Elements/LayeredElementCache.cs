@@ -87,6 +87,28 @@ internal sealed class LayeredElementCache
     }
 
     /// <summary>
+    /// Gets the <c>id</c>s of the <see cref="StormXmlElement"/>s of a catalog name, from all the data storages or from one of them.
+    /// </summary>
+    /// <param name="catalogName">The catalog name (e.g. <c>Effect</c>). This is case-insensitive.</param>
+    /// <param name="stormModType">The data storage to get the <c>id</c>s from, or <see langword="null"/> for all of them.</param>
+    /// <returns>A new case-sensitive set of the <c>id</c>s, or an empty set if none of the data storages have the catalog name.</returns>
+    public HashSet<string> GetStormXmlElementIdsByCatalogName(ReadOnlySpan<char> catalogName, StormModType? stormModType = null)
+    {
+        HashSet<string> ids = new(StringComparer.Ordinal);
+
+        if (stormModType is null or StormModType.Base)
+            AddStormXmlElementIds(_baseElementCache, catalogName, ids);
+
+        if (stormModType is null or StormModType.Map)
+            AddStormXmlElementIds(_mapElementCache, catalogName, ids);
+
+        if (stormModType is null or StormModType.Custom)
+            AddStormXmlElementIds(_customElementCache, catalogName, ids);
+
+        return ids;
+    }
+
+    /// <summary>
     /// Determines if any of the data storages has a <see cref="StormXmlElement"/> with no <c>id</c> for the class element name. Nothing is merged.
     /// </summary>
     /// <param name="elementName">The name of the class element (without type letter declaration) (e.g. <c>EffectDamage</c>). This is case-insensitive.</param>
@@ -206,6 +228,12 @@ internal sealed class LayeredElementCache
         MergeScalingFieldValuesInto(ref scalingFieldValues, ref isCopy, FindScalingFieldValuesById(_customElementCache, id, catalogName));
 
         return scalingFieldValues;
+    }
+
+    private static void AddStormXmlElementIds(ElementCache elementCache, ReadOnlySpan<char> catalogName, HashSet<string> ids)
+    {
+        if (elementCache.StormXmlElementsByIdByCatalog.TryGetValue(catalogName, out var stormXmlElementById))
+            ids.UnionWith(stormXmlElementById.Dictionary.Keys);
     }
 
     private static void AddClassElementNames(ElementCache elementCache, ReadOnlySpan<char> catalogName, HashSet<string> elementNames)

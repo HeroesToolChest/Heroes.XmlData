@@ -312,6 +312,85 @@ internal sealed class LayeredTextCacheTests
         value.Should().BeEmpty();
     }
 
+    [TestMethod]
+    public void GetGameStrings_InAllLayers_ReturnsEveryGameStringWithHighestLayerValue()
+    {
+        // arrange
+        AddGameString(StormModType.Base, "Unit/Name/HeroMuradin", "Muradin");
+        AddGameString(StormModType.Base, "Unit/Name/HeroButcher", "The Butcher");
+        AddGameString(StormModType.Map, "Unit/Name/HeroMuradin", "Map Muradin");
+        AddGameString(StormModType.Custom, "Unit/Name/HeroButcher", "Custom Butcher");
+        AddGameString(StormModType.Custom, "Unit/Name/CustomUnit", "Custom Unit");
+
+        // act
+        Dictionary<string, string> gameStrings = _layeredTextCache.GetGameStrings();
+
+        // assert
+        gameStrings.Should().BeEquivalentTo(new Dictionary<string, string>
+        {
+            ["Unit/Name/HeroMuradin"] = "Map Muradin",
+            ["Unit/Name/HeroButcher"] = "Custom Butcher",
+            ["Unit/Name/CustomUnit"] = "Custom Unit",
+        });
+    }
+
+    [TestMethod]
+    public void GetGameStrings_EmptyValue_IsIncluded()
+    {
+        // arrange
+        AddGameString(StormModType.Base, "Unit/Name/HeroMuradin", string.Empty);
+
+        // act
+        Dictionary<string, string> gameStrings = _layeredTextCache.GetGameStrings();
+
+        // assert
+        gameStrings.Should().ContainKey("Unit/Name/HeroMuradin").WhoseValue.Should().BeEmpty();
+    }
+
+    [TestMethod]
+    public void GetGameStrings_AssetTexts_AreNotIncluded()
+    {
+        // arrange
+        AddAssetText(StormModType.Base, "AlarakPortrait", "alarak.dds");
+
+        // act
+        Dictionary<string, string> gameStrings = _layeredTextCache.GetGameStrings();
+
+        // assert
+        gameStrings.Should().BeEmpty();
+    }
+
+    [TestMethod]
+    public void GetGameStrings_IdIsCaseSensitive_KeepsIdsDifferingOnlyByCasing()
+    {
+        // arrange
+        AddGameString(StormModType.Base, "Unit/Name/HeroMuradin", "Muradin");
+        AddGameString(StormModType.Map, "unit/name/heromuradin", "lowercase");
+
+        // act
+        Dictionary<string, string> gameStrings = _layeredTextCache.GetGameStrings();
+
+        // assert
+        gameStrings.Should().HaveCount(2);
+        gameStrings.ContainsKey("UNIT/NAME/HEROMURADIN").Should().BeFalse();
+    }
+
+    [TestMethod]
+    public void GetGameStrings_CalledTwice_ReturnsNewDictionaries()
+    {
+        // arrange
+        AddGameString(StormModType.Base, "Unit/Name/HeroMuradin", "Muradin");
+
+        // act
+        Dictionary<string, string> first = _layeredTextCache.GetGameStrings();
+        first["Other"] = "Other";
+
+        Dictionary<string, string> second = _layeredTextCache.GetGameStrings();
+
+        // assert
+        second.Keys.Should().Equal("Unit/Name/HeroMuradin");
+    }
+
     // adds the asset text directly to the text cache of the given layer
     private void AddAssetText(StormModType stormModType, string id, string value)
     {

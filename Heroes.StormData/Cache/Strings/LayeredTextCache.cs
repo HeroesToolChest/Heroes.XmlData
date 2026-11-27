@@ -36,6 +36,32 @@ internal sealed class LayeredTextCache
         TryGetFirst(id, static textCache => textCache.GameStringsById, out value);
 
     /// <summary>
+    /// Gets all the gamestrings (from the <c>gamestrings.txt</c> files) of the data storages, by their <c>id</c>.
+    /// If more than one data storage has a gamestring, the value from the highest one is used (custom, then map, then base).
+    /// </summary>
+    /// <returns>A new case-sensitive dictionary of the unparsed gamestring values by their <c>id</c>.</returns>
+    public Dictionary<string, string> GetGameStrings()
+    {
+        Dictionary<string, StringValue> baseGameStrings = _baseTextCache.GameStringsById.Dictionary;
+        Dictionary<string, StringValue> mapGameStrings = _mapTextCache.GameStringsById.Dictionary;
+        Dictionary<string, StringValue> customGameStrings = _customTextCache.GameStringsById.Dictionary;
+
+        Dictionary<string, string> gameStrings = new(baseGameStrings.Count + mapGameStrings.Count + customGameStrings.Count, StringComparer.Ordinal);
+
+        // base first, so the higher layers replace its values
+        foreach ((string id, StringValue stringValue) in baseGameStrings)
+            gameStrings[id] = stringValue.Value;
+
+        foreach ((string id, StringValue stringValue) in mapGameStrings)
+            gameStrings[id] = stringValue.Value;
+
+        foreach ((string id, StringValue stringValue) in customGameStrings)
+            gameStrings[id] = stringValue.Value;
+
+        return gameStrings;
+    }
+
+    /// <summary>
     /// Tries to retrieve the first asset text value (from an <c>assets.txt</c> file) by its <c>id</c> from the data storages.
     /// </summary>
     /// <param name="id">The <c>id</c> (the key) of the asset text, without the leading <c>@</c> that is used to reference it in XML. This is case-sensitive.</param>
