@@ -29,16 +29,19 @@ internal sealed class AbilLinkTemplate
     public IReadOnlyList<AbilLinkField> TokenFields { get; }
 
     /// <summary>
-    /// Creates a template that also has the tokens and fields of a later definition of the same element.
+    /// Creates a template that also has the tokens and fields of a later definition of the same element, the same way the definitions of an element are merged.
     /// </summary>
+    /// <param name="parent">The <c>parent</c> of the later definition, which replaces <see cref="Parent"/>, or <see langword="null"/> if it does not set one, which keeps it.</param>
     /// <param name="tokens">The tokens of the later definition.</param>
     /// <param name="tokenFields">The fields of the later definition.</param>
-    /// <returns>A new <see cref="AbilLinkTemplate"/>, or this instance if there is nothing to add.</returns>
-    public AbilLinkTemplate With(IReadOnlyList<KeyValuePair<string, string>> tokens, IReadOnlyList<AbilLinkField> tokenFields)
+    /// <returns>A new <see cref="AbilLinkTemplate"/>, or this instance if nothing changes.</returns>
+    public AbilLinkTemplate With(string? parent, IReadOnlyList<KeyValuePair<string, string>> tokens, IReadOnlyList<AbilLinkField> tokenFields)
     {
-        if (tokens.Count == 0 && tokenFields.Count == 0)
+        string? newParent = parent ?? Parent;
+
+        if (tokens.Count == 0 && tokenFields.Count == 0 && string.Equals(newParent, Parent, StringComparison.Ordinal))
             return this;
 
-        return new AbilLinkTemplate(Parent, [.. Tokens, .. tokens], [.. TokenFields, .. tokenFields]);
+        return new AbilLinkTemplate(newParent, [.. Tokens, .. tokens], [.. TokenFields, .. tokenFields]);
     }
 }

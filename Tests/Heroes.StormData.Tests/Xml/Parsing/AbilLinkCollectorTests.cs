@@ -407,6 +407,48 @@ public sealed class AbilLinkCollectorTests
     }
 
     [TestMethod]
+    public void Parse_LaterDefinitionWithParent_KeepsEarlierTokenFields()
+    {
+        // act - the later definition sets a parent and nothing else, so the element keeps its token field, the same as the element is merged
+        Parse(
+            """
+            <CActorRange id="RangeBase" />
+            <CActorRange id="RangeAbil">
+              <?token id="abil" type="CAbilLink"?>
+              <Abil Link="##abil##" />
+            </CActorRange>
+            <CActorRange id="RangeAbil" parent="RangeBase" />
+            <CActorRange id="AlarakRange" parent="RangeAbil" abil="AlarakDiscordStrike" />
+            """);
+
+        // assert
+        GetIds().Should().Equal("AlarakDiscordStrike");
+    }
+
+    [TestMethod]
+    public void Parse_LaterDefinitionWithOtherParent_UsesOnlyTheLaterParent()
+    {
+        // act - the later parent replaces the earlier one, so only its token field is the child's
+        Parse(
+            """
+            <CActorRange id="RangeAbil">
+              <?token id="abil" type="CAbilLink"?>
+              <Abil Link="##abil##" />
+            </CActorRange>
+            <CActorRange id="RangeQueryAbil">
+              <?token id="queryAbil" type="CAbilLink"?>
+              <QueryAbilCmd value="##queryAbil##,Execute" />
+            </CActorRange>
+            <CActorRange id="AlarakRangeBase" parent="RangeAbil" />
+            <CActorRange id="AlarakRangeBase" parent="RangeQueryAbil" />
+            <CActorRange id="AlarakRange" parent="AlarakRangeBase" abil="AlarakDiscordStrike" queryAbil="AlarakSadism" />
+            """);
+
+        // assert
+        GetIds().Should().Equal("AlarakSadism");
+    }
+
+    [TestMethod]
     public void Parse_ParentIsItsOwnParent_DoesNotLoop()
     {
         // act
@@ -484,6 +526,40 @@ public sealed class AbilLinkCollectorTests
 
         // assert
         mapAbilLinkCache.Entries.Select(x => x.Value).Should().Equal("MapAbility", "MapQueryAbility");
+        GetIds().Should().Equal("AlarakDiscordStrike");
+    }
+
+    [TestMethod]
+    public void Parse_LaterDefinitionWithParentInLaterCache_KeepsEarlierCachesTokenFields()
+    {
+        // arrange
+        Parse(
+            """
+            <CActorRange id="RangeBase" />
+            <CActorRange id="RangeAbil">
+              <?token id="abil" type="CAbilLink"?>
+              <Abil Link="##abil##" />
+            </CActorRange>
+            """);
+
+        AbilLinkCache mapAbilLinkCache = new();
+        AbilLinkCollector mapAbilLinkCollector = new(mapAbilLinkCache, _abilLinkCache);
+
+        // act - a map that defines the element again with a parent, like a mapmod that repeats the parent of an element it changes
+        Parse(
+            """
+            <CActorRange id="RangeAbil" parent="RangeBase" />
+            <CActorRange id="MapRange" parent="RangeAbil" abil="MapAbility" />
+            """,
+            mapAbilLinkCollector);
+
+        Parse(
+            """
+            <CActorRange id="AlarakRange" parent="RangeAbil" abil="AlarakDiscordStrike" />
+            """);
+
+        // assert
+        mapAbilLinkCache.Entries.Select(x => x.Value).Should().Equal("MapAbility");
         GetIds().Should().Equal("AlarakDiscordStrike");
     }
 

@@ -386,19 +386,24 @@ internal sealed class AbilLinkCollector
         }
     }
 
-    // sets the template of this element for the elements that have it as their parent, it is only kept if it, or one of its parents, has something for them
+    // sets the template of this element for the elements that have it as their parent,
+    // it is only kept if it, an earlier definition of it, or one of its parents, has something for them
     private void SetTemplate(string catalogName, string id, string? parent)
     {
-        // a later definition of an element that does not set a parent adds to the element
-        if (parent is null && TryGetTemplate(catalogName, id, out AbilLinkTemplate? template))
+        // a later definition of an element adds to the element (in this layer or an earlier one), the same way the element's definitions are merged,
+        // and a parent it sets replaces the earlier one
+        if (TryGetTemplate(catalogName, id, out AbilLinkTemplate? template))
         {
-            _abilLinkCache.SetTemplate(catalogName, id, template.With([.. _tokens], [.. _tokenFields]));
+            AbilLinkTemplate mergedTemplate = template.With(parent, [.. _tokens], [.. _tokenFields]);
+
+            // unchanged, so the lookup already finds it
+            if (!ReferenceEquals(mergedTemplate, template))
+                _abilLinkCache.SetTemplate(catalogName, id, mergedTemplate);
+
             return;
         }
 
-        if (_tokens.Count > 0 || _tokenFields.Count > 0 || _templates.Count > 0 || TryGetEarlierTemplate(catalogName, id, out _))
+        if (_tokens.Count > 0 || _tokenFields.Count > 0 || _templates.Count > 0)
             _abilLinkCache.SetTemplate(catalogName, id, new AbilLinkTemplate(parent, [.. _tokens], [.. _tokenFields]));
-        else
-            _abilLinkCache.RemoveTemplate(catalogName, id);
     }
 }

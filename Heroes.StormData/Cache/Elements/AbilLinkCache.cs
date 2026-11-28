@@ -55,8 +55,6 @@ internal sealed class AbilLinkCache
 
     public void SetTemplate(string catalogName, string id, AbilLinkTemplate template) => _templatesById[(catalogName, id)] = template;
 
-    public bool RemoveTemplate(string catalogName, string id) => _templatesById.Remove((catalogName, id));
-
     /// <summary>
     /// Removes all the entries and templates.
     /// </summary>
