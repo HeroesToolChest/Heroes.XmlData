@@ -617,12 +617,12 @@ public class DataStorageTests
         dataStorage.AddIdByUnitName("Actor", "HeroMuradin", "HeroMuradinActor");
 
         // assert
-        dataStorage.ElementCache.IdByUnitNameByCatalog.Dictionary.Should().ContainKey("Actor")
-            .WhoseValue.Dictionary.Should().ContainKey("HeroMuradin").WhoseValue.Should().Be("HeroMuradinActor");
+        dataStorage.ElementCache.IdsByUnitNameByCatalog.Dictionary.Should().ContainKey("Actor")
+            .WhoseValue.Dictionary.Should().ContainKey("HeroMuradin").WhoseValue.Should().Equal("HeroMuradinActor");
     }
 
     [TestMethod]
-    public void AddIdByUnitName_SameUnitNameAgain_ReplacesId()
+    public void AddIdByUnitName_SameUnitNameAgain_KeepsBothInLoadOrder()
     {
         // arrange - like DeadHeroResurrectSpirit in the game data, which two actors have
         DataStorage dataStorage = new();
@@ -632,8 +632,39 @@ public class DataStorageTests
         dataStorage.AddIdByUnitName("Actor", "DeadHeroResurrectSpirit", "DeadHeroResurrectSpirit");
 
         // assert
-        dataStorage.ElementCache.IdByUnitNameByCatalog.Dictionary["Actor"].Dictionary.Should().ContainSingle()
-            .Which.Value.Should().Be("DeadHeroResurrectSpirit");
+        dataStorage.ElementCache.IdsByUnitNameByCatalog.Dictionary["Actor"].Dictionary.Should().ContainSingle()
+            .Which.Value.Should().Equal("PVEResurrectSpirit", "DeadHeroResurrectSpirit");
+    }
+
+    [TestMethod]
+    public void AddIdByUnitName_SameIdAgain_MovesItToTheEndOnce()
+    {
+        // arrange - a later definition of PVEResurrectSpirit with the same unit name makes it the one loaded last
+        DataStorage dataStorage = new();
+        dataStorage.AddIdByUnitName("Actor", "DeadHeroResurrectSpirit", "PVEResurrectSpirit");
+        dataStorage.AddIdByUnitName("Actor", "DeadHeroResurrectSpirit", "DeadHeroResurrectSpirit");
+
+        // act
+        dataStorage.AddIdByUnitName("Actor", "DeadHeroResurrectSpirit", "PVEResurrectSpirit");
+
+        // assert
+        dataStorage.ElementCache.IdsByUnitNameByCatalog.Dictionary["Actor"].Dictionary["DeadHeroResurrectSpirit"].Should()
+            .Equal("DeadHeroResurrectSpirit", "PVEResurrectSpirit");
+    }
+
+    [TestMethod]
+    public void AddIdByUnitName_IdsDifferingOnlyByCasing_AddsBoth()
+    {
+        // arrange - ids are case-sensitive
+        DataStorage dataStorage = new();
+
+        // act
+        dataStorage.AddIdByUnitName("Actor", "HeroMuradin", "HeroMuradinActor");
+        dataStorage.AddIdByUnitName("Actor", "HeroMuradin", "heromuradinactor");
+
+        // assert
+        dataStorage.ElementCache.IdsByUnitNameByCatalog.Dictionary["Actor"].Dictionary["HeroMuradin"].Should()
+            .Equal("HeroMuradinActor", "heromuradinactor");
     }
 
     [TestMethod]
@@ -647,7 +678,7 @@ public class DataStorageTests
         dataStorage.AddIdByUnitName("Actor", "heromuradin", "Lower");
 
         // assert
-        dataStorage.ElementCache.IdByUnitNameByCatalog.Dictionary["Actor"].Dictionary.Should().HaveCount(2);
+        dataStorage.ElementCache.IdsByUnitNameByCatalog.Dictionary["Actor"].Dictionary.Should().HaveCount(2);
     }
 
     [TestMethod]
@@ -661,7 +692,7 @@ public class DataStorageTests
         dataStorage.AddIdByUnitName("ACTOR", "HeroButcher", "HeroButcher");
 
         // assert
-        dataStorage.ElementCache.IdByUnitNameByCatalog.Dictionary.Should().ContainSingle()
+        dataStorage.ElementCache.IdsByUnitNameByCatalog.Dictionary.Should().ContainSingle()
             .Which.Value.Dictionary.Keys.Should().BeEquivalentTo("HeroMuradin", "HeroButcher");
     }
 
@@ -1287,7 +1318,7 @@ public class DataStorageTests
         elementCache.StormXmlElementByClassElement.Dictionary.Should().BeEmpty();
         elementCache.StormXmlElementsByIdByCatalog.Dictionary.Should().BeEmpty();
         elementCache.ScalingFieldValueByIdByCatalog.Dictionary.Should().BeEmpty();
-        elementCache.IdByUnitNameByCatalog.Dictionary.Should().BeEmpty();
+        elementCache.IdsByUnitNameByCatalog.Dictionary.Should().BeEmpty();
 
         dataStorage.TextCache.GameStringsById.Dictionary.Should().BeEmpty();
         dataStorage.TextCache.AssetTextsById.Dictionary.Should().BeEmpty();
@@ -1360,7 +1391,7 @@ public class DataStorageTests
         // make sure every cache has data, so the clear tests can't pass on empty caches
         dataStorage.ElementCache.ScalingFieldValueByIdByCatalog.Dictionary.Should().NotBeEmpty();
         dataStorage.ElementCache.StormXmlElementsByIdByCatalog.Dictionary.Should().NotBeEmpty();
-        dataStorage.ElementCache.IdByUnitNameByCatalog.Dictionary.Should().NotBeEmpty();
+        dataStorage.ElementCache.IdsByUnitNameByCatalog.Dictionary.Should().NotBeEmpty();
 
         return dataStorage;
     }

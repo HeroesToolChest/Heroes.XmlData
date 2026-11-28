@@ -170,17 +170,30 @@ internal sealed class LayeredElementCacheTests
     [DataRow(StormModType.Base)]
     [DataRow(StormModType.Map)]
     [DataRow(StormModType.Custom)]
-    public void TryGetIdByUnitNameInLayer_InThatLayer_ReturnsId(StormModType stormModType)
+    public void GetIdsByUnitNameInLayer_InThatLayer_ReturnsIds(StormModType stormModType)
     {
         // arrange
         AddIdByUnitName(stormModType, "Actor", "HeroMuradin", "HeroMuradinActor");
 
         // act
-        bool result = _layeredElementCache.TryGetIdByUnitNameInLayer(stormModType, "HeroMuradin", "Actor", out string? id);
+        IReadOnlyList<string> ids = _layeredElementCache.GetIdsByUnitNameInLayer(stormModType, "HeroMuradin", "Actor");
 
         // assert
-        result.Should().BeTrue();
-        id.Should().Be("HeroMuradinActor");
+        ids.Should().Equal("HeroMuradinActor");
+    }
+
+    [TestMethod]
+    public void GetIdsByUnitNameInLayer_TwoIdsWithSameUnitName_ReturnsBothInLoadOrder()
+    {
+        // arrange - like DeadHeroResurrectSpirit in the game data, which two actors have
+        AddIdByUnitName(StormModType.Base, "Actor", "DeadHeroResurrectSpirit", "PVEResurrectSpirit");
+        AddIdByUnitName(StormModType.Base, "Actor", "DeadHeroResurrectSpirit", "DeadHeroResurrectSpirit");
+
+        // act
+        IReadOnlyList<string> ids = _layeredElementCache.GetIdsByUnitNameInLayer(StormModType.Base, "DeadHeroResurrectSpirit", "Actor");
+
+        // assert
+        ids.Should().Equal("PVEResurrectSpirit", "DeadHeroResurrectSpirit");
     }
 
     [TestMethod]
@@ -188,66 +201,60 @@ internal sealed class LayeredElementCacheTests
     [DataRow("heromuradin", "Actor")]
     [DataRow("HeroMuradin", "Unit")]
     [DataRow("", "Actor")]
-    public void TryGetIdByUnitNameInLayer_NotFound_ReturnsFalse(string unitName, string catalogName)
+    public void GetIdsByUnitNameInLayer_NotFound_ReturnsEmpty(string unitName, string catalogName)
     {
         // arrange - the unit name is case-sensitive and is only in the Actor catalog
         AddIdByUnitName(StormModType.Base, "Actor", "HeroMuradin", "HeroMuradinActor");
 
         // act
-        bool result = _layeredElementCache.TryGetIdByUnitNameInLayer(StormModType.Base, unitName, catalogName, out string? id);
+        IReadOnlyList<string> ids = _layeredElementCache.GetIdsByUnitNameInLayer(StormModType.Base, unitName, catalogName);
 
         // assert
-        result.Should().BeFalse();
-        id.Should().BeNull();
+        ids.Should().BeEmpty();
     }
 
     [TestMethod]
-    public void TryGetIdByUnitNameInLayer_EachLayer_ReturnsOnlyThatLayersId()
+    public void GetIdsByUnitNameInLayer_EachLayer_ReturnsOnlyThatLayersIds()
     {
         // arrange
         AddIdByUnitName(StormModType.Base, "Actor", "HeroMuradin", "BaseActor");
         AddIdByUnitName(StormModType.Map, "Actor", "HeroMuradin", "MapActor");
 
         // act
-        bool baseResult = _layeredElementCache.TryGetIdByUnitNameInLayer(StormModType.Base, "HeroMuradin", "Actor", out string? baseId);
-        bool mapResult = _layeredElementCache.TryGetIdByUnitNameInLayer(StormModType.Map, "HeroMuradin", "Actor", out string? mapId);
-        bool customResult = _layeredElementCache.TryGetIdByUnitNameInLayer(StormModType.Custom, "HeroMuradin", "Actor", out string? customId);
+        IReadOnlyList<string> baseIds = _layeredElementCache.GetIdsByUnitNameInLayer(StormModType.Base, "HeroMuradin", "Actor");
+        IReadOnlyList<string> mapIds = _layeredElementCache.GetIdsByUnitNameInLayer(StormModType.Map, "HeroMuradin", "Actor");
+        IReadOnlyList<string> customIds = _layeredElementCache.GetIdsByUnitNameInLayer(StormModType.Custom, "HeroMuradin", "Actor");
 
         // assert
-        baseResult.Should().BeTrue();
-        baseId.Should().Be("BaseActor");
-        mapResult.Should().BeTrue();
-        mapId.Should().Be("MapActor");
-        customResult.Should().BeFalse();
-        customId.Should().BeNull();
+        baseIds.Should().Equal("BaseActor");
+        mapIds.Should().Equal("MapActor");
+        customIds.Should().BeEmpty();
     }
 
     [TestMethod]
-    public void TryGetIdByUnitNameInLayer_UndefinedLayer_ReturnsFalse()
+    public void GetIdsByUnitNameInLayer_UndefinedLayer_ReturnsEmpty()
     {
         // arrange
         AddIdByUnitName(StormModType.Base, "Actor", "HeroMuradin", "BaseActor");
 
         // act
-        bool result = _layeredElementCache.TryGetIdByUnitNameInLayer((StormModType)99, "HeroMuradin", "Actor", out string? id);
+        IReadOnlyList<string> ids = _layeredElementCache.GetIdsByUnitNameInLayer((StormModType)99, "HeroMuradin", "Actor");
 
         // assert
-        result.Should().BeFalse();
-        id.Should().BeNull();
+        ids.Should().BeEmpty();
     }
 
     [TestMethod]
-    public void TryGetIdByUnitNameInLayer_CatalogNameWithDifferentCasing_ReturnsId()
+    public void GetIdsByUnitNameInLayer_CatalogNameWithDifferentCasing_ReturnsIds()
     {
         // arrange
         AddIdByUnitName(StormModType.Base, "Actor", "HeroMuradin", "HeroMuradinActor");
 
         // act
-        bool result = _layeredElementCache.TryGetIdByUnitNameInLayer(StormModType.Base, "HeroMuradin", "actor", out string? id);
+        IReadOnlyList<string> ids = _layeredElementCache.GetIdsByUnitNameInLayer(StormModType.Base, "HeroMuradin", "actor");
 
         // assert
-        result.Should().BeTrue();
-        id.Should().Be("HeroMuradinActor");
+        ids.Should().Equal("HeroMuradinActor");
     }
 
     [TestMethod]
@@ -1761,19 +1768,25 @@ internal sealed class LayeredElementCacheTests
         return cachedScalingFieldValues;
     }
 
-    // adds the id by its unit name directly to the element cache of the given layer
+    // adds the id by its unit name directly to the element cache of the given layer, after the ids already added for the unit name
     private void AddIdByUnitName(StormModType stormModType, string catalogName, string unitName, string id)
     {
         ElementCache elementCache = GetElementCache(stormModType);
 
-        if (!elementCache.IdByUnitNameByCatalog.Dictionary.TryGetValue(catalogName, out Dictionary<string, string>.AlternateLookup<ReadOnlySpan<char>> idByUnitName))
+        if (!elementCache.IdsByUnitNameByCatalog.Dictionary.TryGetValue(catalogName, out Dictionary<string, List<string>>.AlternateLookup<ReadOnlySpan<char>> idsByUnitName))
         {
             // inner dictionary keys are case-sensitive
-            idByUnitName = new Dictionary<string, string>(StringComparer.Ordinal).GetAlternateLookup<ReadOnlySpan<char>>();
-            elementCache.IdByUnitNameByCatalog.Dictionary.Add(catalogName, idByUnitName);
+            idsByUnitName = new Dictionary<string, List<string>>(StringComparer.Ordinal).GetAlternateLookup<ReadOnlySpan<char>>();
+            elementCache.IdsByUnitNameByCatalog.Dictionary.Add(catalogName, idsByUnitName);
         }
 
-        idByUnitName.Dictionary[unitName] = id;
+        if (!idsByUnitName.Dictionary.TryGetValue(unitName, out List<string>? ids))
+        {
+            ids = [];
+            idsByUnitName.Dictionary.Add(unitName, ids);
+        }
+
+        ids.Add(id);
     }
 
     private ElementCache GetElementCache(StormModType stormModType) => stormModType switch

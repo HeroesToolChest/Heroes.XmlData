@@ -2520,6 +2520,69 @@ public sealed class StormCatalogTests
     }
 
     [TestMethod]
+    public void TryGetElementIdByUnitName_TwoActorsForSameUnit_ReturnsOneLoadedLast()
+    {
+        // arrange - like DeadHeroResurrectSpirit in the game data, which two actors have
+        AddUnitActor(StormModType.Base, """<CActorUnit id="PVEResurrectSpirit" unitName="DeadHeroResurrectSpirit" />""");
+        AddUnitActor(StormModType.Base, """<CActorUnit id="DeadHeroResurrectSpirit" unitName="DeadHeroResurrectSpirit" />""");
+
+        // act
+        bool result = _stormCatalog.TryGetElementIdByUnitName("Actor", "DeadHeroResurrectSpirit", out string? id);
+
+        // assert
+        result.Should().BeTrue();
+        id.Should().Be("DeadHeroResurrectSpirit");
+    }
+
+    [TestMethod]
+    public void TryGetElementIdByUnitName_LaterActorRenamedByHigherLayer_ReturnsEarlierActorOfSameLayer()
+    {
+        // arrange - both base actors are for the unit, then the map renames the one loaded last, so the other one is still for the unit
+        AddUnitActor(StormModType.Base, """<CActorUnit id="PVEResurrectSpirit" unitName="DeadHeroResurrectSpirit" />""");
+        AddUnitActor(StormModType.Base, """<CActorUnit id="DeadHeroResurrectSpirit" unitName="DeadHeroResurrectSpirit" />""");
+        AddUnitActor(StormModType.Map, """<CActorUnit id="DeadHeroResurrectSpirit" unitName="MapResurrectSpirit" />""");
+
+        // act
+        bool result = _stormCatalog.TryGetElementIdByUnitName("Actor", "DeadHeroResurrectSpirit", out string? id);
+
+        // assert
+        result.Should().BeTrue();
+        id.Should().Be("PVEResurrectSpirit");
+    }
+
+    [TestMethod]
+    public void TryGetElementIdByUnitName_LaterActorRenamedInSameLayer_ReturnsEarlierActor()
+    {
+        // arrange - the actor loaded last is renamed later in the same layer, so the earlier one is still for the unit
+        AddUnitActor(StormModType.Map, """<CActorUnit id="FirstWallActor" unitName="TownWall" />""");
+        AddUnitActor(StormModType.Map, """<CActorUnit id="SecondWallActor" unitName="TownWall" />""");
+        AddUnitActor(StormModType.Map, """<CActorUnit id="SecondWallActor" unitName="MapTownWall" />""");
+
+        // act
+        bool result = _stormCatalog.TryGetElementIdByUnitName("Actor", "TownWall", out string? id);
+
+        // assert
+        result.Should().BeTrue();
+        id.Should().Be("FirstWallActor");
+    }
+
+    [TestMethod]
+    public void TryGetElementIdByUnitName_EarlierActorDefinedAgainWithSameUnitName_ReturnsIt()
+    {
+        // arrange - a later definition of the first actor with the same unit name makes it the one loaded last
+        AddUnitActor(StormModType.Base, """<CActorUnit id="FirstWallActor" unitName="TownWall" />""");
+        AddUnitActor(StormModType.Base, """<CActorUnit id="SecondWallActor" unitName="TownWall" />""");
+        AddUnitActor(StormModType.Base, """<CActorUnit id="FirstWallActor" unitName="TownWall" />""");
+
+        // act
+        bool result = _stormCatalog.TryGetElementIdByUnitName("Actor", "TownWall", out string? id);
+
+        // assert
+        result.Should().BeTrue();
+        id.Should().Be("FirstWallActor");
+    }
+
+    [TestMethod]
     public void TryGetElementIdByUnitName_LaterDefinitionWithoutUnitName_StillFindsActor()
     {
         // arrange - an override that leaves out the unitName keeps it

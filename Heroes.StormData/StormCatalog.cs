@@ -561,12 +561,21 @@ public sealed class StormCatalog
     /// <returns><see langword="true"/> if an element has the unit name; otherwise <see langword="false"/>, which includes <paramref name="unitName"/> being empty.</returns>
     public bool TryGetElementIdByUnitName(ReadOnlySpan<char> catalogName, ReadOnlySpan<char> unitName, [NotNullWhen(true)] out string? id)
     {
-        // highest layer first. A layer has the unit name a definition of the element had, so the merged element is checked to still have it,
-        // as a later definition can have changed it (then a lower layer's element can still be the one for the unit)
+        // highest layer first, and within a layer the one loaded last first. A layer has the unit name a definition of the element had,
+        // so the merged element is checked to still have it, as a later definition can have changed it
+        // (then an earlier element of the same layer, or a lower layer's element, can still be the one for the unit)
         foreach (StormModType layer in (ReadOnlySpan<StormModType>)[StormModType.Custom, StormModType.Map, StormModType.Base])
         {
-            if (_layeredDataStorage.Elements.TryGetIdByUnitNameInLayer(layer, unitName, catalogName, out id) && HasUnitName(catalogName, id, unitName))
-                return true;
+            IReadOnlyList<string> ids = _layeredDataStorage.Elements.GetIdsByUnitNameInLayer(layer, unitName, catalogName);
+
+            for (int i = ids.Count - 1; i >= 0; i--)
+            {
+                if (HasUnitName(catalogName, ids[i], unitName))
+                {
+                    id = ids[i];
+                    return true;
+                }
+            }
         }
 
         id = null;

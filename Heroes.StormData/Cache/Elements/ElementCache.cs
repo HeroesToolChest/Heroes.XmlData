@@ -72,9 +72,13 @@ internal sealed class ElementCache
     /// <para>
     /// The inner key (the unit name) is case-sensitive, like the unit's <c>id</c>.
     /// </para>
+    /// <para>
+    /// The inner value is every <c>id</c> that had the unit name, each once, in the order they were loaded (the last one is the one loaded last),
+    /// as more than one element can have the same unit name (e.g. <c>DeadHeroResurrectSpirit</c>).
+    /// </para>
     /// </summary>
-    public Dictionary<string, Dictionary<string, string>.AlternateLookup<ReadOnlySpan<char>>>.AlternateLookup<ReadOnlySpan<char>> IdByUnitNameByCatalog { get; } =
-        new Dictionary<string, Dictionary<string, string>.AlternateLookup<ReadOnlySpan<char>>>(StringComparer.OrdinalIgnoreCase).GetAlternateLookup<ReadOnlySpan<char>>();
+    public Dictionary<string, Dictionary<string, List<string>>.AlternateLookup<ReadOnlySpan<char>>>.AlternateLookup<ReadOnlySpan<char>> IdsByUnitNameByCatalog { get; } =
+        new Dictionary<string, Dictionary<string, List<string>>.AlternateLookup<ReadOnlySpan<char>>>(StringComparer.OrdinalIgnoreCase).GetAlternateLookup<ReadOnlySpan<char>>();
 
     /// <summary>
     /// Removes all the elements and lookups.
@@ -87,6 +91,6 @@ internal sealed class ElementCache
         StormXmlElementByClassElement.Dictionary.Clear();
         StormXmlElementsByIdByCatalog.Dictionary.Clear();
         ScalingFieldValueByIdByCatalog.Dictionary.Clear();
-        IdByUnitNameByCatalog.Dictionary.Clear();
+        IdsByUnitNameByCatalog.Dictionary.Clear();
     }
 }

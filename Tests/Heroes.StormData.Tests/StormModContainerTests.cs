@@ -388,9 +388,9 @@ public sealed class StormModContainerTests
         stormModContainer.LoadXmlFile(xmlReader, CreateStormFile("actordata.xml"));
 
         // assert
-        Dictionary<string, string> idByUnitName = GetElementCache(StormModType.Base).IdByUnitNameByCatalog.Dictionary.Should().ContainKey("Actor").WhoseValue.Dictionary;
-        idByUnitName.Should().ContainKey("HeroMuradin").WhoseValue.Should().Be("HeroMuradinActor");
-        idByUnitName.Should().ContainKey("MuradinStormBoltMissileUnit").WhoseValue.Should().Be("MuradinStormBoltMissile");
+        Dictionary<string, List<string>> idsByUnitName = GetElementCache(StormModType.Base).IdsByUnitNameByCatalog.Dictionary.Should().ContainKey("Actor").WhoseValue.Dictionary;
+        idsByUnitName.Should().ContainKey("HeroMuradin").WhoseValue.Should().Equal("HeroMuradinActor");
+        idsByUnitName.Should().ContainKey("MuradinStormBoltMissileUnit").WhoseValue.Should().Equal("MuradinStormBoltMissile");
     }
 
     [TestMethod]
@@ -408,7 +408,7 @@ public sealed class StormModContainerTests
         stormModContainer.LoadXmlFile(xmlReader, CreateStormFile("actordata.xml"));
 
         // assert
-        GetElementCache(StormModType.Base).IdByUnitNameByCatalog.Dictionary.Should().BeEmpty();
+        GetElementCache(StormModType.Base).IdsByUnitNameByCatalog.Dictionary.Should().BeEmpty();
     }
 
     [TestMethod]
@@ -427,12 +427,12 @@ public sealed class StormModContainerTests
         stormModContainer.LoadXmlFile(xmlReader, CreateStormFile("actordata.xml"));
 
         // assert
-        GetElementCache(StormModType.Base).IdByUnitNameByCatalog.Dictionary["Actor"].Dictionary.Should().ContainKey("HeroMuradin")
-            .WhoseValue.Should().Be("HeroMuradinActor");
+        GetElementCache(StormModType.Base).IdsByUnitNameByCatalog.Dictionary["Actor"].Dictionary.Should().ContainKey("HeroMuradin")
+            .WhoseValue.Should().Equal("HeroMuradinActor");
     }
 
     [TestMethod]
-    public void LoadXmlFile_TwoActorsWithSameUnitName_LaterOneIsUsed()
+    public void LoadXmlFile_TwoActorsWithSameUnitName_AddsBothInLoadOrder()
     {
         // arrange - like DeadHeroResurrectSpirit in the game data
         StormModContainer stormModContainer = new(_sourceContainer, StormModType.Base);
@@ -447,7 +447,8 @@ public sealed class StormModContainerTests
         stormModContainer.LoadXmlFile(xmlReader, CreateStormFile("actordata.xml"));
 
         // assert
-        GetElementCache(StormModType.Base).IdByUnitNameByCatalog.Dictionary["Actor"].Dictionary["DeadHeroResurrectSpirit"].Should().Be("DeadHeroResurrectSpirit");
+        GetElementCache(StormModType.Base).IdsByUnitNameByCatalog.Dictionary["Actor"].Dictionary["DeadHeroResurrectSpirit"].Should()
+            .Equal("PVEResurrectSpirit", "DeadHeroResurrectSpirit");
     }
 
     [TestMethod]

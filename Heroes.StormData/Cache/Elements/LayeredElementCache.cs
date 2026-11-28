@@ -209,18 +209,20 @@ internal sealed class LayeredElementCache
     }
 
     /// <summary>
-    /// Tries to retrieve the <c>id</c> of an element in the specified catalog name by its <c>unitName</c> attribute from one data storage.
+    /// Gets the <c>id</c>s of the elements in the specified catalog name that had a <c>unitName</c> attribute, from one data storage.
     /// <para>
-    /// This is the unit name a definition of the element had, which a later definition of the same element can have changed,
+    /// Each is the unit name a definition of the element had, which a later definition of the same element can have changed,
     /// so <see cref="StormCatalog.TryGetElementIdByUnitName(ReadOnlySpan{char}, ReadOnlySpan{char}, out string?)"/> checks the merged element.
     /// </para>
     /// </summary>
     /// <param name="stormModType">The data storage to look in.</param>
     /// <param name="unitName">The value of the <c>unitName</c> attribute (e.g. <c>HeroMuradin</c>). This is case-sensitive.</param>
     /// <param name="catalogName">The catalog name of the element (e.g. <c>Actor</c>). This is case-insensitive.</param>
-    /// <param name="id">When this method returns, contains the <c>id</c> of the element, if found; otherwise, <see langword="null"/>.</param>
-    /// <returns><see langword="true"/> if the <c>id</c> was found; otherwise, <see langword="false"/>.</returns>
-    public bool TryGetIdByUnitNameInLayer(StormModType stormModType, ReadOnlySpan<char> unitName, ReadOnlySpan<char> catalogName, [NotNullWhen(true)] out string? id)
+    /// <returns>
+    /// The read-only list of the <c>id</c>s, each once, in the order they were loaded (the last one is the one loaded last), or an empty list if none were found.
+    /// It is the stored list, so it changes if the data storage changes.
+    /// </returns>
+    public IReadOnlyList<string> GetIdsByUnitNameInLayer(StormModType stormModType, ReadOnlySpan<char> unitName, ReadOnlySpan<char> catalogName)
     {
         ElementCache? elementCache = stormModType switch
         {
@@ -230,13 +232,14 @@ internal sealed class LayeredElementCache
             _ => null,
         };
 
-        if (elementCache is null)
+        if (elementCache is not null &&
+            elementCache.IdsByUnitNameByCatalog.TryGetValue(catalogName, out var idsByUnitName) &&
+            idsByUnitName.TryGetValue(unitName, out List<string>? ids))
         {
-            id = null;
-            return false;
+            return ids;
         }
 
-        return TryGetIdByUnitName(elementCache, unitName, catalogName, out id);
+        return [];
     }
 
     /// <summary>
@@ -280,15 +283,6 @@ internal sealed class LayeredElementCache
             return stormXmlElement;
 
         return null;
-    }
-
-    private static bool TryGetIdByUnitName(ElementCache elementCache, ReadOnlySpan<char> unitName, ReadOnlySpan<char> catalogName, [NotNullWhen(true)] out string? id)
-    {
-        if (elementCache.IdByUnitNameByCatalog.TryGetValue(catalogName, out var idByUnitName) && idByUnitName.TryGetValue(unitName, out id))
-            return true;
-
-        id = null;
-        return false;
     }
 
     private static StormXmlElement? FindStormXmlElementById(ElementCache elementCache, ReadOnlySpan<char> id, ReadOnlySpan<char> catalogName)

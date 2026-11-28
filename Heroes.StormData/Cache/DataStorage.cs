@@ -111,20 +111,36 @@ internal sealed class DataStorage
     }
 
     /// <summary>
-    /// Adds the <c>id</c> of an element by its <c>unitName</c> attribute in its catalog. A later element with the same unit name replaces the earlier one.
+    /// Adds the <c>id</c> of an element by its <c>unitName</c> attribute in its catalog.
+    /// The earlier elements with the same unit name are kept, and this one becomes the last one loaded (it is moved to the end if it was already added).
     /// </summary>
     /// <param name="catalogName">The catalog name of the element (e.g. <c>Actor</c>).</param>
     /// <param name="unitName">The value of the element's <c>unitName</c> attribute (e.g. <c>HeroMuradin</c>).</param>
     /// <param name="id">The <c>id</c> of the element.</param>
     public void AddIdByUnitName(string catalogName, string unitName, string id)
     {
-        ref var idByUnitName = ref CollectionsMarshal.GetValueRefOrAddDefault(ElementCache.IdByUnitNameByCatalog.Dictionary, catalogName, out bool exists);
+        ref var idsByUnitName = ref CollectionsMarshal.GetValueRefOrAddDefault(ElementCache.IdsByUnitNameByCatalog.Dictionary, catalogName, out bool exists);
 
         // case-sensitive for unit names
         if (!exists)
-            idByUnitName = new Dictionary<string, string>(StringComparer.Ordinal).GetAlternateLookup<ReadOnlySpan<char>>();
+            idsByUnitName = new Dictionary<string, List<string>>(StringComparer.Ordinal).GetAlternateLookup<ReadOnlySpan<char>>();
 
-        idByUnitName.Dictionary[unitName] = id;
+        ref List<string>? ids = ref CollectionsMarshal.GetValueRefOrAddDefault(idsByUnitName.Dictionary, unitName, out bool unitNameExists);
+
+        if (!unitNameExists)
+        {
+            // almost every unit name has one element
+            ids = new List<string>(1);
+        }
+        else
+        {
+            // ids are case-sensitive. The lists are short, so a linear search is fine
+            int index = ids!.IndexOf(id);
+            if (index >= 0)
+                ids.RemoveAt(index);
+        }
+
+        ids!.Add(id);
     }
 
     public void AddLevelScalingElementValue(StormXmlArray levelScalingArray)
