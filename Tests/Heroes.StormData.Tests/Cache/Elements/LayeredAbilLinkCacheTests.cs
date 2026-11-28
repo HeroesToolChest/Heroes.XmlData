@@ -193,4 +193,21 @@ public sealed class LayeredAbilLinkCacheTests
         result.Should().BeFalse();
         abilLink.Should().Be(0);
     }
+
+    [TestMethod]
+    public void AddId_EmptyId_IsNotGivenAnIndex()
+    {
+        // arrange - an empty id is how an index with no id (a default element) is stored
+        _baseAbilLinkCache.AddId("attack");
+        int version = _baseAbilLinkCache.Version;
+
+        // act
+        _baseAbilLinkCache.AddId(string.Empty);
+
+        // assert
+        _baseAbilLinkCache.Version.Should().Be(version);
+        _baseAbilLinkCache.Entries.Should().Equal(new AbilLinkEntry("attack", false));
+        _layeredAbilLinkCache.GetAbilLinkIds().Should().Equal("attack");
+        _layeredAbilLinkCache.TryGetAbilLink(string.Empty, out _).Should().BeFalse();
+    }
 }
