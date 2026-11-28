@@ -124,12 +124,12 @@ public sealed class ElementCatalogNamesTests
     }
 
     [TestMethod]
-    public void CatalogNames_EveryName_IsDistinctIgnoringCaseAndIsItsOwnCatalog()
+    public void TryGetCatalogName_EveryCatalogName_IsDistinctIgnoringCaseAndIsItsOwnCatalog()
     {
         // assert - each catalog name is found as its own catalog, so no shorter name hides it
-        ElementCatalogNames.CatalogNames.Should().OnlyHaveUniqueItems(x => x.ToUpperInvariant());
+        StormXmlConstants.CatalogNames.Should().OnlyHaveUniqueItems(x => x.ToUpperInvariant());
 
-        foreach (string name in ElementCatalogNames.CatalogNames)
+        foreach (string name in StormXmlConstants.CatalogNames)
         {
             ElementCatalogNames.TryGetCatalogName(name, out string? catalogName).Should().BeTrue();
             catalogName.Should().Be(name);

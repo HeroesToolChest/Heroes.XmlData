@@ -1,4 +1,5 @@
 using System.Collections.Frozen;
+using System.Collections.Immutable;
 
 namespace Heroes.StormData.Xml.Parsing;
 
@@ -33,6 +34,23 @@ internal sealed class StormXmlConstants
     public const string NameAttributeName = "name";
     public const string ValAttributeName = "val";
     public const string TemplateAttributeName = "template";
+
+    // catalogs
+    public const string RequirementCatalogName = "Requirement";
+    public const string RequirementNodeCatalogName = "RequirementNode";
+
+    // the catalogs of the game data (the <name>data.xml files), with the casing their class elements use
+    public static readonly ImmutableArray<string> CatalogNames =
+    [
+        "Abil", "Accumulator", "Achievement", "AchievementTerm", "Actor", "ActorSupport", "Alert", "Announcement", "AnnouncerPack", "Armor", "AttachMethod",
+        "Banner", "Beam", "Behavior", "Boost", "Bundle", "Button", "Camera", "Character", "Cliff", "CliffMesh", "CollectionCategory", "ColorSpec", "ColorStyle",
+        "Config", "Conversation", "ConversationState", "Cursor", "DSP", "Effect", "Emoticon", "EmoticonPack", "Error", "Footprint", "FoW", "Game", "GameQuestUI",
+        "GameUI", "GemPack", "Goal", "Hero", "HeroMastery", "HeroRole", "Item", "ItemClass", "ItemContainer", "Kinetic", "LensFlareSet", "Light", "LootChest",
+        "Map", "Model", "Mount", "Mover", "PhysicsMaterial", "Ping", "PortraitPack", "Preload", "ProductSet", "Race", RequirementCatalogName, RequirementNodeCatalogName,
+        "Reverb", "Reward", "ScoreResult", "ScoreValue", "ShardBundle", "Shape", "Skin", "Sound", "SoundExclusivity", "SoundMixSnapshot", "Soundtrack", "Spray",
+        "Stat", "Talent", "TalentProfile", "TargetSort", "Terrain", "TerrainObject", "TerrainTex", "Texture", "TextureSheet", "Tile", "Trophy", "Turret",
+        "TypeDescription", "Unit", "Upgrade", "User", "Validator", "VODefinition", "VoiceLine", "VoiceOver", "VOSound", "Water", "Weapon",
+    ];
 
     // elements that are arrays that don't have the "array" suffix in their name
     public static readonly FrozenSet<string> ElementArrays = new HashSet<string>(StringComparer.OrdinalIgnoreCase)

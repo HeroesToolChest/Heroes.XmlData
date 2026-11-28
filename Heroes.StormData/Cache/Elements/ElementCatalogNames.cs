@@ -10,29 +10,8 @@ namespace Heroes.StormData.Cache.Elements;
 /// </remarks>
 internal static class ElementCatalogNames
 {
-    private const string RequirementCatalogName = "Requirement";
-    private const string RequirementNodeCatalogName = "RequirementNode";
-
-    // the catalogs of the game data (the <name>data.xml files), with the casing their class elements use
-    private static readonly string[] _catalogNames =
-    [
-        "Abil", "Accumulator", "Achievement", "AchievementTerm", "Actor", "ActorSupport", "Alert", "Announcement", "AnnouncerPack", "Armor", "AttachMethod",
-        "Banner", "Beam", "Behavior", "Boost", "Bundle", "Button", "Camera", "Character", "Cliff", "CliffMesh", "CollectionCategory", "ColorSpec", "ColorStyle",
-        "Config", "Conversation", "ConversationState", "Cursor", "DSP", "Effect", "Emoticon", "EmoticonPack", "Error", "Footprint", "FoW", "Game", "GameQuestUI",
-        "GameUI", "GemPack", "Goal", "Hero", "HeroMastery", "HeroRole", "Item", "ItemClass", "ItemContainer", "Kinetic", "LensFlareSet", "Light", "LootChest",
-        "Map", "Model", "Mount", "Mover", "PhysicsMaterial", "Ping", "PortraitPack", "Preload", "ProductSet", "Race", RequirementCatalogName, RequirementNodeCatalogName,
-        "Reverb", "Reward", "ScoreResult", "ScoreValue", "ShardBundle", "Shape", "Skin", "Sound", "SoundExclusivity", "SoundMixSnapshot", "Soundtrack", "Spray",
-        "Stat", "Talent", "TalentProfile", "TargetSort", "Terrain", "TerrainObject", "TerrainTex", "Texture", "TextureSheet", "Tile", "Trophy", "Turret",
-        "TypeDescription", "Unit", "Upgrade", "User", "Validator", "VODefinition", "VoiceLine", "VoiceOver", "VOSound", "Water", "Weapon",
-    ];
-
-    // longest first, so the first one that matches is the longest
-    private static readonly string[] _catalogNamesByLength = [.. _catalogNames.OrderByDescending(x => x.Length).ThenBy(x => x, StringComparer.Ordinal)];
-
-    /// <summary>
-    /// Gets the catalog names, with the casing the game data uses.
-    /// </summary>
-    public static IReadOnlyList<string> CatalogNames => _catalogNames;
+    // the catalog names (StormXmlConstants.CatalogNames) longest first, so the first one that matches is the longest
+    private static readonly string[] _catalogNamesByLength = [.. StormXmlConstants.CatalogNames.OrderByDescending(x => x.Length).ThenBy(x => x, StringComparer.Ordinal)];
 
     /// <summary>
     /// Tries to get the catalog name of a class element.
@@ -43,9 +22,9 @@ internal static class ElementCatalogNames
     public static bool TryGetCatalogName(ReadOnlySpan<char> elementName, [NotNullWhen(true)] out string? catalogName)
     {
         // every requirement class other than CRequirement itself is a requirement node (CRequirementAnd, CRequirementEq, and CRequirementNode)
-        if (elementName.Length > RequirementCatalogName.Length && elementName.StartsWith(RequirementCatalogName, StringComparison.OrdinalIgnoreCase))
+        if (elementName.Length > StormXmlConstants.RequirementCatalogName.Length && elementName.StartsWith(StormXmlConstants.RequirementCatalogName, StringComparison.OrdinalIgnoreCase))
         {
-            catalogName = RequirementNodeCatalogName;
+            catalogName = StormXmlConstants.RequirementNodeCatalogName;
             return true;
         }
 
