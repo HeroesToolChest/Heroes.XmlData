@@ -17,14 +17,14 @@ public sealed class LayeredAbilLinkCacheTests
     public void GetAbilLinkIds_NothingAdded_ReturnsEmpty()
     {
         // act
-        Dictionary<int, string> ids = _layeredAbilLinkCache.GetAbilLinkIds();
+        List<string> ids = _layeredAbilLinkCache.GetAbilLinkIds();
 
         // assert
         ids.Should().BeEmpty();
     }
 
     [TestMethod]
-    public void GetAbilLinkIds_IdsAdded_FirstIndexIsOneAndIsInIndexOrder()
+    public void GetAbilLinkIds_IdsAdded_ReturnsIdsInIndexOrder()
     {
         // arrange
         _baseAbilLinkCache.AddId("attack");
@@ -32,11 +32,10 @@ public sealed class LayeredAbilLinkCacheTests
         _mapAbilLinkCache.AddId("MapAbility");
 
         // act
-        Dictionary<int, string> ids = _layeredAbilLinkCache.GetAbilLinkIds();
+        List<string> ids = _layeredAbilLinkCache.GetAbilLinkIds();
 
         // assert
-        ids.Keys.Should().Equal(1, 2, 3);
-        ids.Values.Should().Equal("attack", "move", "MapAbility");
+        ids.Should().Equal("attack", "move", "MapAbility");
     }
 
     [TestMethod]
@@ -51,10 +50,10 @@ public sealed class LayeredAbilLinkCacheTests
         _baseAbilLinkCache.AddId("ReviveSelf");
 
         // act
-        Dictionary<int, string> ids = _layeredAbilLinkCache.GetAbilLinkIds();
+        List<string> ids = _layeredAbilLinkCache.GetAbilLinkIds();
 
         // assert
-        ids.Should().Equal(CreateIds(string.Empty, string.Empty, "ReviveSelf", "stop"));
+        ids.Should().Equal(string.Empty, string.Empty, "ReviveSelf", "stop");
     }
 
     [TestMethod]
@@ -72,26 +71,26 @@ public sealed class LayeredAbilLinkCacheTests
         _baseAbilLinkCache.AddId("move");
 
         // act
-        Dictionary<int, string> ids = _layeredAbilLinkCache.GetAbilLinkIds();
+        List<string> ids = _layeredAbilLinkCache.GetAbilLinkIds();
 
         // assert
-        ids.Should().Equal(CreateIds(string.Empty, "attack", "move", "MapAbility", string.Empty, "CustomAbility"));
+        ids.Should().Equal(string.Empty, "attack", "move", "MapAbility", string.Empty, "CustomAbility");
     }
 
     [TestMethod]
-    public void GetAbilLinkIds_ReturnedDictionaryIsChanged_DoesNotChangeTheNextOne()
+    public void GetAbilLinkIds_ReturnedListIsChanged_DoesNotChangeTheNextOne()
     {
         // arrange
         _baseAbilLinkCache.AddId("attack");
 
-        Dictionary<int, string> ids = _layeredAbilLinkCache.GetAbilLinkIds();
-        ids[1] = "changed";
+        List<string> ids = _layeredAbilLinkCache.GetAbilLinkIds();
+        ids[0] = "changed";
 
         // act
-        Dictionary<int, string> result = _layeredAbilLinkCache.GetAbilLinkIds();
+        List<string> result = _layeredAbilLinkCache.GetAbilLinkIds();
 
         // assert
-        result.Should().Equal(CreateIds("attack"));
+        result.Should().Equal("attack");
     }
 
     [TestMethod]
@@ -105,7 +104,7 @@ public sealed class LayeredAbilLinkCacheTests
         _mapAbilLinkCache.AddId("MapAbility");
 
         // assert
-        _layeredAbilLinkCache.GetAbilLinkIds().Should().Equal(CreateIds("attack", "MapAbility"));
+        _layeredAbilLinkCache.GetAbilLinkIds().Should().Equal("attack", "MapAbility");
     }
 
     [TestMethod]
@@ -121,7 +120,7 @@ public sealed class LayeredAbilLinkCacheTests
         _mapAbilLinkCache.Clear();
 
         // assert
-        _layeredAbilLinkCache.GetAbilLinkIds().Should().Equal(CreateIds("attack", "CustomAbility"));
+        _layeredAbilLinkCache.GetAbilLinkIds().Should().Equal("attack", "CustomAbility");
         _layeredAbilLinkCache.TryGetAbilLink("MapAbility", out _).Should().BeFalse();
     }
 
@@ -193,16 +192,5 @@ public sealed class LayeredAbilLinkCacheTests
         // assert
         result.Should().BeFalse();
         abilLink.Should().Be(0);
-    }
-
-    // the ids by their index, the first one is index 1
-    private static Dictionary<int, string> CreateIds(params string[] ids)
-    {
-        Dictionary<int, string> idsByIndex = [];
-
-        for (int i = 0; i < ids.Length; i++)
-            idsByIndex.Add(i + 1, ids[i]);
-
-        return idsByIndex;
     }
 }

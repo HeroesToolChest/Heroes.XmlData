@@ -2165,24 +2165,30 @@ public sealed class StormCatalogTests
     public void GetAbilLinkIds_NothingLoaded_ReturnsEmpty()
     {
         // act
-        IReadOnlyDictionary<int, string> ids = _stormCatalog.GetAbilLinkIds();
+        IReadOnlyList<string> ids = _stormCatalog.GetAbilLinkIds();
 
         // assert
         ids.Should().BeEmpty();
     }
 
     [TestMethod]
-    public void GetAbilLinkIds_AbilLinksInAllLayers_ReturnsIdsByIndexStartingAtOne()
+    public void GetAbilLinkIds_AbilLinksInAllLayers_ReturnsIdsInIndexOrder()
     {
         // arrange
         AddAbilLinks();
 
         // act
-        IReadOnlyDictionary<int, string> ids = _stormCatalog.GetAbilLinkIds();
+        IReadOnlyList<string> ids = _stormCatalog.GetAbilLinkIds();
 
         // assert
-        ids.Should().Equal(CreateAbilLinkIds(string.Empty, string.Empty, "attack", "AlarakDiscordStrike", "MapAbility", "CustomAbility"));
-        ids.Keys.Should().Equal(1, 2, 3, 4, 5, 6);
+        ids.Should().Equal(string.Empty, string.Empty, "attack", "AlarakDiscordStrike", "MapAbility", "CustomAbility");
+
+        // the id of an index is at the position one less than it
+        for (int i = 0; i < ids.Count; i++)
+        {
+            if (ids[i].Length > 0)
+                _stormCatalog.GetAbilLink(ids[i]).Should().Be(i + 1);
+        }
     }
 
     [TestMethod]
@@ -2191,14 +2197,14 @@ public sealed class StormCatalogTests
         // arrange
         AddAbilLinks();
 
-        IReadOnlyDictionary<int, string> ids = _stormCatalog.GetAbilLinkIds();
+        IReadOnlyList<string> ids = _stormCatalog.GetAbilLinkIds();
 
         // act
         _layeredDataStorage.ClearDataStorage(StormModType.Map);
 
         // assert
-        ids.Values.Should().Contain("MapAbility");
-        _stormCatalog.GetAbilLinkIds().Should().Equal(CreateAbilLinkIds(string.Empty, string.Empty, "attack", "AlarakDiscordStrike", "CustomAbility"));
+        ids.Should().Contain("MapAbility");
+        _stormCatalog.GetAbilLinkIds().Should().Equal(string.Empty, string.Empty, "attack", "AlarakDiscordStrike", "CustomAbility");
     }
 
     [TestMethod]
@@ -2706,17 +2712,6 @@ public sealed class StormCatalogTests
         // assert
         gameStrings.Should().ContainKey("Unit/Name/HeroMuradin");
         _stormCatalog.GetGameStrings().Should().BeEmpty();
-    }
-
-    // the ids by their index, the first one is index 1
-    private static Dictionary<int, string> CreateAbilLinkIds(params string[] ids)
-    {
-        Dictionary<int, string> idsByIndex = [];
-
-        for (int i = 0; i < ids.Length; i++)
-            idsByIndex.Add(i + 1, ids[i]);
-
-        return idsByIndex;
     }
 
     // adds the style constant to the data storage of the given layer, the same way loading a .stormstyle file does

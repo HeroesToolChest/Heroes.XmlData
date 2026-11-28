@@ -1,4 +1,4 @@
-﻿namespace Heroes.StormData.Cache.Tests;
+namespace Heroes.StormData.Cache.Tests;
 
 [TestClass]
 internal sealed class LayeredDataStorageTests
@@ -227,13 +227,13 @@ internal sealed class LayeredDataStorageTests
         layeredDataStorage.GetDataStorage(StormModType.Custom).AbilLinkCache.AddId("CustomAbility");
 
         // the ids are cached
-        layeredDataStorage.AbilLinks.GetAbilLinkIds().Values.Should().Equal("attack", "MapAbility", "CustomAbility");
+        layeredDataStorage.AbilLinks.GetAbilLinkIds().Should().Equal("attack", "MapAbility", "CustomAbility");
 
         // act
         layeredDataStorage.ClearDataStorage(StormModType.Map);
 
         // assert
-        layeredDataStorage.AbilLinks.GetAbilLinkIds().Values.Should().Equal("attack", "CustomAbility");
+        layeredDataStorage.AbilLinks.GetAbilLinkIds().Should().Equal("attack", "CustomAbility");
     }
 
     [TestMethod]

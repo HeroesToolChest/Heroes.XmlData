@@ -887,7 +887,7 @@ public sealed class StormCatalog
     }
 
     /// <summary>
-    /// Gets the <c>id</c>s of the ability links by their index, which is the index the game uses for an ability (e.g. the <c>m_abilLink</c> of a replay's game events).
+    /// Gets the <c>id</c>s of the ability links in index order, where the index is the one the game uses for an ability (e.g. the <c>m_abilLink</c> of a replay's game events).
     /// <para>
     /// The game gives an ability link its index the first time it sees it while loading the XML data, as the <c>id</c> of an ability element
     /// (e.g. <c>&lt;CAbilEffectTarget id="AlarakDiscordStrike"&gt;</c>) or as the value of an ability link of another element (e.g. <c>&lt;AbilArray Link="AlarakDiscordStrike" /&gt;</c>).
@@ -899,11 +899,12 @@ public sealed class StormCatalog
     /// </para>
     /// </summary>
     /// <returns>
-    /// A new dictionary of the <c>id</c>s by their index, in index order. The first index is <c>1</c> and no index is skipped.
+    /// A new list of the <c>id</c>s in index order, with no index skipped. The indexes start at <c>1</c>, so the <c>id</c> of an index is at the list position one less than it
+    /// (e.g. index <c>1</c> is at position <c>0</c>), and the list's count is the last index.
     /// An index that has no <c>id</c> is an empty string, which is the default element (the element with no <c>id</c>) of each ability class (e.g. <c>CAbilEffectTarget</c>).
     /// Loading or unloading afterwards does not change it.
     /// </returns>
-    public IReadOnlyDictionary<int, string> GetAbilLinkIds() => _layeredDataStorage.AbilLinks.GetAbilLinkIds();
+    public IReadOnlyList<string> GetAbilLinkIds() => _layeredDataStorage.AbilLinks.GetAbilLinkIds();
 
     /// <summary>
     /// Gets the <c>id</c> of an ability link from its index (e.g. the <c>m_abilLink</c> of a replay's game events), if the index has one.

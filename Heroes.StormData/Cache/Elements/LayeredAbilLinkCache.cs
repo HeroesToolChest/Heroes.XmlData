@@ -26,19 +26,17 @@ internal sealed class LayeredAbilLinkCache
     }
 
     /// <summary>
-    /// Gets the <c>id</c>s of the ability links by their index.
+    /// Gets the <c>id</c>s of the ability links in index order.
     /// </summary>
-    /// <returns>A new dictionary of the <c>id</c>s by their index, in index order. The first index is <c>1</c>. An index that has no <c>id</c> is an empty string.</returns>
-    public Dictionary<int, string> GetAbilLinkIds()
+    /// <returns>
+    /// A new list of the <c>id</c>s in index order. The first index is <c>1</c>, so the <c>id</c> of an index is at the position one less than it.
+    /// An index that has no <c>id</c> is an empty string.
+    /// </returns>
+    public List<string> GetAbilLinkIds()
     {
         Update();
 
-        Dictionary<int, string> idsByIndex = new(_ids.Length);
-
-        for (int i = 0; i < _ids.Length; i++)
-            idsByIndex.Add(i + FirstIndex, _ids[i]);
-
-        return idsByIndex;
+        return [.. _ids];
     }
 
     /// <summary>

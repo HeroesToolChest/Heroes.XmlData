@@ -305,7 +305,7 @@ public sealed class StormModContainerTests
 
         // assert
         // the map element had no parent to get the ability link from until the base data was loaded
-        _sourceContainer.LayeredDataStorage.AbilLinks.GetAbilLinkIds().Values.Should().Equal("attack", "MapAbility");
+        _sourceContainer.LayeredDataStorage.AbilLinks.GetAbilLinkIds().Should().Equal("attack", "MapAbility");
     }
 
     [TestMethod]
