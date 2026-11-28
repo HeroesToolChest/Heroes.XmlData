@@ -172,6 +172,42 @@ public sealed class CASCStormModTests
     }
 
     [TestMethod]
+    public void LoadStormFiles_GameDataXmlFileListsFilesInGameDataDirectory_LoadedInListedOrderAfterUnlistedDirectoryFiles()
+    {
+        // arrange
+        // the order by name is AurielData.xml, BehaviorData.xml, SoundData.xml, ZoneData.xml
+        AddConstXmlFile(Path.Combine(_baseStormDataPath, "GameData", "AurielData.xml"), "$AurielConst");
+        AddConstXmlFile(Path.Combine(_baseStormDataPath, "GameData", "BehaviorData.xml"), "$BehaviorConst");
+        AddConstXmlFile(Path.Combine(_baseStormDataPath, "GameData", "SoundData.xml"), "$SoundConst");
+        AddConstXmlFile(Path.Combine(_baseStormDataPath, "GameData", "ZoneData.xml"), "$ZoneConst");
+        AddConstXmlFile(Path.Combine(_baseStormDataPath, "GameData", "Skins", "AurielSkinData.xml"), "$AurielSkinConst");
+
+        AddCASCFile(
+            Path.Combine(_baseStormDataPath, "GameData.xml"),
+            """
+            <Includes>
+              <Catalog path="GameData/SoundData.xml" />
+              <Catalog path="GameData/Skins/AurielSkinData.xml" />
+              <Catalog path="GameData/AurielData.xml" />
+            </Includes>
+            """);
+
+        CASCStormMod cascStormMod = CreateCASCStormMod();
+
+        // act
+        cascStormMod.LoadStormFiles();
+
+        // assert
+        // the listed files that are in the gamedata directory keep the file name found in the directory
+        cascStormMod.ModContainer.LoadedXmlFiles.Select(x => Path.GetFileName(x.FullPath)).Should().Equal(
+            "BehaviorData.xml",
+            "ZoneData.xml",
+            "SoundData.xml",
+            "aurielskindata.xml",
+            "AurielData.xml");
+    }
+
+    [TestMethod]
     public void LoadStormFiles_GameDataXmlFileListsFileInGameDataDirectory_LoadsItOnce()
     {
         // arrange

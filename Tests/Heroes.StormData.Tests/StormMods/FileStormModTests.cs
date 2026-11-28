@@ -151,7 +151,7 @@ internal sealed class FileStormModTests
     }
 
     [TestMethod]
-    public void LoadStormFiles_GameDataDirectoryAndGameDataXmlFile_DirectoryFilesLoadedFirstThenCatalogsInListedOrder()
+    public void LoadStormFiles_GameDataDirectoryAndGameDataXmlFile_UnlistedDirectoryFilesLoadedFirstThenCatalogsInListedOrder()
     {
         // arrange
         string directoryFilePath = Path.Combine(_gameDataDirectoryPath, "ZoneData.xml");
@@ -181,6 +181,46 @@ internal sealed class FileStormModTests
             directoryFilePath,
             Path.Combine(_baseStormDataPath, "gamedata", "heroes", "zaryadata.xml"),
             Path.Combine(_baseStormDataPath, "gamedata", "heroes", "abathurdata.xml"));
+    }
+
+    [TestMethod]
+    public void LoadStormFiles_GameDataXmlFileListsFilesInGameDataDirectory_LoadedInListedOrderAfterUnlistedDirectoryFiles()
+    {
+        // arrange
+        // the order by name is AurielData.xml, BehaviorData.xml, SoundData.xml, ZoneData.xml
+        string aurielDataFilePath = Path.Combine(_gameDataDirectoryPath, "AurielData.xml");
+        string behaviorDataFilePath = Path.Combine(_gameDataDirectoryPath, "BehaviorData.xml");
+        string soundDataFilePath = Path.Combine(_gameDataDirectoryPath, "SoundData.xml");
+        string zoneDataFilePath = Path.Combine(_gameDataDirectoryPath, "ZoneData.xml");
+
+        AddConstXmlFile(aurielDataFilePath, "$AurielConst");
+        AddConstXmlFile(behaviorDataFilePath, "$BehaviorConst");
+        AddConstXmlFile(soundDataFilePath, "$SoundConst");
+        AddConstXmlFile(zoneDataFilePath, "$ZoneConst");
+        AddConstXmlFile(Path.Combine(_gameDataDirectoryPath, "Skins", "AurielSkinData.xml"), "$AurielSkinConst");
+
+        _fileSystem.AddFile(Path.Combine(_baseStormDataPath, "GameData.xml"), new MockFileData(
+            """
+            <Includes>
+              <Catalog path="GameData/SoundData.xml" />
+              <Catalog path="GameData/Skins/AurielSkinData.xml" />
+              <Catalog path="GameData/AurielData.xml" />
+            </Includes>
+            """));
+
+        FileStormMod fileStormMod = CreateFileStormMod();
+
+        // act
+        fileStormMod.LoadStormFiles();
+
+        // assert
+        // the listed files that are in the gamedata directory keep the path found in the directory
+        fileStormMod.ModContainer.LoadedXmlFiles.Select(x => x.FullPath).Should().Equal(
+            behaviorDataFilePath,
+            zoneDataFilePath,
+            soundDataFilePath,
+            Path.Combine(_baseStormDataPath, "gamedata", "skins", "aurielskindata.xml"),
+            aurielDataFilePath);
     }
 
     [TestMethod]

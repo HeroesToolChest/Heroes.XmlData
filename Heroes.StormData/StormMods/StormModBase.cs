@@ -24,8 +24,12 @@ internal abstract class StormModBase<T> : IStormMod
 
     private readonly List<IStormMod> _includesStormModsCache = [];
 
-    // the full paths of the XML files added by LoadStormFiles, the casing can differ between the directory and the gamedata.xml file
-    private readonly HashSet<string> _addedXmlFilePaths = new(StringComparer.OrdinalIgnoreCase);
+    // the full paths of the XML files listed in the gamedata.xml file, in the listed order
+    private readonly List<string> _gameDataXmlFilePaths = [];
+
+    // the full path of an XML file listed in the gamedata.xml file to the path it is loaded from, which is the path found in the gamedata directory if it is in there
+    // the casing can differ between the directory and the gamedata.xml file
+    private readonly Dictionary<string, string> _xmlFilePathByGameDataXmlFilePath = new(StringComparer.OrdinalIgnoreCase);
 
     /// <summary>
     /// Initializes a new instance of the <see cref="StormModBase{T}"/> class.
@@ -123,15 +127,16 @@ internal abstract class StormModBase<T> : IStormMod
 
     public virtual void LoadStormFiles()
     {
-        _addedXmlFilePaths.Clear();
-
         LoadFontStylesFile();
         LoadStormLayoutDirectory();
         LoadAssetsDirectory();
         LoadAssetsTextFile();
 
+        // the order the game loads the XML files in, first the files in the gamedata directory that are not listed in the gamedata.xml file,
+        // then the files listed in the gamedata.xml file, so the gamedata.xml file is read before the directory is loaded
+        ReadGameDataXmlFile();
         LoadGameDataDirectory();
-        LoadGameDataXmlFile();
+        LoadGameDataXmlFiles();
 
         LoadIncludesStormMods();
     }
@@ -159,7 +164,7 @@ internal abstract class StormModBase<T> : IStormMod
 
     /// <summary>
     /// Loads the XML files from the <see cref="GameDataDirectoryPath"/>. Only this directory and not the subdirectories.
-    /// The subdirectories are loaded from <see cref="LoadGameDataXmlFile"/>.
+    /// The files in the subdirectories, and the files in this directory that are listed in the <c>gamedata.xml</c> file, are loaded from <see cref="LoadGameDataXmlFiles"/>.
     /// </summary>
     protected abstract void LoadGameDataDirectory();
 
@@ -173,11 +178,20 @@ internal abstract class StormModBase<T> : IStormMod
     /// </summary>
     protected abstract void LoadStormLayoutDirectory();
 
+    /// <summary>
+    /// Loads the XML files found in the <see cref="GameDataDirectoryPath"/>, in the given order.
+    /// A file that is listed in the <c>gamedata.xml</c> file is not loaded here, it is loaded at its listed position from <see cref="LoadGameDataXmlFiles"/>.
+    /// </summary>
+    /// <param name="files">The full paths of the XML files.</param>
     protected void LoadGameDataFiles(IEnumerable<string> files)
     {
         foreach (string file in files)
         {
-            AddXmlFile(file);
+            // keep the path found in the directory, the casing can differ from the one in the gamedata.xml file
+            if (_xmlFilePathByGameDataXmlFilePath.ContainsKey(file))
+                _xmlFilePathByGameDataXmlFilePath[file] = file;
+            else
+                AddXmlFile(file);
         }
     }
 
@@ -284,11 +298,14 @@ internal abstract class StormModBase<T> : IStormMod
     }
 
     /// <summary>
-    /// Loads and adds the XML files listed in the <c>gamedata.xml</c> file. Only the files in the <c>gamedata</c> directory are added.
-    /// Files that were already added (such as those directly in the <c>gamedata</c> directory) are skipped.
+    /// Reads the paths of the XML files listed in the <c>gamedata.xml</c> file. Only the files in the <c>gamedata</c> directory are kept.
+    /// The files are loaded later from <see cref="LoadGameDataXmlFiles"/>.
     /// </summary>
-    private void LoadGameDataXmlFile()
+    private void ReadGameDataXmlFile()
     {
+        _gameDataXmlFilePaths.Clear();
+        _xmlFilePathByGameDataXmlFilePath.Clear();
+
         if (!TryCreateXmlReader(GameDataXmlFilePath, out XmlReader? xmlReader))
             return;
 
@@ -298,9 +315,27 @@ internal abstract class StormModBase<T> : IStormMod
             {
                 string path = PathNormalizer.NormalizePath(pathValue, SourceConstants.DefaultModsDirectory);
 
-                if (StartsWithDirectory(path, SourceConstants.GameDataDirectory))
-                    AddXmlFile(Path.Join(BaseStormDataPath, path));
+                if (!StartsWithDirectory(path, SourceConstants.GameDataDirectory))
+                    continue;
+
+                string filePath = Path.Join(BaseStormDataPath, path);
+
+                // a file can be listed more than once, only its first position is used
+                if (_xmlFilePathByGameDataXmlFilePath.TryAdd(filePath, filePath))
+                    _gameDataXmlFilePaths.Add(filePath);
             }
+        }
+    }
+
+    /// <summary>
+    /// Loads and adds the XML files listed in the <c>gamedata.xml</c> file, in the listed order.
+    /// This includes the listed files that are directly in the <c>gamedata</c> directory, which are skipped by <see cref="LoadGameDataFiles"/>.
+    /// </summary>
+    private void LoadGameDataXmlFiles()
+    {
+        foreach (string filePath in _gameDataXmlFilePaths)
+        {
+            AddXmlFile(_xmlFilePathByGameDataXmlFilePath[filePath]);
         }
     }
 
@@ -330,15 +365,11 @@ internal abstract class StormModBase<T> : IStormMod
     }
 
     /// <summary>
-    /// Loads an XML file into the <see cref="ModContainer"/>, unless it was already added.
+    /// Loads an XML file into the <see cref="ModContainer"/>.
     /// </summary>
     /// <param name="path">The full path of the XML file.</param>
     private void AddXmlFile(string path)
     {
-        // the gamedata.xml file also lists files directly in the gamedata directory, which were already loaded
-        if (!_addedXmlFilePaths.Add(path))
-            return;
-
         StormFile stormFile = CreateStormFile(path);
 
         if (!TryCreateXmlReader(path, out XmlReader? xmlReader))
