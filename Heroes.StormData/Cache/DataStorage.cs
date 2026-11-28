@@ -15,6 +15,8 @@ internal sealed class DataStorage
 
     public StyleCache StyleCache { get; } = new();
 
+    public AbilLinkCache AbilLinkCache { get; } = new();
+
     /// <summary>
     /// Gets a number that changes whenever something that affects merged elements is added (a base class catalog name or an element).
     /// <para>
@@ -173,7 +175,7 @@ internal sealed class DataStorage
     }
 
     /// <summary>
-    /// Removes all the data from the <see cref="ElementCache"/>, <see cref="TextCache"/>, <see cref="FileCache"/>, and <see cref="StyleCache"/>.
+    /// Removes all the data from the <see cref="ElementCache"/>, <see cref="TextCache"/>, <see cref="FileCache"/>, <see cref="StyleCache"/>, and <see cref="AbilLinkCache"/>.
     /// </summary>
     public void Clear()
     {
@@ -181,6 +183,7 @@ internal sealed class DataStorage
         TextCache.Clear();
         FileCache.Clear();
         StyleCache.Clear();
+        AbilLinkCache.Clear();
 
         // the elements were removed, so the merged elements are out of date.
         // the version only goes up (never reset), so the sum across the data storages can't land on an earlier value.

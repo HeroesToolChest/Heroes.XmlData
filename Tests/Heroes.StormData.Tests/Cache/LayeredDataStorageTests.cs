@@ -218,6 +218,47 @@ internal sealed class LayeredDataStorageTests
     }
 
     [TestMethod]
+    public void ClearDataStorage_Map_RemovesMapAbilLinksOnly()
+    {
+        // arrange
+        LayeredDataStorage layeredDataStorage = new();
+        layeredDataStorage.GetDataStorage(StormModType.Base).AbilLinkCache.AddId("attack");
+        layeredDataStorage.GetDataStorage(StormModType.Map).AbilLinkCache.AddId("MapAbility");
+        layeredDataStorage.GetDataStorage(StormModType.Custom).AbilLinkCache.AddId("CustomAbility");
+
+        // the ids are cached
+        layeredDataStorage.AbilLinks.GetAbilLinkIds().Values.Should().Equal("attack", "MapAbility", "CustomAbility");
+
+        // act
+        layeredDataStorage.ClearDataStorage(StormModType.Map);
+
+        // assert
+        layeredDataStorage.AbilLinks.GetAbilLinkIds().Values.Should().Equal("attack", "CustomAbility");
+    }
+
+    [TestMethod]
+    [DataRow(StormModType.Base)]
+    [DataRow(StormModType.Map)]
+    [DataRow(StormModType.Custom)]
+    public void GetAbilLinkCollector_StormModType_AddsToItsDataStorageOnly(StormModType stormModType)
+    {
+        // arrange
+        LayeredDataStorage layeredDataStorage = new();
+        AbilLinkCollector abilLinkCollector = layeredDataStorage.GetAbilLinkCollector(stormModType);
+
+        // act
+        abilLinkCollector.BeginElement();
+        abilLinkCollector.AddRootAttribute("id", "AlarakDiscordStrike");
+        abilLinkCollector.EndElement("CAbilEffectTarget");
+
+        // assert
+        layeredDataStorage.GetDataStorage(stormModType).AbilLinkCache.Entries.Should().Equal(new AbilLinkEntry("AlarakDiscordStrike", false));
+
+        foreach (StormModType otherStormModType in Enum.GetValues<StormModType>().Where(x => x != stormModType))
+            layeredDataStorage.GetDataStorage(otherStormModType).AbilLinkCache.Entries.Should().BeEmpty();
+    }
+
+    [TestMethod]
     public void ClearDataStorage_MapElementWasMerged_MergedElementNoLongerHasMapValues()
     {
         // arrange

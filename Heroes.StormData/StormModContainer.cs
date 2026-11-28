@@ -9,6 +9,7 @@ public class StormModContainer
 
     private readonly StormXmlFileParser _xmlParser;
     private readonly DataStorage _specificDataStorage;
+    private readonly AbilLinkCollector _abilLinkCollector;
 
     private readonly List<StormFile> _loadedXmlFilesList = [];
     private readonly List<StormFile> _loadedFontStylesFilesList = [];
@@ -24,6 +25,7 @@ public class StormModContainer
 
         _specificDataStorage = _sourceContainer.LayeredDataStorage.GetDataStorage(StormModType);
         _xmlParser = _sourceContainer.StormXmlFileParser;
+        _abilLinkCollector = _sourceContainer.LayeredDataStorage.GetAbilLinkCollector(StormModType);
 
         LoadedXmlFiles = _loadedXmlFilesList.AsReadOnly();
         LoadedAssetsTextFiles = _loadedAssetsTextFilesList.AsReadOnly();
@@ -67,7 +69,7 @@ public class StormModContainer
     {
         _loadedXmlFilesList.Add(stormFile);
 
-        IEnumerable<StormXmlElement> elements = _xmlParser.Parse(xmlReader, stormFile);
+        IEnumerable<StormXmlElement> elements = _xmlParser.Parse(xmlReader, stormFile, _abilLinkCollector);
 
         foreach (StormXmlElement element in elements)
         {

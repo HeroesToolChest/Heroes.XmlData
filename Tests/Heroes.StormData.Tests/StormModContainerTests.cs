@@ -238,6 +238,77 @@ public sealed class StormModContainerTests
     }
 
     [TestMethod]
+    [DataRow(StormModType.Base)]
+    [DataRow(StormModType.Map)]
+    [DataRow(StormModType.Custom)]
+    public void LoadXmlFile_HasAbilLinks_AddsAbilLinksToItsDataStorageOnly(StormModType stormModType)
+    {
+        // arrange
+        StormModContainer stormModContainer = new(_sourceContainer, stormModType);
+
+        using XmlReader xmlReader = XmlReaderHelper.CreateXmlReader(
+            """
+            <CAbilEffectTarget default="1" />
+            <CUnit id="HeroAlarak">
+              <AbilArray Link="AlarakSadism" />
+            </CUnit>
+            <CAbilEffectTarget id="AlarakDiscordStrike" />
+            """);
+
+        // act
+        stormModContainer.LoadXmlFile(xmlReader, CreateStormFile("AlarakData.xml"));
+
+        // assert
+        GetDataStorage(stormModType).AbilLinkCache.Entries.Should().Equal(
+            new AbilLinkEntry("CAbilEffectTarget", true),
+            new AbilLinkEntry("AlarakSadism", false),
+            new AbilLinkEntry("AlarakDiscordStrike", false));
+
+        foreach (StormModType otherStormModType in Enum.GetValues<StormModType>().Where(x => x != stormModType))
+            GetDataStorage(otherStormModType).AbilLinkCache.Entries.Should().BeEmpty();
+    }
+
+    [TestMethod]
+    public void LoadXmlFile_MapElementHasBaseParentWithToken_AddsAbilLinkOfMapElementAfterBaseAbilLinks()
+    {
+        // arrange
+        StormModContainer baseStormModContainer = new(_sourceContainer, StormModType.Base);
+        StormModContainer mapStormModContainer = new(_sourceContainer, StormModType.Map);
+
+        using XmlReader baseXmlReader = XmlReaderHelper.CreateXmlReader(
+            """
+            <CActorRange id="RangeAbil">
+              <?token id="abil" type="CAbilLink"?>
+              <Abil Link="##abil##" />
+            </CActorRange>
+            <CAbilAttack id="attack" />
+            """);
+
+        using XmlReader mapXmlReader = XmlReaderHelper.CreateXmlReader(
+            """
+            <CActorRange id="MapRange" parent="RangeAbil" abil="MapAbility" />
+            <CUnit id="MapUnit">
+              <AbilArray Link="attack" />
+            </CUnit>
+            """);
+
+        // act
+        mapStormModContainer.LoadXmlFile(mapXmlReader, CreateStormFile("ActorData.xml"));
+        baseStormModContainer.LoadXmlFile(baseXmlReader, CreateStormFile("ActorData.xml"));
+
+        using XmlReader secondMapXmlReader = XmlReaderHelper.CreateXmlReader(
+            """
+            <CActorRange id="MapRange" parent="RangeAbil" abil="MapAbility" />
+            """);
+
+        mapStormModContainer.LoadXmlFile(secondMapXmlReader, CreateStormFile("ActorData.xml"));
+
+        // assert
+        // the map element had no parent to get the ability link from until the base data was loaded
+        _sourceContainer.LayeredDataStorage.AbilLinks.GetAbilLinkIds().Values.Should().Equal("attack", "MapAbility");
+    }
+
+    [TestMethod]
     public void LoadXmlFile_ClassElementWithIdAndKnownBaseClass_AddsElementUnderCatalog()
     {
         // arrange

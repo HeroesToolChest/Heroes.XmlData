@@ -16,8 +16,9 @@ internal sealed class StormXmlFileParser
     /// </summary>
     /// <param name="reader">The XML reader to read from.</param>
     /// <param name="stormFile">The file associated with the XML elements.</param>
+    /// <param name="abilLinkCollector">An optional <see cref="AbilLinkCollector"/> that collects the ability links of the elements as they are parsed.</param>
     /// <returns>A collection of <see cref="StormXmlElement"/> objects.</returns>
-    public IEnumerable<StormXmlElement> Parse(XmlReader reader, StormFile stormFile)
+    public IEnumerable<StormXmlElement> Parse(XmlReader reader, StormFile stormFile, AbilLinkCollector? abilLinkCollector = null)
     {
         reader.MoveToContent(); // <Catalog>
         reader.Read();
@@ -30,7 +31,13 @@ internal sealed class StormXmlFileParser
                 continue;
             }
 
-            StormXmlMember stormXmlMember = ParseElement(reader);
+            string elementName = reader.LocalName;
+
+            abilLinkCollector?.BeginElement();
+
+            StormXmlMember stormXmlMember = ParseElement(reader, abilLinkCollector: abilLinkCollector);
+
+            abilLinkCollector?.EndElement(elementName);
 
             if (stormXmlMember.Name.Equals(StormXmlConstants.ConstElementName, StringComparison.Ordinal))
                 yield return new StormXmlConstElement(stormXmlMember, stormFile);
@@ -72,7 +79,7 @@ internal sealed class StormXmlFileParser
         }
     }
 
-    private static void ParseTokenInstruction(ReadOnlySpan<char> content, StormXmlMember rootMember)
+    private static StormXmlToken ParseTokenInstruction(ReadOnlySpan<char> content, StormXmlMember rootMember)
     {
         string? id = null;
         string? type = null;
@@ -88,7 +95,11 @@ internal sealed class StormXmlFileParser
                 value = attributeValue;
         }
 
-        rootMember.AddToken(new StormXmlToken(id ?? string.Empty, type ?? string.Empty, value ?? string.Empty));
+        StormXmlToken token = new(id ?? string.Empty, type ?? string.Empty, value ?? string.Empty);
+
+        rootMember.AddToken(token);
+
+        return token;
     }
 
     // Reads the next name="value" pair and advances 'text' past it.
@@ -130,7 +141,7 @@ internal sealed class StormXmlFileParser
         return StormXmlConstants.ElementArraysByRootElementType.TryGetValue(elementName, out string? rootElementType) && rootElementType.Equals(rootElementName, StringComparison.OrdinalIgnoreCase);
     }
 
-    private StormXmlMember ParseElement(XmlReader reader, StormXmlMember? rootMember = null, bool resolveValues = true)
+    private StormXmlMember ParseElement(XmlReader reader, StormXmlMember? rootMember = null, bool resolveValues = true, AbilLinkCollector? abilLinkCollector = null, string? parentElementName = null)
     {
         string elementName = reader.LocalName;
         bool isArray = false;
@@ -151,6 +162,15 @@ internal sealed class StormXmlFileParser
                 bool isIdAttribute = false;
                 string name = reader.LocalName;
                 string value = reader.Value;
+
+                // the value as it is in the XML, in the order of the XML
+                if (abilLinkCollector is not null)
+                {
+                    if (parentElementName is null)
+                        abilLinkCollector.AddRootAttribute(name, value);
+                    else
+                        abilLinkCollector.AddAttribute(parentElementName, elementName, name, value);
+                }
 
                 if (name.Equals(StormXmlConstants.IdAttributeName, StringComparison.Ordinal))
                     isIdAttribute = true;
@@ -188,12 +208,14 @@ internal sealed class StormXmlFileParser
                 // Peek the child's index attribute without moving the reader
                 string? indexValue = reader.GetAttribute(StormXmlConstants.IndexAttributeName);
 
-                stormXmlMember.Add(ParseElement(reader, rootMember, resolveValues), indexValue, rootMember);
+                stormXmlMember.Add(ParseElement(reader, rootMember, resolveValues, abilLinkCollector, elementName), indexValue, rootMember);
             }
             else if (reader.NodeType == XmlNodeType.ProcessingInstruction && reader.Name.Equals(StormXmlConstants.TokenInstructionName, StringComparison.Ordinal))
             {
                 // <?token id="heroid" type="CHeroLink" value="Bogus"?>
-                ParseTokenInstruction(reader.Value, rootMember);
+                StormXmlToken token = ParseTokenInstruction(reader.Value, rootMember);
+
+                abilLinkCollector?.AddToken(token.Id, token.Value);
 
                 reader.Read();
             }

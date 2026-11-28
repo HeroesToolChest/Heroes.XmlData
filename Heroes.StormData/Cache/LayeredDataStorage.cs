@@ -13,6 +13,10 @@ internal sealed class LayeredDataStorage
     private readonly DataStorage _mapDataStorage;
     private readonly DataStorage _customDataStorage;
 
+    private readonly AbilLinkCollector _baseAbilLinkCollector;
+    private readonly AbilLinkCollector _mapAbilLinkCollector;
+    private readonly AbilLinkCollector _customAbilLinkCollector;
+
     private readonly StormXmlElementMerger _stormXmlElementMerger;
     private readonly MergedStormXmlElementCache _mergedStormXmlElementCache;
 
@@ -29,6 +33,12 @@ internal sealed class LayeredDataStorage
         Texts = new LayeredTextCache(_baseDataStorage.TextCache, _mapDataStorage.TextCache, _customDataStorage.TextCache);
         Files = new LayeredFileCache(_baseDataStorage.FileCache, _mapDataStorage.FileCache, _customDataStorage.FileCache);
         Styles = new LayeredStyleCache(_baseDataStorage.StyleCache, _mapDataStorage.StyleCache, _customDataStorage.StyleCache);
+        AbilLinks = new LayeredAbilLinkCache(_baseDataStorage.AbilLinkCache, _mapDataStorage.AbilLinkCache, _customDataStorage.AbilLinkCache);
+
+        // an element can have a parent that is in a data storage that is loaded before its own
+        _baseAbilLinkCollector = new AbilLinkCollector(_baseDataStorage.AbilLinkCache);
+        _mapAbilLinkCollector = new AbilLinkCollector(_mapDataStorage.AbilLinkCache, _baseDataStorage.AbilLinkCache);
+        _customAbilLinkCollector = new AbilLinkCollector(_customDataStorage.AbilLinkCache, _mapDataStorage.AbilLinkCache, _baseDataStorage.AbilLinkCache);
 
         _stormXmlElementMerger = new StormXmlElementMerger(Elements);
         _mergedStormXmlElementCache = new MergedStormXmlElementCache(_stormXmlElementMerger);
@@ -55,6 +65,11 @@ internal sealed class LayeredDataStorage
     public LayeredStyleCache Styles { get; }
 
     /// <summary>
+    /// Gets the ability link indexes across the data storages.
+    /// </summary>
+    public LayeredAbilLinkCache AbilLinks { get; }
+
+    /// <summary>
     /// Gets the appropriate <see cref="DataStorage"/> instance based on the specified <see cref="StormModType"/>.
     /// </summary>
     /// <param name="stormModType">The type of the <c>stormmod</c>.</param>
@@ -65,6 +80,20 @@ internal sealed class LayeredDataStorage
         StormModType.Map => _mapDataStorage,
         StormModType.Custom => _customDataStorage,
         _ => _customDataStorage,
+    };
+
+    /// <summary>
+    /// Gets the <see cref="AbilLinkCollector"/> that adds the ability links of the XML elements to the <see cref="DataStorage"/> of the specified <see cref="StormModType"/>,
+    /// to pass to <see cref="StormXmlFileParser.Parse(XmlReader, StormFile, AbilLinkCollector?)"/> when the XML files of that <c>stormmod</c> type are parsed.
+    /// </summary>
+    /// <param name="stormModType">The type of the <c>stormmod</c>.</param>
+    /// <returns>The corresponding <see cref="AbilLinkCollector"/> instance.</returns>
+    public AbilLinkCollector GetAbilLinkCollector(StormModType stormModType) => stormModType switch
+    {
+        StormModType.Base => _baseAbilLinkCollector,
+        StormModType.Map => _mapAbilLinkCollector,
+        StormModType.Custom => _customAbilLinkCollector,
+        _ => _customAbilLinkCollector,
     };
 
     /// <summary>

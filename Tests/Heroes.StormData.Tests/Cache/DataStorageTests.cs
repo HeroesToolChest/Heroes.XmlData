@@ -1297,6 +1297,8 @@ public class DataStorageTests
 
         dataStorage.StyleCache.StormXmlStyleConstantElementByName.Dictionary.Should().BeEmpty();
         dataStorage.StyleCache.StormXmlStyleElementByName.Dictionary.Should().BeEmpty();
+
+        dataStorage.AbilLinkCache.Entries.Should().BeEmpty();
     }
 
     [TestMethod]
@@ -1352,6 +1354,8 @@ public class DataStorageTests
         dataStorage.FileCache.StormLayoutFilesByRelativePath.Dictionary.Add(Path.Combine("ui", "layout", "test.stormlayout"), stormFile);
         dataStorage.FileCache.AssetFilesByRelativePath.Dictionary.Add(Path.Combine("assets", "test.dds"), stormFile);
         dataStorage.AddIdByUnitName("Actor", "HeroMuradin", "HeroMuradin");
+        dataStorage.AbilLinkCache.AddDefaultElement("CAbilEffectTarget");
+        dataStorage.AbilLinkCache.AddId("attack");
 
         // make sure every cache has data, so the clear tests can't pass on empty caches
         dataStorage.ElementCache.ScalingFieldValueByIdByCatalog.Dictionary.Should().NotBeEmpty();

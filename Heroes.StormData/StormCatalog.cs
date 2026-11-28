@@ -877,6 +877,78 @@ public sealed class StormCatalog
         throw new KeyNotFoundException($"Could not find the style: {name}");
     }
 
+    /// <summary>
+    /// Gets the <c>id</c>s of the ability links by their index, which is the index the game uses for an ability (e.g. the <c>m_abilLink</c> of a replay's game events).
+    /// <para>
+    /// The game gives an ability link its index the first time it sees it while loading the XML data, as the <c>id</c> of an ability element
+    /// (e.g. <c>&lt;CAbilEffectTarget id="AlarakDiscordStrike"&gt;</c>) or as the value of an ability link of another element (e.g. <c>&lt;AbilArray Link="AlarakDiscordStrike" /&gt;</c>).
+    /// So the indexes are from all the loaded <c>stormmods</c> (base, then map, then custom), and the indexes of a map's abilities come after the base ones.
+    /// </para>
+    /// <para>
+    /// Not every <c>id</c> is an ability that is defined: an ability link can be to an ability that does not exist,
+    /// and a few are an ability with its command (e.g. <c>SamuroMirrorImage,Execute</c>).
+    /// </para>
+    /// </summary>
+    /// <returns>
+    /// A new dictionary of the <c>id</c>s by their index, in index order. The first index is <c>1</c> and no index is skipped.
+    /// An index that has no <c>id</c> is an empty string, which is the default element (the element with no <c>id</c>) of each ability class (e.g. <c>CAbilEffectTarget</c>).
+    /// Loading or unloading afterwards does not change it.
+    /// </returns>
+    public IReadOnlyDictionary<int, string> GetAbilLinkIds() => _layeredDataStorage.AbilLinks.GetAbilLinkIds();
+
+    /// <summary>
+    /// Gets the <c>id</c> of an ability link from its index (e.g. the <c>m_abilLink</c> of a replay's game events), if the index has one.
+    /// See <see cref="GetAbilLinkIds"/> for how the indexes are given.
+    /// </summary>
+    /// <param name="abilLink">The index of the ability link.</param>
+    /// <param name="id">When this method returns, contains the <c>id</c> of the ability link, if found; otherwise, <see langword="null"/>.</param>
+    /// <returns>
+    /// <see langword="true"/> if the index has an <c>id</c>; otherwise <see langword="false"/>, which is when the index is out of range (the first index is <c>1</c>)
+    /// or has no <c>id</c> (the default element of each ability class).
+    /// </returns>
+    public bool TryGetAbilLinkId(int abilLink, [NotNullWhen(true)] out string? id) => _layeredDataStorage.AbilLinks.TryGetAbilLinkId(abilLink, out id);
+
+    /// <summary>
+    /// Gets the <c>id</c> of an ability link from its index (e.g. the <c>m_abilLink</c> of a replay's game events).
+    /// See <see cref="GetAbilLinkIds"/> for how the indexes are given.
+    /// </summary>
+    /// <param name="abilLink">The index of the ability link.</param>
+    /// <returns>The <c>id</c> of the ability link.</returns>
+    /// <exception cref="KeyNotFoundException">
+    /// The index has no <c>id</c> (in the same cases that <see cref="TryGetAbilLinkId(int, out string?)"/> returns <see langword="false"/>).
+    /// </exception>
+    public string GetAbilLinkId(int abilLink)
+    {
+        if (TryGetAbilLinkId(abilLink, out string? id))
+            return id;
+
+        throw new KeyNotFoundException($"Could not find the ability link: {abilLink}");
+    }
+
+    /// <summary>
+    /// Gets the index of an ability link from its <c>id</c>, if it has one.
+    /// See <see cref="GetAbilLinkIds"/> for how the indexes are given.
+    /// </summary>
+    /// <param name="id">The <c>id</c> of the ability link (e.g. <c>AlarakDiscordStrike</c>). This is case-sensitive.</param>
+    /// <param name="abilLink">When this method returns, contains the index of the ability link, if found; otherwise, <c>0</c>.</param>
+    /// <returns><see langword="true"/> if the <c>id</c> has an index; otherwise <see langword="false"/>.</returns>
+    public bool TryGetAbilLink(ReadOnlySpan<char> id, out int abilLink) => _layeredDataStorage.AbilLinks.TryGetAbilLink(id, out abilLink);
+
+    /// <summary>
+    /// Gets the index of an ability link from its <c>id</c>.
+    /// See <see cref="GetAbilLinkIds"/> for how the indexes are given.
+    /// </summary>
+    /// <param name="id">The <c>id</c> of the ability link (e.g. <c>AlarakDiscordStrike</c>). This is case-sensitive.</param>
+    /// <returns>The index of the ability link.</returns>
+    /// <exception cref="KeyNotFoundException">The <c>id</c> has no index.</exception>
+    public int GetAbilLink(ReadOnlySpan<char> id)
+    {
+        if (TryGetAbilLink(id, out int abilLink))
+            return abilLink;
+
+        throw new KeyNotFoundException($"Could not find the ability link: {id}");
+    }
+
     // the element names are stored without their leading C, so it is removed before a lookup. A name without it is not found.
     private static bool TryRemoveClassElementDeclaration(ReadOnlySpan<char> elementName, out ReadOnlySpan<char> storedElementName)
     {

@@ -2162,6 +2162,142 @@ public sealed class StormCatalogTests
     }
 
     [TestMethod]
+    public void GetAbilLinkIds_NothingLoaded_ReturnsEmpty()
+    {
+        // act
+        IReadOnlyDictionary<int, string> ids = _stormCatalog.GetAbilLinkIds();
+
+        // assert
+        ids.Should().BeEmpty();
+    }
+
+    [TestMethod]
+    public void GetAbilLinkIds_AbilLinksInAllLayers_ReturnsIdsByIndexStartingAtOne()
+    {
+        // arrange
+        AddAbilLinks();
+
+        // act
+        IReadOnlyDictionary<int, string> ids = _stormCatalog.GetAbilLinkIds();
+
+        // assert
+        ids.Should().Equal(CreateAbilLinkIds(string.Empty, string.Empty, "attack", "AlarakDiscordStrike", "MapAbility", "CustomAbility"));
+        ids.Keys.Should().Equal(1, 2, 3, 4, 5, 6);
+    }
+
+    [TestMethod]
+    public void GetAbilLinkIds_MapUnloadedAfterGet_ReturnedListIsNotChanged()
+    {
+        // arrange
+        AddAbilLinks();
+
+        IReadOnlyDictionary<int, string> ids = _stormCatalog.GetAbilLinkIds();
+
+        // act
+        _layeredDataStorage.ClearDataStorage(StormModType.Map);
+
+        // assert
+        ids.Values.Should().Contain("MapAbility");
+        _stormCatalog.GetAbilLinkIds().Should().Equal(CreateAbilLinkIds(string.Empty, string.Empty, "attack", "AlarakDiscordStrike", "CustomAbility"));
+    }
+
+    [TestMethod]
+    [DataRow(3, "attack")]
+    [DataRow(4, "AlarakDiscordStrike")]
+    [DataRow(5, "MapAbility")]
+    [DataRow(6, "CustomAbility")]
+    public void TryGetAbilLinkId_IndexHasId_ReturnsTrueAndId(int abilLink, string expectedId)
+    {
+        // arrange
+        AddAbilLinks();
+
+        // act
+        bool result = _stormCatalog.TryGetAbilLinkId(abilLink, out string? id);
+
+        // assert
+        result.Should().BeTrue();
+        id.Should().Be(expectedId);
+        _stormCatalog.GetAbilLinkId(abilLink).Should().Be(expectedId);
+    }
+
+    [TestMethod]
+    [DataRow(-1)]
+    [DataRow(0)]
+    [DataRow(1)]
+    [DataRow(2)]
+    [DataRow(7)]
+    public void TryGetAbilLinkId_IndexHasNoId_ReturnsFalseAndNull(int abilLink)
+    {
+        // arrange
+        AddAbilLinks();
+
+        // act
+        bool result = _stormCatalog.TryGetAbilLinkId(abilLink, out string? id);
+
+        // assert
+        result.Should().BeFalse();
+        id.Should().BeNull();
+    }
+
+    [TestMethod]
+    public void GetAbilLinkId_IndexHasNoId_ThrowsKeyNotFoundExceptionWithIndex()
+    {
+        // arrange
+        AddAbilLinks();
+
+        // act
+        Action act = () => _stormCatalog.GetAbilLinkId(7);
+
+        // assert
+        act.Should().Throw<KeyNotFoundException>().WithMessage("*7*");
+    }
+
+    [TestMethod]
+    public void TryGetAbilLink_IdHasIndex_ReturnsTrueAndIndex()
+    {
+        // arrange
+        AddAbilLinks();
+
+        // act
+        bool result = _stormCatalog.TryGetAbilLink("MapAbility", out int abilLink);
+
+        // assert
+        result.Should().BeTrue();
+        abilLink.Should().Be(5);
+        _stormCatalog.GetAbilLink("MapAbility").Should().Be(5);
+    }
+
+    [TestMethod]
+    [DataRow("mapability")]
+    [DataRow("CAbilEffectTarget")]
+    [DataRow("")]
+    public void TryGetAbilLink_IdHasNoIndex_ReturnsFalseAndZero(string id)
+    {
+        // arrange
+        AddAbilLinks();
+
+        // act
+        bool result = _stormCatalog.TryGetAbilLink(id, out int abilLink);
+
+        // assert
+        result.Should().BeFalse();
+        abilLink.Should().Be(0);
+    }
+
+    [TestMethod]
+    public void GetAbilLink_IdHasNoIndex_ThrowsKeyNotFoundExceptionWithId()
+    {
+        // arrange
+        AddAbilLinks();
+
+        // act
+        Action act = () => _stormCatalog.GetAbilLink("AlarakSadism");
+
+        // assert
+        act.Should().Throw<KeyNotFoundException>().WithMessage("*AlarakSadism*");
+    }
+
+    [TestMethod]
     public void GetElementIds_ElementsInAllLayers_ReturnsEachIdOnceSorted()
     {
         // arrange
@@ -2509,6 +2645,17 @@ public sealed class StormCatalogTests
         _stormCatalog.GetGameStrings().Should().BeEmpty();
     }
 
+    // the ids by their index, the first one is index 1
+    private static Dictionary<int, string> CreateAbilLinkIds(params string[] ids)
+    {
+        Dictionary<int, string> idsByIndex = [];
+
+        for (int i = 0; i < ids.Length; i++)
+            idsByIndex.Add(i + 1, ids[i]);
+
+        return idsByIndex;
+    }
+
     // adds the style constant to the data storage of the given layer, the same way loading a .stormstyle file does
     private void AddStyleConstant(StormModType stormModType, string xml)
     {
@@ -2540,6 +2687,22 @@ public sealed class StormCatalogTests
             "Unit");
 
         AddMuradinScaling(StormModType.Base, lifeScaling);
+    }
+
+    // two default elements (indexes 1 and 2), then the ids from index 3
+    private void AddAbilLinks()
+    {
+        AbilLinkCache baseAbilLinkCache = _layeredDataStorage.GetDataStorage(StormModType.Base).AbilLinkCache;
+        baseAbilLinkCache.AddDefaultElement("CAbil");
+        baseAbilLinkCache.AddDefaultElement("CAbilEffectTarget");
+        baseAbilLinkCache.AddId("attack");
+        baseAbilLinkCache.AddId("AlarakDiscordStrike");
+
+        AbilLinkCache mapAbilLinkCache = _layeredDataStorage.GetDataStorage(StormModType.Map).AbilLinkCache;
+        mapAbilLinkCache.AddId("attack");
+        mapAbilLinkCache.AddId("MapAbility");
+
+        _layeredDataStorage.GetDataStorage(StormModType.Custom).AbilLinkCache.AddId("CustomAbility");
     }
 
     // the LevelScalingArray of CHero Muradin, the same shape as in the game data

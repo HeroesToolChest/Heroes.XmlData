@@ -13,6 +13,19 @@ internal sealed class StormXmlConstants
     public const string TokenInstructionName = "token";
     public const string TokenTypeAttributeName = "type";
     public const string UnitNameAttributeName = "unitName";
+    public const string TokenDelimiter = "##";
+
+    // ability links
+    public const string AbilElementNamePrefix = "CAbil";
+    public const string AbilReferencePrefix = "Abil,";
+    public const string LinkFieldName = "Link";
+    public const string ReferenceFieldName = "Reference";
+    public const string AbilFieldName = "Abil";
+    public const string AbilArrayFieldName = "AbilArray";
+    public const string CountFieldName = "Count";
+    public const string RequirementCountAbilElementName = "CRequirementCountAbil";
+    public const string RequirementAllowAbilElementName = "CRequirementAllowAbil";
+    public const string SubmenuAbilStateFieldName = "SubmenuAbilState";
 
     // .stormstyle files
     public const string StyleConstantElementName = "Constant";
@@ -48,6 +61,32 @@ internal sealed class StormXmlConstants
         { "Text", "CUser" },
     }
     .ToFrozenDictionary(StringComparer.OrdinalIgnoreCase);
+
+    // the fields that are an ability link (or an ability command, which starts with the ability link) in every element
+    public static readonly FrozenSet<string> AbilLinkFieldNames = new HashSet<string>(StringComparer.Ordinal)
+    {
+        AbilFieldName,
+        "AbilCmd",
+        "AbilCommandArray",
+        "Ability",
+        "AbilLink",
+        "AbilLinkDisableArray",
+        "AbilLinkEnableArray",
+        "BuildMorphAbil",
+        "CaptureAbility",
+        "CooldownDisplay",
+        "FinishCommand",
+        "IdleCommand",
+        "MagazineAbil",
+        "ModifyAbil",
+        "ParentAbil",
+        "QueryAbilCmd",
+        "SelectAbilCmd",
+        SubmenuAbilStateFieldName,
+        "TauntAbil",
+        "UnlinkMorphAbil",
+    }
+    .ToFrozenSet(StringComparer.Ordinal);
 
     // attribute names that StormXmlMember reads back from its members; a token with one of these ids would overwrite the real attribute
     public static readonly FrozenSet<string> ReservedTokenIds = new HashSet<string>(StringComparer.Ordinal)
